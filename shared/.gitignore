@@ -1,0 +1,22 @@
+# # Node modules used by shared
+# node_modules/
+
+# # Env
+# .env
+# .env.local
+# .env.*.local
+
+# # Build / generated
+# dist/
+# build/
+# lib/
+# *.tsbuildinfo
+# /src/generated/
+# /src/generated/prisma/
+
+# # Caches / test / logs
+# .cache/
+# coverage/
+# npm-debug.log*
+# pnpm-debug.log*
+# .vscode/

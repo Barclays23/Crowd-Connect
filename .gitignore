@@ -1,0 +1,44 @@
+# -------------------------------------------------------------------
+# 1. UNIVERSAL IGNORES (Applied to all folders)
+# -------------------------------------------------------------------
+
+# Dependency Directories
+node_modules/
+
+# Environment Variables and Sensitive Files
+.env
+.env.*
+.env.local
+.env.example # Often used as a template, but sometimes ignored if it contains sensitive placeholders
+
+# OS and Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Build & Test Output
+/coverage/
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log
+
+# -------------------------------------------------------------------
+# 2. SUB-PROJECT BUILD & GENERATED ARTIFACTS (Explicit Targeting)
+# -------------------------------------------------------------------
+
+# Backend
+/backend/dist/
+/backend/build/
+/backend/src/generated/
+
+# Frontend
+/frontend/dist/
+/frontend/build/
+/frontend/coverage/
+
+# Shared
+/shared/dist/
+/shared/build/
+/shared/lib/
+/shared/src/generated/
+/shared/*.tsbuildinfo

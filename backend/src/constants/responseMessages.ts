@@ -1,0 +1,42 @@
+
+
+export enum HttpResponse {
+    EMAIL_EXIST = "An account with this email is already registered",
+    GOOGLE_LOGIN_SUCCESS = "Logged in with Google successfully",
+    INVALID_CREDENTIALS = "Invalid credentials",
+    INVALID_EMAIL = "Invalid email address",
+    INVALID_ID = "Invalid ID format",
+    INVALID_USER_ID = "Invalid user ID format",
+    INTERNAL_SERVER_ERROR = "Internal server error.",
+    LOGOUT_SUCCESS = "Logged out successfully.",
+    LOGIN_SUCCESS = "Logged in successfully.",
+    LOGIN_FAILED = "Login attempt failed.",
+    NO_PAYLOAD = "Payload not found",
+    TOKEN_MISSING = "Access Denied: Missing authentication token.",
+    OTP_INCORRECT = "Incorrect OTP, please try again.",
+    OTP_RESENT = "A new OTP has been sent to your email.",
+    OTP_SENT = "We've sent an OTP to your email.",
+    OTP_SEND_FAILED = "Failed to send OTP. Please try again.",
+    VERIFY_ACCOUNT = "Please verify to activate your account.",
+    OTP_EXPIRED = "Your verification code has expired. Please request a new OTP.",
+    OTP_VERIFICATION_SUCCESS = "OTP verified successfully.",
+    PAGE_NOT_FOUND = "Route not found",
+    PASSWORD_RESET_SUCCESS = "Password has been reset successfully",
+    PASSWORD_RESET_FAILED = "Failed to reset password. Please try again.",
+    PASSWORD_CHANGE_SUCCESS = "Password changed successfully",
+    PASSWORD_INCORRECT = "Incorrect password, try again",
+    PROFILE_PICTURE_CHANGED = "Profile picture changed successfully",
+    RESET_PASS_LINK = "Password reset link has been sent to your email",
+    SESSION_EXPIRED = "Session expired. Please try again.", // time expired like TTL.
+    TOKEN_INVALID_OR_EXPIRED = "Your token is invalid or expired. Please log in again.",  // token expired or invalid
+    TOKEN_REVOKED = "Your token has been revoked. Please log in again.",
+    TOO_MANY_REQUESTS = "Too many requests, please try again later",
+    TRY_AGAIN_LATER = "Please try again later.",
+    UNAUTHORIZED = "Unauthorized access",
+    UNEXPECTED_KEY_FOUND = "Unexpected key found",
+    USER_CREATION_FAILED = "We were unable to create your account.",
+    USER_VERIFICATION_PENDING = "Your account is ready. Check your email to verify OTP and activate your account.",
+    USER_CREATION_SUCCESS = " Your account is now active.",
+    USER_EXIST = "User already exists",
+    USER_NOT_FOUND = "We couldn't find a user with these credentials."
+}
