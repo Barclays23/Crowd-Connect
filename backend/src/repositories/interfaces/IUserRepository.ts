@@ -7,6 +7,8 @@ export interface IUserRepository {
 
     createUser(user: IUserModel) : Promise<IUserModel>;
 
+    findUserById(userId: string): Promise<IUserModel | null>;
+
 
 }
 

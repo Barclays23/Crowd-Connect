@@ -25,9 +25,6 @@ export class AuthServices implements IAuthService {
     async signIn(email: string, password: string): Promise<AuthResponseDto> {
         try {
             const userData = await this._userRepository.findUserByEmail(email) as IUser | null;
-
-            console.log('userData is DB:', userData);
-            
            
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND)
 
@@ -105,13 +102,7 @@ export class AuthServices implements IAuthService {
                 JSON.stringify(redisData)  // values
             );
 
-            const RedisRegisterData = await redisClient.get(user.email);
-            if (RedisRegisterData) {
-                const parsedData = JSON.parse(RedisRegisterData);
-                console.log("Redis Data For Registration:", parsedData);
-            }
-
-
+            
             if (!response) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
             }
@@ -132,7 +123,7 @@ export class AuthServices implements IAuthService {
             // Retrieve temp data (user & otp) from Redis
             const raw = await redisClient.get(email);
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.SESSION_EXPIRED);
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
             }
 
             const tempRedisData = JSON.parse(raw);
@@ -203,7 +194,7 @@ export class AuthServices implements IAuthService {
             // Retrieve temp data from Redis.
             const raw = await redisClient.get(email);
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.SESSION_EXPIRED);
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
             }
             const tempRedisData = JSON.parse(raw);
             console.log('✅ Retrieved user data for resending OTP:', tempRedisData);
@@ -254,13 +245,17 @@ export class AuthServices implements IAuthService {
             console.log('refreshToken received in AuthServices.refreshAccessToken:', refreshToken);
 
             if (!refreshToken) {
-                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_MISSING);
+                console.log('refresh token is expired or missing in parameter.');
+                // message: "Your session has ended. Please log in again to continue."
+                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
             }
             
             // Verify refresh token and extract payload
             const decoded = verifyRefreshToken(refreshToken);
+            console.log('Decoded refreshToken AuthServices.refreshAccessToken:', decoded);
 
             if (!decoded || !decoded.userId || !decoded.jti) {
+                console.error('Decoded refresh token expired or is missing required fields:', decoded);
                 throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_INVALID_OR_EXPIRED);
             }
 
@@ -273,7 +268,10 @@ export class AuthServices implements IAuthService {
             }
 
             // Create new access token
-            const newAccessToken = createAccessToken({ userId: decoded.userId });
+            const tokenPayload = { userId: decoded.userId.toString() }; // keep payload minimal
+            const newAccessToken = createAccessToken(tokenPayload);
+            // you can create new refreshToken if wanted to rotate refresh tokens & set it cookies (from controller)
+            // const newRefreshToken = createRefreshToken({ userId: decoded.userId });
             return newAccessToken;
 
         } catch (error) {
@@ -281,6 +279,93 @@ export class AuthServices implements IAuthService {
             throw error;
         }
     }
+
+
+
+
+    async revokeRefreshToken(refreshToken: string): Promise<void> {
+        try {
+            // Add logic to revoke the refresh token, e.g., add it to a blacklist in Redis
+            const decoded = verifyRefreshToken(refreshToken);
+
+            if (!decoded || !decoded.jti) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload.");
+            }
+
+
+            // Save the JTI to the blacklist/Redis
+            // Save the JTI to the blacklist/Redis with the calculated remaining TTL (in seconds)
+            if (typeof decoded.exp === "number") {
+                const timeToLive = decoded.exp - Math.floor(Date.now() / 1000); // remaining timeToLive in seconds
+                if (timeToLive > 0) {
+                    await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
+                    console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
+                }
+            } else {
+                throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload: missing expiration.");
+            }
+
+
+        } catch (error) {
+            console.error("Error in AuthServices.revokeRefreshToken:", error);
+            throw error;
+        }
+    }
+
+
+
+
+    async getAuthUser(userId: string): Promise<UserDto> {
+        try {
+            const userData = await this._userRepository.findUserById(userId) as IUser | null;
+
+            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+
+            const safeUser: UserDto = {
+                userId: userData._id.toString(),
+                name: userData.name,
+                email: userData.email,
+                role: userData.role,
+                mobile: userData?.mobile
+            };
+
+            return safeUser;
+
+        } catch (error) {
+            console.error("Error in AuthServices.getAuthUser:", error);
+            throw error;
+        }
+    }
+
+
+
+
+    // async updateProfile(user: UserDto): Promise<string> {
+    //     try {
+    //         const userData = await this._userRepository.findUserByEmail(user.email) as IUser | null;
+    //         if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND)
+
+    //         // const hashedPassword = await hashPassword(user.password);
+
+    //         const RedisRegisterData = await redisClient.get(user.email);
+    //         if (RedisRegisterData) {
+    //             const parsedData = JSON.parse(RedisRegisterData);
+    //             console.log("Redis Data For Registration:", parsedData);
+    //         }
+
+
+    //         if (!response) {
+    //             throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
+    //         }
+
+    //         // return user email for verification step (/verify-account)
+    //         return user.email
+
+    //     } catch (error) {
+    //         console.error("Error in AuthServices.signUp:", error);
+    //         throw error;
+    //     }
+    // }
 
 
 

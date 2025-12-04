@@ -23,6 +23,7 @@ import Login from "./pages/auth/Login";
 import Registration from "./pages/auth/Registration";
 import NotFound from "./pages/user/NotFound";
 import { OTPVerification } from "./components/auth/OTPVerification";
+import Profile from "./pages/user/Profile";
 
 
 
@@ -59,7 +60,7 @@ function App() {
 
                            {/* ----------- Protected User Routes ---------- */}
                            <Route element={<ProtectedRoute />} >
-                              {/* <Route path="/profile" element={<Profile />} /> */}
+                              <Route path="/profile" element={<Profile />} />
                               {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
                            </Route>
 

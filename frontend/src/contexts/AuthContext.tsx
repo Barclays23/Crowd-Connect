@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/authServices';
 import type { IUser } from '@shared/types';
-import { setAuthInterceptors } from '@/config/axios';
+// import { setAuthInterceptors } from '@/config/axios';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
 import { toast } from 'react-toastify';
@@ -35,7 +35,7 @@ interface AuthContextType extends AuthState {
     register: (data: { name: string; email: string; password: string }) => Promise<any>;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<any>;
-    refreshAccessToken: () => Promise<boolean>; // returns true if successful
+    // refreshAccessToken: () => Promise<AuthResponse | null>;
     setAccessToken: React.Dispatch<React.SetStateAction<string | null>>; 
     setUser: React.Dispatch<React.SetStateAction<Partial<IUser> | null>>;
 }
@@ -61,68 +61,98 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    // 1. Initialization - Load User and Access Token (if persistent)
+    // Restore auth state from localStorage on mount
     useEffect(() => {
-        const loadState = () => {
+        const initializeAuth = () => {
             try {
-                const storedAccess = localStorage.getItem("accessToken");
+                const storedToken = localStorage.getItem("accessToken");
                 const storedUser = localStorage.getItem("user");
-                console.log('storedAccess', storedAccess);
-                console.log('storedUser', storedUser);
-                
 
-                if (storedAccess && storedUser) {
-                    setAccessToken(storedAccess);
-                    setUser(JSON.parse(storedUser));
+                if (storedToken && storedUser) {
+                    const user = JSON.parse(storedUser);
+                    setAccessToken(storedToken);
+                    setUser(user);
                 }
-            } catch (err) {
-                console.error("Failed to load tokens & user", err);
+            } catch (error) {
+                console.error("Failed to restore auth state", error);
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("user");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        setAuthInterceptors(refreshAccessToken, logout);
-        loadState();
-    }, []);
+        initializeAuth();
+    }, []);  // only runs once on mount
 
 
 
-    // Save tokens & user to localStorage whenever they change
+
+    // Save tokens & user to localStorage whenever they change.
     useEffect(() => {
-        if (accessToken && user) {
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("user", JSON.stringify(user));
-        } else {
-            // Clear all on logout
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("user");
-        }
+        accessToken ? localStorage.setItem("accessToken", accessToken)
+            : localStorage.removeItem("accessToken");
+
+        user ? localStorage.setItem("user", JSON.stringify(user))
+            : localStorage.removeItem("user");
+
     }, [accessToken, user]);
 
+    // console.log('localStorage accessToken:', localStorage.getItem("accessToken"));
+    // console.log('localStorage user:', localStorage.getItem("user"));
 
 
+    // Validate session on mount or when accessToken/user changes
+    useEffect(() => {
+        let isMounted = true;
 
-    // Refresh Access Token Function
-    const refreshAccessToken = async (): Promise<boolean> => {
-        try {
-            // No need to send refresh token manually, Axios sends the HTTP-Only cookie.
-            const response = await authService.refreshTokenService();
-            const { accessToken: newAccessToken, user: updatedUser } = response.data;
+        const validateSession = async () => {
+            if (!accessToken || !user) {
+                setIsLoading(false);
+                return;
+            }
 
-            setAccessToken(newAccessToken);
-            if (updatedUser) setUser(updatedUser);
+            try {
+                // This call will:
+                // 1. Use current accessToken in headers
+                // 2. If valid → return user data
+                // 3. If expired → authMiddleware throws error → trigger your Axios 401 interceptor
+                // 4. Interceptor will auto-refresh using refreshToken cookie → retry original request → success
+                // 5. If refresh token also expires / fails → interceptor should throw error or log out.
+                
+                console.log('getAuthUser calling...');
+                const response = await authService.getAuthUser();
+                console.log('✅ response in validateSession:', response);
+            
+                // SHOULD I NEED TO UPDATE THE USER DATA HERE AFTER GET AUTH USER?????
+                // Optional: update user if backend sends fresh data
+                if (isMounted) {
+                    setUser(response.user || user); // Update with fresh data
+                    // setAccessToken(newAccessToken); // it is already setting in axios incepter (when token refreshes)
+                }
+            
+            } catch (err: any) {
+                console.log('❌ Error in validateSession :', err);
+                // Important: DO NOT THROW OR TOAST HERE (Axios interceptor handles this)
+                // Let the interceptor handle logout
+                // Just clear state if you want (optional)
+                setAccessToken(null);
+                setUser(null);
 
-            console.log("Token refreshed successfully");
-            return true;
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
 
-        } catch (err: any) {
-            console.error("Refresh token failed or expired", err);
-            toast.error("Session expired. Please log in again...");
-            logout(); // Force logout if refresh fails
-            return false;
-        }
-    };
+        validateSession();
+        return () => {
+            isMounted = false;
+        };
+
+    // }, []); // runs only once on mount.
+    }, [accessToken]); // Re-run if token changes
 
 
 
@@ -175,8 +205,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = async () => {
         try {
             const response = await authService.logoutService();
-            setUser(null);
-            setAccessToken(null);
             return response;
             
         } catch (error) {
@@ -184,12 +212,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             throw error;
 
         } finally {
-            if (user || accessToken) {
-                setUser(null);
-                setAccessToken(null);
-            }
-        }
+            setAccessToken(null);
+            setUser(null);
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('user');
+        };
     };
+
+
+
+
+    // Refresh Access Token Function (axios interceptor already does this) // NEED THIS CODE ANYMORE?
+    // const refreshAccessToken = async (): Promise<AuthResponse | null> => {
+    //     try {
+    //         const response = await authService.refreshTokenService(); // response is AuthResponse
+    //         console.log('response from authService.refreshTokenService:', response);
+    //         const { newAccessToken, updatedUser } = response;
+
+    //         setAccessToken(newAccessToken || null);
+    //         if (updatedUser) setUser(updatedUser);
+
+    //         console.log("Token refreshed successfully");
+    //         return response;
+
+    //     } catch (err: any) {
+    //         console.error("Refresh token failed or expired", err);
+    //         toast.error("Session expired. Please log in again...");
+    //         logout(); // Force logout if refresh fails
+    //         return null;
+    //     }
+    // };
 
 
 
@@ -200,13 +252,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 user,
                 accessToken,
                 isLoading,
-                isAuthenticated: !!user,
+                // isAuthenticated: !!user,
+                isAuthenticated: !!user && !!accessToken,
 
                 login,
                 register,
                 loginWithGoogle,
                 logout,
-                refreshAccessToken,
+                // refreshAccessToken,
 
                 setAccessToken,
                 setUser

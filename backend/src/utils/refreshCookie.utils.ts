@@ -1,4 +1,5 @@
 // src/utils/refreshCookie.utils.ts
+
 import { Response } from 'express';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -12,7 +13,8 @@ export const setRefreshTokenCookie = (res: Response, token: string): void => {
         sameSite: 'lax',
         path: '/',
         // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days  (also check in jwt.utils.ts)
-        maxAge: 15 * 60 * 1000 // 15 minutes  (also check in jwt.utils.ts)
+        // maxAge: 3 * 60 * 1000 // 15 minutes  (also check in jwt.utils.ts)
+        maxAge: 60 * 1000 // 20 seconds  (also check in jwt.utils.ts)
     });
 };
 

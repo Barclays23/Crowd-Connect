@@ -45,7 +45,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
   const { handleSubmit, formState } = currentForm;
   const { errors } = formState;
 
-  console.log('errors :', errors);
+  // console.log('authForm errors :', errors);
 
   // ---- password visibility ------------------------------------
   const [showPassword, setShowPassword] = useState(false);
@@ -54,8 +54,9 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
 
   // ---- form submit -------------------------------------------------
   const onValid = async (data: z.infer<typeof RegisterSchema> | z.infer<typeof LoginSchema>) => {
-    console.log('ALL THE FORM FIELDS ARE VALIDATED CORRECTLY');
-    console.log(`${isRegister ? "Registration" : "Login"} submitted:`, data);
+    // console.log('ALL THE FORM FIELDS ARE VALIDATED CORRECTLY');
+    // console.log(`${isRegister ? "Registration" : "Login"} submitted:`, data);
+    console.log(`${isRegister ? "Registration" : "Login"} submitted:`);
 
     if (!onSubmit) return;
     

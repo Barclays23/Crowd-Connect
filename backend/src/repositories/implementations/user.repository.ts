@@ -4,6 +4,8 @@ import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
 
 
+
+
 export class UserRepository extends BaseRepository<IUserModel> implements IUserRepository {
     constructor() {
         super(User)
@@ -30,4 +32,18 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             throw new Error("Error Finding User");
         }
     }
+
+    async findUserById(userId: string): Promise<IUserModel | null> {
+        try {
+            const userData = await this.findOne({_id: userId})
+            return userData;
+
+        } catch (error) {
+            console.log('error in findUserById :', error);
+            throw new Error("Error Finding User");
+        }
+    }
+
+
+    
 }

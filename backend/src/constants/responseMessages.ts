@@ -11,8 +11,8 @@ export enum HttpResponse {
     LOGOUT_SUCCESS = "Logged out successfully.",
     LOGIN_SUCCESS = "Logged in successfully.",
     LOGIN_FAILED = "Login attempt failed.",
+    LOGIN_AGAIN = "Please log in again to continue.",
     NO_PAYLOAD = "Payload not found",
-    TOKEN_MISSING = "Access Denied: Missing authentication token.",
     OTP_INCORRECT = "Incorrect OTP, please try again.",
     OTP_RESENT = "A new OTP has been sent to your email.",
     OTP_SENT = "We've sent an OTP to your email.",
@@ -27,10 +27,14 @@ export enum HttpResponse {
     PASSWORD_INCORRECT = "Incorrect password, try again",
     PROFILE_PICTURE_CHANGED = "Profile picture changed successfully",
     RESET_PASS_LINK = "Password reset link has been sent to your email",
-    SESSION_EXPIRED = "Session expired. Please try again.", // time expired like TTL.
-    TOKEN_INVALID_OR_EXPIRED = "Your token is invalid or expired. Please log in again.",  // token expired or invalid
+    SESSION_ENDED = "Your session has ended.",  // ttl ended or invalidated (dg: cookie deleted by user, expired cookie etc).
+    SESSION_EXPIRED = "Your session has expired.", // time expired like TTL (eg: redis data, jwt token etc invalidated by server).
+    TOKEN_INVALID_OR_EXPIRED = "Your token is invalid or expired. Please log in again.",
+    TOKEN_MISSING = "Access Denied: Missing authentication token.",
     TOKEN_REVOKED = "Your token has been revoked. Please log in again.",
     TOO_MANY_REQUESTS = "Too many requests, please try again later",
+    ACCESS_TOKEN_REFRESHED = "Access token refreshed successfully.",
+    TRY_AGAIN = "Please try again.",
     TRY_AGAIN_LATER = "Please try again later.",
     UNAUTHORIZED = "Unauthorized access",
     UNEXPECTED_KEY_FOUND = "Unexpected key found",

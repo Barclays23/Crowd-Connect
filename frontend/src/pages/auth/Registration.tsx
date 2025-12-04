@@ -4,11 +4,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 
+
+
+
+
 function Registration() {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
+
+
+  
   const handleRegistration = useCallback(async (formData: any) => {
     // console.log('data received in Registration:', formData);
 

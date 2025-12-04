@@ -1,5 +1,5 @@
 import { IUser } from "@shared/types";
-import { AuthResponseDto, SignUpRequestDto } from "../../dtos/auth.dto";
+import { AuthResponseDto, SignUpRequestDto, UserDto } from "../../dtos/auth.dto";
 
 
 
@@ -9,4 +9,7 @@ export interface IAuthService {
     verifyOtp(email: string, otp: string): Promise<AuthResponseDto>;
     resendOtp(email: string): Promise<string>
     refreshAccessToken(refreshToken: string): Promise<string>
+    revokeRefreshToken(refreshToken: string): Promise<void>
+    getAuthUser(userId: string): Promise<UserDto>
+    // updateProfile(user: UserDto): Promise<string>
 }

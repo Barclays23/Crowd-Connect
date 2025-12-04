@@ -7,6 +7,7 @@ import { OtpSchema } from '../../../shared/schemas/otp.schema';
 import { UserRepository } from '../repositories/implementations/user.repository';
 import { AuthServices } from '../services/implementations/auth.services';
 import { AuthController } from '../controllers/implementations/auth.controller';
+import { authenticate } from '../middlewares/auth.middleware';
 
 
 
@@ -25,6 +26,9 @@ authRouter.post('/verify-otp', validateRequest({body: OtpSchema}), authControlle
 authRouter.post('/resend-otp', authController.resendOtp.bind(authController));
 authRouter.post('/refresh-token', authController.refreshAccessToken.bind(authController));
 authRouter.post('/logout', authController.logout.bind(authController));
+authRouter.get('/me', authenticate, authController.getAuthUser.bind(authController));
+// authRouter.post('/edit-profile', authController.editProfile.bind(authController));
+
 
 
 

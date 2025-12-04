@@ -23,7 +23,7 @@ export class AuthController implements IAuthController {
             const { email, password } = req.body as SignInRequestDto;
 
             const { verifiedUser, accessToken, refreshToken } = await this._authService.signIn(email, password);
-            console.log('user in authController.signIn:', verifiedUser);
+            // console.log('user in authController.signIn:', verifiedUser);
 
             // Set refresh token in HTTP-Only cookie
             setRefreshTokenCookie(res, refreshToken);
@@ -149,8 +149,14 @@ export class AuthController implements IAuthController {
     async refreshAccessToken(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const refreshToken = req.cookies.refreshToken;
+            
             if (!refreshToken) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ message: HttpResponse.TOKEN_MISSING });
+                console.log('refresh token is expired or missing in cookies.');
+                // Rationale: While technically "missing" from the request, the only common
+                // reason for an HTTP-only cookie to be missing in this context is if 
+                // the browser auto-deleted it due to expiration.
+                // message: "Your session has ended. Please log in again to continue."
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
                 return;
             }
 
@@ -158,8 +164,9 @@ export class AuthController implements IAuthController {
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.ACCESS_TOKEN_REFRESHED,
-                accessToken: newAccessToken
+                newAccessToken: newAccessToken
             });
+
         } catch (err: any) {
             console.error('Error in AuthController.refreshAccessToken:', err);
             if (err && typeof err.statusCode === 'number') {
@@ -179,35 +186,16 @@ export class AuthController implements IAuthController {
         try {            
             const refreshToken = req.cookies.refreshToken;
 
-            if (!refreshToken) {
-                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_MISSING);
+            // if refresh token present, best-effort - revoke it (ignore errors)
+            if (refreshToken && this._authService.revokeRefreshToken) {
+                await this._authService.revokeRefreshToken(refreshToken).catch(() => {});
             }
 
-            const decoded = verifyRefreshToken(refreshToken);
 
-            // Validate required fields (jti, exp, userId)
-            if (!decoded || !decoded.jti || !decoded.userId || typeof decoded.exp !== 'number') {
-                // Throw a specific error if the payload is malformed
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload.");
-            }
-            
             // Always clear the cookie, regardless of token state
             clearRefreshTokenCookie(res);
-
-
-            // If token is already expired, just succeed.
-            const timeToLive = decoded.exp - Math.floor(Date.now() / 1000); // Remaining seconds
-            if (timeToLive <= 0) {
-                res.status(HttpStatus.OK).json({ message: HttpResponse.LOGOUT_SUCCESS });
-                return;
-            }
             
-            // Save the JTI to the blacklist/Redis
-            // 3. Save the JTI to the blacklist/Redis with the calculated remaining TTL (in seconds)
-            await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
-
-            console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
-            
+            // Respond logout with success
             res.status(HttpStatus.OK).json({message: HttpResponse.LOGOUT_SUCCESS});
 
 
@@ -223,6 +211,66 @@ export class AuthController implements IAuthController {
             return;
         }
     }
+
+
+    
+
+    async getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = req.userId;
+            console.log('userId in authController.getAuthUser:', userId);
+
+
+            if (!userId) {
+                console.log('Missing userId in authController.getAuthUser');
+                res.status(HttpStatus.UNAUTHORIZED).json({message: HttpResponse.INVALID_USER_ID });
+                // res.status(HttpStatus.UNAUTHORIZED).json({message: HttpResponse.TOKEN_MISSING });
+                return;
+            }
+
+            const userData = await this._authService.getAuthUser(userId);
+
+            res.status(HttpStatus.OK).json({
+                // message: HttpResponse.AUTH_USER_FETCHED,
+                user: userData
+            });
+            
+        } catch (err: any) {
+            console.error('Error in AuthController.getAuthUser:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
+
+
+
+    // async editProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    //     try {
+    //         const userData = await this._userServices.updateProfile(req.body);
+            
+    //         res.status(HttpStatus.OK).json({message: HttpResponse.PROFILE_PICTURE_CHANGED});
+
+
+    //     } catch (err: any) {
+    //         console.error('Error in AuthController.logout:', err);
+    //         if (err && typeof err.statusCode === 'number') {
+    //             res.status(err.statusCode).json({ message: err.message || 'Error' });
+    //             return;
+    //         }
+    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    //             message: HttpResponse.INTERNAL_SERVER_ERROR
+    //         });
+    //         return;
+    //     }
+    // }
+
 
 
 

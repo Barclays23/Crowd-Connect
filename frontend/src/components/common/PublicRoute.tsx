@@ -1,7 +1,10 @@
-// src/routes/PublicRoute.tsx
+// frontend/src/components/common/PublicRoute.tsx
+
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FC } from 'react';
+
+
 
 
 export const PublicRoute: FC = () => {

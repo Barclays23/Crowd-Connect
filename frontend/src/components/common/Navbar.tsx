@@ -47,7 +47,7 @@ export function Navbar() {
 
       } catch (error: any) {
          console.error("Error in handleLogout:", error);
-         const errorMessage = error.response?.data?.error || error.response?.data?.message || "Logout failed. Please try again.";
+         const errorMessage = error.response?.data?.error || error.response?.data?.message || "Something went wrong while logging out.";
          toast.error(errorMessage);
       }
    }

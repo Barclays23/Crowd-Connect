@@ -1,4 +1,4 @@
-// src/components/common/ProtectedRoute.tsx
+// frontend/src/components/common/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FC } from 'react';
@@ -25,7 +25,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
   }
 
   if (!isAuthenticated) {
-    // Redirect to login but save the current location they were trying to go to
+    // Redirect to home or login but save the current location they were trying to go to
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

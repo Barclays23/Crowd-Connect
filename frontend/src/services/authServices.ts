@@ -90,8 +90,21 @@ export const authService = {
     },
 
 
+
+    getAuthUser: async () => {
+        try {
+            const response = await axiosInstance.get("/api/auth/me", { withCredentials: true });
+            return response.data;;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
     refreshTokenService: async () => {
         try {
+            console.log('refreshTokenService called........');
             const response = await axiosInstance.post("/api/auth/refresh-token", {}, { withCredentials: true });
             return response.data;
         } catch (error: unknown) {
