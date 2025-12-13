@@ -26,7 +26,9 @@ body {
 
 
 
-
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+}
 
 
 /* ===== LIGHT MODE THEME ===== */
@@ -70,9 +72,12 @@ body {
 
   /* Cards */
   --card-bg: #ffffff;
+  --card-secondary: #e5e5e5;
   --card-border: #e5e7eb;
   --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+
 
   /* Status */
   --status-success: #10b981;          /* Green for Success */
@@ -82,6 +87,75 @@ body {
   --status-info: var(--brand-primary);
   --status-info-bg: var(--bg-accent);
 
+
+
+  /* BADGES */
+  --badge-default-bg: var(--bg-secondary);
+  --badge-default-text: var(--text-secondary);
+  --badge-default-border: var(--border-default);
+  
+  --badge-primary-bg: rgba(255, 107, 107, 0.1); /* Light coral tint */
+  --badge-primary-text: var(--brand-primary);
+  --badge-primary-border: var(--brand-primary-light);
+  
+  --badge-success-bg: var(--status-success-bg);
+  --badge-success-text: #059669; /* Darker green for readability */
+  --badge-success-border: var(--status-success);
+  
+  --badge-error-bg: #fee2e2; /* Light red tint */
+  --badge-error-text: #dc2626; /* Darker red for readability */
+  --badge-error-border: var(--status-error);
+  
+  --badge-info-bg: rgba(255, 107, 107, 0.08); /* Very light coral */
+  --badge-info-text: #e63946; /* Darker coral */
+  --badge-info-border: var(--brand-primary-light);
+  
+  --badge-warning-bg: #fef3c7; /* Light amber tint */
+  --badge-warning-text: #d97706; /* Amber for readability */
+  --badge-warning-border: #fbbf24;
+  
+  --badge-secondary-bg: var(--bg-tertiary);
+  --badge-secondary-text: var(--text-primary);
+  --badge-secondary-border: var(--border-muted);
+  
+  --badge-accent-bg: rgba(230, 57, 70, 0.08); /* Darker coral tint */
+  --badge-accent-text: var(--brand-primary-hover);
+  --badge-accent-border: var(--brand-primary);
+  
+  --badge-muted-bg: #f9fafb;
+  --badge-muted-text: var(--text-tertiary);
+  --badge-muted-border: var(--border-default);
+  
+  --badge-outline-bg: transparent;
+  --badge-outline-text: var(--brand-primary);
+  --badge-outline-border: var(--brand-primary);
+  
+  --badge-highlight-bg: rgba(255, 107, 107, 0.2); /* Medium coral tint */
+  --badge-highlight-text: #c92a2a; /* Deep coral */
+  --badge-highlight-border: var(--brand-primary-hover);
+  
+  --badge-subtle-bg: rgba(238, 238, 238, 0.5); /* Very light gray */
+  --badge-subtle-text: var(--text-secondary);
+  --badge-subtle-border: transparent;
+  
+  --badge-brand-bg: var(--brand-primary);
+  --badge-brand-text: #ffffff;
+  --badge-brand-border: var(--brand-primary-hover);
+  
+  --badge-neutral-bg: #e5e7eb;
+  --badge-neutral-text: #374151;
+  --badge-neutral-border: #d1d5db;
+  
+  --badge-inverse-bg: var(--text-primary);
+  --badge-inverse-text: var(--text-inverse);
+  --badge-inverse-border: var(--text-primary);
+  
+  --badge-gradient-bg: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+  --badge-gradient-text: #ffffff;
+  --badge-gradient-border: transparent;
+
+
+
   /* Borders */
   --border-default: rgba(0, 0, 0, 0.1);
   --border-muted: rgba(0, 0, 0, 0.15);
@@ -89,12 +163,14 @@ body {
   --border-focus: var(--brand-primary-light);
   --border-brand: var(--brand-primary);
   
+
   /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
   
+
   /* Forms & Inputs */
   --form-bg: #ffffff;
   --form-border: var(--border-default);
@@ -107,6 +183,7 @@ body {
   --form-invalid: #ef4444;
   --form-valid: #10b981;
 
+
   /* Modal */
   --modal-overlay: var(--bg-overlay);
   --modal-bg: #ffffff;
@@ -114,11 +191,17 @@ body {
   --modal-border: var(--border-muted);
   --modal-shadow: var(--shadow-lg);
 
+
   /* Scrollbar */
   --scrollbar-track: #f3f4f6;
   --scrollbar-thumb: #d1d5db;
   --scrollbar-thumb-hover: #9ca3af;
 }
+
+
+
+
+
 
 /* ===== DARK MODE THEME ===== */
 /* [data-theme="dark"] { */
@@ -165,10 +248,14 @@ body {
 
   /* Cards */
   --card-bg: #1f2937;
+  --card-primary: var(--bg-primary);
+  --card-secondary: #232c3d;
   --card-border: #374151;
   --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.3);
 
+
+  
   /* Status */
   --status-success: #10b981;
   --status-success-hover: #064e3b;
@@ -176,6 +263,76 @@ body {
   --status-error-hover: #ff2222;
   --status-info: var(--brand-primary);
   --status-info-hover: var(--bg-accent);
+
+
+  
+  /* BADGES */
+  --badge-default-bg: var(--bg-tertiary);
+  --badge-default-text: var(--text-secondary);
+  --badge-default-border: var(--border-default);
+  
+  --badge-primary-bg: rgba(255, 107, 107, 0.15); /* Coral tint for dark */
+  --badge-primary-text: var(--brand-primary-light);
+  --badge-primary-border: var(--brand-primary);
+  
+  --badge-success-bg: rgba(16, 185, 129, 0.15); /* Green tint */
+  --badge-success-text: #34d399; /* Lighter green */
+  --badge-success-border: var(--status-success);
+  
+  --badge-error-bg: rgba(255, 68, 68, 0.15); /* Red tint */
+  --badge-error-text: #fca5a5; /* Lighter red */
+  --badge-error-border: var(--status-error);
+  
+  --badge-info-bg: rgba(255, 107, 107, 0.12); /* Light coral tint */
+  --badge-info-text: var(--brand-primary-light);
+  --badge-info-border: var(--brand-primary);
+  
+  --badge-warning-bg: rgba(251, 191, 36, 0.15); /* Amber tint */
+  --badge-warning-text: #fbbf24; /* Lighter amber */
+  --badge-warning-border: #f59e0b;
+  
+  --badge-secondary-bg: var(--bg-secondary);
+  --badge-secondary-text: var(--text-primary);
+  --badge-secondary-border: var(--border-muted);
+  
+  --badge-accent-bg: rgba(230, 57, 70, 0.2); /* Darker coral tint */
+  --badge-accent-text: #ff8787; /* Lighter coral */
+  --badge-accent-border: var(--brand-primary-hover);
+  
+  --badge-muted-bg: var(--bg-primary);
+  --badge-muted-text: var(--text-tertiary);
+  --badge-muted-border: var(--border-default);
+  
+  --badge-outline-bg: transparent;
+  --badge-outline-text: var(--brand-primary-light);
+  --badge-outline-border: var(--brand-primary);
+  
+  --badge-highlight-bg: rgba(255, 107, 107, 0.25); /* Medium coral tint */
+  --badge-highlight-text: #ffb3b3; /* Light coral */
+  --badge-highlight-border: var(--brand-primary);
+  
+  --badge-subtle-bg: rgba(31, 41, 55, 0.5); /* Very subtle dark */
+  --badge-subtle-text: var(--text-tertiary);
+  --badge-subtle-border: transparent;
+  
+  --badge-brand-bg: var(--brand-primary);
+  --badge-brand-text: #ffffff;
+  --badge-brand-border: var(--brand-primary-light);
+  
+  --badge-neutral-bg: #4b5563;
+  --badge-neutral-text: #e5e7eb;
+  --badge-neutral-border: #6b7280;
+  
+  --badge-inverse-bg: var(--text-primary);
+  --badge-inverse-text: var(--text-inverse);
+  --badge-inverse-border: var(--text-primary);
+  
+  --badge-gradient-bg: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+  --badge-gradient-text: #ffffff;
+  --badge-gradient-border: transparent;
+
+
+
 
   /* Borders */
   --border-default: rgba(255, 255, 255, 0.1);
@@ -194,7 +351,7 @@ body {
   --form-bg: #1f2937;
   --form-border: var(--border-default);
   --form-input-border: rgba(255, 255, 255, 0.187);
-  --form-input-bg: #1f2937;
+  --form-input-bg: var(--bg-primary);
   --form-input-text: var(--text-primary);
   --form-placeholder: #6b7280;
   --form-disabled-bg: #374151;

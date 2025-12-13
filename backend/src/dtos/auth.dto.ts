@@ -17,7 +17,7 @@ export interface SignInRequestDto {
 }
 
 
-export interface UserDto {
+export interface AuthUserDto {
     userId: string; // The public ID (e.g., MongoDB ObjectId converted to string)
     name: string;
     email: string;
@@ -28,7 +28,7 @@ export interface UserDto {
 
 
 export interface AuthResponseDto {
-    verifiedUser: UserDto;  // user
+    verifiedUser: AuthUserDto;  // user
     accessToken: string;
     refreshToken: string;
     // message: string;

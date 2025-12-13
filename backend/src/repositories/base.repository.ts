@@ -1,8 +1,21 @@
 import { 
     Document, 
-    FilterQuery, 
-    Model 
+    Model,
+    // FilterQuery
 } from "mongoose";
+
+
+type MongooseFilterQuery<T> = {
+    // Allows querying based on document properties (T[P]) or MongoDB operators
+    [P in keyof T]?: T[P] | { $in: T[P][] } | any; 
+} & {
+    // Standard MongoDB operators
+    $and?: MongooseFilterQuery<T>[];
+    $or?: MongooseFilterQuery<T>[];
+} & Record<string, any>; // Allows for other operators like $regex, $gt, etc.
+
+
+
 
 
 export abstract class BaseRepository<T extends Document> {
@@ -16,10 +29,23 @@ export abstract class BaseRepository<T extends Document> {
     }
 
 
-    async findOne(query: FilterQuery<T>): Promise<T | null>{
+    async findOne(query: MongooseFilterQuery<T>): Promise<T | null>{
         const findDocument = this.model.findOne(query);
         return findDocument;
     }
+
+
+    async findMany(): Promise<T[]>{
+        const findDocuments = this.model.find();
+        return findDocuments;
+    }
+
+    async countDocuments(query: MongooseFilterQuery<T>): Promise<number> {
+        const count = this.model.countDocuments(query);
+        return count;
+    }
+
+    
 
 
 }

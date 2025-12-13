@@ -42,5 +42,11 @@ export enum HttpResponse {
     USER_VERIFICATION_PENDING = "Your account is ready. Check your email to verify OTP and activate your account.",
     USER_CREATION_SUCCESS = " Your account is now active.",
     USER_EXIST = "User already exists",
-    USER_NOT_FOUND = "We couldn't find a user with these credentials."
+    USER_NOT_FOUND = "We couldn't find a user with these credentials.",
+    USER_ACCOUNT_NOT_EXIST = "Your account is removed or no longer available. Please contact support.",
+    USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
+
+    FAILED_GET_USERS = "Failed to fetch users.",
+
+    SUCCESS_GET_USERS = "Users fetched successfully.",
 }

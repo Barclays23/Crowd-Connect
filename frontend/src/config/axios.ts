@@ -41,7 +41,6 @@ declare module 'axios' {
 // STATIC REQUEST INTERCEPTOR (Attaches current Access Token)
 axiosInstance.interceptors.request.use(
    (config: InternalAxiosRequestConfig) => {
-      // IMPORTANT FIX: Use the correct key 'accessToken'
       const token = localStorage.getItem("accessToken"); 
 
       if (token && config.headers) {
@@ -65,6 +64,15 @@ let failedRequestsQueue: Array<{
   resolve: (value: any) => void; 
   reject: (reason?: any) => void; 
 }> = [];
+
+
+// 1. Declare a variable to hold the logout function
+let onTokenRefreshFailure: (() => Promise<void>) | null = null;
+
+// 2. Export a setter function to inject the logout callback
+export const setAuthInterceptors = (logoutCallback: () => Promise<void>) => {
+    onTokenRefreshFailure = logoutCallback;
+};
 
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
@@ -171,15 +179,21 @@ axiosInstance.interceptors.response.use(
             const refreshErrorMessage = serverMessage || defaultMessage;
             console.error('refreshErrorMessage in interceptor:', refreshErrorMessage);
 
-            toast.info(refreshErrorMessage)
 
-            // call logout service to clear server-side session.
-            const res = await authService.logoutService();
-            console.log('Logout response after refresh token failure :', res);
-
-            // Clear the stored tokens and user data from localStorage.
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("user");
+            // *** USE THE INJECTED LOGOUT CALLBACK ***
+            if (onTokenRefreshFailure) {
+               // Show toast first, it will persist because navigation is stateful (React Router)
+               toast.info(refreshErrorMessage);
+               // Call the injected function which handles state clearing and navigation
+               await onTokenRefreshFailure();
+            } else {
+               // Fallback for safety (though AuthContext should always inject this)
+               console.warn("Logout callback not initialized. Manual local storage clear and forced reload.");
+               localStorage.removeItem("accessToken");
+               localStorage.removeItem("user");   
+               window.location.href = '/login';
+            }
+            
 
             processQueue(refreshError as AxiosError, null);
             return Promise.reject(refreshError);

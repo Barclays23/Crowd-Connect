@@ -21,3 +21,6 @@ export interface IUser {
 }
 
 
+export interface IUserLean extends IUser {
+  __v?: number; // Version key
+}

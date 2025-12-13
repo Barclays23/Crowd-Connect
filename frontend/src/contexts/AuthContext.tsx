@@ -9,6 +9,8 @@ import type { IUser } from '@shared/types';
 import { toast } from 'react-toastify';
 
 
+import { setAuthInterceptors } from '@/config/axios';
+
 
 
 interface AuthState {
@@ -77,6 +79,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Failed to restore auth state", error);
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("user");
+                // setUser(null);
+                // setAccessToken(null);
             } finally {
                 setIsLoading(false);
             }
@@ -84,6 +88,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         initializeAuth();
     }, []);  // only runs once on mount
+
+
+    // --- CENTRALIZED LOGOUT LOGIC ---
+    // Clears client state and performs server-side logout.
+    // This function is used by both manual logout and the Axios interceptor.
+    const fullLogout = async () => {
+        try {
+            // 1. Call server logout to clear HTTP-only cookie/session
+            const response = await authService.logoutService();
+            console.log('fullLogout response:', response);
+            return response;
+        } catch (error) {
+            console.error("Error in fullLogout:", error);
+            // Non-fatal if client state is cleared, just log it.
+            throw error;
+        } finally {
+            // 2. Clear client-side state/storage
+            setAccessToken(null);
+            setUser(null);
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('user');
+        };
+    };
+
+
+    // *** INJECT LOGOUT CALLBACK TO AXIOS INTERCEPTOR ***
+    useEffect(() => {
+        // We pass the fullLogout function which handles server call and state clearing.
+        // The interceptor will use this when the refresh token fails.
+        setAuthInterceptors(fullLogout);
+    }, []); // Run only once on mount to setup the interceptor
+
+
+
 
 
 
@@ -160,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (credentials: { email: string; password: string }) => {
         try {
             const response = await authService.loginService(credentials);
-            console.log('response from authContext login:', response);
+            // console.log('response from authContext login:', response);
             const { accessToken, user } = response;
 
             setAccessToken(accessToken);
@@ -202,22 +240,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const logout = async () => {
+    // Public logout function for components (e.g., Navbar).
+    // It uses the centralized fullLogout logic.
+    const logout = async (): Promise<AuthResponse> => {
         try {
-            const response = await authService.logoutService();
-            return response;
-            
+            const response = await fullLogout();
+            return response as AuthResponse;
         } catch (error) {
             console.error("Error in AuthContext logout:", error);
+            // Even if the server call fails, we ensure client state is cleared in fullLogout.finally
             throw error;
-
-        } finally {
-            setAccessToken(null);
-            setUser(null);
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-        };
+        }
     };
+
+
+
+
 
 
 

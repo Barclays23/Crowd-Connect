@@ -17,18 +17,24 @@ import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 
 
+// Layouts
+import UserLayout from "@/components/layouts/UserLayout";
+
+
+
 // Pages
 import Home from "./pages/user/Home";
 import Login from "./pages/auth/Login";
 import Registration from "./pages/auth/Registration";
 import NotFound from "./pages/user/NotFound";
 import { OTPVerification } from "./components/auth/OTPVerification";
-import Profile from "./pages/user/Profile";
+import UserAccount from "./pages/user/UserAccount";
 
 
 
 // admin pages
-// import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUserList from "./pages/admin/AdminUserList";
 // import AdminUserList from "./pages/admin/users/AdminUserList";
 
 
@@ -44,40 +50,42 @@ function App() {
          <AuthProvider>
          <Router>
             <ToastContainer position="top-center" theme="colored" transition={Slide}/>
-               <div className="app-container">
-                  <Navbar />
-                     <main className="main-content">
+               {/* <div className="app-container"> */}
+                  {/* <Navbar /> */}
+                     {/* <main className="main-content"> */}
                         <Routes>
-                           {/* ----------- Public Routes ---------- */}
-                           <Route path="/" element={<Home />} />
-                           <Route path="/otp-verification" element={<OTPVerification />} />
-                           
-                           <Route element={<PublicRoute />}>
-                              <Route path="/login" element={<Login />} />
-                              <Route path="/register" element={<Registration />} />
-                           </Route>
+                           <Route element={<UserLayout />}>
+                              {/* ----------- Public Routes ---------- */}
+                              <Route path="/" element={<Home />} />
+                              <Route path="/otp-verification" element={<OTPVerification />} />
+                              
+                              <Route element={<PublicRoute />}>
+                                 <Route path="/login" element={<Login />} />
+                                 <Route path="/register" element={<Registration />} />
+                              </Route>
 
 
-                           {/* ----------- Protected User Routes ---------- */}
-                           <Route element={<ProtectedRoute />} >
-                              <Route path="/profile" element={<Profile />} />
-                              {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
+                              {/* ----------- Protected User Routes ---------- */}
+                              <Route element={<ProtectedRoute />} >
+                                 <Route path="/profile" element={<UserAccount />} />
+                                 {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
+                              </Route>
                            </Route>
 
 
                            {/* ----------- Protected Admin Routes ---------- */}
                            <Route element={<ProtectedRoute requireAdmin={true} />} >
-                              {/* <Route path="/admin" element={<AdminDashboard />} /> */}
-                              {/* <Route path="/admin/users" element={<AdminUserList />} /> */}
+                              <Route path="/admin" element={<AdminDashboard />} />
+                              <Route path="/admin/users" element={<AdminUserList />} />
                            </Route>
 
 
                            {/* 404 Page */}
                            <Route path="*" element={<NotFound />} />
                         </Routes>
-                     </main>
-                  <Footer />
-               </div>
+                     {/* </main> */}
+                  {/* <Footer /> */}
+               {/* </div> */}
          </Router>
          </AuthProvider>
       </ThemeProvider>

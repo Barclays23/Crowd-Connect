@@ -4,6 +4,7 @@ import { verifyAccessToken } from '../utils/jwt.utils';
 import { createHttpError } from '../utils/httpError.utils';
 import { HttpStatus } from '../constants/statusCodes';
 import { HttpResponse } from '../constants/responseMessages';
+import { UserRepository } from '../repositories/implementations/user.repository';
 
 
 
@@ -37,9 +38,6 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
    try {
       // Verify access token
       const decoded = verifyAccessToken(token);
-
-      // Fetch user from DB (optional, but recommended)
-      // const user = await getUserById(decoded.userId);
       
       if (!decoded || typeof decoded !== 'object' || !decoded.userId) {
          console.log('Invalid or expired token payload in auth.middleware.protect');
@@ -47,14 +45,32 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
          throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_INVALID_OR_EXPIRED);
       }
 
-      // req.user = {
-      //   userId: user.id,
-      //   email: user.email,
-      //   role: user.role,
-      //   // add more fields if needed
-      // };
+      // Fetch user from DB to ensure they still exist and are active
+      const userRepo = new UserRepository();
+      const user = await userRepo.findUserById(decoded.userId);
 
-      req.userId = decoded.userId;
+      if (!user) {
+         return res
+         .status(HttpStatus.UNAUTHORIZED)
+         .json({ success: false, message: HttpResponse.USER_ACCOUNT_NOT_EXIST });
+      }
+
+
+      if (user.status === 'blocked') {
+         return res
+         .status(HttpStatus.FORBIDDEN)
+         .json({ success: false, message: HttpResponse.USER_ACCOUNT_BLOCKED });
+      }
+
+      req.user = {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+        status: user.status
+        // add more fields if needed
+      };
+
+      // req.userId = decoded.userId;
 
       console.log('authenticate middleware passed');
       next();
@@ -76,13 +92,26 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
 
 
-// 2. Optional: Role-based middleware (admin only, etc.)
-export const authorize =
-   (...roles: string[]) =>
-   (req: Request, res: Response, next: NextFunction) => {
-      if (!req.user || !roles.includes(req.user.role)) {
-         res.status(403);
-         throw new Error('Forbidden: Insufficient permissions');
+export const authorize = (...allowedRoles: Array<'user' | 'host' | 'admin'>) => {
+   return (req: Request, res: Response, next: NextFunction) => {
+      //  if (!req.user) {
+      //    return res
+      //      .status(HttpStatus.UNAUTHORIZED)
+      //      .json({ success: false, message: 'Authentication required' });
+      //  }
+      
+      const userRole = req.user?.role;
+      console.log('User role in authorize middleware:', userRole);
+
+      if (!allowedRoles.includes(userRole)) {
+         return res
+         .status(HttpStatus.FORBIDDEN)
+         .json({ success: false, message: 'Forbidden: Insufficient permissions' });
+
+         // .status(HttpStatus.FORBIDDEN)
+         // throw new Error('Forbidden: Insufficient permissions');
       }
+
       next();
+   };
 };

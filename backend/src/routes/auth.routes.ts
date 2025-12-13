@@ -1,5 +1,5 @@
 // backend/src/routes/auth.routes.ts
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { validateRequest } from '../middlewares/validate.middleware';
 // import { RegisterSchema } from '@shared/schemas/authSchema';
 import { LoginSchema, RegisterSchema } from '../../../shared/schemas/auth.schema';

@@ -17,9 +17,9 @@ interface UserFormData {
 
 
 
-export const useServices = {
+export const userServices = {
 
-    registerService: async (data: UserFormData) => {
+    editProfileService: async (data: UserFormData) => {
         try {
             // console.log('data received in registerService :', data)
             const response = await axiosInstance.post("/api/auth/edit-profile", data, { withCredentials: true });
@@ -31,4 +31,19 @@ export const useServices = {
             throw err;
         }
     },
+
+
+    getAllUsers: async (queryString: string = "") => {
+        try {
+            const response = await axiosInstance.get(`/api/admin/users${queryString ? `?${queryString}` : ""}`, {
+                withCredentials: true
+            });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    }
+
+
 }

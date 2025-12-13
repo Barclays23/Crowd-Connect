@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 // import morgan from 'morgan';
 
 import authRoutes from './routes/auth.routes';
+import adminRoutes from './routes/admin.routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Error handler

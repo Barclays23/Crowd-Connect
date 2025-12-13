@@ -2,6 +2,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { FC } from 'react';
+import { toast } from 'react-toastify';
 
 
 interface ProtectedRouteProps {
@@ -30,6 +31,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
   }
 
   if (requireAdmin && user?.role !== 'admin') {
+    toast.success('Access denied. Admins only.');
     return <Navigate to="/" replace />;
     // Or show a 403 page: <Navigate to="/unauthorized" />
   }

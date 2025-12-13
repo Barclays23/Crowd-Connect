@@ -69,6 +69,7 @@ export function Navbar() {
         { to: "/host", label: "Host Event", requiresAuth: true }, // Only show if logged in
         { to: "/bookings", label: "My Bookings", requiresAuth: true }, // Only show if logged in
         { to: "/profile", label: "Profile", requiresAuth: true }, // Only show if logged in
+        { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
     ];
 
     
@@ -87,23 +88,25 @@ export function Navbar() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-                {/* Conditionally render links based on auth status */}
-                {navItems.map(item => {
-                    // Render if no auth required OR if authenticated
-                    if (!item.requiresAuth || isAuthenticated) {
-                        return (
-                            <NavLink
-                                key={item.to}
-                                to={item.to}
-                                end={item.end}
-                                className={navLinkClasses}
-                            >
-                                {item.label}
-                            </NavLink>
-                        );
-                    }
-                    return null;
-                })}
+               {/* Conditionally render links based on auth status */}
+               {navItems.map(item => {
+                  if (
+                     (!item.requiresAuth || isAuthenticated) &&
+                     (!item.requiresAdmin || user?.role === "admin")
+                  ) {
+                     return (
+                        <NavLink
+                        key={item.to}
+                        to={item.to}
+                        end={item.end}
+                        className={navLinkClasses}
+                        >
+                        {item.label}
+                        </NavLink>
+                     );
+                  }
+                  return null;
+               })}
             </nav>
 
             {/* Right side – Theme + Auth + Hamburger */}

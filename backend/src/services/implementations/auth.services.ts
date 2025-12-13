@@ -13,7 +13,7 @@ import { IUser } from "@shared/types";
 import { redisClient } from '../../config/redis.config';
 import { comparePassword, hashPassword } from "../../utils/bcrypt.utils";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../../utils/jwt.utils";
-import { AuthResponseDto, SignUpRequestDto, UserDto } from "../../dtos/auth.dto";
+import { AuthResponseDto, SignUpRequestDto, AuthUserDto } from "../../dtos/auth.dto";
 
 
 
@@ -37,7 +37,7 @@ export class AuthServices implements IAuthService {
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-            const safeUser: UserDto = {
+            const safeUser: AuthUserDto = {
                 userId: userData._id.toString(),
                 name: userData.name,
                 email: userData.email,
@@ -166,7 +166,7 @@ export class AuthServices implements IAuthService {
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-            const safeUser: UserDto = {
+            const safeUser: AuthUserDto = {
                 userId: userData._id.toString(),
                 name: userData.name,
                 email: userData.email,
@@ -315,13 +315,13 @@ export class AuthServices implements IAuthService {
 
 
 
-    async getAuthUser(userId: string): Promise<UserDto> {
+    async getAuthUser(userId: string): Promise<AuthUserDto> {
         try {
             const userData = await this._userRepository.findUserById(userId) as IUser | null;
 
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
-            const safeUser: UserDto = {
+            const safeUser: AuthUserDto = {
                 userId: userData._id.toString(),
                 name: userData.name,
                 email: userData.email,
@@ -338,34 +338,6 @@ export class AuthServices implements IAuthService {
     }
 
 
-
-
-    // async updateProfile(user: UserDto): Promise<string> {
-    //     try {
-    //         const userData = await this._userRepository.findUserByEmail(user.email) as IUser | null;
-    //         if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND)
-
-    //         // const hashedPassword = await hashPassword(user.password);
-
-    //         const RedisRegisterData = await redisClient.get(user.email);
-    //         if (RedisRegisterData) {
-    //             const parsedData = JSON.parse(RedisRegisterData);
-    //             console.log("Redis Data For Registration:", parsedData);
-    //         }
-
-
-    //         if (!response) {
-    //             throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
-    //         }
-
-    //         // return user email for verification step (/verify-account)
-    //         return user.email
-
-    //     } catch (error) {
-    //         console.error("Error in AuthServices.signUp:", error);
-    //         throw error;
-    //     }
-    // }
 
 
 

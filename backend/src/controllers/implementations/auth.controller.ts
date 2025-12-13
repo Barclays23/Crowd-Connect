@@ -5,8 +5,6 @@ import { IAuthService } from "../../services/interfaces/IAuthServices";
 import {IAuthController} from "../interfaces/IAuthController";
 import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
-import { verifyRefreshToken } from "../../utils/jwt.utils";
-import { redisClient } from "../../config/redis.config";
 import { createHttpError } from "../../utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
 import { SignInRequestDto } from "../../dtos/auth.dto";
@@ -156,7 +154,8 @@ export class AuthController implements IAuthController {
                 // reason for an HTTP-only cookie to be missing in this context is if 
                 // the browser auto-deleted it due to expiration.
                 // message: "Your session has ended. Please log in again to continue."
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
+                // throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
+                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
                 return;
             }
 
@@ -217,7 +216,7 @@ export class AuthController implements IAuthController {
 
     async getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = req.userId;
+            const userId = req.user?.userId;
             console.log('userId in authController.getAuthUser:', userId);
 
 

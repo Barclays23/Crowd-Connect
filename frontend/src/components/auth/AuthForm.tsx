@@ -73,7 +73,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto my-10 bg-auth-card shadow-lg border-auth-divider">
+    <Card className="w-full max-w-md mx-auto my-10 bg-[var(--card-bg)] shadow-lg">
       <CardHeader className="text-center pb-6">
         <CardTitle className="text-2xl font-bold text-foreground">
           {isRegister ? "Create Your Account" : "Welcome Back"}
@@ -98,7 +98,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
                 {...registerForm.register("name")}
                 type="text"
                 placeholder="Enter your full name"
-                className="h-11 bg-background border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus"
+                className="h-11 border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus"
               />
               <FieldError message={(errors as typeof registerForm.formState.errors).name?.message} />
             </div>
@@ -114,7 +114,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
               {...(isRegister ? registerForm.register("email") : loginForm.register("email"))}
               type="email"
               placeholder="Enter your email"
-              className="h-11 bg-background border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus"
+              className="h-11 border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus"
             />
             <FieldError message={errors.email?.message} />
           </div>
@@ -130,7 +130,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
                 {...(isRegister ? registerForm.register("password") : loginForm.register("password"))}
                 type={showPassword ? "text" : "password"}
                 placeholder={isRegister ? "Create a password" : "Enter your password"}
-                className="h-11 bg-background border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus pr-10"
+                className="h-11 border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus pr-10"
               />
               <Button
                 type="button"
@@ -161,7 +161,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
                   {...registerForm.register("confirmPassword")}
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
-                  className="h-11 bg-background border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus pr-10"
+                  className="h-11 border-auth-input focus:border-auth-input-focus focus:ring-auth-input-focus pr-10"
                 />
                 <Button
                   type="button"
