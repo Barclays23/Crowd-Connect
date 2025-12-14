@@ -40,9 +40,9 @@ const userSchema = new Schema<IUserModel>(
       default: false
     },
     role: {
-        type: String,
-        enum: ["user", "host", "admin"],
-        default: "user",
+      type: String,
+      enum: ["user", "host", "admin"],
+      default: "user",
     },
     status: {
       type: String,

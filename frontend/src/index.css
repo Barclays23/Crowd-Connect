@@ -33,7 +33,7 @@ body {
 
 /* ===== LIGHT MODE THEME ===== */
 :root {
-    /* Brand Colors */
+  /* Brand Colors */
   --brand-primary: #ff6b6b;           /* Coral Red */
   --brand-primary-hover: #e63946;     /* Darker Coral */
   --brand-primary-light: #fca5a5;     /* Light Coral */
@@ -44,6 +44,8 @@ body {
   --bg-tertiary: #f0f0f0;             /* Slightly Darker Gray */
   --bg-accent: #c6c6c6;               /* Very Light Indigo */
   --bg-overlay: rgba(82, 81, 81, 0.5);   /* Modal Overlay */
+  --bg-neutral: #4f4f4f30;
+  --bg-neutral-hover: #4f4f4f60;
 
 
   /* Text Colors */
@@ -61,6 +63,7 @@ body {
   /* Buttons */
   --btn-primary-bg: var(--brand-primary);
   --btn-primary-hover: var(--brand-primary-hover);
+  --btn-primary-light-hover: var(--brand-primary-light);
   --btn-primary-text: #ffffff;
   --btn-secondary-bg: #f3f4f6;
   --btn-secondary-hover: #e5e7eb;
@@ -68,6 +71,9 @@ body {
   --btn-ghost-bg: transparent;
   --btn-ghost-hover: var(--bg-accent);
   --btn-ghost-text: var(--brand-primary); /* coral red text */
+  --btn-neutral: var(--bg-neutral);
+  --btn-neutral-hover: var(--bg-neutral-hover);
+
 
 
   /* Cards */
@@ -165,10 +171,11 @@ body {
   
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-xs: 0 1px 3px rgb(0, 0, 0);
+  --shadow-sm: 0 4px 6px rgb(0, 0, 0);
+  --shadow-md: 0 10px 15px rgb(0, 0, 0);
+  --shadow-lg: 0 10px 25px -5px rgb(0, 0, 0);
+  --shadow-xl: 0 20px 40px -10px rgb(0, 0, 0);
   
 
   /* Forms & Inputs */
@@ -186,8 +193,8 @@ body {
 
   /* Modal */
   --modal-overlay: var(--bg-overlay);
-  --modal-bg: #ffffff;
-  --modal-content-bg: #ffffff;
+  --modal-bg: #f3f3f3;
+  --modal-content-bg: #e8e8e8;
   --modal-border: var(--border-muted);
   --modal-shadow: var(--shadow-lg);
 
@@ -217,13 +224,16 @@ body {
   --bg-tertiary: #374151;             /* Medium Gray */
   --bg-accent: #060e24;               /* Dark Indigo */
   --bg-overlay: rgba(0, 0, 0, 0.7);
-
+  --bg-neutral: #ffffff30;
+  --bg-neutral-hover: #ffffff60;
+  
   /* Text Colors */
-  --text-primary: #f9fafa;
+  --text-primary: #feffff;
   --text-secondary: #d0d0d0;
   --text-tertiary: #acacac;
   --text-inverse: #111111;
   --text-brand: var(--brand-primary);
+  --text-neutral: #313131;
 
   /* Navbar */
   --nav-bg: #00041dbd;  
@@ -232,6 +242,7 @@ body {
   --heading-primary: #f9fafb;
   --heading-secondary: #d1d5db;
   --heading-accent: var(--brand-primary);
+
 
   /* Buttons */
   --btn-primary-bg: var(--brand-primary);
@@ -243,7 +254,8 @@ body {
   --btn-ghost-bg: transparent;
   --btn-ghost-hover: var(--bg-tertiary);
   --btn-ghost-text: var(--brand-primary);
-
+  --btn-neutral: var(--bg-neutral);
+  --btn-neutral-hover: var(--bg-neutral-hover);
 
 
   /* Cards */
@@ -341,11 +353,15 @@ body {
   --border-focus: var(--brand-primary-light);
   --border-brand: var(--brand-primary);
   
+
+  
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+  --shadow-xs: 0 1px 3px rgba(255, 255, 255, 0.5);
+  --shadow-sm: 0 4px 6px rgba(255, 255, 255, 0.5);
+  --shadow-md: 0 10px 15px rgba(255, 255, 255, 0.5);
+  --shadow-lg: 0 10px 25px -5px rgba(255, 255, 255, 0.5);
+  --shadow-xl: 0 20px 40px -10px rgba(255, 255, 255, 0.5);
+
   
   /* Forms & Inputs */
   --form-bg: #1f2937;
@@ -361,8 +377,8 @@ body {
 
   /* Modal */
   --modal-overlay: var(--bg-overlay);
-  --modal-bg: #1f2937;
-  --modal-content-bg: #1f2937;
+  --modal-bg: #1b222d;
+  --modal-content-bg: #222b39;
   --modal-border: var(--border-muted);
   --modal-shadow: var(--shadow-lg);
 

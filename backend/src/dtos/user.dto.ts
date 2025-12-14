@@ -1,4 +1,4 @@
-// backend/src/dtos/auth.dto.ts
+// backend/src/dtos/user.dto.ts
 
 export type UserRole = 'user' | 'host' | 'admin';
 export type UserStatus = 'active' | 'blocked';
@@ -16,7 +16,7 @@ export interface UserDto {  // not included host details (organisationName, addr
   isEmailVerified: boolean;
   isMobileVerified: boolean;
   createdAt: string;                // ISO string
-  updatedAt: string;                // ISO string
+  // updatedAt: string;                // ISO string
 }
 
 
@@ -32,18 +32,19 @@ export interface HostDto extends UserDto {
 
 // query filters when fetching users
 export interface GetUsersFilter {
-    page: number;
-    limit: number;
-    search?: string;
-    role?: string;
-    status?: string;
+  page: number;
+  limit: number;
+  search?: string;
+  role?: string;
+  status?: string;
 }
+
 
 // result when fetching users
 export interface GetUsersResult {
-    users: UserDto[];
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
+  users: UserDto[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }

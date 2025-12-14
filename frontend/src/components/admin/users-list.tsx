@@ -20,22 +20,27 @@ import { cn } from "@/lib/utils";
 import { userServices } from "@/services/userServices";
 import { toast } from "react-toastify";
 import { AdminPagination } from "./admin-pagination";
+import { capitalize } from "@/utils/namingConventions";
+import { Modal } from "../ui/modal";
+import { ViewUserModal } from "./view-user-modal";
+import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
 
 
 interface User {  //  import from types / dto
   userId: string;
   name: string;
   email: string;
-  phone: string;
-  role: "Admin" | "Host" | "User";
-  status: "Active" | "Blocked" | "Pending";
+  mobile: string;
+  role: "admin" | "host" | "user";
+  status: "active" | "blocked" | "pending";
   joinDate: string;
-  avatar?: string;
+  profilePic?: string;
+  createdAt: string;
 }
 
 
 interface ApiResponse {
-  userData: User[];
+  usersData: User[];
   total: number;
   page: number;
   limit: number;
@@ -58,7 +63,9 @@ export function UsersList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const itemsPerPage = 1;
+  const [viewUser, setViewUser] = useState<User | null>(null);
+
+  const itemsPerPage = 10;
 
   // Debounced search
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -98,7 +105,7 @@ export function UsersList() {
 
     } catch (err: any) {
       console.error("Failed to fetch users:", err);
-      const errorMessage = err.response?.data?.message || err.response?.data?.error+'----' || "Something went wrong. Please try again in a moment.";
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || "Something went wrong. Please try again in a moment.";
 
       if (err.status != 401){
         setError(errorMessage);
@@ -128,20 +135,21 @@ export function UsersList() {
     setSelectedUsers([]);
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
+
   const getStatusBadgeVariant = (status: string): "default" | "success" | "destructive" | "secondary" | "outline" => {
     switch (status) {
-      case "Active": return "success";
-      case "Blocked": return "destructive";
-      case "Pending": return "outline";
+      case "active": return "success";
+      case "blocked": return "destructive";
+      case "pending": return "outline";
       default: return "secondary";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "Active": return <CheckCircle className="h-3.5 w-3.5" />;
-      case "Blocked": return <XCircle className="h-3.5 w-3.5" />;
-      case "Pending": return <Filter className="h-3.5 w-3.5" />;
+      case "active": return <CheckCircle className="h-3.5 w-3.5" />;
+      case "blocked": return <XCircle className="h-3.5 w-3.5" />;
+      case "pending": return <Filter className="h-3.5 w-3.5" />;
       default: return null;
     }
   };
@@ -161,12 +169,14 @@ export function UsersList() {
         : users.map(user => user.userId)
     );
   };
+  
 
   const roleVariant = {
-    Admin: "brand" as const,
-    Host: "primary" as const,
-    User: "neutral" as const,
+    admin: "brand" as const,
+    host: "primary" as const,
+    user: "neutral" as const,
   };
+
 
   return (
     <Card className="shadow-[var(--shadow-lg)] border border-[var(--border-default)] rounded-2xl overflow-hidden">
@@ -193,7 +203,7 @@ export function UsersList() {
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-tertiary)]" />
             <Input
-              placeholder="Search by name, email, phone, user ID..."
+              placeholder="Search by name, email, mobile..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-11 h-11 border-[var(--border-muted)] rounded-xl focus-visible:ring-2 focus-visible:ring-[var(--brand-primary-light)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
@@ -291,41 +301,44 @@ export function UsersList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 ring-2 ring-offset-0 ring-[var(--bg-primary)]">
-                          <AvatarImage src={user.avatar} alt={user.name} />
+                        <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-[var(--text-tertiary)] ring-offset-[var(--text-inverse)]">
+                          <AvatarImage src={user.profilePic} alt={user.name} />
                           <AvatarFallback className="bg-[var(--brand-primary-light)]/20 text-[var(--brand-primary)] font-medium text-sm">
                             {user.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium text-[var(--text-primary)]">{user.name}</span>
+                        <span className="font-medium text-[var(--text-primary)] whitespace-nowrap">{user.name}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-[var(--text-secondary)]">{user.email}</TableCell>
-                    <TableCell className="text-[var(--text-secondary)]">{user.phone}</TableCell>
+                    <TableCell className="text-[var(--text-secondary)]">{user.mobile}</TableCell>
                     <TableCell>
-                      <Badge variant={roleVariant[user.role]} className="rounded-lg font-medium">
-                        {user.role}
+                      <Badge variant={roleVariant[user.role.toLowerCase() as keyof typeof roleVariant]}
+                        size="sm"
+                        className="rounded-lg font-mono">
+                        {capitalize(user.role)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={getStatusBadgeVariant(user.status)}
-                        className="rounded-lg font-medium flex items-center gap-1.5 w-fit"
+                        size="sm"
+                        className="rounded-lg font-mono flex items-center gap-1 w-fit"
                       >
                         {getStatusIcon(user.status)}
-                        {user.status}
+                        {capitalize(user.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[var(--text-secondary)] text-sm">{user.joinDate}</TableCell>
+                    <TableCell className="text-[var(--text-secondary)] whitespace-nowrap">{formatDate2(user.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--bg-secondary)]">
+                        <Button onClick={() => setViewUser(user)} variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)]">
                           <Eye className="h-4 w-4 text-[var(--text-secondary)]" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--bg-secondary)]">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)]">
                           <Edit className="h-4 w-4 text-[var(--text-secondary)]" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--status-error-bg)] text-[var(--status-error)]">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)] text-[var(--status-error)]">
                           <Ban className="h-4 w-4" />
                         </Button>
                       </div>
@@ -347,6 +360,17 @@ export function UsersList() {
             onPageChange={setCurrentPage}
           />
         )}
+
+
+        {/* view user modal */}
+        <Modal
+          isOpen={!!viewUser}
+          onClose={() => setViewUser(null)}
+          title="User Profile"
+          size="md">
+          {viewUser && <ViewUserModal user={viewUser} />}
+        </Modal>
+
       </CardContent>
     </Card>
   );

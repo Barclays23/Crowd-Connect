@@ -1,4 +1,4 @@
-// shared/schemas/authSchema.ts
+// shared/schemas/auth.schema.ts (for login & register by user)
 import { z } from "zod";
 
 

@@ -42,7 +42,9 @@ export class AuthServices implements IAuthService {
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                mobile: userData?.mobile
+                mobile: userData?.mobile,
+                status: userData.status,
+                isEmailVerified: userData.isEmailVerified
             };
 
             return {
@@ -171,7 +173,9 @@ export class AuthServices implements IAuthService {
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                mobile: userData?.mobile
+                mobile: userData?.mobile,
+                status: userData.status,
+                isEmailVerified: userData.isEmailVerified
             };
 
             return {
@@ -326,7 +330,9 @@ export class AuthServices implements IAuthService {
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                mobile: userData?.mobile
+                mobile: userData?.mobile,
+                status: userData.status,
+                isEmailVerified: userData.isEmailVerified
             };
 
             return safeUser;

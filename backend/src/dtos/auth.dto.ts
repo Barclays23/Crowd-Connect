@@ -3,6 +3,8 @@
 
 export type UserRole = 'user' | 'host' | 'admin';
 
+export type UserStatus = 'active' | 'blocked';
+
 
 export interface SignUpRequestDto {
     name: string;
@@ -23,6 +25,8 @@ export interface AuthUserDto {
     email: string;
     role: UserRole;
     mobile?: string;
+    status: UserStatus;
+    isEmailVerified: boolean;
 }
 
 

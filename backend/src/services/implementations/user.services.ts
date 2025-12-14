@@ -15,7 +15,7 @@ export class UserServices implements IUserServices {
     // get all users (admin)
     async getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult> {
         try {
-            console.log('Query received in userServices.getAllUsers:', filters);
+            // console.log('Query received in userServices.getAllUsers:', filters);
             const { page, limit, search, role, status } = filters;
 
             // Build MongoDB query
@@ -54,7 +54,6 @@ export class UserServices implements IUserServices {
                 status: user.status,
                 profilePic: user?.profilePic,
                 createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt),
-                updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : String(user.updatedAt)
             }));
 
             

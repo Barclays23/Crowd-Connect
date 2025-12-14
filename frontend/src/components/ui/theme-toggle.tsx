@@ -13,7 +13,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-9 w-9 hover:text-[var(--brand-primary)] "
+      className="h-9 w-9"
     >
 
     {theme === "light" ? (

@@ -71,8 +71,8 @@ export function AdminSidebar() {
         <button
           onClick={toggleSidebar}
           className={`
-            absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2
-            p-1.5 rounded-full border shadow-[var(--shadow-md)]
+            absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 cursor-pointer
+            p-1.5 rounded-full border shadow-[var(--shadow-sm)]
             transition-all duration-200 z-10
             bg-[var(--bg-primary)] border-[var(--border-muted)] 
             text-[var(--text-secondary)]
