@@ -2,9 +2,6 @@
 
 import axiosInstance from "@/config/axios";
 import type { AxiosError } from "axios";
-// import toast from 'react-hot-toast';
-// import { toast } from "sonner";
-// import { toast } from 'react-toastify';
 
 
 
@@ -104,7 +101,6 @@ export const authService = {
 
     refreshTokenService: async () => {
         try {
-            console.log('refreshTokenService called........');
             const response = await axiosInstance.post("/api/auth/refresh-token", {}, { withCredentials: true });
             return response.data;
         } catch (error: unknown) {

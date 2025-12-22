@@ -3,7 +3,7 @@
 
 export type UserRole = 'user' | 'host' | 'admin';
 
-export type UserStatus = 'active' | 'blocked';
+export type UserStatus = 'active' | 'blocked' | 'pending';
 
 
 export interface SignUpRequestDto {
@@ -19,21 +19,25 @@ export interface SignInRequestDto {
 }
 
 
+// RESPONSE AUTH USER
 export interface AuthUserDto {
-    userId: string; // The public ID (e.g., MongoDB ObjectId converted to string)
+    userId: string;
     name: string;
     email: string;
     role: UserRole;
-    mobile?: string;
     status: UserStatus;
+    // mobile?: string;
+    profilePic?: string;
     isEmailVerified: boolean;
 }
 
 
 
+
+
+// API RESPONSE
 export interface AuthResponseDto {
-    verifiedUser: AuthUserDto;  // user
+    authUser: AuthUserDto;
     accessToken: string;
-    refreshToken: string;
-    // message: string;
+    message: string;
 }

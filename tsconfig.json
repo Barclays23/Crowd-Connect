@@ -1,0 +1,11 @@
+// tsconfig.json (root)
+{
+  "files": [],
+  "references": [
+    { "path": "shared" },
+    { "path": "frontend" },
+    { "path": "backend" },
+    // { "path": "frontend/tsconfig.app.json" },
+    // { "path": "backend/tsconfig.json" } 
+  ]
+}

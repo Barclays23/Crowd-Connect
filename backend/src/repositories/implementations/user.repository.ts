@@ -1,8 +1,9 @@
 // backend/src/repositories/implementations/user.repository.ts
-import { IUserLean } from "@shared/types";
-import User, { IUserModel } from "../../models/implementations/user.model";
+import User, { IUser, IUserModel } from "../../models/implementations/user.model";
 import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
+import { AuthUserCheckEntity, CreateUserEntity, SensitiveUserEntity, SignUpUserEntity, UserEntity } from "../../entities/user.entity";
+import { mapUserModelToUserEntity, mapUserModelToSensitiveUserEntity } from "../../mappers/user.mapper";
 
 
 
@@ -14,10 +15,13 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async createUser(user: IUserModel): Promise<IUserModel> {
+    // user registration (after verifying otp)
+    async createUser(user: SignUpUserEntity): Promise<UserEntity> {  // not (user: IUserModel)
         try {
-            const userData = await this.createOne(user);
-            return userData;
+            const userData: IUserModel = await this.createOne(user);
+            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
+            return userEntity;
+
         } catch (error) {
             console.log('error in createUser :', error);
             throw error;
@@ -25,10 +29,26 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async findUserByEmail(email: string): Promise<IUserModel | null> {
+    
+    async createUserByAdmin(user: CreateUserEntity): Promise<UserEntity> {
         try {
-            const userData = await this.findOne({email})
-            return userData;
+            const userData: IUserModel = await this.createOne(user);
+            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
+            return userEntity;
+
+        } catch (error) {
+            console.log('error in createUserByAdmin :', error);
+            throw error;
+        }
+    }
+
+
+    async findUserByEmail(email: string): Promise<UserEntity | null> {
+        try {
+            const userData: IUserModel | null = await this.findOne({email});
+            const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+            return result;
+            
         } catch (error) {
             console.log('error in findUserByEmail :', error);
             throw new Error("Error Finding User");
@@ -36,10 +56,11 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async findUserById(userId: string): Promise<IUserModel | null> {
+    async findUserById(userId: string): Promise<UserEntity | null> {
         try {
-            const userData = await this.findOne({_id: userId})
-            return userData;
+            const userData: IUserModel | null = await this.findById(userId);
+            const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
+            return result;
 
         } catch (error) {
             console.log('error in findUserById :', error);
@@ -48,9 +69,23 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async findUsers(query: any, skip: number, limit: number): Promise<IUserModel[]> {
+
+    async findAuthUser(email: AuthUserCheckEntity): Promise<SensitiveUserEntity | null> {
         try {
-            const paginatedUsers = await this.model.find(query)
+            const userData: IUserModel | null = await this.findOne(email);
+            const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+            return result;
+
+        } catch (error) {
+            console.log('error in findUserById :', error);
+            throw new Error("Error Finding User");
+        }
+    }
+
+
+    async findUsers(query: any, skip: number, limit: number): Promise<UserEntity[] | null> {
+        try {
+            const paginatedUsers: IUserModel[] = await this.model.find(query)
             .select('-password') // ← exclude password field
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -59,7 +94,8 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
             // console.log('✅  paginatedUsers :', paginatedUsers);
 
-            return paginatedUsers;
+            const result: UserEntity[] | null = paginatedUsers ? paginatedUsers.map(user => mapUserModelToUserEntity(user)) : null;
+            return result;
 
         } catch (error) {
             console.log('error in findUsers :', error);
@@ -71,7 +107,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
     async countUsers(query: any): Promise<number> {
         try {
-            const count = await this.countDocuments(query);
+            const count: number = await this.countDocuments(query);
             return count;
         } catch (error) {
             console.log('error in countUsers :', error);

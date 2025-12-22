@@ -2,32 +2,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/authServices';
-import type { IUser } from '@shared/types';
-// import { setAuthInterceptors } from '@/config/axios';
+import type { AuthUser, AuthState, AuthResponse } from '@/types/auth.types';
+import { setAuthInterceptors } from '@/config/axios';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
 import { toast } from 'react-toastify';
-
-
-import { setAuthInterceptors } from '@/config/axios';
-
-
-
-interface AuthState {
-    user: Partial<IUser> | null
-    accessToken: string | null
-    isAuthenticated: boolean
-    isLoading: boolean
-}
-
-
-
-interface AuthResponse {   // replace this AuthResponse with AuthResponseDTO ??
-  accessToken?: string;
-  user?: Partial<IUser>;
-  message?: string;
-  // add other fields your backend returns if any
-}
 
 
 
@@ -37,9 +16,8 @@ interface AuthContextType extends AuthState {
     register: (data: { name: string; email: string; password: string }) => Promise<any>;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<any>;
-    // refreshAccessToken: () => Promise<AuthResponse | null>;
-    setAccessToken: React.Dispatch<React.SetStateAction<string | null>>; 
-    setUser: React.Dispatch<React.SetStateAction<Partial<IUser> | null>>;
+    setAccessToken: React.Dispatch <React.SetStateAction <string | null>>; 
+    setUser: React.Dispatch <React.SetStateAction <AuthUser | null>>;
 }
 
 
@@ -57,7 +35,7 @@ export const useAuth = () => {
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<Partial<IUser> | null>(null);
+    const [user, setUser] = useState<AuthUser | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -162,10 +140,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const response = await authService.getAuthUser();
                 console.log('✅ response in validateSession:', response);
             
-                // SHOULD I NEED TO UPDATE THE USER DATA HERE AFTER GET AUTH USER?????
-                // Optional: update user if backend sends fresh data
                 if (isMounted) {
-                    setUser(response.user || user); // Update with fresh data
+                    setUser(response.authUser || user);
                     // setAccessToken(newAccessToken); // it is already setting in axios incepter (when token refreshes)
                 }
             
@@ -195,14 +171,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const login = async (credentials: { email: string; password: string }) => {
+    const login = async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
         try {
             const response = await authService.loginService(credentials);
             // console.log('response from authContext login:', response);
-            const { accessToken, user } = response;
+            const { accessToken, authUser } = response; 
 
             setAccessToken(accessToken);
-            setUser(user);
+            setUser(authUser);
             return response;
 
         } catch (err: any) {
@@ -254,32 +230,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
 
-
-
-
-
-
-
-    // Refresh Access Token Function (axios interceptor already does this) // NEED THIS CODE ANYMORE?
-    // const refreshAccessToken = async (): Promise<AuthResponse | null> => {
-    //     try {
-    //         const response = await authService.refreshTokenService(); // response is AuthResponse
-    //         console.log('response from authService.refreshTokenService:', response);
-    //         const { newAccessToken, updatedUser } = response;
-
-    //         setAccessToken(newAccessToken || null);
-    //         if (updatedUser) setUser(updatedUser);
-
-    //         console.log("Token refreshed successfully");
-    //         return response;
-
-    //     } catch (err: any) {
-    //         console.error("Refresh token failed or expired", err);
-    //         toast.error("Session expired. Please log in again...");
-    //         logout(); // Force logout if refresh fails
-    //         return null;
-    //     }
-    // };
 
 
 

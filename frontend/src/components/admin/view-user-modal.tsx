@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { formatDate1 } from "@/utils/dateAndTimeFormats";
-import { capitalize } from "@/utils/namingConventions";
+import { capitalize, getInitials } from "@/utils/namingConventions";
 
 
 interface ViewUserModalProps {
@@ -42,7 +42,7 @@ export function ViewUserModal({ user }: ViewUserModalProps) {
         <Avatar className="h-28 w-28 ring-4 ring-[var(--bg-primary)] ring-offset-4 ring-offset-[var(--modal-content-bg)]">
           <AvatarImage src={user.profilePic} alt={user.name} />
           <AvatarFallback className="bg-[var(--brand-primary-light)]/30 text-3xl font-bold text-[var(--brand-primary)]">
-            {user.name.split(' ').map(n => n[0].toUpperCase()).join('')}
+            {getInitials(user.name)}
           </AvatarFallback>
         </Avatar>
 

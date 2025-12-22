@@ -5,6 +5,7 @@ import { createHttpError } from '../utils/httpError.utils';
 import { HttpStatus } from '../constants/statusCodes';
 import { HttpResponse } from '../constants/responseMessages';
 import { UserRepository } from '../repositories/implementations/user.repository';
+import { UserEntity } from '../entities/user.entity';
 
 
 
@@ -47,7 +48,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
       // Fetch user from DB to ensure they still exist and are active
       const userRepo = new UserRepository();
-      const user = await userRepo.findUserById(decoded.userId);
+      const user: UserEntity | null = await userRepo.findUserById(decoded.userId);
 
       if (!user) {
          return res
@@ -63,7 +64,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       }
 
       req.user = {
-        userId: user._id,
+        userId: user.id,
         email: user.email,
         role: user.role,
         status: user.status

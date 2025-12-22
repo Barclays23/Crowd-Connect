@@ -15,12 +15,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { HamburgerTrigger, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "../ui/theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { getInitials } from "@/utils/namingConventions";
 
 
 
 
 
 export function AdminNavbar() {
+  const {user} = useAuth();
+
   return (
     <header className="w-full border-b border-[var(--border-default)] bg-[var(--card-bg)]/90 backdrop-blur supports-[backdrop-filter]:bg-[var(--card-bg)]/60">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
@@ -68,7 +72,7 @@ export function AdminNavbar() {
                 <Avatar className="h-9 w-9">
                   <AvatarImage src="/placeholder-avatar.jpg" alt="Admin" />
                   <AvatarFallback className="bg-[var(--brand-primary)] text-white font-semibold text-sm">
-                    AD
+                    {user ? getInitials(user.name ?? "") : "AD"}
                   </AvatarFallback>
                 </Avatar>
               </Button>

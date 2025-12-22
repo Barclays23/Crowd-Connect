@@ -21,11 +21,10 @@ function Registration() {
 
     try {
       setIsLoading(true);
-      const response = await register(formData); // authContext function
+      const response = await register(formData);
       console.log("response in handleRegistration:", response);
       toast.success(response.message);
       
-      // Only navigate on success
       navigate('/otp-verification', { 
         state: { 
           email: response?.email, 
@@ -33,14 +32,11 @@ function Registration() {
           successPath: '/' // navigate here after successful OTP verification
         } 
       });
+      
     } catch (err: any) {
       console.error("Error in handleRegistration:", err);
       const errorMessage = err.response?.data?.message || err.response?.data?.error || "Registration failed.";
       toast.error(errorMessage);
-      
-      // IMPORTANT: Throw the error so the form knows submission failed
-      // This prevents the form from being reset
-      // throw err;
 
     } finally {
       setIsLoading(false);

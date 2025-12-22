@@ -1,7 +1,7 @@
 // frontend/src/components/common/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import type { FC } from 'react';
+import { useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
 
 
@@ -16,6 +16,15 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
+
+  useEffect(() => {
+    if (!isLoading && requireAdmin && user?.role !== 'admin') {
+      toast.error('Access denied. Admins only.');
+    }
+  }, [isLoading, requireAdmin, user?.role]);
+
+
+
   // Loading Spinner or return null while checking auth status
   if (isLoading) {
     return (
@@ -25,13 +34,14 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
     );
   }
 
+
   if (!isAuthenticated) {
     // Redirect to home or login but save the current location they were trying to go to
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+
   if (requireAdmin && user?.role !== 'admin') {
-    toast.success('Access denied. Admins only.');
     return <Navigate to="/" replace />;
     // Or show a 403 page: <Navigate to="/unauthorized" />
   }

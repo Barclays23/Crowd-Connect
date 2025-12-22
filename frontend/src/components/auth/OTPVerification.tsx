@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { OtpSchema } from "@shared/schemas/otp.schema";
+import { OtpSchema } from "@/schemas/otp.schema";
 import { FieldError } from "../ui/FieldError";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -197,9 +197,9 @@ export function OTPVerification() {
             setLoading(true);
             const response = await authService.verifyOtpService({otpCode, email: userEmail!});
             console.log("response after OTP verification:", response);
-            const { accessToken, userData } = response;
+            const { accessToken, authUser } = response;
             setAccessToken(accessToken);
-            setUser(userData);
+            setUser(authUser);
             setValidationError(null);
 
             toast.success(response.message);

@@ -8,5 +8,4 @@ export interface IAuthController {
     refreshAccessToken(req: Request, res: Response, next: NextFunction): Promise<void>
     logout(req: Request, res: Response, next: NextFunction): Promise<void>
     getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void>
-    // editProfile(req: Request, res: Response, next: NextFunction): Promise<void>
 }

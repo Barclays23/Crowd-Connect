@@ -23,25 +23,32 @@ export abstract class BaseRepository<T extends Document> {
     constructor(protected model: Model<T>) {}
 
     async createOne(data: Partial<T>): Promise<T>{
-        const document = new this.model(data)
-        const savedDocument = document.save()
+        const document = new this.model(data);
+        const savedDocument = await document.save();
         return savedDocument;
     }
 
 
     async findOne(query: MongooseFilterQuery<T>): Promise<T | null>{
-        const findDocument = this.model.findOne(query);
+        const findDocument = await this.model.findOne(query);
+        return findDocument;
+    }
+
+
+    async findById(id: string): Promise<T | null>{
+        const findDocument = await this.model.findById(id);
         return findDocument;
     }
 
 
     async findMany(): Promise<T[]>{
-        const findDocuments = this.model.find();
+        const findDocuments = await this.model.find();
         return findDocuments;
     }
+ 
 
     async countDocuments(query: MongooseFilterQuery<T>): Promise<number> {
-        const count = this.model.countDocuments(query);
+        const count = await this.model.countDocuments(query);
         return count;
     }
 

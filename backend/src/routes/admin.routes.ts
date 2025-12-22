@@ -4,6 +4,8 @@ import { Router } from 'express';
 
 // Middlewares
 import { authenticate, authorize } from '../middlewares/auth.middleware';
+// import { uploadProfilePic } from '../middlewares/file-upload.middleware';
+import upload from '../middlewares/file-upload.middleware';
 
 
 // Repositories ─────────────────
@@ -81,6 +83,7 @@ adminRouter.use(authorize('admin'));
 
 // User management
 adminRouter.get('/users', userController.getAllUsers.bind(userController));
+adminRouter.put('/users/:id', upload.single("profileImage"), userController.editUserByAdmin.bind(userController));
 // adminRouter.patch('/users/:id/suspend', userController.suspendUser.bind(userController));
 // adminRouter.patch('/users/:id/unsuspend', userController.unsuspendUser.bind(userController));
 

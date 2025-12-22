@@ -6,6 +6,7 @@ import { IUserServices } from '../../services/interfaces/IUserServices';
 import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
 import { createHttpError } from '../../utils/httpError.utils';
+import { GetUsersResult } from '../../types/user.types';
 
 
 
@@ -35,8 +36,8 @@ export class UserController implements IUserController {
 
             console.log('✅ Parsed filters for admin getAllUsers:', filters);
 
-            const result = await this._userServices.getAllUsers(filters);
-            // console.log('✅ Result from userServices.getAllUsers:', result);
+            const result: GetUsersResult = await this._userServices.getAllUsers(filters);
+            // console.log('✅ Result in userController.getAllUsers:', result);
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -66,6 +67,43 @@ export class UserController implements IUserController {
             return;
         }
     
+    }
+
+
+
+    async editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            console.log('✅ params received in userController.editUserByAdmin:', req.params);
+            console.log('✅ body received in userController.editUserByAdmin:', req.body);
+            console.log('✅ file received in userController.editUserByAdmin:', req.file);
+            
+            const userId = req.params.id;
+            const formData = req.body;
+
+            // If profilePic is being uploaded as a file
+            if (req.file) {
+                formData.profilePic = req.file.path; // or however you handle file paths
+            }
+
+            // const updatedUser = await this._userServices.editUserByAdmin(userId, formData);
+            // res.status(HttpStatus.OK).json({
+            //     success: true,
+            //     message: HttpResponse.SUCCESS_UPDATE_USER,
+            //     user: updatedUser,
+            // });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in userController.editUserByAdmin:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
+            });
+            return;
+        }
     }
 
 

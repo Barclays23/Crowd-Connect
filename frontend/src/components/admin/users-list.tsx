@@ -20,13 +20,13 @@ import { cn } from "@/lib/utils";
 import { userServices } from "@/services/userServices";
 import { toast } from "react-toastify";
 import { AdminPagination } from "./admin-pagination";
-import { capitalize } from "@/utils/namingConventions";
+import { capitalize, getInitials } from "@/utils/namingConventions";
 import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
+import { UserManageForm } from "./user-manage-form";
 import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
 
-
-interface User {  //  import from types / dto
+interface User {
   userId: string;
   name: string;
   email: string;
@@ -38,7 +38,6 @@ interface User {  //  import from types / dto
   createdAt: string;
 }
 
-
 interface ApiResponse {
   usersData: User[];
   total: number;
@@ -48,7 +47,6 @@ interface ApiResponse {
 }
 
 export function UsersList() {
-
   // Filters & UI state
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -63,7 +61,10 @@ export function UsersList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Modal states
   const [viewUser, setViewUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -73,7 +74,7 @@ export function UsersList() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-      setCurrentPage(1); // Reset to first page on search
+      setCurrentPage(1);
     }, 500);
 
     return () => clearTimeout(timer);
@@ -96,7 +97,6 @@ export function UsersList() {
       const response = await userServices.getAllUsers(params.toString());
       console.log('response in fetchUsers: ', response);
 
-      // Adjust based on your actual API response structure
       const data: ApiResponse = response.data || response;
 
       setUsers(response.usersData);
@@ -117,24 +117,27 @@ export function UsersList() {
     }
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
-
-
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return; // Skip the first run (the duplicate from Strict Mode)
+      return;
     }
 
     fetchUsers();
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
-
 
   // Reset selection when page/filter changes
   useEffect(() => {
     setSelectedUsers([]);
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
+  // Handle modal success (create/update)
+  const handleFormSuccess = () => {
+    setIsCreateModalOpen(false);
+    setEditUser(null);
+    fetchUsers(); // Refresh the list
+  };
 
   const getStatusBadgeVariant = (status: string): "default" | "success" | "destructive" | "secondary" | "outline" => {
     switch (status) {
@@ -169,14 +172,12 @@ export function UsersList() {
         : users.map(user => user.userId)
     );
   };
-  
 
   const roleVariant = {
     admin: "brand" as const,
     host: "primary" as const,
     user: "neutral" as const,
   };
-
 
   return (
     <Card className="shadow-[var(--shadow-lg)] border border-[var(--border-default)] rounded-2xl overflow-hidden">
@@ -190,7 +191,9 @@ export function UsersList() {
               Manage all platform users ({totalUsers} total)
             </p>
           </div>
-          <Button className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-medium rounded-xl shadow-md transition-all">
+          <Button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white font-medium rounded-xl shadow-md transition-all">
             <UserPlus className="h-4 w-4 mr-2" />
             Add User
           </Button>
@@ -304,7 +307,7 @@ export function UsersList() {
                         <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-[var(--text-tertiary)] ring-offset-[var(--text-inverse)]">
                           <AvatarImage src={user.profilePic} alt={user.name} />
                           <AvatarFallback className="bg-[var(--brand-primary-light)]/20 text-[var(--brand-primary)] font-medium text-sm">
-                            {user.name.split(' ').map(n => n[0]).join('')}
+                            {getInitials(user.name ?? "")}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium text-[var(--text-primary)] whitespace-nowrap">{user.name}</span>
@@ -335,7 +338,11 @@ export function UsersList() {
                         <Button onClick={() => setViewUser(user)} variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)]">
                           <Eye className="h-4 w-4 text-[var(--text-secondary)]" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)]">
+                        <Button 
+                          onClick={() => setEditUser(user)}
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)]">
                           <Edit className="h-4 w-4 text-[var(--text-secondary)]" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral)] text-[var(--status-error)]">
@@ -361,14 +368,40 @@ export function UsersList() {
           />
         )}
 
-
-        {/* view user modal */}
+        {/* View User Modal */}
         <Modal
           isOpen={!!viewUser}
           onClose={() => setViewUser(null)}
           title="User Profile"
           size="md">
           {viewUser && <ViewUserModal user={viewUser} />}
+        </Modal>
+
+        {/* Create User Modal */}
+        <Modal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          title="Create New User"
+          size="lg">
+          <UserManageForm
+            onSuccess={handleFormSuccess}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
+        </Modal>
+
+        {/* Edit User Modal */}
+        <Modal
+          isOpen={!!editUser}
+          onClose={() => setEditUser(null)}
+          title="Edit User"
+          size="lg">
+          {editUser && (
+            <UserManageForm
+              user={editUser}
+              onSuccess={handleFormSuccess}
+              onCancel={() => setEditUser(null)}
+            />
+          )}
         </Modal>
 
       </CardContent>

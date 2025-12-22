@@ -1,6 +1,5 @@
 // src/services/implementations/auth.services.ts
 
-import User, { IUserModel } from "../../models/implementations/user.model";
 import { IUserRepository } from "../../repositories/interfaces/IUserRepository";
 import { IAuthService } from "../interfaces/IAuthServices";
 import { HttpStatus } from "../../constants/statusCodes";
@@ -9,11 +8,31 @@ import { createHttpError } from "../../utils/httpError.utils";
 import { generateOTP } from "../../utils/generateOTP.utils";
 import { sendEmail } from "../../utils/sendEmail.utils";
 import { renderTemplate } from "../../utils/templateLoader2";
-import { IUser } from "@shared/types";
 import { redisClient } from '../../config/redis.config';
 import { comparePassword, hashPassword } from "../../utils/bcrypt.utils";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../../utils/jwt.utils";
-import { AuthResponseDto, SignUpRequestDto, AuthUserDto } from "../../dtos/auth.dto";
+
+import { 
+    createAccessToken, 
+    createRefreshToken,
+    verifyRefreshToken 
+} from "../../utils/jwt.utils";
+
+import { 
+    SignUpRequestDto, 
+    AuthUserDto, 
+    SignInRequestDto,  
+} from "../../dtos/auth.dto";
+
+import { 
+    SignUpUserEntity, 
+    UserEntity, 
+    SensitiveUserEntity 
+} from "../../entities/user.entity";
+
+import { mapSignUpDtoToSignUpUserEntity, mapUserEntityToAuthUserDto } from "../../mappers/user.mapper";
+import { AuthResult } from "../../types/auth.types";
+import User from "src/models/implementations/user.model";
+
 
 
 
@@ -22,33 +41,37 @@ export class AuthServices implements IAuthService {
     constructor(private readonly _userRepository: IUserRepository) {}
 
 
-    async signIn(email: string, password: string): Promise<AuthResponseDto> {
+    async signIn(signInDto: SignInRequestDto): Promise<AuthResult> {
         try {
-            const userData = await this._userRepository.findUserByEmail(email) as IUser | null;
-           
-            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND)
+            const userData: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: signInDto.email});
 
-            const isMatch: boolean = await comparePassword(password, userData.password);
+            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
+            const isMatch: boolean = await comparePassword(signInDto.password, userData.password);
             if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
             
             // Now create tokens
-            const tokenPayload = { userId: userData._id.toString() }; // keep payload minimal
+            const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-            const safeUser: AuthUserDto = {
-                userId: userData._id.toString(),
-                name: userData.name,
-                email: userData.email,
-                role: userData.role,
-                mobile: userData?.mobile,
-                status: userData.status,
-                isEmailVerified: userData.isEmailVerified
-            };
+
+            const safeUser: AuthUserDto = mapUserEntityToAuthUserDto(userData);
+
+            // only result (AuthUser), not as dto (controller will map to dto)
+            // const safeUser2: AuthUserDto = {
+            //     userId: userData.id.toString(),
+            //     name: userData.name,
+            //     email: userData.email,
+            //     role: userData.role,
+            //     // mobile: userData?.mobile,
+            //     status: userData.status,
+            //     isEmailVerified: userData.isEmailVerified
+            // };
+
 
             return {
-                verifiedUser: safeUser, 
+                safeUser, 
                 accessToken, 
                 refreshToken
             };
@@ -61,19 +84,17 @@ export class AuthServices implements IAuthService {
 
 
 
-    async signUp(user: SignUpRequestDto): Promise<string> {
+    async signUp(signUpDto: SignUpRequestDto): Promise<string> {
         try {
-            const userData = await this._userRepository.findUserByEmail(user.email) as IUser | null;
-            if (userData) throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST)
-
-            // generate OTP
+            const existUser: UserEntity | null = await this._userRepository.findUserByEmail(signUpDto.email);
+            if (existUser) throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST)
+            
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP:', otpNumber);
 
-            // --- Dynamic HTML Template Loading ---
             const templateData = { 
                 // Keys here must match the placeholders in your HTML file (e.g., {{USER_NAME}}, {{OTP_CODE}}), {{EXPIRY_MINUTES}}
-                USER_NAME: user.name,
+                USER_NAME: signUpDto.name,
                 OTP_CODE: otpNumber,
                 EXPIRY_MINUTES: expiryMinutes 
             };
@@ -82,24 +103,24 @@ export class AuthServices implements IAuthService {
             const mailSubject = "Your OTP Verification Code";
             const text = `TEXT..... Your verification code is: ${otpNumber}. It is valid for ${expiryMinutes} minutes.`;
 
-            await sendEmail({ toAddress: user.email, mailSubject, text, htmlTemplate });
+            await sendEmail({ toAddress: signUpDto.email, mailSubject, text, htmlTemplate });
 
-            const hashedPassword = await hashPassword(user.password);
+            const hashedPassword = await hashPassword(signUpDto.password);
 
             // Prepare data to store in Redis
             const redisData = {
-                name: user.name,
-                email: user.email,
+                name: signUpDto.name,
+                email: signUpDto.email,
                 password: hashedPassword,
                 otp: otpNumber,
-                otpExpiry: expiryDate.getTime(), // Store expiryDate as a Unix timestamp (milliseconds)
+                otpExpiry: expiryDate.getTime(),
             };
 
             const REDIS_DATA_TTL_SECONDS = 30 * 60; // 30 minutes in seconds
 
             // store temp data in redis for expiryMinutes minutes
             const response = await redisClient.setEx(
-                user.email,  // key
+                signUpDto.email,  // key
                 REDIS_DATA_TTL_SECONDS,  // TTL expiry in seconds
                 JSON.stringify(redisData)  // values
             );
@@ -109,8 +130,11 @@ export class AuthServices implements IAuthService {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
             }
 
-            // return user email for verification step (/verify-account)
-            return user.email
+            // return user email for otp verification step (/verify-account)
+            return signUpDto.email;
+
+            // better to return object for future scalability
+            // return { email: signUpDto.email };
 
         } catch (error) {
             console.error("Error in AuthServices.signUp:", error);
@@ -120,9 +144,8 @@ export class AuthServices implements IAuthService {
 
 
 
-    async verifyOtp(email: string, otp: string): Promise<AuthResponseDto> {
+    async verifyOtp(email: string, otp: string): Promise<AuthResult> {
         try {
-            // Retrieve temp data (user & otp) from Redis
             const raw = await redisClient.get(email);
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
@@ -131,55 +154,60 @@ export class AuthServices implements IAuthService {
             const tempRedisData = JSON.parse(raw);
             console.log('✅✅✅ Retrieved user & OTP data from Redis:', tempRedisData);
 
-            // Check if OTP is expired
             if (Date.now() > tempRedisData.otpExpiry) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
             }
 
-            // Validate OTP
             if (tempRedisData.otp !== otp) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_INCORRECT);
             }
 
-            let userData: any;
-            // Check if user already exists in DB, if not, create new user (only used for registration flow)
-            userData = await this._userRepository.findUserByEmail(email);
+            
+            let userData: UserEntity | null = await this._userRepository.findUserByEmail(email);
+            
             if (!userData) {
-                console.log('✅✅✅ No existing user found in DB. Proceeding to create new user.');
+                // const userDoc = new User({
+                //     name: tempRedisData.name,
+                //     email: tempRedisData.email,
+                //     password: tempRedisData.password,  // already a hashed password
+                //     role: tempRedisData.role,
+                //     isEmailVerified: true
+                // });
 
-                // Create user account in DB
-                const userDoc = new User({
+                // userData = await this._userRepository.createUser(userDoc);
+
+                // dto from redis data
+                const dto: SignUpRequestDto = {
                     name: tempRedisData.name,
                     email: tempRedisData.email,
-                    password: tempRedisData.password,  // already a hashed password
-                    role: tempRedisData.role,
-                    isEmailVerified: true // Mark email as verified upon OTP verification
-                });
-                userData = await this._userRepository.createUser(userDoc);
-            }
+                    password: tempRedisData.password
+                };
 
+                const signUpEntity: SignUpUserEntity = mapSignUpDtoToSignUpUserEntity(dto);
+                userData = await this._userRepository.createUser(signUpEntity);
+            }
 
             // Delete temp data from Redis
             await redisClient.del(email);
-            console.log('✅ Deleted temp data from Redis for email:', email);
 
-            // Now create tokens
-            const tokenPayload = { userId: userData._id.toString() }; // keep payload minimal
+            const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
+
+
             const safeUser: AuthUserDto = {
-                userId: userData._id.toString(),
+                userId: userData.id.toString(),
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                mobile: userData?.mobile,
+                // mobile: userData?.mobile,
                 status: userData.status,
                 isEmailVerified: userData.isEmailVerified
             };
 
             return {
-                verifiedUser: safeUser, 
+                safeUser, 
                 accessToken, 
                 refreshToken
             };
@@ -195,7 +223,7 @@ export class AuthServices implements IAuthService {
 
     async resendOtp(email: string): Promise<string> {
         try {
-            // Retrieve temp data from Redis.
+
             const raw = await redisClient.get(email);
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
@@ -204,7 +232,6 @@ export class AuthServices implements IAuthService {
             console.log('✅ Retrieved user data for resending OTP:', tempRedisData);
     
 
-            // generate new OTP
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP (Resent):', otpNumber);
 
@@ -246,7 +273,7 @@ export class AuthServices implements IAuthService {
 
     async refreshAccessToken(refreshToken: string): Promise<string> {
         try {
-            console.log('refreshToken received in AuthServices.refreshAccessToken:', refreshToken);
+            // console.log('refreshToken received in AuthServices.refreshAccessToken:', refreshToken);
 
             if (!refreshToken) {
                 console.log('refresh token is expired or missing in parameter.');
@@ -254,29 +281,34 @@ export class AuthServices implements IAuthService {
                 throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
             }
             
-            // Verify refresh token and extract payload
             const decoded = verifyRefreshToken(refreshToken);
-            console.log('Decoded refreshToken AuthServices.refreshAccessToken:', decoded);
+            // console.log('Decoded refreshToken AuthServices.refreshAccessToken:', decoded);
 
             if (!decoded || !decoded.userId || !decoded.jti) {
-                console.error('Decoded refresh token expired or is missing required fields:', decoded);
+                console.error('Decoded refreshToken expired or is missing required fields:', decoded);
                 throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_INVALID_OR_EXPIRED);
             }
 
-            // ⚠️ CRITICAL STEP: Check the blacklist (e.g., in Redis)
-            // If the JTI exists in the store, it means the token was logged out/revoked.
+            // Check the blacklist. If the JTI exists in the store, it means the token was logged out/revoked.
             const isBlacklisted = await redisClient.get(decoded.jti);
             if (isBlacklisted) {
-                // This token was revoked by a user logout. It is invalid.
                 throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_REVOKED);
             }
 
             // Create new access token
             const tokenPayload = { userId: decoded.userId.toString() }; // keep payload minimal
-            const newAccessToken = createAccessToken(tokenPayload);
-            // you can create new refreshToken if wanted to rotate refresh tokens & set it cookies (from controller)
+            const newAccessToken: string = createAccessToken(tokenPayload);
+            // you can create new refreshToken if wanted to rotate refresh tokens & set it cookies
             // const newRefreshToken = createRefreshToken({ userId: decoded.userId });
+
+            console.log('✅ new accessToken generated');
             return newAccessToken;
+
+            // better to return object for future scalability
+            // return {
+            //     newAccessToken
+            // };
+
 
         } catch (error) {
             console.error("Error in AuthServices.refreshAccessToken:", error);
@@ -289,18 +321,15 @@ export class AuthServices implements IAuthService {
 
     async revokeRefreshToken(refreshToken: string): Promise<void> {
         try {
-            // Add logic to revoke the refresh token, e.g., add it to a blacklist in Redis
             const decoded = verifyRefreshToken(refreshToken);
 
             if (!decoded || !decoded.jti) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload.");
             }
 
-
-            // Save the JTI to the blacklist/Redis
-            // Save the JTI to the blacklist/Redis with the calculated remaining TTL (in seconds)
+            // Save the JTI to the blacklist/Redis with remaining TTL (in seconds)
             if (typeof decoded.exp === "number") {
-                const timeToLive = decoded.exp - Math.floor(Date.now() / 1000); // remaining timeToLive in seconds
+                const timeToLive = decoded.exp - Math.floor(Date.now() / 1000);
                 if (timeToLive > 0) {
                     await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
                     console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
@@ -321,16 +350,16 @@ export class AuthServices implements IAuthService {
 
     async getAuthUser(userId: string): Promise<AuthUserDto> {
         try {
-            const userData = await this._userRepository.findUserById(userId) as IUser | null;
+            const userData: UserEntity | null = await this._userRepository.findUserById(userId);
 
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
             const safeUser: AuthUserDto = {
-                userId: userData._id.toString(),
+                userId: userData.id.toString(),
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                mobile: userData?.mobile,
+                // mobile: userData?.mobile,
                 status: userData.status,
                 isEmailVerified: userData.isEmailVerified
             };

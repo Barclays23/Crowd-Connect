@@ -1,27 +1,27 @@
 // backend/src/dtos/user.dto.ts
 
 export type UserRole = 'user' | 'host' | 'admin';
-export type UserStatus = 'active' | 'blocked';
+export type UserStatus = 'active' | 'blocked' | 'pending';
 
 
 
-export interface UserDto {  // not included host details (organisationName, address, certificates etc)
-  userId: string;   // The public ID (e.g., MongoDB ObjectId converted to string)
+export interface UserProfileDto {  // not included host details (organisationName, address, certificates etc)
+  userId: string;
   name: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
   mobile?: string | null;
   profilePic?: string | null;
-  status: UserStatus;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
-  createdAt: string;                // ISO string
-  // updatedAt: string;                // ISO string
+  createdAt: string | null;
 }
 
 
-export interface HostDto extends UserDto {
-  // Host-specific fields (only present if role === 'host')
+
+// if role === 'host'
+export interface HostDto extends UserProfileDto {
   organizationName?: string | null;
   registrationNumber?: string | null;
   businessAddress?: string | null;
@@ -30,21 +30,16 @@ export interface HostDto extends UserDto {
 
 
 
-// query filters when fetching users
-export interface GetUsersFilter {
-  page: number;
-  limit: number;
-  search?: string;
-  role?: string;
-  status?: string;
-}
 
 
-// result when fetching users
-export interface GetUsersResult {
-  users: UserDto[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+
+// for creating a new user (admin creating user)
+export interface CreateUserDTO {
+  name: string;
+  email: string;
+  // password: string;   // password will be generated and sent via email
+  role: UserRole;
+  status: "active" | "blocked" | "pending";  // UserStatus
+  mobile?: string;
+  profilePic?: string;
 }

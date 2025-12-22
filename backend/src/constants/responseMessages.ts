@@ -47,6 +47,7 @@ export enum HttpResponse {
     USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
 
     FAILED_GET_USERS = "Failed to fetch users.",
+    FAILED_UPDATE_USER = "Failed to update user.",
 
     SUCCESS_GET_USERS = "Users fetched successfully.",
 }

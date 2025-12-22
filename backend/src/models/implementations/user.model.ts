@@ -1,12 +1,36 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema, Document, Types } from "mongoose";
-import { hashPassword } from "../../utils/bcrypt.utils";
-import { IUser } from "@shared/types";  // shared/types/index.ts
+// import { IUser } from "@shared/types";  // shared/types/index.ts
 
+
+
+export interface IUser {
+  _id: Types.ObjectId | string;
+  name : string;
+  email : string;
+  mobile : string;
+  password : string;
+  profilePic? : string;
+  isEmailVerified : boolean;
+  isMobileVerified : boolean;
+  role: 'user' | 'host' | 'admin';
+  status : "active" | "blocked" | "pending";    // ("pending" if admin creates user and verify later)
+  organizationName? : string;       // if user upgraded to host
+  registrationNumber? : string;     // if user upgraded to host
+  businessAddress? : string;        // if user upgraded to host
+  certificate? : string;            // if user upgraded to host
+  createdAt : Date;
+  updatedAt : Date;
+}
 
 
 export interface IUserModel extends Document, Omit<IUser, "_id"> { }
+
+
+
+
+
 
 const userSchema = new Schema<IUserModel>(
   {
@@ -46,8 +70,8 @@ const userSchema = new Schema<IUserModel>(
     },
     status: {
       type: String,
-      enum: ["active", "blocked"],
-      default: "active",
+      enum: ["active", "blocked", "pending"],
+      default: "pending",
     },
     organizationName: {
       type: String,
@@ -75,13 +99,6 @@ userSchema.index(
 );
 
 
-// pre save the hashed password before saving the document in DB.
-// userSchema.pre<IUserModel>("save", async function (next) {
-//   if (this.isModified("password")) {
-//     this.password = await hashPassword(this.password)
-//   }
-//   next()
-// })
 
 
 const User = model<IUserModel>("User", userSchema);

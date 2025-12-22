@@ -71,7 +71,7 @@ function verifyAccessToken(token: string): AccessTokenPayload {
 function verifyRefreshToken(token: string): RefreshTokenPayload {
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET) as RefreshTokenPayload;
-    console.log('Decoded refresh token payload in verifyRefreshToken:', decoded);
+    // console.log('Decoded refreshToken payload in verifyRefreshToken:', decoded);
     return decoded;
 
   } catch (err) {

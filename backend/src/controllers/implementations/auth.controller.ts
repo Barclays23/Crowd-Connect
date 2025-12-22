@@ -7,7 +7,7 @@ import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
 import { createHttpError } from "../../utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
-import { SignInRequestDto } from "../../dtos/auth.dto";
+import { AuthResponseDto, AuthUserDto, SignInRequestDto } from "../../dtos/auth.dto";
 
 
 
@@ -18,19 +18,22 @@ export class AuthController implements IAuthController {
 
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { email, password } = req.body as SignInRequestDto;
+            console.log('email and password in authController.signIn:', req.body);
+            const signInDto: SignInRequestDto = req.body;
 
-            const { verifiedUser, accessToken, refreshToken } = await this._authService.signIn(email, password);
-            // console.log('user in authController.signIn:', verifiedUser);
+            const { safeUser, accessToken, refreshToken } = await this._authService.signIn(signInDto);
+            // console.log('user in authController.signIn:', safeUser);
 
-            // Set refresh token in HTTP-Only cookie
             setRefreshTokenCookie(res, refreshToken);
 
-            res.status(HttpStatus.OK).json({
+            const authResponse: AuthResponseDto = {
+                authUser: safeUser,
+                accessToken: accessToken,
                 message: `${HttpResponse.LOGIN_SUCCESS}`,
-                user: verifiedUser,  // already safe user data from services
-                accessToken
-            });
+            };
+
+            res.status(HttpStatus.OK).json(authResponse);
+
 
         } catch (err: any) {
             // throw new Error(`Internal server error! \n Failed to login`);
@@ -95,16 +98,17 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const { verifiedUser, accessToken, refreshToken } = await this._authService.verifyOtp(email, otpCode);
+            const { safeUser, accessToken, refreshToken } = await this._authService.verifyOtp(email, otpCode);
 
-            // Set refresh token in HTTP-Only cookie
             setRefreshTokenCookie(res, refreshToken);
 
-            res.status(HttpStatus.CREATED).json({
+            const authResponse: AuthResponseDto = {
+                authUser: safeUser,
+                accessToken: accessToken,
                 message: HttpResponse.OTP_VERIFICATION_SUCCESS + ' ' + HttpResponse.USER_CREATION_SUCCESS,
-                userData : verifiedUser,  // already safe user data from services
-                accessToken
-            });
+            };
+
+            res.status(HttpStatus.CREATED).json(authResponse);
 
         } catch (err: any) {
             console.error('Error in AuthController.verifyOtp:', err);
@@ -227,11 +231,11 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const userData = await this._authService.getAuthUser(userId);
+            const userData: AuthUserDto = await this._authService.getAuthUser(userId);
 
             res.status(HttpStatus.OK).json({
                 // message: HttpResponse.AUTH_USER_FETCHED,
-                user: userData
+                authUser: userData
             });
             
         } catch (err: any) {

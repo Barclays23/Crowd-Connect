@@ -1,13 +1,26 @@
 // backend/src/routes/auth.routes.ts
+// import { Router } from 'express';
+// import { validateRequest } from '../middlewares/validate.middleware';
+// // import { RegisterSchema } from '@shared/schemas/authSchema';
+// import { LoginSchema, RegisterSchema } from '../../../shared/schemas/auth.schema';
+// import { OtpSchema } from '../../../shared/schemas/otp.schema';
+// import { UserRepository } from '../repositories/implementations/user.repository';
+// import { AuthServices } from '../services/implementations/auth.services';
+// import { AuthController } from '../controllers/implementations/auth.controller';
+// import { authenticate } from '../middlewares/auth.middleware';
+// import { LoginSchema, RegisterSchema } from '../../shared/schemas/auth.schema';
+// import { OtpSchema } from '@shared/schemas/otp.schema';
+
+
+
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validate.middleware';
-// import { RegisterSchema } from '@shared/schemas/authSchema';
-import { LoginSchema, RegisterSchema } from '../../../shared/schemas/auth.schema';
-import { OtpSchema } from '../../../shared/schemas/otp.schema';
+import { authenticate } from '../middlewares/auth.middleware';
+import { LoginSchema, RegisterSchema } from '../schemas/auth.schema';
+import { OtpSchema } from '../schemas/otp.schema';
 import { UserRepository } from '../repositories/implementations/user.repository';
 import { AuthServices } from '../services/implementations/auth.services';
 import { AuthController } from '../controllers/implementations/auth.controller';
-import { authenticate } from '../middlewares/auth.middleware';
 
 
 

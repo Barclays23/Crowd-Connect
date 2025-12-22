@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { FieldError } from "@/components/ui/FieldError";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import { LoginSchema, RegisterSchema } from "@shared/schemas/auth.schema";
+import { LoginSchema, RegisterSchema } from "@/schemas/auth.schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
