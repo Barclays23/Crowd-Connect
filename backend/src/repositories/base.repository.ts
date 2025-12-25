@@ -40,6 +40,20 @@ export abstract class BaseRepository<T extends Document> {
         return findDocument;
     }
 
+    async findByIdAndUpdate(updateId: string, updateData: Partial<T>): Promise<T | null>{
+        const updatedDocument = await this.model.findByIdAndUpdate(
+            updateId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        return updatedDocument;
+    }
+
+//                 await User.updateOne(
+//   { _id: userId },
+//   { $set: updateEntity }
+// );
+
 
     async findMany(): Promise<T[]>{
         const findDocuments = await this.model.find();

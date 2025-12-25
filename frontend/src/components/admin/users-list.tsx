@@ -133,10 +133,15 @@ export function UsersList() {
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
   // Handle modal success (create/update)
-  const handleFormSuccess = () => {
+  const handleFormSuccess = (updatedUser?: User) => {
     setIsCreateModalOpen(false);
     setEditUser(null);
-    fetchUsers(); // Refresh the list
+
+    if (updatedUser && updatedUser.userId) {
+      setUsers(prev => prev.map(u => u.userId === updatedUser.userId ? { ...u, ...updatedUser } : u));
+    }
+
+    fetchUsers();
   };
 
   const getStatusBadgeVariant = (status: string): "default" | "success" | "destructive" | "secondary" | "outline" => {

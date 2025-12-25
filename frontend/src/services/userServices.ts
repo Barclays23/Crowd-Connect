@@ -72,12 +72,9 @@ export const userServices = {
 
 
 
+    // edit user by admin
     editUserService: async (userId: string, formData: FormData) => {
         try {
-            console.log('userId and formData received in editUserService :', userId, formData);
-            // Ensure the request is sent as multipart/form-data so the backend multer middleware
-            // can parse the file. We set the Content-Type header here so axios/browser adds the
-            // proper boundary. Do not stringify or transform the FormData.
             const response = await axiosInstance.put(`/api/admin/users/${userId}`, formData, {
                 withCredentials: true,
                 headers: {
@@ -86,6 +83,24 @@ export const userServices = {
             });
             return response.data;
 
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    // create user by admin
+    createUserService: async (formData: FormData) => {
+        try {
+            console.log('formData received in createUserService :', formData);
+            const response = await axiosInstance.post(`/api/admin/users`, formData, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
         } catch (error: unknown) {
             const err = error as AxiosError<{ error: string }>;
             throw err;

@@ -2,7 +2,7 @@
 import User, { IUser, IUserModel } from "../../models/implementations/user.model";
 import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
-import { AuthUserCheckEntity, CreateUserEntity, SensitiveUserEntity, SignUpUserEntity, UserEntity } from "../../entities/user.entity";
+import { AuthUserCheckEntity, CreateUserEntity, SensitiveUserEntity, SignUpUserEntity, UpdateUserEntity, UserEntity } from "../../entities/user.entity";
 import { mapUserModelToUserEntity, mapUserModelToSensitiveUserEntity } from "../../mappers/user.mapper";
 
 
@@ -30,14 +30,34 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
 
     
-    async createUserByAdmin(user: CreateUserEntity): Promise<UserEntity> {
+    async createUserByAdmin(userEntity: CreateUserEntity): Promise<UserEntity> {
         try {
-            const userData: IUserModel = await this.createOne(user);
-            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
-            return userEntity;
+            const userData: IUserModel = await this.createOne(userEntity);
+            const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
+            return resultEntity;
 
         } catch (error) {
             console.log('error in createUserByAdmin :', error);
+            throw error;
+        }
+    }
+
+
+    async updateUserByAdmin(userId: string, userEntity: UpdateUserEntity): Promise<UserEntity> {
+        try {
+            // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
+            // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
+
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
+            // console.log('✅ resultEntity in userRepository.updateUserByAdmin:', resultEntity);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateUserByAdmin :', error);
             throw error;
         }
     }
@@ -51,6 +71,18 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             
         } catch (error) {
             console.log('error in findUserByEmail :', error);
+            throw new Error("Error Finding User");
+        }
+    }
+
+    async findUserByMobile(mobile: string): Promise<UserEntity | null> {
+        try {
+            const userData: IUserModel | null = await this.findOne({mobile});
+            const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+            return result;
+            
+        } catch (error) {
+            console.log('error in findUserByMobile :', error);
             throw new Error("Error Finding User");
         }
     }
@@ -86,7 +118,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     async findUsers(query: any, skip: number, limit: number): Promise<UserEntity[] | null> {
         try {
             const paginatedUsers: IUserModel[] = await this.model.find(query)
-            .select('-password') // ← exclude password field
+            .select('-password')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)

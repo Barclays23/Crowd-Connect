@@ -7,6 +7,7 @@ import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
 import { createHttpError } from '../../utils/httpError.utils';
 import { GetUsersResult } from '../../types/user.types';
+import { CreateUserDTO, UpdateUserDTO, UserProfileDto } from '../../dtos/user.dto';
 
 
 
@@ -71,26 +72,63 @@ export class UserController implements IUserController {
 
 
 
+    async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            console.log('✅ body received in userController.createUserByAdmin:', req.body);
+            console.log('✅ file received in userController.createUserByAdmin:', req.file);
+            const createDto: CreateUserDTO = req.body;
+            const imageFile: Express.Multer.File | undefined = req.file;
+
+            const createdUser: UserProfileDto = await this._userServices.createUserByAdmin({
+                createDto, 
+                imageFile
+            });
+
+            res.status(HttpStatus.CREATED).json({
+                success: true,
+                message: HttpResponse.SUCCESS_CREATE_USER,
+                userData: createdUser,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in userController.createUserByAdmin:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_CREATE_USER}`
+            });
+            return;
+        }
+    }
+
+
+
     async editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            console.log('✅ params received in userController.editUserByAdmin:', req.params);
-            console.log('✅ body received in userController.editUserByAdmin:', req.body);
-            console.log('✅ file received in userController.editUserByAdmin:', req.file);
+            // console.log('✅ params received in userController.editUserByAdmin:', req.params);
+            // console.log('✅ body received in userController.editUserByAdmin:', req.body);
+            // console.log('✅ file received in userController.editUserByAdmin:', req.file);
+
+            const userId: string = req.params.id;
+            const updateDto: UpdateUserDTO = req.body;
+            const imageFile: Express.Multer.File | undefined = req.file;
+
+            const updatedUser: UserProfileDto = await this._userServices.editUserByAdmin({
+                userId, 
+                updateDto, 
+                imageFile
+            });
+
+            // console.log('✅ updatedUser in userController.editUserByAdmin:', updatedUser);
             
-            const userId = req.params.id;
-            const formData = req.body;
-
-            // If profilePic is being uploaded as a file
-            if (req.file) {
-                formData.profilePic = req.file.path; // or however you handle file paths
-            }
-
-            // const updatedUser = await this._userServices.editUserByAdmin(userId, formData);
-            // res.status(HttpStatus.OK).json({
-            //     success: true,
-            //     message: HttpResponse.SUCCESS_UPDATE_USER,
-            //     user: updatedUser,
-            // });
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.SUCCESS_UPDATE_USER,
+                userData: updatedUser,
+            });
 
         } catch (err: any) {
             next(err);
@@ -100,7 +138,7 @@ export class UserController implements IUserController {
                 return;
             }
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_UPDATE_USER}`
             });
             return;
         }

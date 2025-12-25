@@ -17,9 +17,9 @@ interface ApiResponse<T = any> {
 const axiosInstance: AxiosInstance = axios.create({
    baseURL: import.meta.env.VITE_API_BASE_URL,
    withCredentials: true,
-   headers: {
-      "Content-Type": "application/json",
-   },
+   // headers: {
+   //    "Content-Type": "application/json",
+   // },
 });
 
 
@@ -100,9 +100,18 @@ axiosInstance.interceptors.response.use(
       console.error(`❌ error in axiosInstance.interceptors.response:)`, error.response?.data || error.message);
       
       // Define endpoints that should NOT trigger token refresh
-      const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh-token'];
-      const isExcludedEndpoint = excludedEndpoints.some(endpoint => 
-         originalRequest?.url?.includes(endpoint)
+      // const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh-token'];
+      // const isExcludedEndpoint = excludedEndpoints.some(endpoint => 
+      //    originalRequest?.url?.includes(endpoint)
+      // );
+
+      // Define endpoints that should NOT trigger token refresh
+      const isExcluded = [
+         '/api/auth/login',
+         '/api/auth/register',
+         '/api/auth/refresh-token'
+      ].some(endpoint => 
+         originalRequest?.url?.startsWith(endpoint) || originalRequest?.url?.includes(endpoint)
       );
 
       // Check for 401, a defined config, and that it hasn't been retried yet
@@ -111,7 +120,8 @@ axiosInstance.interceptors.response.use(
          error.response?.status === 401 && 
          originalRequest && 
          !originalRequest.__isRetry &&
-         !isExcludedEndpoint
+         // !isExcludedEndpoint
+         !isExcluded
       ) {
 
          originalRequest.__isRetry = true; // Mark as retried to prevent infinite loop
@@ -154,6 +164,8 @@ axiosInstance.interceptors.response.use(
             localStorage.setItem("accessToken", newAccessToken);
             // console.log('localStorage accessToken after:', localStorage.getItem("accessToken"));
 
+            console.log(`Token refreshed successfully → retrying original request: ${originalRequest?.url}`);
+            
             // Retry all queued requests with the new token
             processQueue(null, newAccessToken);
 

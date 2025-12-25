@@ -84,6 +84,7 @@ adminRouter.use(authorize('admin'));
 // User management
 adminRouter.get('/users', userController.getAllUsers.bind(userController));
 adminRouter.put('/users/:id', upload.single("profileImage"), userController.editUserByAdmin.bind(userController));
+adminRouter.post('/users', upload.single("profileImage"), userController.createUserByAdmin.bind(userController));
 // adminRouter.patch('/users/:id/suspend', userController.suspendUser.bind(userController));
 // adminRouter.patch('/users/:id/unsuspend', userController.unsuspendUser.bind(userController));
 

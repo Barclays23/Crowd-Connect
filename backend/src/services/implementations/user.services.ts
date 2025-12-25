@@ -4,15 +4,25 @@ import { IUserServices } from "../interfaces/IUserServices";
 import { UserRepository } from "../../repositories/implementations/user.repository";
 import { 
     CreateUserDTO, 
+    UpdateUserDTO, 
     UserProfileDto
 } from "../../dtos/user.dto";
 
 import { createHttpError } from "../../utils/httpError.utils";
 import User, { IUser, IUserModel } from "../../models/implementations/user.model";
 import { hashPassword } from "../../utils/bcrypt.utils";
-import { mapCreateUserDTOToEntity } from "../../mappers/user.mapper";
-import { CreateUserEntity, UserEntity } from "src/entities/user.entity";
+
+import { 
+    mapCreateUserDTOToEntity, 
+    mapUpdateUserDTOToEntity, 
+    mapUserEntityToUserProfileDto 
+} from "../../mappers/user.mapper";
+
+import { CreateUserEntity, UpdateUserEntity, UserEntity } from "../../entities/user.entity";
 import { GetUsersFilter, GetUsersResult } from "../../types/user.types";
+import { uploadToCloudinary } from "../../config/cloudinary";
+import { HttpResponse } from "../../constants/responseMessages";
+import { HttpStatus } from "../../constants/statusCodes";
 
 
 
@@ -41,30 +51,13 @@ export class UserServices implements IUserServices {
 
             const skip = (page - 1) * limit;
 
-            // Get total count and paginated users in parallel
             const [users, totalCount]: [UserEntity[] | null, number] = await Promise.all([
                 this._userRepository.findUsers(query, skip, limit),
                 this._userRepository.countUsers(query)
             ]);
 
+            const mappedUsers: UserProfileDto[] = users ? users.map(mapUserEntityToUserProfileDto) : [];
 
-            // console.log('✅  Users fetched from DB in userServices.getAllUsers:', users.length);
-            // console.log('✅  Total users count in userServices.getAllUsers:', totalCount);
-
-            const mappedUsers: UserProfileDto[] | null = users ? users.map(user => ({
-                userId: String(user.id),
-                name: user.name,
-                email: user.email,
-                mobile: user?.mobile,
-                role: user.role,
-                isEmailVerified: user.isEmailVerified,
-                isMobileVerified: user.isMobileVerified,
-                status: user.status,
-                profilePic: user?.profilePic,
-                createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt),
-            })) : null;
-
-            
             return {
                 users: mappedUsers, // not included host details (organisationName, address, certificates etc)
                 page,
@@ -82,32 +75,105 @@ export class UserServices implements IUserServices {
 
 
 
-    async createUserByAdmin(userDto: CreateUserDTO): Promise<string> {
+    async createUserByAdmin({createDto, imageFile}: {
+        createDto: CreateUserDTO, 
+        imageFile?: Express.Multer.File
+    }): Promise<UserProfileDto> {
         try {
-            const existingUser = await this._userRepository.findUserByEmail(userDto.email);
-            if (existingUser) {
-                throw createHttpError(400, 'User with this email already exists.');
+            const existingEmailUser: UserEntity | null = await this._userRepository.findUserByEmail(createDto.email);
+            if (existingEmailUser) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.EMAIL_EXIST);
+            }
+
+            const existingMobileUser: UserEntity | null = createDto.mobile ? await this._userRepository.findUserByMobile(createDto.mobile) : null;
+            if (existingMobileUser) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
             }
 
             const tempPassword = 'Temp@1234'; // temporary password, should be changed later
             const hashedPassword = await hashPassword(tempPassword);
 
-            const userEntity: CreateUserEntity = mapCreateUserDTOToEntity(userDto, hashedPassword);
+            let profilePicUrl: string = '';
 
-            const newUser = await this._userRepository.createUserByAdmin(userEntity);
-            if (!newUser) {
-                throw createHttpError(500, 'Failed to create user.');
+            if (imageFile) {
+                profilePicUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: 'user-profile-pics',
+                    fileType: 'image',
+                });
             }
 
+            const userEntity: CreateUserEntity = mapCreateUserDTOToEntity({createDto, profilePicUrl, hashedPassword});
+
+            const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userEntity);
+            if (!createdUserResult) {
+                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_USER);
+            }
+
+            const newUser: UserProfileDto = mapUserEntityToUserProfileDto(createdUserResult);
+            
             // send email to user with temp password and instructions to change it
             // (email sending logic not implemented here)
 
-            
-            return 'User created successfully.';
+            return newUser;
+
             
         } catch (err: any) {
             console.error('Error in userServices.createUserByAdmin:', err);
-            throw createHttpError(500, 'Failed to create user.');
+            throw err;
+        }
+    }
+
+
+
+
+    async editUserByAdmin({userId, updateDto, imageFile}: {
+        userId: string, 
+        updateDto: UpdateUserDTO, 
+        imageFile?: Express.Multer.File
+    }): Promise<UserProfileDto> {
+        try {
+            // console.log('✅ userId received in userServices.editUserByAdmin:', userId);
+            // console.log('✅ updateDto received in userServices.editUserByAdmin:', updateDto);
+            // console.log('✅ imageFile received in userServices.editUserByAdmin:', imageFile);
+            
+            const existingUser: UserEntity | null = await this._userRepository.findUserById(userId);
+
+            if (!existingUser) {
+                throw createHttpError(404, 'User not found.');
+            }
+
+            const existingMobileUser: UserEntity | null = updateDto.mobile ? await this._userRepository.findUserByMobile(updateDto.mobile) : null;
+            if (existingMobileUser && existingMobileUser.id !== userId) {
+                throw createHttpError(400, 'Another user with this mobile number already exists.');
+            }
+
+            let profilePicUrl: string | undefined= existingUser.profilePic;
+
+            if (imageFile){
+                profilePicUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: 'user-profile-pics',
+                    fileType: 'image',
+                });
+
+                console.log('new profilePicUrl:', profilePicUrl);
+
+                // delete old profile pic from cloudinary if needed
+            }
+
+
+            const updateEntity: UpdateUserEntity = mapUpdateUserDTOToEntity({updateDto, profilePicUrl});
+            
+            const updatedUserResult: UserEntity = await this._userRepository.updateUserByAdmin(userId, updateEntity);
+
+            const updatedUser: UserProfileDto = mapUserEntityToUserProfileDto(updatedUserResult);
+
+            return updatedUser;
+
+        } catch (err: any) {
+            console.error('Error in userServices.editUserByAdmin:', err);
+            throw err;
         }
     }
 

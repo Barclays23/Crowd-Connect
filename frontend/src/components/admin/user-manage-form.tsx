@@ -10,10 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "react-toastify"
 import { userFormSchema } from "@/schemas/user.schema"
 import { useEffect, useState, useRef } from "react"
-import { Camera, X } from "lucide-react"
+import { Camera, Loader2, Loader2Icon, LucideLoader2, X } from "lucide-react"
 import { FieldError } from "../ui/FieldError"
 import { getInitials } from "@/utils/namingConventions"
 import { userServices } from "@/services/userServices"
+import { LoadingSpinner1 } from "../common/LoadingSpinner1"
+import { ButtonLoader } from "../common/ButtonLoader"
 
 
 
@@ -31,7 +33,7 @@ interface User {
 
 interface UserManageFormProps {
   user?: User | null;
-  onSuccess?: () => void;
+  onSuccess?: (user: User) => void;
   onCancel?: () => void;
 }
 
@@ -44,9 +46,13 @@ export function UserManageForm({ user, onSuccess, onCancel }: UserManageFormProp
   const isEditMode = !!user;
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
-  const [imageError, setImageError] = useState<string>(""); // New state for image errors
+  const [imageError, setImageError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+
+  const loadingMessage = isEditMode ? "Updating user..." : "Creating user...";
+  const isUploadingImage = Boolean(profileFile);
+  const loadingSubMessage = isUploadingImage ? "Uploading image..." : "Saving changes...";
 
 
   const form = useForm<z.infer<typeof userFormSchema>>({
@@ -66,7 +72,7 @@ export function UserManageForm({ user, onSuccess, onCancel }: UserManageFormProp
       form.reset({
         name: user.name,
         email: user.email,
-        mobile: user.mobile,
+        mobile: user.mobile ?? "",
         role: user.role,
         status: user.status,
       //   profilePic: user.profilePic,
@@ -142,18 +148,19 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
     try {
       setLoading(true);
-      if (isEditMode) {
-         // Update existing user
-         const response = await userServices.editUserService(user.userId, formData);
+      let response;
 
-        toast.warn("User updated successfully!");
+      if (isEditMode) {
+         response = await userServices.editUserService(user.userId, formData);
+         toast.success(response.message);
+
       } else {
-         // Create new user
-         await userServices.createUserService(formData);
-        toast.warn("User created successfully!");
+         response = await userServices.createUserService(formData);
+        toast.success(response.message);
       }
       
-      onSuccess?.();
+      onSuccess?.(response?.userData);
+
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || "Failed to save user";
       toast.error(errorMessage);
@@ -168,66 +175,80 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form 
+        onSubmit={form.handleSubmit(onSubmit)} 
+        className="space-y-8">
+
+        {loading && (
+          <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-[var(--bg-overlay)] backdrop-blur-[0.2px]">
+            <LoadingSpinner1 
+              size="lg"
+              message={loadingMessage} 
+              // subMessage={loadingSubMessage}
+              subMessage=''
+            />
+          </div>
+        )}
+
         {/* Main Grid: Profile on left, Form fields on right */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-         {/* Profile Picture Sidebar */}
-         <div className="lg:col-span-1 flex flex-col items-center lg:items-start">
-         <div className="w-full max-w-sm">
-            <FormItem>
-               <div className="flex flex-col items-center gap-4">
-                  <div className="relative">
-                     <Avatar className="h-32 w-32 ring-4 ring-offset-4 ring-[var(--border-muted)] ring-offset-[var(--card-bg)]">
-                     <AvatarImage src={previewImage} alt="Profile" />
-                     {/* {previewImage && <AvatarImage src={previewImage} alt="Profile" />} */}
-                     <AvatarFallback className="bg-[var(--brand-primary-light)]/20 text-[var(--brand-primary)] text-3xl font-semibold">
-                        {form.watch("name") ? getInitials(form.watch("name")) : "U"}
-                     </AvatarFallback>
-                     </Avatar>
+          {/* Profile Picture Sidebar */}
+          <div className="lg:col-span-1 flex flex-col items-center lg:items-start">
+            <div className="w-full max-w-sm">
+                <FormItem>
+                  <div className="flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <Avatar className="h-32 w-32 ring-4 ring-offset-4 ring-[var(--border-muted)] ring-offset-[var(--card-bg)]">
+                        <AvatarImage src={previewImage} alt="Profile" />
+                        {/* {previewImage && <AvatarImage src={previewImage} alt="Profile" />} */}
+                        <AvatarFallback className="bg-[var(--brand-primary-light)]/20 text-[var(--brand-primary)] text-3xl font-semibold">
+                            {form.watch("name") ? getInitials(form.watch("name")) : "U"}
+                        </AvatarFallback>
+                        </Avatar>
 
-                     {previewImage && (
-                     <Button
+                        {previewImage && (
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-md"
+                            onClick={removeImage}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                        )}
+
+                        <Button
                         type="button"
                         size="icon"
-                        variant="destructive"
-                        className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-md"
-                        onClick={removeImage}
-                     >
-                        <X className="h-4 w-4" />
-                     </Button>
-                     )}
+                        className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] shadow-lg"
+                        onClick={() => fileInputRef.current?.click()}
+                        >
+                        <Camera className="h-5 w-5 text-white" />
+                        </Button>
 
-                     <Button
-                     type="button"
-                     size="icon"
-                     className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] shadow-lg"
-                     onClick={() => fileInputRef.current?.click()}
-                     >
-                     <Camera className="h-5 w-5 text-white" />
-                     </Button>
+                        <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        />
+                      </div>
 
-                     <input
-                     ref={fileInputRef}
-                     type="file"
-                     accept="image/*"
-                     className="hidden"
-                     onChange={handleImageChange}
-                     />
+                      <div className="w-full text-center lg:text-left space-y-2">
+                        <FormLabel>Profile Picture</FormLabel>
+                        <p className="text-xs text-[var(--text-tertiary)]">
+                        (Optional • Max 2MB • JPG, PNG, WEBP, GIF, etc.)
+                        </p>
+
+                        {imageError && <FieldError message={imageError} />}
+                      </div>
                   </div>
-
-                  <div className="w-full text-center lg:text-left space-y-2">
-                     <FormLabel>Profile Picture</FormLabel>
-                     <p className="text-xs text-[var(--text-tertiary)]">
-                     (Optional • Max 2MB • JPG, PNG, WEBP, GIF, etc.)
-                     </p>
-
-                     {imageError && <FieldError message={imageError} />}
-                  </div>
-               </div>
-            </FormItem>
-         </div>
-         </div>
+                </FormItem>
+            </div>
+          </div>
 
           {/* Form Fields */}
           <div className="lg:col-span-2 space-y-6">
@@ -326,14 +347,31 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         {/* Action Buttons */}
         <div className="flex gap-3 justify-end pt-6 border-t border-[var(--border-muted)]">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel} 
+              className="rounded-xl"
+              disabled={loading} // Also disable cancel while loading to prevent accidental exit
+            >
               Cancel
             </Button>
           )}
-          <Button type="submit" className="rounded-xl px-6">
-            {isEditMode ? "Update User" : "Create User"}
+          
+          <Button 
+            type="submit" 
+            className="rounded-xl px-6 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white" 
+            disabled={loading}
+          >
+            <ButtonLoader 
+              loading={loading} 
+              loadingText={loadingMessage}
+            >
+              {isEditMode ? "Update User" : "Create User"}
+            </ButtonLoader>
           </Button>
         </div>
+
       </form>
     </Form>
   )

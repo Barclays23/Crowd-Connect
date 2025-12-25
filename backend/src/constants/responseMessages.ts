@@ -1,7 +1,8 @@
 
 
 export enum HttpResponse {
-    EMAIL_EXIST = "An account with this email is already registered",
+    EMAIL_EXIST = "An account with this email is already exists",
+    MOBILE_EXIST = "An account with this mobile number is already exists",
     GOOGLE_LOGIN_SUCCESS = "Logged in with Google successfully",
     INVALID_CREDENTIALS = "Invalid credentials",
     INVALID_EMAIL = "Invalid email address",
@@ -48,6 +49,9 @@ export enum HttpResponse {
 
     FAILED_GET_USERS = "Failed to fetch users.",
     FAILED_UPDATE_USER = "Failed to update user.",
+    FAILED_CREATE_USER = "Failed to create user.",
 
     SUCCESS_GET_USERS = "Users fetched successfully.",
+    SUCCESS_CREATE_USER = "User account created.",
+    SUCCESS_UPDATE_USER = "User details updated.",
 }

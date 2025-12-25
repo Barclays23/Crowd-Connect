@@ -4,7 +4,8 @@ import {
     SensitiveUserEntity, 
     SignUpUserEntity, 
     UserEntity,
-    AuthUserCheckEntity } from '../../entities/user.entity';
+    AuthUserCheckEntity, 
+    UpdateUserEntity} from '../../entities/user.entity';
 
 import { IUserModel } from '../../models/implementations/user.model';
 
@@ -12,6 +13,7 @@ import { IUserModel } from '../../models/implementations/user.model';
 
 export interface IUserRepository {
     findUserByEmail(email: string): Promise<UserEntity | null>;
+    findUserByMobile(mobile: string): Promise<UserEntity | null>;
     
     // for internal auth use only (includes password) eg: login, change password
     findAuthUser(email: AuthUserCheckEntity): Promise<SensitiveUserEntity | null>;
@@ -19,7 +21,9 @@ export interface IUserRepository {
     // register by user himself after verifying otp
     createUser(user: SignUpUserEntity) : Promise<UserEntity>;
 
-    createUserByAdmin(user: CreateUserEntity): Promise<UserEntity>;
+    createUserByAdmin(userEntity: CreateUserEntity): Promise<UserEntity>;
+
+    updateUserByAdmin(userId: string, userEntity: UpdateUserEntity): Promise<UserEntity>;
 
     findUserById(userId: string): Promise<UserEntity | null>;
 
