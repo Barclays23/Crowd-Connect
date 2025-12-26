@@ -67,8 +67,8 @@ export function Navbar() {
    const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
       `text-sm font-medium transition-colors ${
          isActive
-         ? "text-[var(--brand-primary)]"
-         : "text-[var(--text-secondary)] hover:text-[var(--brand-primary)]"
+         ? "text-[var(--navlink-active)]"
+         : "text-[var(--navlink-inactive)] hover:text-[var(--navlink-inactive-hover)]"
    }`;
 
 
@@ -108,12 +108,12 @@ export function Navbar() {
                      ) {
                         return (
                            <NavLink
-                           key={item.to}
-                           to={item.to}
-                           end={item.end}
-                           className={navLinkClasses}
+                              key={item.to}
+                              to={item.to}
+                              end={item.end}
+                              className={navLinkClasses}
                            >
-                           {item.label}
+                              {item.label}
                            </NavLink>
                         );
                      }

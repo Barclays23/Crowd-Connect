@@ -12,6 +12,8 @@ import { LoginSchema, RegisterSchema } from "@/schemas/auth.schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { Modal } from "../ui/modal";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 type AuthMode = "login" | "register";
 
@@ -19,9 +21,16 @@ interface AuthFormProps {
   mode: AuthMode;
   onSubmit?: (data: z.infer<typeof RegisterSchema> | z.infer<typeof LoginSchema>) => Promise<void>;
   isLoading: boolean;
+  openForgotPassword?: boolean;
 }
 
-export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
+export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword = false }: AuthFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(openForgotPassword);
+
+
   const isRegister = mode === "register";
 
   // ---- forms and zod validations -------------------------------------------------
@@ -44,17 +53,11 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
   const currentForm = isRegister ? registerForm : loginForm;
   const { handleSubmit, formState } = currentForm;
   const { errors } = formState;
-
   // console.log('authForm errors :', errors);
 
-  // ---- password visibility ------------------------------------
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
   // ---- form submit -------------------------------------------------
   const onValid = async (data: z.infer<typeof RegisterSchema> | z.infer<typeof LoginSchema>) => {
-    // console.log('ALL THE FORM FIELDS ARE VALIDATED CORRECTLY');
     // console.log(`${isRegister ? "Registration" : "Login"} submitted:`, data);
     console.log(`${isRegister ? "Registration" : "Login"} submitted:`);
 
@@ -211,6 +214,19 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
             </div>
           )}
 
+          {/* Forgot Password - Login Only */}
+          {!isRegister && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-[var(--link-text)] hover:text-[var(--link-text-hover)] hover:underline font-medium cursor-pointer"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
+
           {/* Submit Button */}
           <Button
             type="submit"
@@ -269,12 +285,25 @@ export function AuthForm({ mode, onSubmit, isLoading = false }: AuthFormProps) {
           {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
           <Link
             to={isRegister ? "/login" : "/register"}
-            className="text-primary hover:underline font-medium"
+            className="text-[var(--link-text)] hover:text-[var(--link-text-hover)] hover:underline font-medium"
           >
             {isRegister ? "Login here" : "Register here"}
           </Link>
         </div>
       </CardContent>
+
+      <Modal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        title="Reset your password"
+        size="sm"
+      >
+        <ForgotPasswordModal 
+          onClose={() => setShowForgotPassword(false)}
+        />
+      </Modal>
+
     </Card>
+    
   );
 }

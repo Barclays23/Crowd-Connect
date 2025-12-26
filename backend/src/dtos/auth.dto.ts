@@ -19,6 +19,16 @@ export interface SignInRequestDto {
 }
 
 
+
+
+
+export interface ResetPasswordDto {
+    token: string;
+    newPassword: string;
+}
+
+
+
 // RESPONSE AUTH USER
 export interface AuthUserDto {
     userId: string;

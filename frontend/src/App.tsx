@@ -35,6 +35,7 @@ import UserAccount from "./pages/user/UserAccount";
 // admin pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUserList from "./pages/admin/AdminUserList";
+import ResetPasswordPage from "./pages/user/ResetPasswordPage";
 // import AdminUserList from "./pages/admin/users/AdminUserList";
 
 
@@ -58,6 +59,7 @@ function App() {
                               {/* ----------- Public Routes ---------- */}
                               <Route path="/" element={<Home />} />
                               <Route path="/otp-verification" element={<OTPVerification />} />
+                              <Route path="/reset-password" element={<ResetPasswordPage />} />
                               
                               <Route element={<PublicRoute />}>
                                  <Route path="/login" element={<Login />} />

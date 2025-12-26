@@ -27,6 +27,9 @@ function Login() {
   // navigate back to original path || or home
   const fromPath = (state?.from?.pathname ?? '') + (state?.from?.search ?? '') || '/';
 
+  const openForgotPassword =
+  location.state?.openForgotPassword === true;
+
 
 
 
@@ -69,6 +72,7 @@ function Login() {
       mode="login"
       onSubmit={handleLogin}
       isLoading={isLoading}
+      openForgotPassword={openForgotPassword}
     />
   );
 }

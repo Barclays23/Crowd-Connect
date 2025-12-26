@@ -7,7 +7,14 @@ import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
 import { createHttpError } from "../../utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
-import { AuthResponseDto, AuthUserDto, SignInRequestDto } from "../../dtos/auth.dto";
+import { 
+    AuthResponseDto, 
+    AuthUserDto, 
+    ResetPasswordDto, 
+    SignInRequestDto 
+} from "../../dtos/auth.dto";
+import { is } from "zod/v4/locales";
+import { success } from "zod";
 
 
 
@@ -83,6 +90,83 @@ export class AuthController implements IAuthController {
             return;
         };
 
+    }
+
+
+    async requestPasswordReset(req: Request, res: Response, next: NextFunction): Promise<void>{
+        try {
+            const email: string = req.body.email;
+            console.log('email in authController.requestPasswordReset:', email);
+            const userEmail: string = await this._authService.requestPasswordReset(email);
+
+            res.status(HttpStatus.OK).json({
+                // even if the email is not registered, respond with success to avoid email enumeration
+                message: HttpResponse.PASSWORD_RESET_EMAIL_SENT,
+                email: userEmail
+            });
+
+        } catch (err: any) {
+            console.error('Error in AuthController.requestPasswordReset:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
+
+    async validateResetLink(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const token: string = req.params.token;
+            console.log('token in authController.validateResetLink:', token);
+            
+            const isValid: boolean = await this._authService.validateResetLink(token);
+
+            res.status(HttpStatus.OK).json({
+                isValid
+            });
+
+        } catch (err: any) {
+            console.error('Error in AuthController.validateResetLink:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
+
+    async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { token, newPassword } = req.body;
+            const resetPasswordDto: ResetPasswordDto = req.body;
+            
+            console.log('token and newPassword in authController.resetPassword:', req.body);
+            await this._authService.resetPassword(resetPasswordDto);
+
+            res.status(HttpStatus.OK).json({
+                message: HttpResponse.PASSWORD_RESET_SUCCESS,
+            });
+
+        } catch (err: any) {
+            console.error('Error in AuthController.resetPassword:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
     }
 
 

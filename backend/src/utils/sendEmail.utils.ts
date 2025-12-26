@@ -1,6 +1,13 @@
 import nodemailer from "nodemailer";
 
-export async function sendEmail({ toAddress, mailSubject, text, htmlTemplate }) {
+interface SendEmailOptions {
+  toAddress: string;
+  mailSubject?: string;
+  text?: string;
+  htmlTemplate?: string;
+}
+
+export async function sendEmail({ toAddress, mailSubject, text, htmlTemplate }: SendEmailOptions) {
   try {
     const transporter = nodemailer.createTransport({
       service: process.env.SMTP_SERVICE,

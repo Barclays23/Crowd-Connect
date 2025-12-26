@@ -62,6 +62,42 @@ export const authService = {
     },
 
 
+    requestFogotPassword: async (email: string) => {
+        try {
+            console.log('email received in requestFogotPassword :', email);
+            const response = await axiosInstance.post("/api/auth/forgot-password", { email }, { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    validateResetLink: async (token: string) => {
+        try {
+            console.log('token received in validateResetLink :', token);
+            const response = await axiosInstance.get(`/api/auth/reset-password/validate/${token}`, { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    resetPasswordService: async ({ token, newPassword, confirmPassword }: { token: string; newPassword: string; confirmPassword: string })=> {
+        try {
+            console.log('email received in resetPasswordService :', token, newPassword, confirmPassword);
+            const response = await axiosInstance.post("/api/auth/reset-password", { token, newPassword, confirmPassword }, { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
 
     verifyOtpService: async (data: { otpCode: string; email: string }) => {
         try {

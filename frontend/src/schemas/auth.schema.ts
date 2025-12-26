@@ -12,7 +12,10 @@ export const nameBase = z
 
 export const emailBase = z
   .string()
-  .email("Invalid email address");
+  .min(1, { message: "Email is required" })
+  .trim()
+  .toLowerCase()
+  .email({ message: "Please enter a valid email address" });
 
 
 
@@ -58,4 +61,15 @@ export const RegisterSchema = z
   })
 
 
+
+
+export const ResetPasswordSchema = z
+  .object({
+    password: passwordBase,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: "Passwords do not match",
+  })
     

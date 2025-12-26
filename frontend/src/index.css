@@ -55,10 +55,12 @@ body {
   --text-inverse: #ffffff;            /* White for Dark Backgrounds */
   --text-brand: var(--brand-primary);
 
+
   /* Headings */
   --heading-primary: #111827;         /* Dark Gray */
   --heading-secondary: #374151;       /* Slightly Lighter Gray */
   --heading-accent: var(--brand-primary);
+
 
   /* Buttons */
   --btn-primary-bg: var(--brand-primary);
@@ -73,6 +75,15 @@ body {
   --btn-ghost-text: var(--brand-primary); /* coral red text */
   --btn-neutral: var(--bg-neutral);
   --btn-neutral-hover: var(--bg-neutral-hover);
+
+
+
+  /* Links */
+  --link-text: var(--text-secondary);
+  --link-text-hover: var(--brand-primary);
+  --navlink-inactive: var(--text-secondary);
+  --navlink-inactive-hover: var(--brand-primary);
+  --navlink-active: var(--brand-primary);
 
 
 
@@ -258,6 +269,17 @@ body {
   --btn-neutral-hover: var(--bg-neutral-hover);
 
 
+
+  /* Links */
+  --link-text: var(--text-secondary);
+  --link-text-hover: var(--brand-primary);
+  --navlink-inactive: var(--text-secondary);
+  --navlink-inactive-hover: var(--brand-primary);
+  --navlink-active: var(--brand-primary);
+
+
+
+
   /* Cards */
   --card-bg: #1f2937;
   --card-primary: var(--bg-primary);
@@ -387,4 +409,42 @@ body {
   --scrollbar-thumb: #6b7280;
   --scrollbar-thumb-hover: #9ca3af;
 }
+
+
+
+
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes drawPath {
+  from {
+    stroke-dasharray: 30; /* approximate length of the path */
+    stroke-dashoffset: 30;
+  }
+  to {
+    stroke-dasharray: 30;
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+.animate-drawCheck {
+  animation: drawPath 0.8s ease-out forwards;
+}
+
 

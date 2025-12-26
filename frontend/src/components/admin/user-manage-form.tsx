@@ -16,27 +16,19 @@ import { getInitials } from "@/utils/namingConventions"
 import { userServices } from "@/services/userServices"
 import { LoadingSpinner1 } from "../common/LoadingSpinner1"
 import { ButtonLoader } from "../common/ButtonLoader"
+import type { User, UserUpsertResult } from "@/types/user.types"
 
 
 
 
-interface User {
-  userId: string;
-  name: string;
-  email: string;
-  mobile: string;
-  role: "admin" | "host" | "user";
-  status: "active" | "blocked" | "pending";
-  profilePic?: string;
-}
+
 
 
 interface UserManageFormProps {
   user?: User | null;
-  onSuccess?: (user: User) => void;
+  onSuccess?: (user?: UserUpsertResult) => void;
   onCancel?: () => void;
 }
-
 
 
 

@@ -8,7 +8,7 @@ import { createHttpError } from "../../utils/httpError.utils";
 import { generateOTP } from "../../utils/generateOTP.utils";
 import { sendEmail } from "../../utils/sendEmail.utils";
 import { renderTemplate } from "../../utils/templateLoader2";
-import { redisClient } from '../../config/redis.config';
+import { REDIS_DATA_TTL_SECONDS, REDIS_TOKEN_PREFIX, redisClient } from '../../config/redis.config';
 import { comparePassword, hashPassword } from "../../utils/bcrypt.utils";
 
 import { 
@@ -20,7 +20,8 @@ import {
 import { 
     SignUpRequestDto, 
     AuthUserDto, 
-    SignInRequestDto,  
+    SignInRequestDto,
+    ResetPasswordDto,  
 } from "../../dtos/auth.dto";
 
 import { 
@@ -31,7 +32,7 @@ import {
 
 import { mapSignUpDtoToSignUpUserEntity, mapUserEntityToAuthUserDto } from "../../mappers/user.mapper";
 import { AuthResult } from "../../types/auth.types";
-import User from "src/models/implementations/user.model";
+import { generateCryptoToken } from "../../utils/crypto.utils";
 
 
 
@@ -50,25 +51,12 @@ export class AuthServices implements IAuthService {
             const isMatch: boolean = await comparePassword(signInDto.password, userData.password);
             if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
             
-            // Now create tokens
+
             const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-
             const safeUser: AuthUserDto = mapUserEntityToAuthUserDto(userData);
-
-            // only result (AuthUser), not as dto (controller will map to dto)
-            // const safeUser2: AuthUserDto = {
-            //     userId: userData.id.toString(),
-            //     name: userData.name,
-            //     email: userData.email,
-            //     role: userData.role,
-            //     // mobile: userData?.mobile,
-            //     status: userData.status,
-            //     isEmailVerified: userData.isEmailVerified
-            // };
-
 
             return {
                 safeUser, 
@@ -116,13 +104,11 @@ export class AuthServices implements IAuthService {
                 otpExpiry: expiryDate.getTime(),
             };
 
-            const REDIS_DATA_TTL_SECONDS = 30 * 60; // 30 minutes in seconds
-
             // store temp data in redis for expiryMinutes minutes
             const response = await redisClient.setEx(
-                signUpDto.email,  // key
-                REDIS_DATA_TTL_SECONDS,  // TTL expiry in seconds
-                JSON.stringify(redisData)  // values
+                signUpDto.email,
+                REDIS_DATA_TTL_SECONDS,
+                JSON.stringify(redisData)
             );
 
             
@@ -143,7 +129,106 @@ export class AuthServices implements IAuthService {
     }
 
 
+    async requestPasswordReset(email: string): Promise<string>{
+        try {
+            const existingUser: UserEntity | null = await this._userRepository.findUserByEmail(email);
+            
+            if (!existingUser){
+                console.log('no user found in this email for password reset request.');
+                // For security reasons, don't reveal whether the email exists
+                // throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            } else {
+                const { cryptoToken, expiryDate, expiryMinutes } = generateCryptoToken();
+                // console.log('cryptoToken:', cryptoToken);
+                // console.log('Expiry:', expiryDate.toISOString());
+                // console.log('Valid for:', expiryMinutes, 'minutes');
+                
+                const baseUrl = process.env.FRONTEND_URL;
+                const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
+                
+                // email template data
+                const templateData = {
+                    USER_NAME: existingUser?.name || 'User',
+                    RESET_LINK: resetLink,
+                    EXPIRY_MINUTES: expiryMinutes
+                };
+                
+                const htmlTemplate = await renderTemplate('resetPassword.html', templateData);
+                const mailSubject = 'Reset Your Crowd Connect Password';
+                const text = `Reset your password here: ${resetLink}\nThis link expires in ${expiryMinutes} minutes.`;
+                
+                await sendEmail({
+                    toAddress: email,
+                    mailSubject,
+                    text,
+                    htmlTemplate,
+                });
+                
+                const redisKey = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
+                const redisData = {
+                    email,
+                    createdAt: Date.now(),
+                };
+                
+                await redisClient.setEx(
+                    redisKey,
+                    expiryMinutes * 60, // expiry in seconds
+                    JSON.stringify(redisData)
+                );
+            }
+            
+            return email;
 
+        } catch (error) {
+            console.error("Error in AuthServices.requestPasswordReset:", error);
+            throw error;
+        }
+    }
+
+
+    async validateResetLink(token: string): Promise<boolean> {
+        const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
+        const exists = await redisClient.get(redisKey);
+
+        if (!exists) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.RESET_LINK_INVALID_OR_EXPIRED);
+        }
+
+        return true;
+    }
+
+
+
+
+    async resetPassword({ token, newPassword }: ResetPasswordDto): Promise<string> {
+        try {
+            const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
+            const raw = await redisClient.get(redisKey);
+            if (!raw) {
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.RESET_LINK_INVALID_OR_EXPIRED}`);
+            }
+            const tokenData = JSON.parse(raw);
+
+            const hashedPassword = await hashPassword(newPassword);
+
+            const updatedUser: UserEntity | null = await this._userRepository.updateUserPassword(tokenData.email, hashedPassword);
+
+            if (!updatedUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_ACCOUNT_NOT_EXIST);
+            }
+
+            await redisClient.del(redisKey);
+
+            return updatedUser.email;
+
+        } catch (error) {
+            console.error("Error in AuthServices.resetPassword:", error);
+            throw error;
+        }
+    }
+        
+        
+        
     async verifyOtp(email: string, otp: string): Promise<AuthResult> {
         try {
             const raw = await redisClient.get(email);
@@ -166,16 +251,6 @@ export class AuthServices implements IAuthService {
             let userData: UserEntity | null = await this._userRepository.findUserByEmail(email);
             
             if (!userData) {
-                // const userDoc = new User({
-                //     name: tempRedisData.name,
-                //     email: tempRedisData.email,
-                //     password: tempRedisData.password,  // already a hashed password
-                //     role: tempRedisData.role,
-                //     isEmailVerified: true
-                // });
-
-                // userData = await this._userRepository.createUser(userDoc);
-
                 // dto from redis data
                 const dto: SignUpRequestDto = {
                     name: tempRedisData.name,

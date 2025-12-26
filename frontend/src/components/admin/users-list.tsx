@@ -25,6 +25,11 @@ import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
 import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
+import type { UserUpsertResult } from "@/types/user.types";
+
+
+
+
 
 interface User {
   userId: string;
@@ -33,7 +38,7 @@ interface User {
   mobile: string;
   role: "admin" | "host" | "user";
   status: "active" | "blocked" | "pending";
-  joinDate: string;
+  // joinDate: string;
   profilePic?: string;
   createdAt: string;
 }
@@ -133,7 +138,7 @@ export function UsersList() {
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
   // Handle modal success (create/update)
-  const handleFormSuccess = (updatedUser?: User) => {
+  const handleFormSuccess = (updatedUser?: UserUpsertResult) => {
     setIsCreateModalOpen(false);
     setEditUser(null);
 

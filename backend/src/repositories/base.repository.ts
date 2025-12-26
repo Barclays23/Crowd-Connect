@@ -49,10 +49,15 @@ export abstract class BaseRepository<T extends Document> {
         return updatedDocument;
     }
 
-//                 await User.updateOne(
-//   { _id: userId },
-//   { $set: updateEntity }
-// );
+
+    async findOneAndUpdate(query: MongooseFilterQuery<T>, updateData: Partial<T>): Promise<T | null>{
+        const updatedDocument = await this.model.findOneAndUpdate(
+            query,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        return updatedDocument;
+    }
 
 
     async findMany(): Promise<T[]>{

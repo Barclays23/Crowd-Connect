@@ -15,53 +15,6 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    // user registration (after verifying otp)
-    async createUser(user: SignUpUserEntity): Promise<UserEntity> {  // not (user: IUserModel)
-        try {
-            const userData: IUserModel = await this.createOne(user);
-            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
-            return userEntity;
-
-        } catch (error) {
-            console.log('error in createUser :', error);
-            throw error;
-        }
-    }
-
-
-    
-    async createUserByAdmin(userEntity: CreateUserEntity): Promise<UserEntity> {
-        try {
-            const userData: IUserModel = await this.createOne(userEntity);
-            const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in createUserByAdmin :', error);
-            throw error;
-        }
-    }
-
-
-    async updateUserByAdmin(userId: string, userEntity: UpdateUserEntity): Promise<UserEntity> {
-        try {
-            // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
-            // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
-
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
-            // console.log('✅ resultEntity in userRepository.updateUserByAdmin:', resultEntity);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in updateUserByAdmin :', error);
-            throw error;
-        }
-    }
-
 
     async findUserByEmail(email: string): Promise<UserEntity | null> {
         try {
@@ -74,6 +27,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             throw new Error("Error Finding User");
         }
     }
+
 
     async findUserByMobile(mobile: string): Promise<UserEntity | null> {
         try {
@@ -99,7 +53,6 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             throw new Error("Error Finding User");
         }
     }
-
 
 
     async findAuthUser(email: AuthUserCheckEntity): Promise<SensitiveUserEntity | null> {
@@ -136,7 +89,6 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-
     async countUsers(query: any): Promise<number> {
         try {
             const count: number = await this.countDocuments(query);
@@ -147,6 +99,66 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         }
     }
 
+
+    // user registration (after verifying otp)
+    async createUser(user: SignUpUserEntity): Promise<UserEntity> {  // not (user: IUserModel)
+        try {
+            const userData: IUserModel = await this.createOne(user);
+            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
+            return userEntity;
+
+        } catch (error) {
+            console.log('error in createUser :', error);
+            throw error;
+        }
+    }
+
+    
+    async createUserByAdmin(userEntity: CreateUserEntity): Promise<UserEntity> {
+        try {
+            const userData: IUserModel = await this.createOne(userEntity);
+            const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in createUserByAdmin :', error);
+            throw error;
+        }
+    }
+
+
+    async updateUserByAdmin(userId: string, userEntity: UpdateUserEntity): Promise<UserEntity> {
+        try {
+            // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
+            // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
+
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
+            // console.log('✅ resultEntity in userRepository.updateUserByAdmin:', resultEntity);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateUserByAdmin :', error);
+            throw error;
+        }
+    }
+
+
+
+    async updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null> {
+        try {
+            const updatedUserData: IUserModel | null = await this.findOneAndUpdate({ email }, { password: hashedPassword });
+            const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateUserPassword :', error);
+            throw new Error("Error Updating User Password");
+        }
+    }
 
     
 }

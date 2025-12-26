@@ -1,15 +1,28 @@
 // backend/src/services/interfaces/IAuthServices.ts
 import { AuthResult } from "../../types/auth.types";
-import { AuthResponseDto, SignUpRequestDto, AuthUserDto, SignInRequestDto } from "../../dtos/auth.dto";
+import { 
+    AuthResponseDto, 
+    SignUpRequestDto, 
+    AuthUserDto, 
+    SignInRequestDto, 
+    ResetPasswordDto 
+} from "../../dtos/auth.dto";
 
 
 
 export interface IAuthService {
     signIn(signInDto: SignInRequestDto): Promise<AuthResult>
     signUp(signUpDto: SignUpRequestDto): Promise<string>
-    verifyOtp(email: string, otp: string): Promise<AuthResult>;
+
+    requestPasswordReset(email: string):Promise<string>
+    resetPassword({token, newPassword}: ResetPasswordDto):Promise<string>
+    validateResetLink(token: string): Promise<boolean>
+
+    verifyOtp(email: string, otp: string): Promise<AuthResult>
     resendOtp(email: string): Promise<string>
+
     refreshAccessToken(refreshToken: string): Promise<string>
     revokeRefreshToken(refreshToken: string): Promise<void>
+
     getAuthUser(userId: string): Promise<AuthUserDto>
 }

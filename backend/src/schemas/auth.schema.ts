@@ -27,9 +27,21 @@ export const passwordBase = z
 
 
 
-  export const agreeTermsBase = z.boolean().refine((val) => val === true, {
+export const agreeTermsBase = z.boolean().refine((val) => val === true, {
     message: "You must agree to the Terms and Conditions.",
   });
+
+
+
+export const tokenBase = z
+  .string()
+  .trim()
+  .regex(
+    /^[0-9a-f]{32}$/,
+    // "Invalid reset token format (must be 32 lowercase hex characters)"
+    "Reset link doesn't seem to be valid anymore."
+  );
+
 
 
 
@@ -58,4 +70,25 @@ export const RegisterSchema = z
   })
 
 
-    
+
+
+export const ForgotPasswordSchema = z.object({
+  email: emailBase,
+})
+
+
+export const ResetLinkSchema = z.object({
+  token: tokenBase,
+})
+
+
+export const ResetPasswordSchema = z
+  .object({
+    token: tokenBase,
+    newPassword: passwordBase,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
