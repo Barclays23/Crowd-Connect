@@ -1,12 +1,13 @@
-// src/context/AuthContext.tsx
+// src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/authServices';
-import type { AuthUser, AuthState, AuthResponse } from '@/types/auth.types';
+import type { UserState } from '@/types/user.types';
+import type { AuthState, AuthResponse } from '@/types/auth.types';
 import { setAuthInterceptors } from '@/config/axios';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
-import { toast } from 'react-toastify';
+// import { toast } from 'react-toastify';
 
 
 
@@ -17,7 +18,7 @@ interface AuthContextType extends AuthState {
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<any>;
     setAccessToken: React.Dispatch <React.SetStateAction <string | null>>; 
-    setUser: React.Dispatch <React.SetStateAction <AuthUser | null>>;
+    setUser: React.Dispatch <React.SetStateAction <UserState | null>>;
 }
 
 
@@ -35,7 +36,7 @@ export const useAuth = () => {
 
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const [user, setUser] = useState<UserState | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 

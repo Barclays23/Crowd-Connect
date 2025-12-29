@@ -24,7 +24,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "bg-[var(--form-input-bg)] text-[var(--form-input-text)]",
           "placeholder:text-[var(--form-placeholder)]",
           "focus-visible:outline-none",
-          "focus-visible:ring-2 focus-visible:ring-[var(--border-brand)]",
+          "focus-visible:ring-1 focus-visible:ring-[var(--border-brand)]",
           "focus-visible:border-[var(--border-brand)]",
           "disabled:cursor-not-allowed disabled:opacity-50",
           className

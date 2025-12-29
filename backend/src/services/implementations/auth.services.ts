@@ -48,9 +48,18 @@ export class AuthServices implements IAuthService {
 
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
+            if (userData.status === 'blocked') {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            }
+
             const isMatch: boolean = await comparePassword(signInDto.password, userData.password);
             if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
-            
+           
+            // change user.status to 'active' if it was 'inactive' or 'pending'
+            if (userData.status === 'pending') {
+                const updatedUser: UserEntity = await this._userRepository.updateUserProfile(userData.id, { status: 'active' });
+                console.log(`User status updated to 'active' for userId: ${userData.id}`);
+            }
 
             const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);

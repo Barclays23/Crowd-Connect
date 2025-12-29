@@ -192,7 +192,6 @@ axiosInstance.interceptors.response.use(
             console.error('refreshErrorMessage in interceptor:', refreshErrorMessage);
 
 
-            // *** USE THE INJECTED LOGOUT CALLBACK ***
             if (onTokenRefreshFailure) {
                // Show toast first, it will persist because navigation is stateful (React Router)
                toast.info(refreshErrorMessage);

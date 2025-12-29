@@ -5,20 +5,21 @@ import { UserRepository } from "../../repositories/implementations/user.reposito
 import { 
     CreateUserDTO, 
     UpdateUserDTO, 
-    UserProfileDto
+    UserProfileDto,
+    HostDto, 
 } from "../../dtos/user.dto";
 
 import { createHttpError } from "../../utils/httpError.utils";
-import User, { IUser, IUserModel } from "../../models/implementations/user.model";
 import { hashPassword } from "../../utils/bcrypt.utils";
 
 import { 
     mapCreateUserDTOToEntity, 
     mapUpdateUserDTOToEntity, 
-    mapUserEntityToUserProfileDto 
+    // mapUserEntityToUserProfileDto, REPLACED BY mapUserEntityToProfileDto
+    mapUserEntityToProfileDto
 } from "../../mappers/user.mapper";
 
-import { CreateUserEntity, UpdateUserEntity, UserEntity } from "../../entities/user.entity";
+import { CreateUserEntity, HostEntity, UpdateUserEntity, UserEntity } from "../../entities/user.entity";
 import { GetUsersFilter, GetUsersResult } from "../../types/user.types";
 import { uploadToCloudinary } from "../../config/cloudinary";
 import { HttpResponse } from "../../constants/responseMessages";
@@ -27,7 +28,28 @@ import { HttpStatus } from "../../constants/statusCodes";
 
 
 export class UserServices implements IUserServices {
-    constructor(private _userRepository: UserRepository) {
+    constructor(
+        private _userRepository: UserRepository
+    ) {}
+
+
+    async getUserProfile(userId: string): Promise<UserProfileDto> {
+        try {
+            const userData: UserEntity | HostEntity | null = await this._userRepository.findUserById(userId);
+
+            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+
+            console.log('✅✅✅✅✅ SERVICES ✅✅✅✅✅✅✅ User data in userServices.getUserProfile:', userData);
+
+            // const userProfile: UserProfileDto = mapUserEntityToUserProfileDto(userData);
+            const userProfile: UserProfileDto = mapUserEntityToProfileDto(userData);
+
+            return userProfile;
+
+        } catch (error: any) {
+            console.error('Error in userServices.getUserProfile:', error);
+            throw error;
+        }
     }
   
 
@@ -56,10 +78,11 @@ export class UserServices implements IUserServices {
                 this._userRepository.countUsers(query)
             ]);
 
-            const mappedUsers: UserProfileDto[] = users ? users.map(mapUserEntityToUserProfileDto) : [];
+            // const mappedUsers: UserProfileDto[] = users ? users.map(mapUserEntityToUserProfileDto) : [];
+            const mappedUsers: UserProfileDto[] = users ? users.map(mapUserEntityToProfileDto) : [];
 
             return {
-                users: mappedUsers, // not included host details (organisationName, address, certificates etc)
+                users: mappedUsers, // not included host details (organizationName, address, certificates etc)
                 page,
                 limit,
                 total: totalCount,
@@ -68,7 +91,7 @@ export class UserServices implements IUserServices {
 
         } catch (err: any) {
             console.error('Error in userServices.getAllUsers:', err);
-            throw createHttpError(500, 'Failed to fetch users.');
+            throw err;
         }
     }
 
@@ -110,7 +133,8 @@ export class UserServices implements IUserServices {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_USER);
             }
 
-            const newUser: UserProfileDto = mapUserEntityToUserProfileDto(createdUserResult);
+            // const newUser: UserProfileDto = mapUserEntityToUserProfileDto(createdUserResult);
+            const newUser: UserProfileDto = mapUserEntityToProfileDto(createdUserResult);
             
             // send email to user with temp password and instructions to change it
             // (email sending logic not implemented here)
@@ -148,7 +172,10 @@ export class UserServices implements IUserServices {
                 throw createHttpError(400, 'Another user with this mobile number already exists.');
             }
 
-            let profilePicUrl: string | undefined= existingUser.profilePic;
+            let profilePicUrl: string | undefined;
+
+            // if (isRemoved) profilePicUrl = '';
+            // if profile pic is removed, pass the isRemoved flag and replace with empty string (will implement later)
 
             if (imageFile){
                 profilePicUrl = await uploadToCloudinary({
@@ -167,7 +194,8 @@ export class UserServices implements IUserServices {
             
             const updatedUserResult: UserEntity = await this._userRepository.updateUserByAdmin(userId, updateEntity);
 
-            const updatedUser: UserProfileDto = mapUserEntityToUserProfileDto(updatedUserResult);
+            // const updatedUser: UserProfileDto = mapUserEntityToUserProfileDto(updatedUserResult);
+            const updatedUser: UserProfileDto = mapUserEntityToProfileDto(updatedUserResult);
 
             return updatedUser;
 

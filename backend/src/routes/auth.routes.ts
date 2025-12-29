@@ -1,8 +1,16 @@
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validate.middleware';
 import { authenticate } from '../middlewares/auth.middleware';
-import { ForgotPasswordSchema, LoginSchema, RegisterSchema, ResetLinkSchema, ResetPasswordSchema } from '../schemas/auth.schema';
+
+import { 
+    ForgotPasswordSchema, 
+    LoginSchema, 
+    RegisterSchema, 
+    ResetLinkSchema, 
+    ResetPasswordSchema 
+} from '../schemas/auth.schema';
 import { OtpSchema } from '../schemas/otp.schema';
+
 import { UserRepository } from '../repositories/implementations/user.repository';
 import { AuthServices } from '../services/implementations/auth.services';
 import { AuthController } from '../controllers/implementations/auth.controller';

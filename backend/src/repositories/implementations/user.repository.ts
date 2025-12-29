@@ -2,8 +2,22 @@
 import User, { IUser, IUserModel } from "../../models/implementations/user.model";
 import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
-import { AuthUserCheckEntity, CreateUserEntity, SensitiveUserEntity, SignUpUserEntity, UpdateUserEntity, UserEntity } from "../../entities/user.entity";
-import { mapUserModelToUserEntity, mapUserModelToSensitiveUserEntity } from "../../mappers/user.mapper";
+import { 
+    AuthUserCheckEntity, 
+    CreateUserEntity, 
+    HostEntity, 
+    UserEntity,
+    SensitiveUserEntity, 
+    SignUpUserEntity, 
+    UpdateUserEntity,
+    UpgradeHostEntity, 
+} from "../../entities/user.entity";
+
+import { 
+    mapUserModelToUserEntity, 
+    mapUserModelToSensitiveUserEntity, 
+    mapUserModelToHostEntity
+} from "../../mappers/user.mapper";
 
 
 
@@ -42,9 +56,10 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async findUserById(userId: string): Promise<UserEntity | null> {
+    async findUserById(userId: string): Promise<UserEntity | HostEntity | null> {
         try {
             const userData: IUserModel | null = await this.findById(userId);
+            console.log('✅✅✅✅✅ REPO ✅✅✅✅✅✅✅ User data in userRepository.findUserById:', userData);
             const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
             return result;
 
@@ -147,6 +162,21 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
+    async updateUserProfile(userId: string, userEntity: Partial<UserEntity>): Promise<UserEntity> {
+        try {
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateUserProfile :', error);
+            throw error;
+        }
+    }
+
 
     async updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null> {
         try {
@@ -157,6 +187,22 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         } catch (error) {
             console.log('error in updateUserPassword :', error);
             throw new Error("Error Updating User Password");
+        }
+    }
+
+
+    async updateHostDetails(userId: string, hostEntity: UpgradeHostEntity): Promise<HostEntity> {
+        try {
+            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, hostEntity);
+            if (!updatedHostData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: HostEntity = mapUserModelToHostEntity(updatedHostData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateHostDetails :', error);
+            throw error;
         }
     }
 

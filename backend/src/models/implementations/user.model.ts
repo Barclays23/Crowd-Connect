@@ -1,25 +1,37 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema, Document, Types } from "mongoose";
-// import { IUser } from "@shared/types";  // shared/types/index.ts
+
 
 
 
 export interface IUser {
   _id: Types.ObjectId | string;
+
   name : string;
   email : string;
   mobile : string;
   password : string;
   profilePic? : string;
+
   isEmailVerified : boolean;
   isMobileVerified : boolean;
+
   role: 'user' | 'host' | 'admin';
-  status : "active" | "blocked" | "pending";    // ("pending" if admin creates user and verify later)
-  organizationName? : string;       // if user upgraded to host
-  registrationNumber? : string;     // if user upgraded to host
-  businessAddress? : string;        // if user upgraded to host
-  certificate? : string;            // if user upgraded to host
+  status : "active" | "blocked" | "pending";    // ( "inactive" or "pending" if admin creates user and verify/login later)
+
+  // Host application fields
+  organizationName? : string;
+  registrationNumber? : string;
+  businessAddress? : string;
+  certificateUrl? : string;
+
+  hostStatus? : 'pending' | 'approved' | 'rejected' | 'blocked';
+  hostAppliedAt?: Date;
+  hostReviewedAt?: Date;
+  hostReviewedBy?: Types.ObjectId;
+  hostRejectionReason?: string;
+
   createdAt : Date;
   updatedAt : Date;
 }
@@ -73,6 +85,8 @@ const userSchema = new Schema<IUserModel>(
       enum: ["active", "blocked", "pending"],
       default: "pending",
     },
+
+
     organizationName: {
       type: String,
     },
@@ -82,9 +96,26 @@ const userSchema = new Schema<IUserModel>(
     businessAddress: {
       type: String,
     },
-    certificate: {
+    certificateUrl: {
       type: String,
     },
+    hostStatus: {
+      enum: ["pending", "approved", "rejected", "blocked"],
+    },
+    hostAppliedAt: {
+      type: Date,
+    },
+    hostReviewedAt: {
+      type: Date,
+    },
+    hostReviewedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    hostRejectionReason: {
+      type: String,
+    },
+
   },
   {
     timestamps: true,

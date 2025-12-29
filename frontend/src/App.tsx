@@ -11,9 +11,9 @@ import { ToastContainer, toast, Slide, Zoom, Flip, Bounce } from 'react-toastify
 
 
 // Import route guards
-import { AuthProvider } from "./contexts/AuthContext";
-import { PublicRoute } from "./components/common/PublicRoute";
-import { ProtectedRoute } from "./components/common/ProtectedRoute";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { PublicRoute } from "@/components/common/PublicRoute";
+import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 
 
 
@@ -21,22 +21,27 @@ import { ProtectedRoute } from "./components/common/ProtectedRoute";
 import UserLayout from "@/components/layouts/UserLayout";
 
 
+// Auth Pages
+import Login from "@/pages/auth/Login";
+import Registration from "@/pages/auth/Registration";
+import { OTPVerification } from "@/components/auth/OTPVerification";
+import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
 
-// Pages
-import Home from "./pages/user/Home";
-import Login from "./pages/auth/Login";
-import Registration from "./pages/auth/Registration";
-import NotFound from "./pages/user/NotFound";
-import { OTPVerification } from "./components/auth/OTPVerification";
-import UserAccount from "./pages/user/UserAccount";
+
+// User Pages
+import Home from "@/pages/user/Home";
+import NotFound from "@/pages/user/NotFound";
+import UserAccount from "@/pages/user/UserAccount";
+
+
+// Host pages
+import HostPage from "@/pages/host/HostPage";
 
 
 
 // admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUserList from "./pages/admin/AdminUserList";
-import ResetPasswordPage from "./pages/user/ResetPasswordPage";
-// import AdminUserList from "./pages/admin/users/AdminUserList";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUserList from "@/pages/admin/AdminUserList";
 
 
 
@@ -58,6 +63,7 @@ function App() {
                            <Route element={<UserLayout />}>
                               {/* ----------- Public Routes ---------- */}
                               <Route path="/" element={<Home />} />
+                              <Route path="/host" element={<HostPage />} />
                               <Route path="/otp-verification" element={<OTPVerification />} />
                               <Route path="/reset-password" element={<ResetPasswordPage />} />
                               

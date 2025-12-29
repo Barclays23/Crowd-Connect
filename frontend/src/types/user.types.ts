@@ -1,15 +1,42 @@
 // frontend/src/types/user.types.ts
 
+export type UserRole = "user" | "host" | "admin";
+export type UserStatus = "active" | "blocked" | "pending";
+export type HostStatus = "pending" | "approved" | "rejected" | "blocked";
 
 
-export interface User {
+
+// export interface User {
+//   userId: string;
+//   name: string;
+//   email: string;
+//   mobile?: string;
+//   profilePic?: string;
+  
+//   role: UserRole;
+//   status: UserStatus;
+
+// }
+
+
+export interface UserState {
   userId: string;
   name: string;
   email: string;
-  mobile: string;
-  role: "admin" | "host" | "user";
-  status: "active" | "blocked" | "pending";
+  mobile?: string;
   profilePic?: string;
+  role: UserRole;
+  status: UserStatus;
+  isEmailVerified: boolean;
+
+  organizationName?: string | null;
+  registrationNumber?: string | null;
+  businessAddress?: string | null;
+  certificateUrl?: string | null;
+  hostStatus?: HostStatus;
+  hostRejectionReason?: string;
+
+  //   joinedAt: string; // createdAt ISO string
 }
 
 
@@ -19,7 +46,7 @@ export interface UserUpsertResult {
   name: string;
   email: string;
   mobile?: string;
-  role: "admin" | "host" | "user";
-  status: "active" | "blocked" | "pending";
+  role: UserRole;
+  status: UserStatus;
   profilePic?: string;
 }

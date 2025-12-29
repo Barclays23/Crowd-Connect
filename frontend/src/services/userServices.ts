@@ -23,15 +23,15 @@ interface UserProfileData {
 // }
 
 
-        //  const userFormData = {
-        //    name: values.name,
-        //    email: values.email,
-        //    mobile: values.mobile,
-        //    role: values.role,
-        //    status: values.status,
-        //    // If your editUserService supports profilePic as a file, add it here
-        //    profilePic: profileFile || undefined,
-        //  };
+//  const userFormData = {
+//    name: values.name,
+//    email: values.email,
+//    mobile: values.mobile,
+//    role: values.role,
+//    status: values.status,
+//    // If your editUserService supports profilePic as a file, add it here
+//    profilePic: profileFile || undefined,
+//  };
 
 
 
@@ -42,11 +42,23 @@ interface UserProfileData {
 
 export const userServices = {
 
+    getUserProfile: async () => {
+        try {
+            const response = await axiosInstance.get('/api/user/profile', { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+
     // edit profile by user
     editProfileService: async (data: UserProfileData) => {
         try {
             // console.log('data received in registerService :', data)
-            const response = await axiosInstance.post("/api/auth/edit-profile", data, { withCredentials: true });
+            const response = await axiosInstance.post("/api/user/edit-profile", data, { withCredentials: true });
             // return { data: response.data, error: null };
             return response.data;
 

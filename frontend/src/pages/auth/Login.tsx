@@ -40,21 +40,18 @@ function Login() {
 
       try {
         setIsLoading(true);
-        const response = await login(formData);  // authContext function
-        console.log('response in handleLogin: ', response);
+        const response = await login(formData);
+        // console.log('response in handleLogin: ', response);
 
         toast.success(response.message);
 
         navigate(fromPath, { replace: true });  // Redirect to original path or home after successful login
-        // navigate('/', { replace: true });   // Redirect to dashboard or home after successful login
 
       } catch (err: any) {
         console.error('Error in handleLogin:', err);
         const errorMessage = err.response?.data?.message || err.response?.data?.error || "Something went wrong. Please try again in a moment.";
         toast.error(errorMessage);
 
-        // Re-throw so form knows submission failed (prevents reset)
-        // throw err;// why should throw from here?
       } finally {
         setIsLoading(false);
       }

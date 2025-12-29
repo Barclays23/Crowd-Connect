@@ -5,15 +5,43 @@ import { IUserController } from '../interfaces/IUserController';
 import { IUserServices } from '../../services/interfaces/IUserServices';
 import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
-import { createHttpError } from '../../utils/httpError.utils';
 import { GetUsersResult } from '../../types/user.types';
-import { CreateUserDTO, UpdateUserDTO, UserProfileDto } from '../../dtos/user.dto';
+import { CreateUserDTO, HostDto, UpdateUserDTO, UserProfileDto } from '../../dtos/user.dto';
 
 
 
 
 export class UserController implements IUserController {
     constructor(private _userServices: IUserServices) {
+    }
+
+
+    async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = req.user?.userId;
+            const userProfile: UserProfileDto = await this._userServices.getUserProfile(userId);
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                userProfile,
+                message: HttpResponse.SUCCESS_GET_USERS,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in userController.getUserProfile:', err);
+
+            // If a well-formed HTTP error was thrown, forward its status and message
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            // Fallback to generic internal error
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
+            });
+            return;
+        }
     }
 
 

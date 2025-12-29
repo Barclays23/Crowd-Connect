@@ -4,9 +4,12 @@ import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
 // import morgan from 'morgan';
 
+import { errorHandler } from './middlewares/error.middleware';
+
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
-import { errorHandler } from './middlewares/error.middleware';
+import userRouter from './routes/user.routes';
+import hostRouter from './routes/host.routes';
 
 
 const app = express();
@@ -24,9 +27,11 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/user', userRouter);
+app.use('/api/host', hostRouter);
 
 
-// Error handler
+
 app.use(errorHandler);
 
 

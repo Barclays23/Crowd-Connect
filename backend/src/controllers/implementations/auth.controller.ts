@@ -123,7 +123,7 @@ export class AuthController implements IAuthController {
         try {
             const token: string = req.params.token;
             console.log('token in authController.validateResetLink:', token);
-            
+
             const isValid: boolean = await this._authService.validateResetLink(token);
 
             res.status(HttpStatus.OK).json({

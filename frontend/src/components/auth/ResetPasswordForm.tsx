@@ -90,7 +90,7 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
         {isSubmitting && (
           <div
             className="
-              absolute inset-0 z-10 flex items-center justify-center
+              absolute inset-0 z-10 !m-0 !p-0 flex items-center justify-center
               bg-[var(--bg-overlay)]
               backdrop-blur-[2px]
               rounded-lg
@@ -100,12 +100,6 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
               size="md"
               message="Updating password..."
               subMessage="Just a moment"
-              className="
-                bg-[var(--card-bg)]
-                text-[var(--text-primary)]
-                p-10 rounded-xl
-                shadow-[var(--shadow-lg)]
-              "
             />
           </div>
         )}

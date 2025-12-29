@@ -49,6 +49,16 @@ export enum HttpResponse {
     USER_ACCOUNT_NOT_EXIST = "Your account is removed or no longer available. Please contact support.",
     USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
 
+    HOST_ALREADY_APPROVED = "You are already an approved host.",
+    HOST_APPLICATION_PENDING = "Your hosting application is already pending.",
+    HOST_BLOCKED = "Your hosting permissions are blocked by admin.",
+    HOST_APPLY_SUCCESS = "Host upgrade application submitted successfully.",
+    HOST_APPLY_FAILED = "Failed to submit host upgrade application.",
+    HOST_APPROVE_SUCCESS = "Host application approved.",
+    HOST_REJECT_SUCCESS = "Host application rejected.",
+    HOST_BLOCK_SUCCESS = "Host has been blocked.",
+    HOST_UNBLOCK_SUCCESS = "Host has been unblocked.",
+
     FAILED_GET_USERS = "Failed to fetch users.",
     FAILED_UPDATE_USER = "Failed to update user.",
     FAILED_CREATE_USER = "Failed to create user.",

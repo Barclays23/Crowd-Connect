@@ -76,7 +76,7 @@ export function Navbar() {
     const navItems = [
         { to: "/", label: "Home", end: true },
         { to: "/events", label: "Events" },
-        { to: "/host", label: "Host Event", requiresAuth: true }, // Only show if logged in
+        { to: "/host", label: "Host Event", },
         { to: "/bookings", label: "My Bookings", requiresAuth: true }, // Only show if logged in
         { to: "/profile", label: "Profile", requiresAuth: true }, // Only show if logged in
         { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin

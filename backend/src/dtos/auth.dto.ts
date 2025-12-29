@@ -1,9 +1,10 @@
 // backend/src/dtos/auth.dto.ts
 
 
-export type UserRole = 'user' | 'host' | 'admin';
+import { UserRole, UserStatus } from "../types/user.types";
+import { BaseUserDto } from "./user.dto";
 
-export type UserStatus = 'active' | 'blocked' | 'pending';
+
 
 
 export interface SignUpRequestDto {
@@ -30,16 +31,7 @@ export interface ResetPasswordDto {
 
 
 // RESPONSE AUTH USER
-export interface AuthUserDto {
-    userId: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    status: UserStatus;
-    // mobile?: string;
-    profilePic?: string;
-    isEmailVerified: boolean;
-}
+export interface AuthUserDto extends BaseUserDto {}
 
 
 

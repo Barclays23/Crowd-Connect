@@ -3,6 +3,7 @@
 import { GetUsersFilter, GetUsersResult } from "../../types/user.types";
 import { 
     CreateUserDTO,
+    HostDto,
     UpdateUserDTO,
     UserProfileDto, 
 } from "../../dtos/user.dto";
@@ -10,20 +11,23 @@ import {
 
 
 export interface IUserServices {
-  getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult>;
 
-  // updateProfile(user: ): Promise<string>
+   getUserProfile(userId: string): Promise<UserProfileDto>;
 
-  createUserByAdmin({ createDto, imageFile }: { 
-        createDto: CreateUserDTO; 
-        imageFile?: Express.Multer.File 
-    }): Promise<UserProfileDto>;
+   getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult>;
 
-  editUserByAdmin({ userId, updateDto, imageFile}: {
-        userId: string;
-        updateDto: UpdateUserDTO;
-        imageFile?: Express.Multer.File;
-    }): Promise<UserProfileDto>;
+   // updateProfile(user: ): Promise<string>
+
+   createUserByAdmin({ createDto, imageFile }: { 
+      createDto: CreateUserDTO; 
+      imageFile?: Express.Multer.File 
+   }): Promise<UserProfileDto>;
+
+   editUserByAdmin({ userId, updateDto, imageFile}: {
+      userId: string;
+      updateDto: UpdateUserDTO;
+      imageFile?: Express.Multer.File;
+   }): Promise<UserProfileDto>;
 
 
 

@@ -1,5 +1,12 @@
 // backend/src/mappers/user.mapper.ts
-import { CreateUserDTO, HostDto, UpdateUserDTO, UserProfileDto } from "../dtos/user.dto";
+import { 
+   UserProfileDto,
+   CreateUserDTO, 
+   UpdateUserDTO, 
+   HostUpgradeDTO, 
+   HostDto, 
+} from "../dtos/user.dto";
+
 import { AuthUserDto, SignUpRequestDto } from "../dtos/auth.dto";
 
 import { 
@@ -8,7 +15,8 @@ import {
    SensitiveUserEntity, 
    SignUpUserEntity, 
    UpdateUserEntity,
-   HostEntity, 
+   HostEntity,
+   UpgradeHostEntity, 
 } from "../entities/user.entity";
 
 import User, { IUserModel } from "../models/implementations/user.model";
@@ -56,6 +64,28 @@ export const mapUserModelToSensitiveUserEntity = (user: IUserModel): SensitiveUs
 
 
 
+export const mapUserModelToHostEntity = (user: IUserModel): HostEntity => {
+   const baseProfile: UserEntity = mapUserModelToUserEntity(user);
+
+   return {
+      ...baseProfile,
+      organizationName: user.organizationName ?? '',
+      registrationNumber: user.registrationNumber ?? '',
+      businessAddress: user.businessAddress ?? '',
+      certificateUrl: user.certificateUrl ?? '',
+      hostStatus: user.hostStatus ?? 'pending',
+      hostRejectionReason: user.hostRejectionReason ?? '',
+      appliedAt: user.hostAppliedAt ?? undefined,
+      reviewedAt: user.hostReviewedAt ?? undefined,
+   };
+};
+   
+
+
+
+
+
+
 
 
 
@@ -79,52 +109,70 @@ export const mapUserEntityToAuthUserDto = (
 
 
 
+// REMOVE THIS (REPLAECED BY mapUserEntityToProfileDto BELOW)
+// UserEntity to UserProfileDto (for profile response, excluding host fields) eg: for admin user list
+// export const mapUserEntityToUserProfileDto = (
+//    entity: UserEntity
+// ): UserProfileDto => {
+//    return {
+//       userId: String(entity.id),
+//       name: entity.name,
+//       email: entity.email,
+//       role: entity.role,
+//       status: entity.status,
+//       // mobile: entity?.mobile,
+//       // profilePic: entity?.profilePic,
+//       mobile: entity.mobile ?? undefined,
+//       profilePic: entity.profilePic ?? undefined,
+//       isEmailVerified: entity.isEmailVerified,
+//       isMobileVerified: entity.isMobileVerified,
+//       // createdAt: entity.createdAt instanceof Date ? entity.createdAt.toISOString() : String(entity.createdAt),
+//       createdAt: entity.createdAt ? entity.createdAt.toISOString() : null,
+//    }
+// };
 
-// UserEntity to UserProfileDto (for profile response)
-export const mapUserEntityToUserProfileDto = (
-   entity: UserEntity
+
+
+
+// mapUserEntityToUserProfileDto
+
+
+// USER ENTITY to USER PROFILE DTO
+export const mapUserEntityToProfileDto = (  // OR mapToUserProfileDto
+  entity: UserEntity | HostEntity
 ): UserProfileDto => {
-   return {
+   const baseProfile: UserProfileDto = {
       userId: String(entity.id),
       name: entity.name,
       email: entity.email,
       role: entity.role,
       status: entity.status,
-      // mobile: user?.mobile,
-      // profilePic: user?.profilePic,
-      mobile: entity.mobile ?? null,
-      profilePic: entity.profilePic ?? null,
+
+      mobile: entity.mobile ?? undefined,
+      profilePic: entity.profilePic ?? undefined,
       isEmailVerified: entity.isEmailVerified,
       isMobileVerified: entity.isMobileVerified,
-      // createdAt: entity.createdAt instanceof Date ? entity.createdAt.toISOString() : String(entity.createdAt),
+
       createdAt: entity.createdAt ? entity.createdAt.toISOString() : null,
-   }
-};
-
-
-
-
-
-
-// UserEntity to HostDto (for profile response if role === 'host')
-export const mapHostEntityToHostDto = (entity: HostEntity): HostDto => {
-   
-   const baseProfile = mapUserEntityToUserProfileDto(entity);
-
-   return {
-      ...baseProfile,
-      organizationName: entity.organisationName ?? null,
-      registrationNumber: null, // Add to entity if needed later
-      businessAddress: entity.address ?? null,
-      certificate: null, // Add to entity if needed later
    };
+
+   // Add host fields only if the entity actually is/was a host
+   if (entity.role === "host" || "organizationName" in entity) {
+      const host = entity as HostEntity;
+
+      return {
+         ...baseProfile,
+         organizationName: host.organizationName ?? null,
+         registrationNumber: host.registrationNumber ?? null,
+         businessAddress: host.businessAddress ?? null,
+         certificateUrl: host.certificateUrl ?? null,
+         hostStatus: host.hostStatus ?? null,
+         hostRejectionReason: host.hostRejectionReason ?? undefined,
+      };
+   }
+
+  return baseProfile;
 };
-
-
-
-
-
-
 
 
 // ------------------------------- DTO to ENTITY ---------------------------------
@@ -217,18 +265,34 @@ export const mapUpdateUserDTOToEntity = ({updateDto, profilePicUrl}: {
 
 
 
+// only for host upgrade / apply application
+export const mapHostUpgradeDTOToEntity = ({upgradeDto, hostDocumentUrl}: {
+   upgradeDto: HostUpgradeDTO,
+   hostDocumentUrl?: string
+}): UpgradeHostEntity => {
+   const hostEntity: Partial<HostEntity> = {
+      organizationName: upgradeDto.organizationName,
+      registrationNumber: upgradeDto.registrationNumber,
+      businessAddress: upgradeDto.businessAddress,
+      hostStatus: "pending",
+   };
+   if (hostDocumentUrl !== undefined) hostEntity.certificateUrl = hostDocumentUrl;
+   return hostEntity;
+}
 
 
 
+// to update host details (eg: change host name, regNo, address, document etc) by user or admin
+export const mapUpdateHostDTOToEntity = (
+   updateDto: HostUpgradeDTO,
+   hostDocumentUrl?: string
+): UpgradeHostEntity => {
+   const entity: UpgradeHostEntity = {};
 
+   if (updateDto.organizationName !== undefined) entity.organizationName = updateDto.organizationName;
+   if (updateDto.registrationNumber !== undefined) entity.registrationNumber = updateDto.registrationNumber;
+   if (updateDto.businessAddress !== undefined) entity.businessAddress = updateDto.businessAddress;
+   if (hostDocumentUrl !== undefined) entity.certificateUrl = hostDocumentUrl;
 
-
-// testing purpose (change function name if needed)
-// export const mapUserToResponseDto = (user: any): UserResponseDTO => {
-//    return {
-//       id: user._id.toString(),
-//       name: user.name,
-//       email: user.email,
-//       role: user.role,
-//    };
-// };
+   return entity;
+};

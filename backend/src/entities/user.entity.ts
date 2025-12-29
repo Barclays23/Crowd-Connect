@@ -1,7 +1,8 @@
 // backend/src/entities/user.entity.ts
 
-export type UserRole = "user" | "host" | "admin";
-export type UserStatus = "active" | "blocked" | "pending";
+import { HostStatus, UserRole, UserStatus } from "../types/user.types";
+
+
 
 
 export interface UserEntity {
@@ -16,6 +17,7 @@ export interface UserEntity {
   // profilePic?: string | null;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
+
   createdAt?: Date;
 }
 
@@ -32,9 +34,14 @@ export interface SensitiveUserEntity extends UserEntity {
 
 
 export interface HostEntity extends UserEntity {
-  organisationName?: string;
-  address?: string;
-  // certificates?: string[];
+  organizationName: string;
+  registrationNumber: string;
+  businessAddress: string;
+  hostStatus: HostStatus;
+  certificateUrl?: string;
+  hostRejectionReason?: string;
+  appliedAt?: Date;
+  reviewedAt?: Date;
 }
 
 
@@ -74,5 +81,18 @@ export type UpdateUserEntity = Partial<
   Pick<
     UserEntity,
     "name" | "email" | "role" | "status" | "mobile" | "profilePic"
+  >
+>;
+
+
+
+export type UpgradeHostEntity = Partial<
+  Pick<
+    HostEntity,
+    | "organizationName"
+    | "registrationNumber"
+    | "businessAddress"
+    | "hostStatus"
+    | "certificateUrl"
   >
 >;

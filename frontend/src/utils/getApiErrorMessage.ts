@@ -2,36 +2,45 @@
 import { AxiosError } from 'axios';
 const isDevMode = import.meta.env.DEV;
 
-/**
- * Returns the message so you can use it elsewhere if needed.
- */
-export function getApiErrorMessage(error: unknown): string {
-   const defaultMessage: string = "Something went wrong. Please try again."
-   let userMessage: string = defaultMessage;
 
-   // Handle network errors first (most common during dev when backend is off)
+export function getApiErrorMessage(error: unknown): string {
+   // const defaultMessage = "Something went wrong. Please try again.";
+   const defaultMessage = "We’re having trouble on our side. Please try again shortly.";
+
+   let userMessage = defaultMessage;
+
    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+
+      // 1️⃣ Network error (backend down)
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-         // During development we want to be more honest
          userMessage = isDevMode
-         ? "Backend is not running or unreachable (dev mode)"
-         : "Unable to connect to the server. Please check your internet connection.";
+            ? "Backend is not running or unreachable (dev mode)"
+            : "Unable to connect to the server. Please check your internet connection.";
       }
-      // Additional network-related cases (e.g. backend refused connection)
+
+      // 2️⃣ Connection refused
       else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('Failed to fetch')) {
          userMessage = isDevMode
             ? "Backend refused connection • Please make sure the backend is running. (dev mode)"
             : "Cannot reach the server right now.";
       }
-      // Backend sent a proper error response (400, 401, 429, etc.)
+
+      // 3️⃣ Backend JSON error
       else if (error.response?.data?.message) {
          userMessage = error.response.data.message;
       }
       else if (error.response?.data?.error) {
          userMessage = error.response.data.error;
       }
+
+      // 4️⃣ Route not found
+      else if (status === 404) {
+         userMessage = isDevMode
+            ? "API endpoint not found. Backend route may be missing (dev mode)."
+            : "Requested service is currently unavailable.";
+      }
    }
-   // Fallback for any other unexpected error (non-Axios)
    else if (error instanceof Error) {
       userMessage = error.message || defaultMessage;
    }

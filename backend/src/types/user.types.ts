@@ -1,10 +1,18 @@
 // backend/src/types/user.types.ts
 
 import { UserProfileDto } from "../dtos/user.dto";
-import { UserEntity } from "../entities/user.entity";
 
 
-// query filters for fetching users
+export type UserRole = 'user' | 'host' | 'admin';
+
+export type UserStatus = 'active' | 'blocked' | 'pending';
+
+export type HostStatus = 'pending' | 'approved' | 'rejected' | 'blocked';
+
+
+
+
+// query filters for fetching users (by admin)
 export interface GetUsersFilter {
   page: number;
   limit: number;
@@ -14,9 +22,9 @@ export interface GetUsersFilter {
 }
 
 
-// result when fetching users
+// result when fetching users (by admin)
 export interface GetUsersResult {
-  users: UserProfileDto[] | null;
+  users: UserProfileDto[] | null;  // UserEntity[] | null; ??
   page: number;
   limit: number;
   total: number;
