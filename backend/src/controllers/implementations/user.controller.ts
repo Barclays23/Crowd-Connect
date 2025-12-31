@@ -6,7 +6,7 @@ import { IUserServices } from '../../services/interfaces/IUserServices';
 import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
 import { GetUsersResult } from '../../types/user.types';
-import { CreateUserDTO, HostDto, UpdateUserDTO, UserProfileDto } from '../../dtos/user.dto';
+import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserProfileResponseDto } from '../../dtos/user.dto';
 
 
 
@@ -19,7 +19,7 @@ export class UserController implements IUserController {
     async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?.userId;
-            const userProfile: UserProfileDto = await this._userServices.getUserProfile(userId);
+            const userProfile: UserProfileResponseDto = await this._userServices.getUserProfile(userId);
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -100,14 +100,16 @@ export class UserController implements IUserController {
 
 
 
+
+
     async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             console.log('✅ body received in userController.createUserByAdmin:', req.body);
             console.log('✅ file received in userController.createUserByAdmin:', req.file);
-            const createDto: CreateUserDTO = req.body;
+            const createDto: CreateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            const createdUser: UserProfileDto = await this._userServices.createUserByAdmin({
+            const createdUser: UserProfileResponseDto = await this._userServices.createUserByAdmin({
                 createDto, 
                 imageFile
             });
@@ -141,10 +143,10 @@ export class UserController implements IUserController {
             // console.log('✅ file received in userController.editUserByAdmin:', req.file);
 
             const userId: string = req.params.id;
-            const updateDto: UpdateUserDTO = req.body;
+            const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            const updatedUser: UserProfileDto = await this._userServices.editUserByAdmin({
+            const updatedUser: UserProfileResponseDto = await this._userServices.editUserByAdmin({
                 userId, 
                 updateDto, 
                 imageFile

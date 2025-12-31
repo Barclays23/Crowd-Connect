@@ -1,16 +1,15 @@
 import { IUserRepository } from "../../repositories/interfaces/IUserRepository";
-import { HostUpgradeDTO, UserProfileDto } from "../../dtos/user.dto";
+import { HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 import { IHostServices } from "../interfaces/IHostServices";
 import { createHttpError } from "../../utils/httpError.utils";
 import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
-import { HostEntity, UpgradeHostEntity, UserEntity } from "../../entities/user.entity";
+import { HostEntity, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
 import { uploadToCloudinary } from "../../config/cloudinary";
 import { isHost } from "../../utils/general.utils";
 import { 
-    mapHostUpgradeDTOToEntity, 
+    mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto, 
-    // mapUserEntityToUserProfileDto, REPLACED BY mapUserEntityToProfileDto
 } from "../../mappers/user.mapper";
 
 
@@ -23,17 +22,16 @@ export class HostServices implements IHostServices {
 
     async applyHostUpgrade({ userId, upgradeDto, documentFile }: {
         userId: string;
-        upgradeDto: HostUpgradeDTO;
+        upgradeDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File;
-    }): Promise<UserProfileDto> {
+    }): Promise<UserProfileResponseDto> {
         try {
-            console.log(`received data in hostServices.applyHostUpgrade ---- 
-                userId: ${userId},
-                upgradeDto: ${upgradeDto}, 
-                fileName: ${documentFile?.originalname}`
-            );
+            console.log("✅✅✅✅✅ received data in hostServices.applyHostUpgrade ----");
+            console.log("userId:", userId);
+            console.log("upgradeDto:", upgradeDto);
+            console.log("fileName:", documentFile?.originalname);
 
-            const existingUser: UserEntity | HostEntity | null = await this._userRepository.findUserById(userId);
+            const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
             if (!existingUser) {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
@@ -67,11 +65,11 @@ export class HostServices implements IHostServices {
                 // delete old document from cloudinary if needed
             }
 
-            const upgradeEntity: UpgradeHostEntity = mapHostUpgradeDTOToEntity({upgradeDto, hostDocumentUrl});
+            const upgradeEntity: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});
 
             const hostEntity: HostEntity = await this._userRepository.updateHostDetails(userId, upgradeEntity);
 
-            const hostProfile: UserProfileDto = mapUserEntityToProfileDto(hostEntity);
+            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
             // entity to userProfileDto if needed later
             // return hostdto
             console.log('hostProfile after updateHostDetails:', hostProfile);

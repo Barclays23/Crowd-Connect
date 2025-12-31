@@ -1,10 +1,43 @@
-// backend/src/entities/user.entity.ts
+// // backend/src/entities/user.entity.ts
 
-import { HostStatus, UserRole, UserStatus } from "../types/user.types";
-
-
+import { UserRole, UserStatus, HostStatus } from "../types/user.types";
 
 
+
+
+// // to update user (by admin)
+// export type UpdateUserEntity = Partial<
+//   Pick<
+//     UserEntity,
+//     "name" | "email" | "role" | "status" | "mobile" | "profilePic"
+//   >
+// >;
+
+
+
+// export type UpgradeHostEntity = Partial<
+//   Pick<
+//     HostEntity,
+//     | "organizationName"
+//     | "registrationNumber"
+//     | "businessAddress"
+//     | "hostStatus"
+//     | "certificateUrl"
+//   >
+// >;
+
+
+
+
+
+
+
+
+// ==============================================================================================
+
+
+
+// BaseUserEntity
 export interface UserEntity {
   id: string;
   name: string;
@@ -13,16 +46,10 @@ export interface UserEntity {
   status: UserStatus;
   mobile?: string;
   profilePic?: string;
-  // mobile?: string | null;
-  // profilePic?: string | null;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
-
   createdAt?: Date;
 }
-
-
-
 
 
 // for internal auth use (with password)
@@ -31,8 +58,7 @@ export interface SensitiveUserEntity extends UserEntity {
 }
 
 
-
-
+// ExtendedUserEntity
 export interface HostEntity extends UserEntity {
   organizationName: string;
   registrationNumber: string;
@@ -44,10 +70,22 @@ export interface HostEntity extends UserEntity {
   reviewedAt?: Date;
 }
 
+export interface UserProfileEntity extends HostEntity, UserEntity {}
 
 
 
-export interface SignUpUserEntity {
+
+
+
+// ── CRUD Inputs ─────────────────────────────────────
+
+
+export interface AuthUserCheckInput {
+  email: string;
+}
+
+
+export interface SignUpUserInput {
   name: string;
   email: string;
   password: string;
@@ -56,43 +94,52 @@ export interface SignUpUserEntity {
 
 
 
-export interface AuthUserCheckEntity {
-  email: string;
-}
-
-
-
-// to create new user (by admin)
-export interface CreateUserEntity {
+export interface CreateUserInput {
   name: string;
   email: string;
   password: string;
-  mobile?: string;
-  profilePic?: string;
   role: UserRole;
   status: UserStatus;
+  mobile?: string;
+  profilePic?: string;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
 }
 
 
-// to update user (by admin)
-export type UpdateUserEntity = Partial<
-  Pick<
-    UserEntity,
-    "name" | "email" | "role" | "status" | "mobile" | "profilePic"
-  >
->;
+export interface UpdateUserInput {
+  name?: string;
+  email?: string;
+  role?: UserRole;
+  status?: UserStatus;
+  mobile?: string;
+  profilePic?: string;
+}
 
 
 
-export type UpgradeHostEntity = Partial<
-  Pick<
-    HostEntity,
-    | "organizationName"
-    | "registrationNumber"
-    | "businessAddress"
-    | "hostStatus"
-    | "certificateUrl"
-  >
->;
+export interface UpgradeHostInput {
+  // organizationName?: string;
+  // registrationNumber?: string;
+  // businessAddress?: string;
+  // certificateUrl?: string;
+  // hostStatus?: HostStatus;
+
+  role: "host";  // to upgrade user to host (but hostStatus will be 'pending')
+
+  organizationName: string;
+  registrationNumber: string;
+  businessAddress: string;
+  certificateUrl?: string;
+  hostStatus: 'pending';  // 'pending' on upgrade request
+}
+
+
+// for any update of host details by user or admin (allowed to update by user after approval ??)
+export interface UpdateHostInput {
+  organizationName?: string;
+  registrationNumber?: string;
+  businessAddress?: string;
+  certificateUrl?: string;
+  hostStatus?: HostStatus;
+}

@@ -1,4 +1,4 @@
-import { HostUpgradeDTO, UserProfileDto } from "../../dtos/user.dto";
+import { HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 
 
 
@@ -6,8 +6,8 @@ import { HostUpgradeDTO, UserProfileDto } from "../../dtos/user.dto";
 export interface IHostServices {
     applyHostUpgrade({ userId, upgradeDto, documentFile }: {
         userId: string;
-        upgradeDto: HostUpgradeDTO;
+        upgradeDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File | undefined;
-    }): Promise<UserProfileDto>;
+    }): Promise<UserProfileResponseDto>;
 
 }

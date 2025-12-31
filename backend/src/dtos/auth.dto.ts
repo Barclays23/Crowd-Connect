@@ -2,7 +2,7 @@
 
 
 import { UserRole, UserStatus } from "../types/user.types";
-import { BaseUserDto } from "./user.dto";
+import { BaseUserResponseDto } from "./user.dto";
 
 
 
@@ -31,15 +31,15 @@ export interface ResetPasswordDto {
 
 
 // RESPONSE AUTH USER
-export interface AuthUserDto extends BaseUserDto {}
-
+// export interface AuthUserResponseDto extends BaseUserResponseDto {}
+export type AuthUserResponseDto = BaseUserResponseDto;
 
 
 
 
 // API RESPONSE
 export interface AuthResponseDto {
-    authUser: AuthUserDto;
+    authUser: AuthUserResponseDto;
     accessToken: string;
     message: string;
 }

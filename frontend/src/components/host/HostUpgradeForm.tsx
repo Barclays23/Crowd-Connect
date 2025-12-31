@@ -22,12 +22,16 @@ import { TextArea } from "../ui/text-area";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { hostServices } from "@/services/hostServices";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 const HostUpgradeForm = () => {
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [submitSuccess, setSubmitSuccess] = useState(false);
    const [submitError, setSubmitError] = useState<string | null>(null);
+
+   const { setUser } = useAuth();
+
 
    const {
       register,
@@ -64,14 +68,16 @@ const HostUpgradeForm = () => {
             formData.append("hostDocument", data.hostDocument);
          }
 
-         console.log("Submitting host upgrade data:", data);
-         toast.info('submitted role upgrade application');
+         // console.log("Submitting host upgrade data:", data);
 
          const response = await hostServices.applyHostUpgrade(formData);
          console.log("Host upgrade response:", response);
 
+         toast.success(response.message);
+         if (response.hostProfile) setUser(response.hostProfile);
+
          setSubmitSuccess(true);
-         reset(); // Clear form
+         reset();
 
          // Optional: redirect after few seconds
          setTimeout(() => {

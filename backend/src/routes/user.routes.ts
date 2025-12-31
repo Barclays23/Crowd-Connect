@@ -19,5 +19,4 @@ userRouter.get('/profile', authenticate, authorize('admin', 'user', 'host'), use
 
 
 
-
 export default userRouter;

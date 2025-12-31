@@ -1,6 +1,6 @@
 // backend/src/types/user.types.ts
 
-import { UserProfileDto } from "../dtos/user.dto";
+import { UserProfileResponseDto } from "../dtos/user.dto";
 
 
 export type UserRole = 'user' | 'host' | 'admin';
@@ -24,7 +24,7 @@ export interface GetUsersFilter {
 
 // result when fetching users (by admin)
 export interface GetUsersResult {
-  users: UserProfileDto[] | null;  // UserEntity[] | null; ??
+  users: UserProfileResponseDto[] | null;  // UserEntity[] | null; ??
   page: number;
   limit: number;
   total: number;

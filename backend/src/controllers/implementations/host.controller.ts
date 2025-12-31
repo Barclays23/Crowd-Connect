@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { HostUpgradeDTO, UserProfileDto } from "../../dtos/user.dto";
+import { HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 import { IHostController } from "../interfaces/IHostController";
 import { HttpStatus } from "../../constants/statusCodes";
 import { IHostServices } from "../../services/interfaces/IHostServices";
@@ -16,16 +16,16 @@ export class HostController implements IHostController {
     async applyHostUpgrade (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
             const userId = req.user?.userId;
-            const upgradeDto: HostUpgradeDTO = req.body;
+            const upgradeDto: HostUpgradeRequestDto = req.body;
             const documentFile: Express.Multer.File | undefined = req.file;
 
-            console.log(`received data in hostController.applyHostUpgrade ---- 
-                userId: ${userId},
-                upgradeDto: ${upgradeDto}, 
-                fileName: ${documentFile?.originalname}`
-            );
+            console.log("✅✅✅✅✅ received data in hostController.applyHostUpgrade ----");
+            console.log("userId:", userId);
+            console.log("upgradeDto:", upgradeDto);
+            console.log("fileName:", documentFile?.originalname);
 
-            const upgradedProfile: UserProfileDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile});
+
+            const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile});
 
             res.status(HttpStatus.OK).json({
                 success: true,

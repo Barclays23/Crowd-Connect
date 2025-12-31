@@ -16,7 +16,7 @@ import { getInitials } from "@/utils/namingConventions"
 import { userServices } from "@/services/userServices"
 import { LoadingSpinner1 } from "../common/LoadingSpinner1"
 import { ButtonLoader } from "../common/ButtonLoader"
-import type { User, UserUpsertResult } from "@/types/user.types"
+import type { UserState, UserUpsertResult } from "@/types/user.types"
 
 
 
@@ -25,7 +25,7 @@ import type { User, UserUpsertResult } from "@/types/user.types"
 
 
 interface UserManageFormProps {
-  user?: User | null;
+  user?: UserState | null;
   onSuccess?: (user?: UserUpsertResult) => void;
   onCancel?: () => void;
 }

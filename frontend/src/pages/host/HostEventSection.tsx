@@ -35,7 +35,7 @@ const HostEventSection = () => {
          return <HostRejectedState rejectionReason={user.hostRejectionReason} />;
          case 'blocked':
          return <HostBlockedState />;
-         default:
+         default: // case "approved" :
          return <HostEventForm />;
       }
    }

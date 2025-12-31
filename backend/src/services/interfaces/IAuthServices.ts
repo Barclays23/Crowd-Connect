@@ -3,7 +3,7 @@ import { AuthResult } from "../../types/auth.types";
 import { 
     AuthResponseDto, 
     SignUpRequestDto, 
-    AuthUserDto, 
+    AuthUserResponseDto, 
     SignInRequestDto, 
     ResetPasswordDto 
 } from "../../dtos/auth.dto";
@@ -24,5 +24,5 @@ export interface IAuthService {
     refreshAccessToken(refreshToken: string): Promise<string>
     revokeRefreshToken(refreshToken: string): Promise<void>
 
-    getAuthUser(userId: string): Promise<AuthUserDto>
+    getAuthUser(userId: string): Promise<AuthUserResponseDto>
 }

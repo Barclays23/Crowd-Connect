@@ -3,22 +3,21 @@ import { HostStatus, UserRole, UserStatus } from "../types/user.types";
 
 
 
-// HTTP boundary ------------------------------------------------------------------------
+// HTTP Request boundary ------------------------------------------------------------------------
 
-// for creating a new user (admin creating user)
-export interface CreateUserDTO {  // CreateUserRequestDto
+// for creating a new user by admin
+export interface CreateUserRequestDto {
   name: string;
   email: string;
   role: UserRole;
   status: UserStatus;
-
   mobile?: string;
-  profileImage?: Express.Multer.File;
+  // profileImage?: Express.Multer.File;
 }
 
 
 // for updating user (by admin)
-export interface UpdateUserDTO {   // UpdateUserRequestDto
+export interface UpdateUserRequestDto {
   name?: string;
   email?: string;
   role?: UserRole;
@@ -28,7 +27,7 @@ export interface UpdateUserDTO {   // UpdateUserRequestDto
 }
 
 
-export interface HostUpgradeDTO {
+export interface HostUpgradeRequestDto {
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
@@ -41,7 +40,7 @@ export interface HostUpgradeDTO {
 
 // Response boundary --------------------------------------------------------------------
 
-export interface BaseUserDto {
+export interface BaseUserResponseDto {
   userId: string;
   name: string;
   email: string;
@@ -60,7 +59,7 @@ export interface BaseUserDto {
 
 
 // if role === 'host'
-export interface HostDto {
+export interface HostResponseDto {
   organizationName?: string | null;
   registrationNumber?: string | null;
   businessAddress?: string | null;
@@ -73,9 +72,10 @@ export interface HostDto {
 
 
 
+// for user/host profile page, host event page, host listing etc
+// export interface UserProfileDto extends BaseUserResponseDto, HostResponseDto {}
+export type UserProfileResponseDto = BaseUserResponseDto & HostResponseDto;
 
-// or UserProfileResponseDto (for user/host profile page, host event page, host listing etc)
-export interface UserProfileDto extends BaseUserDto, HostDto {}
 
 
 

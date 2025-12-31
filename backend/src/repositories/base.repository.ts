@@ -1,3 +1,5 @@
+// backend/src/repositories/base.repository.ts
+import { Router } from "express";
 import { 
     Document, 
     Model,

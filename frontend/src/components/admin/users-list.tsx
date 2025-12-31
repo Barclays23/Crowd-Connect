@@ -16,7 +16,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import { userServices } from "@/services/userServices";
 import { toast } from "react-toastify";
 import { AdminPagination } from "./admin-pagination";
@@ -143,7 +142,7 @@ export function UsersList() {
     setEditUser(null);
 
     if (updatedUser && updatedUser.userId) {
-      setUsers(prev => prev.map(u => u.userId === updatedUser.userId ? { ...u, ...updatedUser } : u));
+      setUsers(prev => prev.map(usr => usr.userId === updatedUser.userId ? { ...usr, ...updatedUser } : usr));
     }
 
     fetchUsers();

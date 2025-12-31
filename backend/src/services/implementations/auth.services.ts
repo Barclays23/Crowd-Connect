@@ -19,18 +19,18 @@ import {
 
 import { 
     SignUpRequestDto, 
-    AuthUserDto, 
+    AuthUserResponseDto, 
     SignInRequestDto,
     ResetPasswordDto,  
 } from "../../dtos/auth.dto";
 
 import { 
-    SignUpUserEntity, 
+    SignUpUserInput, 
     UserEntity, 
     SensitiveUserEntity 
 } from "../../entities/user.entity";
 
-import { mapSignUpDtoToSignUpUserEntity, mapUserEntityToAuthUserDto } from "../../mappers/user.mapper";
+import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "../../mappers/user.mapper";
 import { AuthResult } from "../../types/auth.types";
 import { generateCryptoToken } from "../../utils/crypto.utils";
 
@@ -65,7 +65,7 @@ export class AuthServices implements IAuthService {
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-            const safeUser: AuthUserDto = mapUserEntityToAuthUserDto(userData);
+            const safeUser: AuthUserResponseDto = mapUserEntityToAuthUserDto(userData);
 
             return {
                 safeUser, 
@@ -83,7 +83,7 @@ export class AuthServices implements IAuthService {
 
     async signUp(signUpDto: SignUpRequestDto): Promise<string> {
         try {
-            const existUser: UserEntity | null = await this._userRepository.findUserByEmail(signUpDto.email);
+            const existUser: UserEntity | null = await this._userRepository.getUserByEmail(signUpDto.email);
             if (existUser) throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST)
             
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
@@ -140,7 +140,7 @@ export class AuthServices implements IAuthService {
 
     async requestPasswordReset(email: string): Promise<string>{
         try {
-            const existingUser: UserEntity | null = await this._userRepository.findUserByEmail(email);
+            const existingUser: UserEntity | null = await this._userRepository.getUserByEmail(email);
             
             if (!existingUser){
                 console.log('no user found in this email for password reset request.');
@@ -257,7 +257,7 @@ export class AuthServices implements IAuthService {
             }
 
             
-            let userData: UserEntity | null = await this._userRepository.findUserByEmail(email);
+            let userData: UserEntity | null = await this._userRepository.getUserByEmail(email);
             
             if (!userData) {
                 // dto from redis data
@@ -267,7 +267,7 @@ export class AuthServices implements IAuthService {
                     password: tempRedisData.password
                 };
 
-                const signUpEntity: SignUpUserEntity = mapSignUpDtoToSignUpUserEntity(dto);
+                const signUpEntity: SignUpUserInput = mapSignUpRequestDtoToInput(dto);
                 userData = await this._userRepository.createUser(signUpEntity);
             }
 
@@ -280,7 +280,7 @@ export class AuthServices implements IAuthService {
 
 
 
-            const safeUser: AuthUserDto = {
+            const safeUser: AuthUserResponseDto = {
                 userId: userData.id.toString(),
                 name: userData.name,
                 email: userData.email,
@@ -432,13 +432,13 @@ export class AuthServices implements IAuthService {
 
 
 
-    async getAuthUser(userId: string): Promise<AuthUserDto> {
+    async getAuthUser(userId: string): Promise<AuthUserResponseDto> {
         try {
-            const userData: UserEntity | null = await this._userRepository.findUserById(userId);
+            const userData: UserEntity | null = await this._userRepository.getUserById(userId);
 
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
-            const safeUser: AuthUserDto = {
+            const safeUser: AuthUserResponseDto = {
                 userId: userData.id.toString(),
                 name: userData.name,
                 email: userData.email,

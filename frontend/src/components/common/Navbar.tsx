@@ -77,8 +77,8 @@ export function Navbar() {
         { to: "/", label: "Home", end: true },
         { to: "/events", label: "Events" },
         { to: "/host", label: "Host Event", },
-        { to: "/bookings", label: "My Bookings", requiresAuth: true }, // Only show if logged in
-        { to: "/profile", label: "Profile", requiresAuth: true }, // Only show if logged in
+        { to: "/bookings", label: "My Bookings", requiresAuth: true },
+        { to: "/profile", label: "Profile", requiresAuth: true },
         { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
     ];
 

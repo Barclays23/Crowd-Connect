@@ -1,46 +1,71 @@
 // ============================= FOR STORING IN CLOUDINARY ===============================
 import multer from 'multer';
-import { Request } from 'express';
-import { FileFilterCallback } from 'multer';
+
 
 
 // Configure Multer storage
-const storage = multer.memoryStorage(); // Use memory storage since we'll upload to Cloudinary
+const memoryStorage = multer.memoryStorage(); // Use memory storage since we'll upload to Cloudinary
 
-// File filter to allow only images
+
 interface MulterFile {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    size: number;
-    buffer: Buffer;
+   fieldname: string;
+   originalname: string;
+   encoding: string;
+   mimetype: string;
+   size: number;
+   buffer: Buffer;
 }
 
-const fileFilter = (
-    req: Request,
-    file: MulterFile,
-    cb: FileFilterCallback
-): void => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Only JPEG, PNG, GIF, and WEBP images are allowed'));
-    }
-};
+const IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+];
+
+const DOCUMENT_MIME_TYPES = [
+  ...IMAGE_MIME_TYPES,
+  'application/pdf',
+];
 
 
-// Multer configuration
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // Limit file size to 2MB
-  },
-  fileFilter: fileFilter,
+
+
+// ─── file type checkers ───────────────────────────────────
+const isImage = (mimetype: string) => IMAGE_MIME_TYPES.includes(mimetype);
+const isDocument = (mimetype: string) => DOCUMENT_MIME_TYPES.includes(mimetype);
+
+
+
+export const uploadImage = multer({
+   storage: memoryStorage,
+   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+   fileFilter: (req, file, cb) => {
+      if (isImage(file.mimetype)) {
+         cb(null, true);
+      } else {
+         cb(new Error('Only JPEG, PNG, GIF, WEBP images allowed'));
+      }
+   },
 });
 
-export default upload;
+
+export const uploadDocument = multer({
+   storage: memoryStorage,
+   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+   fileFilter: (req, file, cb) => {
+      if (isImage(file.mimetype) || isDocument(file.mimetype)) {
+         cb(null, true);
+      } else {
+         cb(new Error('Only images (JPEG/PNG/GIF/WEBP) or PDF allowed'));
+      }
+   },
+});
+
+
+
+
+
 
 
 

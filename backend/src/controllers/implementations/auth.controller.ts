@@ -9,12 +9,11 @@ import { createHttpError } from "../../utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
 import { 
     AuthResponseDto, 
-    AuthUserDto, 
+    AuthUserResponseDto, 
     ResetPasswordDto, 
     SignInRequestDto 
 } from "../../dtos/auth.dto";
-import { is } from "zod/v4/locales";
-import { success } from "zod";
+
 
 
 
@@ -23,6 +22,7 @@ export class AuthController implements IAuthController {
     constructor(private _authService: IAuthService) {
     }
 
+    
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             console.log('email and password in authController.signIn:', req.body);
@@ -315,7 +315,7 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const userData: AuthUserDto = await this._authService.getAuthUser(userId);
+            const userData: AuthUserResponseDto = await this._authService.getAuthUser(userId);
 
             res.status(HttpStatus.OK).json({
                 // message: HttpResponse.AUTH_USER_FETCHED,

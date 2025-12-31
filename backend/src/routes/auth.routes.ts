@@ -1,3 +1,4 @@
+// backend/src/routes/auth.routes.ts
 import { Router } from 'express';
 import { validateRequest } from '../middlewares/validate.middleware';
 import { authenticate } from '../middlewares/auth.middleware';

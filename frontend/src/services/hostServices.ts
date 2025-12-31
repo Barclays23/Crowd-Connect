@@ -8,7 +8,7 @@ export const hostServices = {
 
     applyHostUpgrade: async (data: FormData) => {
         try {
-            const response = await axiosInstance.post("/api/host/upgrade", data, {
+            const response = await axiosInstance.post("/api/host/apply-upgrade", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },

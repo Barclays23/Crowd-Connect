@@ -3,20 +3,23 @@ import User, { IUser, IUserModel } from "../../models/implementations/user.model
 import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { 
-    AuthUserCheckEntity, 
-    CreateUserEntity, 
+    SignUpUserInput, 
+    CreateUserInput, 
+    UpdateUserInput,
+    UpgradeHostInput, 
+    AuthUserCheckInput, 
     HostEntity, 
     UserEntity,
-    SensitiveUserEntity, 
-    SignUpUserEntity, 
-    UpdateUserEntity,
-    UpgradeHostEntity, 
+    SensitiveUserEntity,
+    UpdateHostInput,
+    UserProfileEntity, 
 } from "../../entities/user.entity";
 
 import { 
     mapUserModelToUserEntity, 
     mapUserModelToSensitiveUserEntity, 
-    mapUserModelToHostEntity
+    mapUserModelToHostEntity,
+    mapUserModelToProfileEntity
 } from "../../mappers/user.mapper";
 
 
@@ -30,54 +33,66 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
 
 
-    async findUserByEmail(email: string): Promise<UserEntity | null> {
+    async getUserByEmail(email: string): Promise<UserEntity | null> {
         try {
             const userData: IUserModel | null = await this.findOne({email});
             const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
             return result;
             
         } catch (error) {
-            console.log('error in findUserByEmail :', error);
+            console.log('error in getUserByEmail :', error);
             throw new Error("Error Finding User");
         }
     }
 
 
-    async findUserByMobile(mobile: string): Promise<UserEntity | null> {
+    async getUserByMobile(mobile: string): Promise<UserEntity | null> {
         try {
             const userData: IUserModel | null = await this.findOne({mobile});
             const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
             return result;
             
         } catch (error) {
-            console.log('error in findUserByMobile :', error);
+            console.log('error in getUserByMobile :', error);
             throw new Error("Error Finding User");
         }
     }
 
 
-    async findUserById(userId: string): Promise<UserEntity | HostEntity | null> {
+    async getUserById(userId: string): Promise<UserEntity | null> {
         try {
             const userData: IUserModel | null = await this.findById(userId);
-            console.log('✅✅✅✅✅ REPO ✅✅✅✅✅✅✅ User data in userRepository.findUserById:', userData);
             const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
             return result;
 
         } catch (error) {
-            console.log('error in findUserById :', error);
+            console.log('error in getUserById :', error);
             throw new Error("Error Finding User");
         }
     }
 
 
-    async findAuthUser(email: AuthUserCheckEntity): Promise<SensitiveUserEntity | null> {
+    // to get full profile
+    async getUserProfile(userId: string): Promise<UserProfileEntity | null> {
+        try {
+            const userData: IUserModel | null = await this.findById(userId);
+            const result: UserProfileEntity | null = userData ? mapUserModelToProfileEntity(userData) : null;
+            return result;
+        } catch (error) {
+            console.log('error in getUserProfile :', error);
+            throw new Error("Error Finding User Profile");
+        }
+    }
+
+
+    async findAuthUser(email: AuthUserCheckInput): Promise<SensitiveUserEntity | null> {
         try {
             const userData: IUserModel | null = await this.findOne(email);
             const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
             return result;
 
         } catch (error) {
-            console.log('error in findUserById :', error);
+            console.log('error in getUserById :', error);
             throw new Error("Error Finding User");
         }
     }
@@ -116,7 +131,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
 
     // user registration (after verifying otp)
-    async createUser(user: SignUpUserEntity): Promise<UserEntity> {  // not (user: IUserModel)
+    async createUser(user: SignUpUserInput): Promise<UserEntity> {
         try {
             const userData: IUserModel = await this.createOne(user);
             const userEntity: UserEntity = mapUserModelToUserEntity(userData);
@@ -129,7 +144,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
     
-    async createUserByAdmin(userEntity: CreateUserEntity): Promise<UserEntity> {
+    async createUserByAdmin(userEntity: CreateUserInput): Promise<UserEntity> {
         try {
             const userData: IUserModel = await this.createOne(userEntity);
             const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
@@ -142,7 +157,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateUserByAdmin(userId: string, userEntity: UpdateUserEntity): Promise<UserEntity> {
+    async updateUserByAdmin(userId: string, userEntity: UpdateUserInput): Promise<UserEntity> {
         try {
             // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
             // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
@@ -191,9 +206,9 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateHostDetails(userId: string, hostEntity: UpgradeHostEntity): Promise<HostEntity> {
+    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity> {
         try {
-            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, hostEntity);
+            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, hostInput);
             if (!updatedHostData) {
                 throw new Error("User not found");
             }
