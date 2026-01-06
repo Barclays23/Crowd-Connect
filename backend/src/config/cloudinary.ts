@@ -47,11 +47,49 @@ export const uploadToCloudinary = ({
 
 
 
-export const deleteFromCloudinary = async (publicId: string, resourceType: ResourceType): Promise<void> => {
+export const extractPublicIdFromUrl = (url: string): string | null => {
     try {
-        await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
-        console.log(`Deleted resource from Cloudinary with public ID: ${publicId}`);
+        const parts = url.split('/');
+        const uploadIndex = parts.indexOf('upload');
+        if (uploadIndex === -1) return null;
+
+        const publicIdWithExtension = parts.slice(uploadIndex + 1)
+            .filter(part => !part.startsWith('v'))
+            .join('/');
+
+        const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, "");
+        return publicId;
+
     } catch (error) {
+        console.error("Error extracting public ID from Cloudinary URL:", error);
+        return null;
+    }
+};
+
+
+
+
+export const deleteFromCloudinary = async ({fileUrl, resourceType}: {
+    fileUrl: string,
+    resourceType: ResourceType
+}): Promise<void> => {
+    try {
+        const publicId = extractPublicIdFromUrl(fileUrl);
+        if (!publicId) return;
+
+        const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+
+        if (result.result !== 'ok') {
+            console.warn(`Cloudinary delete warning: ${result.result} for ID: ${publicId}`);
+        } else {
+            console.log(`Deleted resource from Cloudinary with public ID: ${publicId}`);
+        }
+
+    } catch (error) {
+        console.error("Cloudinary deletion error:", error);
         throw error;
     }
 };
+
+
+

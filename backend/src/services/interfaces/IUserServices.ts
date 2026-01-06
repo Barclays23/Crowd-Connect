@@ -7,6 +7,7 @@ import {
     UpdateUserRequestDto,
     UserProfileResponseDto, 
 } from "../../dtos/user.dto";
+import { UserStatus } from "../../constants/roles-and-statuses";
 
 
 
@@ -18,16 +19,27 @@ export interface IUserServices {
 
    // updateProfile(user: ): Promise<string>
 
-   createUserByAdmin({ createDto, imageFile }: { 
+   createUserByAdmin({ createDto, imageFile, currentAdminId }: { 
       createDto: CreateUserRequestDto; 
-      imageFile?: Express.Multer.File 
+      imageFile?: Express.Multer.File;
+      currentAdminId: string;
    }): Promise<UserProfileResponseDto>;
 
-   editUserByAdmin({ userId, updateDto, imageFile}: {
-      userId: string;
+   editUserByAdmin({ targetUserId, currentAdminId, updateDto, imageFile}: {
+      targetUserId: string;
+      currentAdminId: string;
       updateDto: UpdateUserRequestDto;
       imageFile?: Express.Multer.File;
    }): Promise<UserProfileResponseDto>;
+
+
+   toggleUserBlock({ targetUserId, currentAdminId }: {
+      targetUserId: string; currentAdminId: string
+   }): Promise<UserStatus>;
+
+   deleteUser({ targetUserId, currentAdminId }: { 
+      targetUserId: string; currentAdminId: string 
+   }): Promise<void>;
 
 
 

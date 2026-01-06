@@ -11,6 +11,8 @@ import {
     mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto, 
 } from "../../mappers/user.mapper";
+import { HostStatus, UserRole } from "../../constants/roles-and-statuses";
+import { GetHostsFilter, GetHostsResult } from "../../types/user.types";
 
 
 
@@ -38,16 +40,16 @@ export class HostServices implements IHostServices {
             }
 
             const isAlreadyHost = isHost(existingUser);
-            const isUser = existingUser.role === "user";
+            const isUser = existingUser.role === UserRole.USER;
 
-            const allowedToApply = isUser || (isAlreadyHost && existingUser?.hostStatus === "rejected");
+            const allowedToApply = isUser || (isAlreadyHost && existingUser?.hostStatus === HostStatus.REJECTED);
 
             if (!allowedToApply) {
                 if (isAlreadyHost) {
                     const status = existingUser.hostStatus;
-                    if (status === "approved") throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_ALREADY_APPROVED);
-                    if (status === "pending") throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_APPLICATION_PENDING);
-                    if (status === "blocked") throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.HOST_BLOCKED);
+                    if (status === HostStatus.APPROVED) throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_ALREADY_APPROVED);
+                    if (status === HostStatus.PENDING) throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_APPLICATION_PENDING);
+                    if (status === HostStatus.BLOCKED) throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.HOST_BLOCKED);
                 }
             }
 
@@ -78,6 +80,52 @@ export class HostServices implements IHostServices {
 
         } catch (error: any) {
             console.error('Error in hostServices.applyHostUpgrade:', error);
+            throw error;
+        }
+    }
+
+
+    async getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult> {
+        try {
+            const { page, limit, search, role, status, hostStatus } = filters;
+            console.log('Filters received in hostServices.getAllHosts:', filters);
+
+            const query: any = {};
+
+            query.role = role ? query.role = role : UserRole.HOST;
+
+            if (search) {
+                query.$or = [
+                    { organizationName: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { mobile: { $regex: search, $options: 'i' } },
+                ];
+            }
+
+            if (status) query.status = status;
+            if (hostStatus) query.hostStatus = hostStatus;
+
+            const skip = (page - 1) * limit;
+
+            console.log('Final query in hostServices.getAllHosts:', query);
+
+            const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
+                this._userRepository.findHosts(query, skip, limit),
+                this._userRepository.countUsers(query)
+            ]);
+
+            const mappedHosts: UserProfileResponseDto[] = hosts ? hosts.map(mapUserEntityToProfileDto) : [];
+
+            return {
+                hosts: mappedHosts,
+                page,
+                limit,
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+            };
+
+        } catch (error: any) {
+            console.error('Error in hostServices.getAllHosts:', error);
             throw error;
         }
     }

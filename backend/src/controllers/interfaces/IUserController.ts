@@ -8,5 +8,7 @@ export interface IUserController {
     getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void>;
     createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void>;
     editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void>;
+    toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void>;
+    deleteUser(req: Request, res: Response, next: NextFunction): Promise<void>;
     // editProfile(req: Request, res: Response, next: NextFunction): Promise<void>
 }

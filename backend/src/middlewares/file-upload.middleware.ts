@@ -29,6 +29,11 @@ const DOCUMENT_MIME_TYPES = [
 ];
 
 
+ 
+// ─── file size ───────────────────────────────────
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024; // 5MB
+
 
 
 // ─── file type checkers ───────────────────────────────────
@@ -39,7 +44,7 @@ const isDocument = (mimetype: string) => DOCUMENT_MIME_TYPES.includes(mimetype);
 
 export const uploadImage = multer({
    storage: memoryStorage,
-   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+   limits: { fileSize: MAX_IMAGE_SIZE }, // 2MB
    fileFilter: (req, file, cb) => {
       if (isImage(file.mimetype)) {
          cb(null, true);
@@ -52,7 +57,7 @@ export const uploadImage = multer({
 
 export const uploadDocument = multer({
    storage: memoryStorage,
-   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+   limits: { fileSize: MAX_DOCUMENT_SIZE }, // 5MB
    fileFilter: (req, file, cb) => {
       if (isImage(file.mimetype) || isDocument(file.mimetype)) {
          cb(null, true);

@@ -3,13 +3,6 @@
 import { UserProfileResponseDto } from "../dtos/user.dto";
 
 
-export type UserRole = 'user' | 'host' | 'admin';
-
-export type UserStatus = 'active' | 'blocked' | 'pending';
-
-export type HostStatus = 'pending' | 'approved' | 'rejected' | 'blocked';
-
-
 
 
 // query filters for fetching users (by admin)
@@ -21,10 +14,28 @@ export interface GetUsersFilter {
   status?: string;
 }
 
+export interface GetHostsFilter {
+  page: number;
+  limit: number;
+  role: string;
+  search?: string;
+  status?: string;
+  hostStatus?: string;
+}
+
 
 // result when fetching users (by admin)
 export interface GetUsersResult {
-  users: UserProfileResponseDto[] | null;  // UserEntity[] | null; ??
+  users: UserProfileResponseDto[] | null;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+
+export interface GetHostsResult {
+  hosts: UserProfileResponseDto[] | null;
   page: number;
   limit: number;
   total: number;

@@ -1,4 +1,5 @@
 // backend/src/repositories/interfaces/IUserRepository.ts
+import { UserStatus } from '../../constants/roles-and-statuses';
 import { 
     AuthUserCheckInput, 
     SignUpUserInput, 
@@ -30,6 +31,8 @@ export interface IUserRepository {
 
     findUsers(query: any, skip: number, limit: number): Promise<UserEntity[] | null>;
 
+    findHosts(query: any, skip: number, limit: number): Promise<HostEntity[] | null>;
+
     countUsers(query: any): Promise<number>;
 
     // register by user himself after verifying otp
@@ -37,7 +40,9 @@ export interface IUserRepository {
 
     createUserByAdmin(userEntity: CreateUserInput): Promise<UserEntity>;
 
-    updateUserByAdmin(userId: string, userEntity: UpdateUserInput): Promise<UserEntity>;
+    updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity>;
+
+    deleteUser(userId: string): Promise<void>;
     
     updateUserProfile(userId: string, userEntity: Partial<UserEntity>): Promise<UserEntity>;
     // updateHostProfile(userId: string, userEntity: Partial<HostEntity>): Promise<HostEntity>;
@@ -45,6 +50,9 @@ export interface IUserRepository {
 
     updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null>;
 
+    updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus>;
+
+    // for both upgrading host request & updating host details
     updateHostDetails(userId: string, hostInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity>;
 
 }

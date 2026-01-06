@@ -21,6 +21,7 @@ import {
     mapUserModelToHostEntity,
     mapUserModelToProfileEntity
 } from "../../mappers/user.mapper";
+import { UserStatus } from "../../constants/roles-and-statuses";
 
 
 
@@ -118,6 +119,27 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         }
     }
 
+    
+    async findHosts(query: any, skip: number, limit: number): Promise<HostEntity[] | null> {
+        try {
+            const paginatedHosts: IUserModel[] = await this.model.find(query)
+            .select('-password')
+            .sort({ hostAppliedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(); // faster + easier to map
+
+            // console.log('✅  paginatedHosts :', paginatedHosts);
+
+            const result: HostEntity[] | null = paginatedHosts ? paginatedHosts.map(host => mapUserModelToHostEntity(host)) : null;
+            return result;
+
+        } catch (error) {
+            console.log('error in findHosts :', error);
+            throw new Error("Error Finding Hosts");
+        }
+    }
+
 
     async countUsers(query: any): Promise<number> {
         try {
@@ -157,12 +179,12 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateUserByAdmin(userId: string, userEntity: UpdateUserInput): Promise<UserEntity> {
+    async updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity> {
         try {
             // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
             // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
 
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
             if (!updatedUserData) {
                 throw new Error("User not found");
             }
@@ -188,6 +210,33 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
         } catch (error) {
             console.log('error in updateUserProfile :', error);
+            throw error;
+        }
+    }
+
+
+    async deleteUser(userId: string): Promise<void> {
+        try {
+            await this.findByIdAndDelete(userId);
+        } catch (error) {
+            console.log('error in deleteUser :', error);
+            throw error;
+        }
+    }
+
+
+    async updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus> {
+        try {
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { status: newStatus });
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+
+            const updatedStatus: UserStatus = updatedUserData.status;
+            return updatedStatus;
+
+        } catch (error) {
+            console.log('error in userRepository.updateUserStatus :', error);
             throw error;
         }
     }

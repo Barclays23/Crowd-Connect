@@ -1,5 +1,5 @@
 // backend/src/dtos/user.dto.ts
-import { HostStatus, UserRole, UserStatus } from "../types/user.types";
+import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses";
 
 
 
@@ -53,6 +53,7 @@ export interface BaseUserResponseDto {
 
   isEmailVerified: boolean;
   isMobileVerified?: boolean;
+  isSuperAdmin: boolean;
   createdAt?: string | null;
 }
 

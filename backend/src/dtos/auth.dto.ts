@@ -1,7 +1,5 @@
 // backend/src/dtos/auth.dto.ts
 
-
-import { UserRole, UserStatus } from "../types/user.types";
 import { BaseUserResponseDto } from "./user.dto";
 
 
@@ -11,6 +9,7 @@ export interface SignUpRequestDto {
     name: string;
     email: string;
     password: string;
+    // role: string;
 }
 
 

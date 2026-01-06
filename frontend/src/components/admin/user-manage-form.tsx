@@ -10,13 +10,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "react-toastify"
 import { userFormSchema } from "@/schemas/user.schema"
 import { useEffect, useState, useRef } from "react"
-import { Camera, Loader2, Loader2Icon, LucideLoader2, X } from "lucide-react"
+import { Camera, CheckCircle, X } from "lucide-react"
 import { FieldError } from "../ui/FieldError"
 import { getInitials } from "@/utils/namingConventions"
 import { userServices } from "@/services/userServices"
 import { LoadingSpinner1 } from "../common/LoadingSpinner1"
 import { ButtonLoader } from "../common/ButtonLoader"
 import type { UserState, UserUpsertResult } from "@/types/user.types"
+import { cn } from "@/lib/utils"
 
 
 
@@ -40,7 +41,7 @@ export function UserManageForm({ user, onSuccess, onCancel }: UserManageFormProp
   const [previewImage, setPreviewImage] = useState<string>("");
   const [imageError, setImageError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadingMessage = isEditMode ? "Updating user..." : "Creating user...";
   const isUploadingImage = Boolean(profileFile);
@@ -139,12 +140,12 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
       console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
     try {
-      setLoading(true);
+      setIsSubmitting(true);
       let response;
 
-      if (isEditMode) {
-         response = await userServices.editUserService(user.userId, formData);
-         toast.success(response.message);
+      if (isEditMode && user) {
+        response = await userServices.editUserService(user.userId, formData);
+        toast.success(response.message);
 
       } else {
          response = await userServices.createUserService(formData);
@@ -157,7 +158,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const errorMessage = error.response?.data?.message || "Failed to save user";
       toast.error(errorMessage);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -171,8 +172,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onSubmit={form.handleSubmit(onSubmit)} 
         className="space-y-8">
 
-        {loading && (
-          <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-[var(--bg-overlay)] backdrop-blur-[0.2px]">
+        {isSubmitting && (
+          <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]">
             <LoadingSpinner1 
               size="lg"
               message={loadingMessage} 
@@ -191,10 +192,10 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <FormItem>
                   <div className="flex flex-col items-center gap-4">
                       <div className="relative">
-                        <Avatar className="h-32 w-32 ring-4 ring-offset-4 ring-[var(--border-muted)] ring-offset-[var(--card-bg)]">
+                        <Avatar className="h-32 w-32 ring-4 ring-offset-4 ring-(--border-muted) ring-offset-(--card-bg)">
                         <AvatarImage src={previewImage} alt="Profile" />
                         {/* {previewImage && <AvatarImage src={previewImage} alt="Profile" />} */}
-                        <AvatarFallback className="bg-[var(--brand-primary-light)]/20 text-[var(--brand-primary)] text-3xl font-semibold">
+                        <AvatarFallback className="bg-(--brand-primary-light)/20 text-(--brand-primary) text-3xl font-semibold">
                             {form.watch("name") ? getInitials(form.watch("name")) : "U"}
                         </AvatarFallback>
                         </Avatar>
@@ -214,7 +215,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         <Button
                         type="button"
                         size="icon"
-                        className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] shadow-lg"
+                        className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-(--brand-primary) hover:bg-(--brand-primary-hover) shadow-lg"
                         onClick={() => fileInputRef.current?.click()}
                         >
                         <Camera className="h-5 w-5 text-white" />
@@ -231,7 +232,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                       <div className="w-full text-center lg:text-left space-y-2">
                         <FormLabel>Profile Picture</FormLabel>
-                        <p className="text-xs text-[var(--text-tertiary)]">
+                        <p className="text-xs text-(--text-tertiary)">
                         (Optional • Max 2MB • JPG, PNG, WEBP, GIF, etc.)
                         </p>
 
@@ -258,21 +259,35 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
+
                     <FormControl>
-                      <Input type="email" placeholder="Enter email" className="rounded-xl" {...field} />
+                      <div className="relative">
+                        <Input
+                          type="email"
+                          placeholder="Enter email"
+                          className="rounded-xl pr-10"
+                          {...field}
+                          readOnly={isEditMode && user?.isEmailVerified}
+                        />
+
+                        {isEditMode && user?.isEmailVerified && (
+                          <CheckCircle
+                            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-(--status-success)"
+                          />
+                        )}
+                      </div>
                     </FormControl>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="mobile"
@@ -290,61 +305,133 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               <FormField
                 control={form.control}
                 name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-xl">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="host">Host</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const isHostUser = isEditMode && user?.role === "host";
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isHostUser}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={cn(
+                              "rounded-xl",
+                              isHostUser && "pointer-events-none opacity-100"
+                            )}
+                          >
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                        </FormControl>
+
+                        <SelectContent>
+                          {/* CREATE MODE → only user & admin */}
+                          {!isEditMode && (
+                            <>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </>
+                          )}
+
+                          {/* EDIT MODE */}
+                          {isEditMode && (
+                            <>
+                              {/* Existing HOST → show only host */}
+                              {isHostUser && (
+                                <SelectItem value="host">Host</SelectItem>
+                              )}
+
+                              {/* Existing USER / ADMIN → allow swap */}
+                              {!isHostUser && (
+                                <>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+
+                      {isHostUser && (
+                        <p className="text-xs text-(--text-tertiary)">
+                          Host role cannot be changed
+                        </p>
+                      )}
+
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
                 control={form.control}
                 name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-xl">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="blocked">Blocked</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const isCreateMode = !isEditMode;
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+
+                      {/* CREATE MODE → Always Pending */}
+                      {isCreateMode && (
+                        <FormControl>
+                          <Input
+                            value="Pending"
+                            readOnly
+                            className="rounded-xl bg-(--bg-muted)"
+                          />
+                        </FormControl>
+                      )}
+
+                      {/* EDIT MODE → Show existing status (readonly) */}
+                      {isEditMode && (
+                        <Select value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="rounded-xl pointer-events-none opacity-100">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="blocked">Blocked</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      {isEditMode ? (
+                        <p className="text-xs text-(--text-tertiary)"> Status cannot be changed here </p>
+                      ): (
+                        <p className="text-xs text-(--text-tertiary)"> New users are created with 'Pending' status </p>
+                      )}
+
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
+
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 justify-end pt-6 border-t border-[var(--border-muted)]">
+        <div className="flex gap-3 justify-end pt-6 border-t border-(--border-muted)">
           {onCancel && (
             <Button 
               type="button" 
               variant="outline" 
               onClick={onCancel} 
               className="rounded-xl"
-              disabled={loading} // Also disable cancel while loading to prevent accidental exit
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
@@ -352,14 +439,14 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           
           <Button 
             type="submit" 
-            className="rounded-xl px-6 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white" 
-            disabled={loading}
+            className="rounded-xl px-6 bg-(--brand-primary) hover:bg-(--brand-primary-hover) text-white" 
+            disabled={isSubmitting}
           >
             <ButtonLoader 
-              loading={loading} 
+              loading={isSubmitting}
               loadingText={loadingMessage}
             >
-              {isEditMode ? "Update User" : "Create User"}
+            {isEditMode ? "Update User" : "Create User"}
             </ButtonLoader>
           </Button>
         </div>

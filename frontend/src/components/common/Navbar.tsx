@@ -78,7 +78,7 @@ export function Navbar() {
         { to: "/events", label: "Events" },
         { to: "/host", label: "Host Event", },
         { to: "/bookings", label: "My Bookings", requiresAuth: true },
-        { to: "/profile", label: "Profile", requiresAuth: true },
+        { to: "/my-account", label: "My Account", requiresAuth: true },
         { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
     ];
 

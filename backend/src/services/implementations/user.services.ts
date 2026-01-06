@@ -20,9 +20,11 @@ import {
 
 import { CreateUserInput, HostEntity, UpdateUserInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
 import { GetUsersFilter, GetUsersResult } from "../../types/user.types";
-import { uploadToCloudinary } from "../../config/cloudinary";
+import { deleteFromCloudinary, uploadToCloudinary } from "../../config/cloudinary";
 import { HttpResponse } from "../../constants/responseMessages";
 import { HttpStatus } from "../../constants/statusCodes";
+import { UserRole, UserStatus } from "../../constants/roles-and-statuses";
+import { generateRandomPassword } from "../../utils/password-generator.utils";
 
 
 
@@ -68,6 +70,8 @@ export class UserServices implements IUserServices {
 
             const skip = (page - 1) * limit;
 
+            // console.log('Final query in userServices.getAllUsers:', query);
+
             const [users, totalCount]: [UserEntity[] | null, number] = await Promise.all([
                 this._userRepository.findUsers(query, skip, limit),
                 this._userRepository.countUsers(query)
@@ -76,7 +80,7 @@ export class UserServices implements IUserServices {
             const mappedUsers: UserProfileResponseDto[] = users ? users.map(mapUserEntityToProfileDto) : [];
 
             return {
-                users: mappedUsers, // not included host details (organizationName, address, certificates etc)
+                users: mappedUsers,
                 page,
                 limit,
                 total: totalCount,
@@ -91,12 +95,27 @@ export class UserServices implements IUserServices {
 
 
 
-
-    async createUserByAdmin({createDto, imageFile}: {
+    async createUserByAdmin({createDto, imageFile, currentAdminId}: {
         createDto: CreateUserRequestDto, 
         imageFile?: Express.Multer.File
+        currentAdminId: string
     }): Promise<UserProfileResponseDto> {
         try {
+            const currentAdmin: UserEntity | null = await this._userRepository.getUserById(currentAdminId);
+            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            }
+
+            if (createDto.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_CREATE_ADMIN);
+            }
+
+            if (![UserRole.USER, UserRole.ADMIN].includes(createDto.role)) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.INVALID_USER_ROLE_CREATION);
+            }
+
             const existingEmailUser: UserEntity | null = await this._userRepository.getUserByEmail(createDto.email);
             if (existingEmailUser) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.EMAIL_EXIST);
@@ -107,7 +126,7 @@ export class UserServices implements IUserServices {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
             }
 
-            const tempPassword = 'Temp@1234'; // temporary password, should be changed later
+            const tempPassword = generateRandomPassword(8); // temporary password, can be changed later
             const hashedPassword = await hashPassword(tempPassword);
 
             let profilePicUrl: string = '';
@@ -120,6 +139,7 @@ export class UserServices implements IUserServices {
                 });
             }
 
+            createDto.status = UserStatus.PENDING;  // status will be changed to ACTIVE once the user is logged in
             const userEntity: CreateUserInput = mapCreateUserRequestDtoToInput({createDto, profilePicUrl, hashedPassword});
 
             const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userEntity);
@@ -144,25 +164,75 @@ export class UserServices implements IUserServices {
 
 
 
-    async editUserByAdmin({userId, updateDto, imageFile}: {
-        userId: string, 
-        updateDto: UpdateUserRequestDto, 
+    async editUserByAdmin({targetUserId, currentAdminId, updateDto, imageFile}: {
+        targetUserId: string;
+        currentAdminId: string;
+        updateDto: UpdateUserRequestDto;
         imageFile?: Express.Multer.File
     }): Promise<UserProfileResponseDto> {
         try {
-            // console.log('✅ userId received in userServices.editUserByAdmin:', userId);
+            // console.log('✅ userId received in userServices.editUserByAdmin:', targetUserId);
             // console.log('✅ updateDto received in userServices.editUserByAdmin:', updateDto);
             // console.log('✅ imageFile received in userServices.editUserByAdmin:', imageFile);
-            
-            const existingUser: UserEntity | null = await this._userRepository.getUserById(userId);
 
-            if (!existingUser) {
-                throw createHttpError(404, 'User not found.');
+            const [targetUser, currentAdmin] = await Promise.all([
+                this._userRepository.getUserById(targetUserId),
+                this._userRepository.getUserById(currentAdminId)
+            ]);
+
+            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+
+            if (currentAdmin.status === UserStatus.BLOCKED) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
             }
 
-            const existingMobileUser: UserEntity | null = updateDto.mobile ? await this._userRepository.getUserByMobile(updateDto.mobile) : null;
-            if (existingMobileUser && existingMobileUser.id !== userId) {
-                throw createHttpError(400, 'Another user with this mobile number already exists.');
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            }
+
+            const isEditingSelf = targetUserId === currentAdminId;
+            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin && !isEditingSelf) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_EDIT_ADMIN);
+            }
+
+            if (targetUser.isSuperAdmin && currentAdmin.id !== targetUser.id) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_EDIT_SUPER_ADMIN);
+            }
+
+            const isChangingEmail = updateDto.email && updateDto.email !== targetUser.email;
+            if (isChangingEmail) {
+                if (targetUser.isEmailVerified) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_VERIFIED_EMAIL);
+                }
+
+                const existingEmailUser = await this._userRepository.getUserByEmail(updateDto.email!);
+                if (existingEmailUser && existingEmailUser.id !== targetUserId) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.EMAIL_EXIST);
+                }
+            }
+
+            const isChangingMobile = updateDto.mobile && updateDto.mobile !== targetUser.mobile;
+            if (isChangingMobile) {
+                const existingMobileUser: UserEntity | null = await this._userRepository.getUserByMobile(updateDto.mobile!);
+                if (existingMobileUser && existingMobileUser.id !== targetUserId) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                }
+            }
+            
+            const isChangingRole = updateDto.role && updateDto.role !== targetUser.role;
+            if (isChangingRole){
+                if (targetUser.isSuperAdmin && updateDto.role !== UserRole.ADMIN) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_SUPER_ADMIN_ROLE);
+                }
+
+                if (targetUser.role === UserRole.HOST) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_HOST_ROLE);
+                }
+
+                if (updateDto.role === UserRole.HOST) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_HOST_DIRECTLY);
+                }
             }
 
             let profilePicUrl: string | undefined;
@@ -179,13 +249,19 @@ export class UserServices implements IUserServices {
 
                 console.log('new profilePicUrl:', profilePicUrl);
 
-                // delete old profile pic from cloudinary if needed
+                if (targetUser.profilePic && targetUser.profilePic.trim() !== '') {
+                    try {
+                        await deleteFromCloudinary({fileUrl: targetUser.profilePic, resourceType: 'image'});
+                    } catch (cleanupErr) {
+                        console.warn("Failed to delete user assets from Cloudinary:", cleanupErr);
+                    }
+                }
             }
 
 
-            const updateEntity: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
+            const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
             
-            const updatedUserResult: UserEntity = await this._userRepository.updateUserByAdmin(userId, updateEntity);
+            const updatedUserResult: UserEntity = await this._userRepository.updateUserByAdmin(targetUserId, updateInput);
 
             const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
 
@@ -193,6 +269,106 @@ export class UserServices implements IUserServices {
 
         } catch (err: any) {
             console.error('Error in userServices.editUserByAdmin:', err);
+            throw err;
+        }
+    }
+
+
+
+    async toggleUserBlock({targetUserId, currentAdminId}: {
+        targetUserId: string;
+        currentAdminId: string;
+    }): Promise<UserStatus> {
+        try {
+            const [targetUser, currentAdmin] = await Promise.all([
+                this._userRepository.getUserById(targetUserId),
+                this._userRepository.getUserById(currentAdminId)
+            ]);
+
+            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            }
+
+            if (currentAdmin.status === UserStatus.BLOCKED) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            }
+
+            if (currentAdmin.id === targetUserId) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_SELF);
+            }
+
+            if (targetUser.isSuperAdmin) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_SUPER_ADMIN);
+            }
+
+            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_ADMIN);
+            }
+
+            const newStatus = targetUser.status !== UserStatus.BLOCKED
+                ? UserStatus.BLOCKED
+                : UserStatus.PENDING;
+
+            const updatedStatus: UserStatus = await this._userRepository.updateUserStatus(targetUserId, newStatus);
+
+            return updatedStatus;
+
+        } catch (err: any) {
+            console.error("Error in userServices.toggleUserBlock:", err);
+            throw err;
+        }
+    }
+
+
+
+    async deleteUser({ targetUserId, currentAdminId }: { 
+        targetUserId: string; currentAdminId: string 
+    }): Promise<void> {
+        try {
+            const [targetUser, currentAdmin] = await Promise.all([
+                this._userRepository.getUserById(targetUserId),
+                this._userRepository.getUserById(currentAdminId)
+            ]);
+
+            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            }
+
+            if (currentAdmin.status === UserStatus.BLOCKED) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            }
+
+            if (currentAdmin.id === targetUserId) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_SELF);
+            }
+
+            if (targetUser.isSuperAdmin) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_SUPER_ADMIN);
+            }
+
+            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_ADMIN);
+            }
+
+            if (targetUser.profilePic && targetUser.profilePic.trim() !== '') {
+                try {
+                    await deleteFromCloudinary({fileUrl: targetUser.profilePic, resourceType: 'image'});
+                } catch (cleanupErr) {
+                    console.warn("Failed to delete user assets from Cloudinary:", cleanupErr);
+                }
+            }
+
+            await this._userRepository.deleteUser(targetUserId);
+            return;
+
+        } catch (err: any) {
+            console.error('Error in userServices.deleteUser:', err);
             throw err;
         }
     }

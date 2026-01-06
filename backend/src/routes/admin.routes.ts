@@ -20,6 +20,7 @@ const userRepo = new UserRepository();
 
 // Services ─────────────────
 import { UserServices } from '../services/implementations/user.services';
+import { HostServices } from '../services/implementations/host.services';
 
 
 
@@ -27,17 +28,20 @@ import { UserServices } from '../services/implementations/user.services';
 
 // ── Initialize Services ──
 const userServices = new UserServices(userRepo);
+const hostServices = new HostServices(userRepo);
 
 
 
 
 // Controllers ─────────────────
 import { UserController } from '../controllers/implementations/user.controller';
+import { HostController } from '../controllers/implementations/host.controller';
 
 
 
 // ── Initialize Controllers ──
 const userController = new UserController(userServices);
+const hostController = new HostController(hostServices);
 
 
 
@@ -57,8 +61,12 @@ adminRouter.use(authorize('admin'));
 // User management
 adminRouter.get('/users', userController.getAllUsers.bind(userController));
 adminRouter.put('/users/:id', uploadImage.single("profileImage"), userController.editUserByAdmin.bind(userController));
+adminRouter.delete('/users/:id', userController.deleteUser.bind(userController));
+adminRouter.patch('/users/:id/toggle-block', userController.toggleUserBlock.bind(userController));
 adminRouter.post('/users', uploadImage.single("profileImage"), userController.createUserByAdmin.bind(userController));
 
+// Host management
+adminRouter.get('/hosts', hostController.getAllHosts.bind(hostController));
 
 
 export default adminRouter;

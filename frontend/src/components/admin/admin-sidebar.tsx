@@ -31,6 +31,7 @@ const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Home", url: "/", icon: Home },
   { title: "Users", url: "/admin/users", icon: Users },
+  { title: "Hosts", url: "/admin/hosts", icon: Users },
   { title: "Events", url: "/admin/events", icon: Calendar },
   { title: "Bookings", url: "/admin/bookings", icon: CreditCard },
   { title: "Categories", url: "/admin/categories", icon: FolderOpen },

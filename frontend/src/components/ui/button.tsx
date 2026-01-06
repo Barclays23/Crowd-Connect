@@ -20,6 +20,9 @@ const buttonVariants = cva(
         default:
           "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)]",
 
+        primaryOutline:
+          "border border-[var(--border-default)] bg-(--btn-neutral) text-(--text-secondary) hover:bg-(--btn-primary-bg) hover:text-(--btn-primary-text)",
+
         /* --------------------------------------------------------------- */
         /*  Secondary button – uses the global --btn-secondary-* vars      */
         /* --------------------------------------------------------------- */
@@ -42,7 +45,7 @@ const buttonVariants = cva(
         /*  Ghost – subtle hover only                                      */
         /* --------------------------------------------------------------- */
         ghost:
-          "bg-[var(--btn-ghost-bg)] text-[var(--btn-ghost-text)] hover:bg-[var(--btn-ghost-hover)] hover:text-[var(--text-secondary)]",
+          "bg-[var(--btn-ghost-bg)] text-[var(--btn-ghost-text)] hover:bg-(--bg-neutral) hover:text-[var(--text-secondary)]",
 
         /* --------------------------------------------------------------- */
         /*  Link – brand colour with underline                             */

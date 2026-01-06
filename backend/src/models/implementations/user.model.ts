@@ -1,6 +1,7 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema, Document, Types } from "mongoose";
+import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses";
 
 
 
@@ -17,16 +18,16 @@ export interface IUser {
   isEmailVerified : boolean;
   isMobileVerified : boolean;
 
-  role: 'user' | 'host' | 'admin';
-  status : "active" | "blocked" | "pending";    // ( "inactive" or "pending" if admin creates user and verify/login later)
+  role : UserRole;
+  status : UserStatus;      // ( "inactive" or "pending" if admin creates user and verify/login later)
+  isSuperAdmin: boolean;
 
   // Host application fields
   organizationName? : string;
   registrationNumber? : string;
   businessAddress? : string;
   certificateUrl? : string;
-
-  hostStatus? : 'pending' | 'approved' | 'rejected' | 'blocked';
+  hostStatus? : HostStatus;
   hostAppliedAt?: Date;
   hostReviewedAt?: Date;
   hostReviewedBy?: Types.ObjectId;
@@ -77,13 +78,17 @@ const userSchema = new Schema<IUserModel>(
     },
     role: {
       type: String,
-      enum: ["user", "host", "admin"],
-      default: "user",
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
     },
     status: {
       type: String,
-      enum: ["active", "blocked", "pending"],
-      default: "pending",
+      enum: Object.values(UserStatus),
+      default: UserStatus.PENDING,
+    },
+    isSuperAdmin: {
+      type: Boolean,
+      default: false,
     },
 
 
@@ -100,7 +105,8 @@ const userSchema = new Schema<IUserModel>(
       type: String,
     },
     hostStatus: {
-      enum: ["pending", "approved", "rejected", "blocked"],
+      type: String,
+      enum: Object.values(HostStatus),
     },
     hostAppliedAt: {
       type: Date,

@@ -42,6 +42,7 @@ import HostPage from "@/pages/host/HostPage";
 // admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUserList from "@/pages/admin/AdminUserList";
+import AdminHostsList from "./pages/admin/AdminHostsList";
 
 
 
@@ -75,7 +76,7 @@ function App() {
 
                               {/* ----------- Protected User Routes ---------- */}
                               <Route element={<ProtectedRoute />} >
-                                 <Route path="/profile" element={<UserAccount />} />
+                                 <Route path="/my-account" element={<UserAccount />} />
                                  {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
                               </Route>
                            </Route>
@@ -85,6 +86,7 @@ function App() {
                            <Route element={<ProtectedRoute requireAdmin={true} />} >
                               <Route path="/admin" element={<AdminDashboard />} />
                               <Route path="/admin/users" element={<AdminUserList />} />
+                              <Route path="/admin/hosts" element={<AdminHostsList />} />
                            </Route>
 
 

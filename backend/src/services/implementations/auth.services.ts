@@ -33,6 +33,8 @@ import {
 import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "../../mappers/user.mapper";
 import { AuthResult } from "../../types/auth.types";
 import { generateCryptoToken } from "../../utils/crypto.utils";
+import { UserRole, UserStatus } from "../../constants/roles-and-statuses";
+import { is } from "zod/v4/locales";
 
 
 
@@ -45,10 +47,10 @@ export class AuthServices implements IAuthService {
     async signIn(signInDto: SignInRequestDto): Promise<AuthResult> {
         try {
             const userData: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: signInDto.email});
-
+            console.log('✅ User data retrieved in AuthServices.signIn:', userData);
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
-            if (userData.status === 'blocked') {
+            if (userData.status === UserStatus.BLOCKED) {
                 throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
             }
 
@@ -56,9 +58,9 @@ export class AuthServices implements IAuthService {
             if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
            
             // change user.status to 'active' if it was 'inactive' or 'pending'
-            if (userData.status === 'pending') {
-                const updatedUser: UserEntity = await this._userRepository.updateUserProfile(userData.id, { status: 'active' });
-                console.log(`User status updated to 'active' for userId: ${userData.id}`);
+            if (userData.status === UserStatus.PENDING) {
+                const updatedStatus: UserStatus = await this._userRepository.updateUserStatus(userData.id, UserStatus.ACTIVE);
+                console.log(`✅ User status updated to '${updatedStatus}' upon sign-in.`);
             }
 
             const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
@@ -264,7 +266,7 @@ export class AuthServices implements IAuthService {
                 const dto: SignUpRequestDto = {
                     name: tempRedisData.name,
                     email: tempRedisData.email,
-                    password: tempRedisData.password
+                    password: tempRedisData.password,
                 };
 
                 const signUpEntity: SignUpUserInput = mapSignUpRequestDtoToInput(dto);
@@ -287,7 +289,8 @@ export class AuthServices implements IAuthService {
                 role: userData.role,
                 // mobile: userData?.mobile,
                 status: userData.status,
-                isEmailVerified: userData.isEmailVerified
+                isEmailVerified: userData.isEmailVerified,
+                isSuperAdmin: userData.isSuperAdmin
             };
 
             return {
@@ -445,7 +448,8 @@ export class AuthServices implements IAuthService {
                 role: userData.role,
                 // mobile: userData?.mobile,
                 status: userData.status,
-                isEmailVerified: userData.isEmailVerified
+                isEmailVerified: userData.isEmailVerified,
+                isSuperAdmin: userData.isSuperAdmin
             };
 
             return safeUser;

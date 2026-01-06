@@ -6,18 +6,6 @@ export type HostStatus = "pending" | "approved" | "rejected" | "blocked";
 
 
 
-// export interface User {
-//   userId: string;
-//   name: string;
-//   email: string;
-//   mobile?: string;
-//   profilePic?: string;
-  
-//   role: UserRole;
-//   status: UserStatus;
-
-// }
-
 
 export interface UserState {
   userId: string;
@@ -28,6 +16,7 @@ export interface UserState {
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;
+  isSuperAdmin: boolean;
 
   organizationName?: string | null;
   registrationNumber?: string | null;

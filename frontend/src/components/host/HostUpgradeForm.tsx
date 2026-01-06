@@ -14,7 +14,7 @@ import {
    hostUpgradeSchema, 
    MAX_FILE_SIZE, 
    type HostUpgradeFormData 
-} from "@/schemas/host-upgrade.schema";
+} from "@/schemas/host.schema";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/FieldError";

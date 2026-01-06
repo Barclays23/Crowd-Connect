@@ -23,6 +23,21 @@ export const hostServices = {
 
 
 
+    getAllHosts: async (queryParams?: string) => {
+        try {
+            const url = queryParams ? `/api/admin/hosts?${queryParams}` : `/api/admin/hosts`;
+            const response = await axiosInstance.get(url, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+
 
 
 

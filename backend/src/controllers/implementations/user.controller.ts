@@ -5,8 +5,9 @@ import { IUserController } from '../interfaces/IUserController';
 import { IUserServices } from '../../services/interfaces/IUserServices';
 import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
-import { GetUsersResult } from '../../types/user.types';
+import { GetUsersFilter, GetUsersResult } from '../../types/user.types';
 import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserProfileResponseDto } from '../../dtos/user.dto';
+import { UserStatus } from '../../constants/roles-and-statuses';
 
 
 
@@ -45,7 +46,28 @@ export class UserController implements IUserController {
     }
 
 
-    // get all users (admin)
+
+    // async editProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    //     try {
+    //         const userData = await this._userServices.updateProfile(req.body);
+            
+    //         res.status(HttpStatus.OK).json({message: HttpResponse.PROFILE_PICTURE_CHANGED});
+
+
+    //     } catch (err: any) {
+    //         console.error('Error in AuthController.logout:', err);
+    //         if (err && typeof err.statusCode === 'number') {
+    //             res.status(err.statusCode).json({ message: err.message || 'Error' });
+    //             return;
+    //         }
+    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    //             message: HttpResponse.INTERNAL_SERVER_ERROR
+    //         });
+    //         return;
+    //     }
+    // }
+
+
     async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // Properly extract and parse query params
@@ -55,7 +77,7 @@ export class UserController implements IUserController {
             const role = (req.query.role as string)?.trim() || '';
             const status = (req.query.status as string)?.trim() || '';
 
-            const filters = {
+            const filters: GetUsersFilter = {
                 page,
                 limit,
                 search,
@@ -100,18 +122,18 @@ export class UserController implements IUserController {
 
 
 
-
-
     async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             console.log('✅ body received in userController.createUserByAdmin:', req.body);
             console.log('✅ file received in userController.createUserByAdmin:', req.file);
             const createDto: CreateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
+            const currentAdminId: string = req.user.userId;
 
             const createdUser: UserProfileResponseDto = await this._userServices.createUserByAdmin({
                 createDto, 
-                imageFile
+                imageFile,
+                currentAdminId
             });
 
             res.status(HttpStatus.CREATED).json({
@@ -142,12 +164,14 @@ export class UserController implements IUserController {
             // console.log('✅ body received in userController.editUserByAdmin:', req.body);
             // console.log('✅ file received in userController.editUserByAdmin:', req.file);
 
-            const userId: string = req.params.id;
+            const targetUserId: string = req.params.id;
+            const currentAdminId: string = req.user.userId;
             const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
             const updatedUser: UserProfileResponseDto = await this._userServices.editUserByAdmin({
-                userId, 
+                targetUserId, 
+                currentAdminId,
                 updateDto, 
                 imageFile
             });
@@ -169,6 +193,68 @@ export class UserController implements IUserController {
             }
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_UPDATE_USER}`
+            });
+            return;
+        }
+    }
+
+
+
+    async toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const targetUserId: string = req.params.id;
+            const currentAdminId: string = req.user.userId;
+
+            const updatedStatus: UserStatus = await this._userServices.toggleUserBlock({ targetUserId, currentAdminId });
+
+            const responseMessage = updatedStatus === 'blocked'
+                ? HttpResponse.SUCCESS_BLOCK_USER
+                : HttpResponse.SUCCESS_UNBLOCK_USER;
+
+            console.log('✅ updatedStatus:', updatedStatus, ', responseMessage:', responseMessage);
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: responseMessage,
+                updatedStatus,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in userController.toggleUserBlock:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_UPDATE_USER_STATUS}`
+            });
+            return;
+        }
+    }
+
+
+    async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const targetUserId: string = req.params.id;
+            const currentAdminId: string = req.user.userId;
+
+            await this._userServices.deleteUser({ targetUserId, currentAdminId });
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.SUCCESS_DELETE_USER,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in userController.deleteUser:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_DELETE_USER}`
             });
             return;
         }

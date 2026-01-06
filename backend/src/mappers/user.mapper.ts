@@ -24,6 +24,7 @@ import {
 } from "../entities/user.entity";
 
 import User, { IUserModel } from "../models/implementations/user.model";
+import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses";
 
 
 
@@ -34,17 +35,18 @@ import User, { IUserModel } from "../models/implementations/user.model";
 
 // UserModel to UserEntity (without password)
 export const mapUserModelToUserEntity = (doc: IUserModel): UserEntity => ({
-  id: doc._id.toString(),
-  name: doc.name,
-  email: doc.email,
-//   password: doc.password,
-  role: doc.role,
-  status: doc.status,
-  mobile: doc.mobile,
-  profilePic: doc.profilePic,
-  isEmailVerified: doc.isEmailVerified,
-  isMobileVerified: doc.isMobileVerified,
-  createdAt: doc.createdAt
+   id: doc._id.toString(),
+   name: doc.name,
+   email: doc.email,
+   //   password: doc.password,
+   role: doc.role,
+   status: doc.status,
+   mobile: doc.mobile,
+   profilePic: doc.profilePic,
+   isEmailVerified: doc.isEmailVerified,
+   isMobileVerified: doc.isMobileVerified,
+   isSuperAdmin: doc.isSuperAdmin,
+   createdAt: doc.createdAt
 });
 
 
@@ -69,11 +71,12 @@ export const mapUserModelToHostEntity = (doc: IUserModel): HostEntity => {
       organizationName: doc.organizationName ?? '',
       registrationNumber: doc.registrationNumber ?? '',
       businessAddress: doc.businessAddress ?? '',
-      hostStatus: doc.hostStatus ?? 'pending',
+      hostStatus: doc.hostStatus ?? HostStatus.PENDING,
       certificateUrl: doc.certificateUrl ?? '',
       hostRejectionReason: doc.hostRejectionReason ?? '',
       appliedAt: doc.hostAppliedAt ?? undefined,
       reviewedAt: doc.hostReviewedAt ?? undefined,
+      
       // certificateUrl: doc.certificateUrl,
       // hostRejectionReason: doc.hostRejectionReason,
       // appliedAt: doc.hostAppliedAt,
@@ -117,6 +120,7 @@ export const mapUserEntityToAuthUserDto = (entity: UserEntity): AuthUserResponse
    mobile: entity.mobile,
    profilePic: entity.profilePic ?? undefined,
    isEmailVerified: entity.isEmailVerified,
+   isSuperAdmin: entity.isSuperAdmin,
 });
 
 
@@ -141,6 +145,7 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
       profilePic: entity.profilePic,
       isEmailVerified: entity.isEmailVerified,
       isMobileVerified: entity.isMobileVerified,
+      isSuperAdmin: entity.isSuperAdmin,
 
       createdAt: entity.createdAt ? entity.createdAt.toISOString() : null,  // ?
    };
@@ -185,6 +190,9 @@ export const mapSignUpRequestDtoToInput = (dto: SignUpRequestDto): SignUpUserInp
    email: dto.email,
    password: dto.password,
    isEmailVerified: true,  // since otp is already verified
+   status: UserStatus.ACTIVE,  // set status to "active" upon signup
+   role: process.env.SUPER_ADMIN_EMAIL === dto.email ? UserRole.ADMIN : UserRole.USER,
+   isSuperAdmin: process.env.SUPER_ADMIN_EMAIL === dto.email ? true : false,
 });
 
 
@@ -201,7 +209,8 @@ export const mapCreateUserRequestDtoToInput = ({ createDto, hashedPassword, prof
       email: createDto.email,
       password: hashedPassword,
       role: createDto.role,
-      status: createDto.status ?? "pending",
+      // status: createDto.status ?? UserStatus.PENDING,
+      status: UserStatus.PENDING,  // setting the status as 'PENDING' while creating - status will be changed to ACTIVE once the user is logged in
       mobile: createDto.mobile,
       profilePic: profilePicUrl,
       isEmailVerified: false,
@@ -223,7 +232,7 @@ export const mapUpdateUserRequestDtoToInput = ({updateDto, profilePicUrl}: {
    if (updateDto.name !== undefined) userInput.name = updateDto.name;
    if (updateDto.email !== undefined) userInput.email = updateDto.email;
    if (updateDto.role !== undefined) userInput.role = updateDto.role;
-   if (updateDto.status !== undefined) userInput.status = updateDto.status;
+   // if (updateDto.status !== undefined) userInput.status = updateDto.status;  // cannot change - handled separately (eg: block/unblock)
    if (updateDto.mobile !== undefined) userInput.mobile = updateDto.mobile;
    if (profilePicUrl !== undefined) userInput.profilePic = profilePicUrl;
 
@@ -253,11 +262,11 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
   hostDocumentUrl?: string;
 }): UpgradeHostInput => {
    const udgradeInput: UpgradeHostInput = {
-      role: "host",
+      role: UserRole.HOST,
       organizationName: upgradeDto.organizationName,
       registrationNumber: upgradeDto.registrationNumber,
       businessAddress: upgradeDto.businessAddress,
-      hostStatus: "pending",
+      hostStatus: HostStatus.PENDING,
    };
    if (hostDocumentUrl) udgradeInput.certificateUrl = hostDocumentUrl;
    // if (hostDocumentUrl !== undefined) udgradeInput.certificateUrl = hostDocumentUrl;

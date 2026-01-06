@@ -120,4 +120,29 @@ export const userServices = {
     },
 
 
+
+    toggleUserBlock: async (userId: string) => {
+        try {
+            const response = await axiosInstance.patch(`/api/admin/users/${userId}/toggle-block`, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    deleteUser: async (userId: string) => {
+        try {
+            const response = await axiosInstance.delete(`/api/admin/users/${userId}`, {
+                withCredentials: true,
+            });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
 }

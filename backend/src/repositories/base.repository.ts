@@ -52,6 +52,12 @@ export abstract class BaseRepository<T extends Document> {
     }
 
 
+    async findByIdAndDelete(id: string): Promise<T | null>{
+        const deletedDocument = await this.model.findByIdAndDelete(id);
+        return deletedDocument;
+    }
+
+
     async findOneAndUpdate(query: MongooseFilterQuery<T>, updateData: Partial<T>): Promise<T | null>{
         const updatedDocument = await this.model.findOneAndUpdate(
             query,

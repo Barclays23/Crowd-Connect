@@ -18,4 +18,5 @@ const hostController = new HostController(hostServices);
 hostRouter.post('/apply-upgrade', authenticate, authorize('user', 'host'), uploadDocument.single('hostDocument'), hostController.applyHostUpgrade.bind(hostController));
 
 
+
 export default hostRouter;

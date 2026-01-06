@@ -338,27 +338,5 @@ export class AuthController implements IAuthController {
 
 
 
-    // async editProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
-    //     try {
-    //         const userData = await this._userServices.updateProfile(req.body);
-            
-    //         res.status(HttpStatus.OK).json({message: HttpResponse.PROFILE_PICTURE_CHANGED});
-
-
-    //     } catch (err: any) {
-    //         console.error('Error in AuthController.logout:', err);
-    //         if (err && typeof err.statusCode === 'number') {
-    //             res.status(err.statusCode).json({ message: err.message || 'Error' });
-    //             return;
-    //         }
-    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-    //             message: HttpResponse.INTERNAL_SERVER_ERROR
-    //         });
-    //         return;
-    //     }
-    // }
-
-
-
 
 }

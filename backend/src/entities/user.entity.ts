@@ -1,6 +1,6 @@
 // // backend/src/entities/user.entity.ts
 
-import { UserRole, UserStatus, HostStatus } from "../types/user.types";
+import { UserRole, UserStatus, HostStatus } from "../constants/roles-and-statuses";
 
 
 
@@ -48,6 +48,7 @@ export interface UserEntity {
   profilePic?: string;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
+  isSuperAdmin: boolean;
   createdAt?: Date;
 }
 
@@ -90,6 +91,9 @@ export interface SignUpUserInput {
   email: string;
   password: string;
   isEmailVerified: boolean;
+  status: UserStatus;
+  role: UserRole;
+  isSuperAdmin: boolean;
 }
 
 
@@ -125,13 +129,13 @@ export interface UpgradeHostInput {
   // certificateUrl?: string;
   // hostStatus?: HostStatus;
 
-  role: "host";  // to upgrade user to host (but hostStatus will be 'pending')
+  role: UserRole.HOST;  // to upgrade user to host (but hostStatus will be 'pending')
 
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
   certificateUrl?: string;
-  hostStatus: 'pending';  // 'pending' on upgrade request
+  hostStatus: HostStatus.PENDING;  // 'pending' on upgrade request
 }
 
 
