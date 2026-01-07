@@ -18,6 +18,7 @@ import { LoadingSpinner1 } from "../common/LoadingSpinner1"
 import { ButtonLoader } from "../common/ButtonLoader"
 import type { UserState, UserUpsertResult } from "@/types/user.types"
 import { cn } from "@/lib/utils"
+import { is } from "zod/v4/locales"
 
 
 
@@ -29,13 +30,14 @@ interface UserManageFormProps {
   user?: UserState | null;
   onSuccess?: (user?: UserUpsertResult) => void;
   onCancel?: () => void;
+  onSubmitting?: (loading: boolean) => void;
 }
 
 
 
 
 
-export function UserManageForm({ user, onSuccess, onCancel }: UserManageFormProps) {
+export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: UserManageFormProps) {
   const isEditMode = !!user;
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>("");
@@ -141,6 +143,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
     try {
       setIsSubmitting(true);
+      onSubmitting?.(true);
+
       let response;
 
       if (isEditMode && user) {
@@ -159,6 +163,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+      onSubmitting?.(false);
     }
   }
 
@@ -345,8 +350,13 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                                 <SelectItem value="host">Host</SelectItem>
                               )}
 
+                              {/* SUPER ADMIN → show only Admin */}
+                              {user?.isSuperAdmin && (
+                                <SelectItem value="admin">Admin</SelectItem>
+                              )}
+
                               {/* Existing USER / ADMIN → allow swap */}
-                              {!isHostUser && (
+                              {!isHostUser && !user?.isSuperAdmin && (
                                 <>
                                   <SelectItem value="user">User</SelectItem>
                                   <SelectItem value="admin">Admin</SelectItem>
@@ -359,7 +369,25 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                       {isHostUser && (
                         <p className="text-xs text-(--text-tertiary)">
-                          Host role cannot be changed
+                          <span className="text-(--brand-primary)">*</span> Host role cannot be changed
+                        </p>
+                      )}
+
+                      {!isEditMode && (
+                        <p className="text-xs text-(--text-tertiary)">
+                          <span className="text-(--brand-primary)">*</span> Cannot create <span className="font-medium">'host'</span> directly. Use role upgrading feature.
+                        </p>
+                      )}
+
+                      {isEditMode && !isHostUser && !user?.isSuperAdmin && (
+                        <p className="text-xs text-(--text-tertiary)">
+                          <span className="text-(--brand-primary)">*</span> Direct role changes to <span className="font-medium text-(--brand-primary)">Host</span> are not permitted. Please use the Role Upgrade Portal.
+                        </p>
+                      )}
+
+                      {isEditMode && user?.isSuperAdmin && (
+                        <p className="text-xs text-(--text-tertiary)">
+                          <span className="text-(--brand-primary)">*</span> Super Admin role cannot be changed.
                         </p>
                       )}
 
@@ -408,9 +436,9 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                       )}
 
                       {isEditMode ? (
-                        <p className="text-xs text-(--text-tertiary)"> Status cannot be changed here </p>
+                        <p className="text-xs text-(--text-tertiary)"> <span className="text-(--brand-primary)">*</span> Status cannot be changed here </p>
                       ): (
-                        <p className="text-xs text-(--text-tertiary)"> New users are created with 'Pending' status </p>
+                        <p className="text-xs text-(--text-tertiary)"> <span className="text-(--brand-primary)">*</span> New users are created with 'Pending' status </p>
                       )}
 
                       <FormMessage />

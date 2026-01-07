@@ -26,7 +26,7 @@ import {
 import User, { IUserModel } from "../models/implementations/user.model";
 import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses";
 
-
+const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
 
 // ── MODEL → ENTITY ───────────────────────────────────────────────────────────────────────────────
@@ -150,10 +150,8 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
       createdAt: entity.createdAt ? entity.createdAt.toISOString() : null,  // ?
    };
 
-
-
    // Add host fields only if the entity actually is/was a host
-   if (entity.role === "host" || "organizationName" in entity) {
+   if (entity.role === "host") {
       const host = entity as HostEntity;
 
       const hostProfile: UserProfileResponseDto = {
@@ -163,6 +161,7 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
          businessAddress: host.businessAddress ?? null,
          certificateUrl: host.certificateUrl ?? null,
          hostStatus: host.hostStatus ?? null,
+         hostAppliedAt: host.appliedAt ? host.appliedAt.toISOString() : null,
          hostRejectionReason: host.hostRejectionReason ?? undefined,
       };
 
@@ -191,8 +190,8 @@ export const mapSignUpRequestDtoToInput = (dto: SignUpRequestDto): SignUpUserInp
    password: dto.password,
    isEmailVerified: true,  // since otp is already verified
    status: UserStatus.ACTIVE,  // set status to "active" upon signup
-   role: process.env.SUPER_ADMIN_EMAIL === dto.email ? UserRole.ADMIN : UserRole.USER,
-   isSuperAdmin: process.env.SUPER_ADMIN_EMAIL === dto.email ? true : false,
+   role: superAdminEmail === dto.email ? UserRole.ADMIN : UserRole.USER,
+   isSuperAdmin: superAdminEmail === dto.email ? true : false,
 });
 
 
@@ -267,6 +266,7 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
       registrationNumber: upgradeDto.registrationNumber,
       businessAddress: upgradeDto.businessAddress,
       hostStatus: HostStatus.PENDING,
+      hostAppliedAt: new Date(),
    };
    if (hostDocumentUrl) udgradeInput.certificateUrl = hostDocumentUrl;
    // if (hostDocumentUrl !== undefined) udgradeInput.certificateUrl = hostDocumentUrl;

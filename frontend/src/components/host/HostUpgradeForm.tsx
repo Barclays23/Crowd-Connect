@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { 
-   hostUpgradeSchema, 
+   HostUpgradeSchema, 
    MAX_FILE_SIZE, 
    type HostUpgradeFormData 
 } from "@/schemas/host.schema";
@@ -41,7 +41,7 @@ const HostUpgradeForm = () => {
       setValue,
       reset,
    } = useForm<HostUpgradeFormData>({
-      resolver: zodResolver(hostUpgradeSchema),
+      resolver: zodResolver(HostUpgradeSchema),
       defaultValues: {
          organizationName: "",
          registrationNumber: "",
@@ -95,28 +95,28 @@ const HostUpgradeForm = () => {
    };
 
    return (
-      <div className="min-h-screen bg-[var(--bg-primary)] px-4 py-12">
+      <div className="min-h-screen bg-(--bg-primary) px-4 py-12">
          <div className="max-w-2xl mx-auto">
             {/* Header */}
             <div className="text-center mb-8">
-               <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-[var(--badge-primary-bg)]">
-                  <Building2 className="w-10 h-10 text-[var(--brand-primary)]" />
+               <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-(--badge-primary-bg)">
+                  <Building2 className="w-10 h-10 text-(--brand-primary)" />
                </div>
-               <h1 className="text-3xl font-bold mb-3 text-[var(--heading-primary)]">
+               <h1 className="text-3xl font-bold mb-3 text-(--heading-primary)">
                   Become a Host
                </h1>
-               <p className="max-w-md mx-auto text-[var(--text-secondary)]">
+               <p className="max-w-md mx-auto text-(--text-secondary)">
                   Apply to become a verified host and start creating amazing events for your audience.
                </p>
             </div>
 
             {/* Benefits */}
-            <div className="rounded-xl p-6 mb-8 bg-[var(--badge-success-bg)] border border-[var(--badge-success-border)]">
-               <h3 className="font-semibold mb-3 flex items-center gap-2 text-[var(--badge-success-text)]">
+            <div className="rounded-xl p-6 mb-8 bg-(--badge-success-bg) border border-(--badge-success-border)">
+               <h3 className="font-semibold mb-3 flex items-center gap-2 text-(--badge-success-text)">
                   <CheckCircle2 className="w-5 h-5" />
                   Host Benefits
                </h3>
-               <ul className="space-y-2 text-sm text-[var(--badge-success-text)]">
+               <ul className="space-y-2 text-sm text-(--badge-success-text)">
                   <li>• Create unlimited events and reach thousands of attendees</li>
                   <li>• Access detailed analytics and attendee insights</li>
                   <li>• Receive payments directly to your account</li>
@@ -125,15 +125,15 @@ const HostUpgradeForm = () => {
             </div>
 
             {/* Form Card */}
-            <div className="rounded-2xl p-8 bg-[var(--card-bg)] border border-[var(--card-border)] shadow-[var(--shadow-lg)]">
+            <div className="rounded-2xl p-8 bg-(--card-bg) border border-(--card-border) shadow-(--shadow-lg)">
                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   {/* Organization Name */}
                   <div>
-                     <label className="block text-sm font-medium mb-2 text-[var(--text-primary)]">
+                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
                         Organization Name *
                      </label>
                      <div className="relative">
-                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)] z-10" />
+                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
                         <Input
                            {...register('organizationName')}
                            placeholder="Enter your organization name"
@@ -145,11 +145,11 @@ const HostUpgradeForm = () => {
 
                   {/* Registration Number */}
                   <div>
-                     <label className="block text-sm font-medium mb-2 text-[var(--text-primary)]">
+                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
                         Registration Number *
                      </label>
                      <div className="relative">
-                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-tertiary)] z-10" />
+                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
                         <Input
                            {...register('registrationNumber')}
                            placeholder="Enter business registration number"
@@ -161,11 +161,11 @@ const HostUpgradeForm = () => {
 
                   {/* Business Address */}
                   <div>
-                     <label className="block text-sm font-medium mb-2 text-[var(--text-primary)]">
+                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
                         Business Address *
                      </label>
                      <div className="relative">
-                        <MapPin className="absolute left-4 top-4 w-5 h-5 text-[var(--text-tertiary)] z-10" />
+                        <MapPin className="absolute left-4 top-4 w-5 h-5 text-(--text-tertiary) z-10" />
                         <TextArea
                            {...register("businessAddress")}
                            placeholder="Enter your full business address"
@@ -178,7 +178,7 @@ const HostUpgradeForm = () => {
 
                   {/* Certificate Upload */}
                   <div>
-                     <label className="block text-sm font-medium mb-2 text-[var(--text-primary)]">
+                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
                         {/* Business Certificate (Optional but recommended) */}
                         Certificate / Document *
                      </label>
@@ -186,7 +186,7 @@ const HostUpgradeForm = () => {
                         className={`relative rounded-xl p-6 text-center cursor-pointer transition-all border-2 border-dashed ${
                            errors.hostDocument
                            ? 'border-destructive bg-destructive/5'
-                           : 'border-[var(--border-muted)] hover:border-[var(--brand-primary)]/50 bg-[var(--bg-secondary)]'
+                           : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'
                         }`}
                      >
                         <input
@@ -198,19 +198,19 @@ const HostUpgradeForm = () => {
                            }}
                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
-                        <Upload className="w-8 h-8 mx-auto mb-3 text-[var(--text-tertiary)]" />
+                        <Upload className="w-8 h-8 mx-auto mb-3 text-(--text-tertiary)" />
 
                         {hostDocument ? (
                            <div className="space-y-1">
-                           <p className="font-medium text-[var(--text-primary)]">{hostDocument.name}</p>
-                           <p className="text-xs text-[var(--text-tertiary)]">
+                           <p className="font-medium text-(--text-primary)">{hostDocument.name}</p>
+                           <p className="text-xs text-(--text-tertiary)">
                               {(hostDocument.size / 1024 / 1024).toFixed(2)} MB
                            </p>
                            </div>
                         ) : (
                            <>
-                           <p className="text-[var(--text-secondary)]">Drop your file here or click to upload</p>
-                           <p className="text-sm mt-1 text-[var(--text-tertiary)]">
+                           <p className="text-(--text-secondary)">Drop your file here or click to upload</p>
+                           <p className="text-sm mt-1 text-(--text-tertiary)">
                               PDF, JPG, PNG up to {MAX_FILE_SIZE / (1024 * 1024)}MB
                            </p>
                            </>
@@ -252,9 +252,9 @@ const HostUpgradeForm = () => {
                   <div
                      className={`
                         mt-6 p-4 rounded-xl text-center md:text-left
-                        bg-[var(--badge-error-bg)] 
-                        border border-[var(--badge-error-border)]
-                        text-[var(--badge-error-text)]
+                        bg-(--badge-error-bg) 
+                        border border-(--badge-error-border)
+                        text-(--badge-error-text)
                      `}
                   >
                      {submitError}
@@ -263,7 +263,7 @@ const HostUpgradeForm = () => {
                </form>
             </div>
 
-            <p className="text-center mt-6 text-sm text-[var(--text-tertiary)]">
+            <p className="text-center mt-6 text-sm text-(--text-tertiary)">
                Applications are typically reviewed within 2-3 business days
             </p>
          </div>

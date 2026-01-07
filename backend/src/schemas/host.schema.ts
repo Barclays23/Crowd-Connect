@@ -1,4 +1,4 @@
-// frontend/src/schemas/host.schema.ts
+// backend/src/schemas/host.schema.ts
 import { z } from "zod";
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -71,7 +71,7 @@ export const registrationDocumentBase = z
 
 
 
-export const HostRejectSchema = z.object({
+export const hostRejectSchema = z.object({
    reason: z
       .string()
       .trim()
@@ -83,7 +83,7 @@ export const HostRejectSchema = z.object({
 
 
 
-export const HostUpgradeSchema = z.object({
+export const hostUpgradeSchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
@@ -95,6 +95,5 @@ export const HostUpgradeSchema = z.object({
 
 
 
-export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;
-export type HostUpdateFormData = z.infer<typeof HostUpgradeSchema>;
-export type HostRejectFormData = z.infer<typeof HostRejectSchema>;
+export type HostUpgradeFormData = z.infer<typeof hostUpgradeSchema>;
+export type HostRejectFormData = z.infer<typeof hostRejectSchema>;

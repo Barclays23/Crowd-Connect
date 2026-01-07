@@ -30,6 +30,7 @@ import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 
 
 
@@ -80,6 +81,8 @@ export function UsersList() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [convertToHostUser, setConvertToHostUser] = useState<User | null>(null);
+  const [isUserFormSubmitting, setIsUserFormSubmitting] = useState(false);
+
 
 
   const { user: currentAdmin }: { user: UserState | null } = useAuth();
@@ -316,198 +319,210 @@ export function UsersList() {
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-(--border-default) overflow-hidden bg-(--card-bg)">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-(--bg-tertiary) hover:bg-(--bg-tertiary)">
-                <TableHead className="w-12 h-12">
-                  <Checkbox
-                    checked={users.length > 0 && selectedUsers.length === users.length}
-                    onCheckedChange={toggleAllUsers}
-                    disabled={loading}
-                  />
-                </TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Sl No</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">User</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Email</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Phone</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Role</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Status</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Joined</TableHead>
-                <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-32 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Loading users...</span>
-                    </div>
-                  </TableCell>
+        <div className="relative">
+          {isUserFormSubmitting && (
+            <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]">
+              <LoadingSpinner1 
+                size="lg"
+                message='Processing...'
+                // subMessage={loadingSubMessage}
+                subMessage=''
+              />
+            </div>
+          )}
+          <div className="rounded-xl border border-(--border-default) overflow-hidden bg-(--card-bg)">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-(--bg-tertiary) hover:bg-(--bg-tertiary)">
+                  <TableHead className="w-12 h-12">
+                    <Checkbox
+                      checked={users.length > 0 && selectedUsers.length === users.length}
+                      onCheckedChange={toggleAllUsers}
+                      disabled={loading}
+                    />
+                  </TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Sl No</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">User</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Email</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Phone</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Role</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Status</TableHead>
+                  <TableHead className="text-(--text-secondary) font-semibold">Joined</TableHead>
+                  <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
                 </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="h-32 text-center text-red-500">
-                    {error}
-                  </TableCell>
-                </TableRow>
-              ) : users.length === 0 ? (
-                <TableRow key='empty'>
-                  <TableCell colSpan={9} className="h-32 text-center text-(--text-secondary)">
-                    No users found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                users.map((user, index) => (
-                  <TableRow key={user.userId}>
-                    <TableCell className="h-14">
-                      <Checkbox
-                        checked={selectedUsers.includes(user.userId)}
-                        onCheckedChange={() => toggleUserSelection(user.userId)}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium text-(--text-primary)">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-(--text-tertiary) ring-offset-(--text-inverse)">
-                          <AvatarImage src={user.profilePic} alt={user.name} />
-                          <AvatarFallback className="bg-(--brand-primary-light)/20 text-(--brand-primary) font-medium text-sm">
-                            {getInitials(user.name ?? "")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium text-(--text-primary) whitespace-nowrap">{user.name}</span>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-32 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Loading users...</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-(--text-secondary)">
-                      <div className="flex items-center gap-1 leading-none">
-                        <span>{user.email}</span>
-                        {user.isEmailVerified ? (
-                          <CheckCircle size={14} className="text-(--status-success)" />
-                        ) : (
-                          <AlertCircle size={14} className="text-(--status-error)" />
-                        )}
-                      </div>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-32 text-center text-red-500">
+                      {error}
                     </TableCell>
-                    <TableCell className="text-(--text-secondary)">{user.mobile}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          roleVariant[
-                            (user.isSuperAdmin ? "admin" : user.role).toLowerCase() as keyof typeof roleVariant
-                          ]
-                        }
-                        size="sm"
-                        className="rounded-lg font-mono whitespace-nowrap inline-flex items-center justify-center"
-                      >
-                        {user.isSuperAdmin ? "Super Admin" : capitalize(user.role)}
-                      </Badge>
+                  </TableRow>
+                ) : users.length === 0 ? (
+                  <TableRow key='empty'>
+                    <TableCell colSpan={9} className="h-32 text-center text-(--text-secondary)">
+                      No users found
                     </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={getStatusBadgeVariant(user.status)}
-                        size="sm"
-                        className="rounded-lg font-mono flex items-center gap-1 w-fit"
-                      >
-                        {getStatusIcon(user.status)}
-                        {capitalize(user.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-(--text-secondary) whitespace-nowrap">{formatDate2(user.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-col items-end gap-2">
-
-                        {/* Row 1: Icon actions */}
-                        <div className="flex items-center gap-1">
-                          {/* View */}
-                          <Button
-                            onClick={() => setViewUser(user)}
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
-                          >
-                            <Eye className="h-4 w-4 text-(--text-secondary)" />
-                          </Button>
-
-                          {(currentAdmin?.isSuperAdmin || user.role !== "admin") && (
-                            <>
-                              {/* Edit */}
-                              <Button
-                                onClick={() => setEditUser(user)}
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
-                              >
-                                <Edit className="h-4 w-4 text-(--text-secondary)" />
-                              </Button>
-
-                              {/* Block / Unblock */}
-                              { !user.isSuperAdmin && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className={cn(
-                                      "h-9 w-9 rounded-lg hover:bg-(--btn-neutral)",
-                                      user.status === "blocked"
-                                        ? "text-(--status-success)"
-                                        : "text-(--status-error)"
-                                    )}
-                                    onClick={() => setBlockUser(user)}
-                                    disabled={blockingUserId === user.userId}
-                                  >
-                                    {blockingUserId === user.userId ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : user.status === "blocked" ? (
-                                        <CheckCircle className="h-4 w-4" />
-                                      ) : (
-                                        <Ban className="h-4 w-4" />
-                                      )}
-                                  </Button>
-
-                                  {/* Delete */}
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral) text-(--status-error)"
-                                    onClick={() => setDeleteUser(user)}
-                                    disabled={deletingUserId === user.userId}
-                                  >
-                                    {deletingUserId === user.userId ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Trash2 className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </>
-                              )}
-                            </>
+                  </TableRow>
+                ) : (
+                  users.map((user, index) => (
+                    <TableRow key={user.userId}>
+                      <TableCell className="h-14">
+                        <Checkbox
+                          checked={selectedUsers.includes(user.userId)}
+                          onCheckedChange={() => toggleUserSelection(user.userId)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium text-(--text-primary)">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-(--text-tertiary) ring-offset-(--text-inverse)">
+                            <AvatarImage src={user.profilePic} alt={user.name} />
+                            <AvatarFallback className="bg-(--brand-primary-light)/20 text-(--brand-primary) font-medium text-sm">
+                              {getInitials(user.name ?? "")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-(--text-primary) whitespace-nowrap">{user.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-(--text-secondary)">
+                        <div className="flex items-center gap-1 leading-none">
+                          <span>{user.email}</span>
+                          {user.isEmailVerified ? (
+                            <CheckCircle size={14} className="text-(--status-success)" />
+                          ) : (
+                            <AlertCircle size={14} className="text-(--status-error)" />
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell className="text-(--text-secondary)">{user.mobile}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            roleVariant[
+                              (user.isSuperAdmin ? "admin" : user.role).toLowerCase() as keyof typeof roleVariant
+                            ]
+                          }
+                          size="sm"
+                          className="rounded-lg font-mono whitespace-nowrap inline-flex items-center justify-center"
+                        >
+                          {user.isSuperAdmin ? "Super Admin" : capitalize(user.role)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={getStatusBadgeVariant(user.status)}
+                          size="sm"
+                          className="rounded-lg font-mono flex items-center gap-1 w-fit"
+                        >
+                          {getStatusIcon(user.status)}
+                          {capitalize(user.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-(--text-secondary) whitespace-nowrap">{formatDate2(user.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex flex-col items-end gap-2">
 
-                        {/* Row 2: Convert to Host */}
-                        {(currentAdmin?.isSuperAdmin || user.role !== "admin") && !user.isSuperAdmin && 
-                          user.role !== "host" && (
+                          {/* Row 1: Icon actions */}
+                          <div className="flex items-center gap-1">
+                            {/* View */}
                             <Button
-                              variant="primaryOutline"
-                              size="sm"
-                              className="h-8"
-                              onClick={() => setConvertToHostUser(user)}
+                              onClick={() => setViewUser(user)}
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
                             >
-                              Convert to Host
+                              <Eye className="h-4 w-4 text-(--text-secondary)" />
                             </Button>
-                          )}
-                      </div>
-                    </TableCell>
 
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                            {(currentAdmin?.isSuperAdmin || user.role !== "admin") && (
+                              <>
+                                {/* Edit */}
+                                <Button
+                                  onClick={() => setEditUser(user)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
+                                >
+                                  <Edit className="h-4 w-4 text-(--text-secondary)" />
+                                </Button>
+
+                                {/* Block / Unblock */}
+                                { !user.isSuperAdmin && (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className={cn(
+                                        "h-9 w-9 rounded-lg hover:bg-(--btn-neutral)",
+                                        user.status === "blocked"
+                                          ? "text-(--status-success)"
+                                          : "text-(--status-error)"
+                                      )}
+                                      onClick={() => setBlockUser(user)}
+                                      disabled={blockingUserId === user.userId}
+                                    >
+                                      {blockingUserId === user.userId ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : user.status === "blocked" ? (
+                                          <CheckCircle className="h-4 w-4" />
+                                        ) : (
+                                          <Ban className="h-4 w-4" />
+                                        )}
+                                    </Button>
+
+                                    {/* Delete */}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral) text-(--status-error)"
+                                      onClick={() => setDeleteUser(user)}
+                                      disabled={deletingUserId === user.userId}
+                                    >
+                                      {deletingUserId === user.userId ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Trash2 className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+
+                          {/* Row 2: Convert to Host */}
+                          {(currentAdmin?.isSuperAdmin || user.role !== "admin") && !user.isSuperAdmin && 
+                            user.role !== "host" && (
+                              <Button
+                                variant="primaryOutline"
+                                size="sm"
+                                className="h-8"
+                                onClick={() => setConvertToHostUser(user)}
+                              >
+                                Convert to Host
+                              </Button>
+                            )}
+                        </div>
+                      </TableCell>
+
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         {/* Pagination */}
@@ -528,6 +543,7 @@ export function UsersList() {
           title="Create New User"
           size="lg">
           <UserManageForm
+            onSubmitting={setIsUserFormSubmitting}
             onSuccess={handleFormSuccess}
             onCancel={() => setIsCreateModalOpen(false)}
           />
@@ -551,6 +567,7 @@ export function UsersList() {
           {editUser && (
             <UserManageForm
               user={editUser}
+              onSubmitting={setIsUserFormSubmitting}
               onSuccess={handleFormSuccess}
               onCancel={() => setEditUser(null)}
             />

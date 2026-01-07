@@ -67,9 +67,9 @@ export class HostServices implements IHostServices {
                 // delete old document from cloudinary if needed
             }
 
-            const upgradeEntity: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});
+            const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});
 
-            const hostEntity: HostEntity = await this._userRepository.updateHostDetails(userId, upgradeEntity);
+            const hostEntity: HostEntity = await this._userRepository.updateHostDetails(userId, upgradeInput);
 
             const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
             // entity to userProfileDto if needed later

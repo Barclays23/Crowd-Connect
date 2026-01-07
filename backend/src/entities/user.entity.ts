@@ -136,6 +136,7 @@ export interface UpgradeHostInput {
   businessAddress: string;
   certificateUrl?: string;
   hostStatus: HostStatus.PENDING;  // 'pending' on upgrade request
+  hostAppliedAt: Date;
 }
 
 

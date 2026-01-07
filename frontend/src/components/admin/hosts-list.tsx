@@ -316,9 +316,9 @@ export function HostsList() {
                 <TableHead className="text-(--text-secondary) font-semibold">Organization</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Email</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Phone</TableHead>
+                <TableHead className="text-(--text-secondary) font-semibold">Account Status</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Host Status</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Account</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Applied</TableHead>
+                <TableHead className="text-(--text-secondary) font-semibold">Applied Date</TableHead>
                 <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -335,7 +335,7 @@ export function HostsList() {
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-32 text-center text-red-500">
+                  <TableCell colSpan={10} className="h-32 text-center text-(--status-error)">
                     {error}
                   </TableCell>
                 </TableRow>
@@ -379,7 +379,6 @@ export function HostsList() {
                         <span>{host.email}</span>
                         {host.isEmailVerified ? (
                           <CheckCircle size={14} className="text-(--status-success)" />
-
                         ) : (
                           <AlertCircle size={14} className="text-(--status-error)" />
                         )}
@@ -389,18 +388,18 @@ export function HostsList() {
                     <TableCell className="text-(--text-secondary)">{host.mobile || "—"}</TableCell>
 
                     <TableCell>
+                        <Badge variant={host.status === "active" ? "success" : host.status === "blocked" ? "destructive" : "outline"}>
+                            {capitalize(host.status)}
+                        </Badge>
+                    </TableCell>
+
+                    <TableCell>
                       <Badge
                         variant={getHostStatusBadgeVariant(host.hostStatus)}
                         className="flex items-center gap-1 w-fit"
                       >
                         {getHostStatusIcon(host.hostStatus)}
                         {capitalize(host.hostStatus)}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell>
-                      <Badge variant={host.status === "active" ? "success" : host.status === "blocked" ? "destructive" : "outline"}>
-                        {capitalize(host.status)}
                       </Badge>
                     </TableCell>
 

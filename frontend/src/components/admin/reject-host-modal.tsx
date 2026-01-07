@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/text-area";
-import { hostRejectSchema } from "@/schemas/host.schema";
+import { HostRejectSchema } from "@/schemas/host.schema";
 import type { HostRejectFormData } from "@/schemas/host.schema";
 import { FieldError } from "../ui/FieldError";
 
@@ -26,7 +26,7 @@ export function RejectHostModal({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<HostRejectFormData>({
-    resolver: zodResolver(hostRejectSchema),
+    resolver: zodResolver(HostRejectSchema),
   });
 
   const submitHandler = (data: HostRejectFormData) => {

@@ -76,6 +76,8 @@ export enum HttpResponse {
     FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
     FAILED_CREATE_USER = "Failed to create user.",
 
+    FAILED_GET_HOSTS = "Failed to fetch hosts.",
+
     CANNOT_CHANGE_VERIFIED_EMAIL = "verified email address cannot be changed.",
     CANNOT_CHANGE_HOST_ROLE = "Role modification is restricted for Host accounts.",
     CANNOT_CHANGE_HOST_DIRECTLY = "Direct role changes to Host are not permitted. Please use the Role Upgrade Portal.",

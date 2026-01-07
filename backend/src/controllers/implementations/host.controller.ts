@@ -71,7 +71,7 @@ export class HostController implements IHostController {
             console.log('✅ Parsed filters for getAllHosts:', filters);
 
             const result: GetHostsResult = await this._hostService.getAllHosts(filters);
-            // console.log('✅ Result in hostController.getAllHosts:', result);
+            console.log('✅ Result in hostController.getAllHosts:', result);
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -96,7 +96,7 @@ export class HostController implements IHostController {
             }
             // Fallback to generic internal error
             res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_HOSTS}`
             });
             return;
         }

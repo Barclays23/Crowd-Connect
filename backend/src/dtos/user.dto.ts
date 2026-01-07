@@ -66,6 +66,7 @@ export interface HostResponseDto {
   businessAddress?: string | null;
   certificateUrl?: string | null;
   hostStatus?: HostStatus;
+  hostAppliedAt?: string | null;
   hostRejectionReason?: string;
   appliedAt?: string | null;
   reviewedAt?: string | null;
