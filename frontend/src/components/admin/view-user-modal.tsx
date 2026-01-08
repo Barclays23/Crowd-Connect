@@ -1,22 +1,24 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import type { UserState } from "@/types/user.types";
 import { formatDate1 } from "@/utils/dateAndTimeFormats";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
 
 interface ViewUserModalProps {
-  user: {
-    userId: string;
-    name: string;
-    email: string;
-    mobile: string;
-    role: "admin" | "host" | "user";
-    status: "active" | "blocked" | "pending";
-    isEmailVerified: boolean;
-    createdAt: string;
-    profilePic?: string;
-  };
+  // user: {
+  //   userId: string;
+  //   name: string;
+  //   email: string;
+  //   mobile: string;
+  //   role: "admin" | "host" | "user";
+  //   status: "active" | "blocked" | "pending";
+  //   isEmailVerified: boolean;
+  //   createdAt: string;
+  //   profilePic?: string;
+  // };
+  user: UserState;
 }
 
 const roleVariant = {

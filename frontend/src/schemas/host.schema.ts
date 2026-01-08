@@ -93,8 +93,6 @@ export const HostUpgradeSchema = z.object({
 
 
 
-
-
 export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;
 export type HostUpdateFormData = z.infer<typeof HostUpgradeSchema>;
 export type HostRejectFormData = z.infer<typeof HostRejectSchema>;

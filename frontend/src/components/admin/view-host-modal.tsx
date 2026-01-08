@@ -1,7 +1,7 @@
 // frontend/src/components/admin/view-host-modal.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge, badgeVariants } from "@/components/ui/badge";
-import type { HostStatus, UserStatus } from "@/types/user.types";
+import type { HostStatus, UserState, UserStatus } from "@/types/user.types";
 import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
@@ -9,25 +9,27 @@ import { Button } from "../ui/button";
 
 
 interface ViewHostModalProps {
-  host: {
-    userId: string;
-    name: string;
-    email: string;
-    mobile?: string;
-    profilePic?: string;
-    status: UserStatus; // account status
-    isEmailVerified: boolean;
+  // host: {
+  //   userId: string;
+  //   name: string;
+  //   email: string;
+  //   mobile?: string;
+  //   profilePic?: string;
+  //   status: UserStatus; // account status
+  //   isEmailVerified: boolean;
 
-    organizationName?: string;
-    registrationNumber?: string;
-    businessAddress?: string;
-    certificateUrl?: string;
-    hostStatus: HostStatus;
-    hostAppliedAt?: string;
-    hostReviewedAt?: string;
-    hostRejectionReason?: string;
-    createdAt: string;
-  };
+  //   organizationName?: string;
+  //   registrationNumber?: string;
+  //   businessAddress?: string;
+  //   certificateUrl?: string;
+  //   hostStatus: HostStatus;
+  //   hostAppliedAt?: string;
+  //   hostReviewedAt?: string;
+  //   hostRejectionReason?: string;
+  //   createdAt: string;
+  // };
+
+  host: UserState
 }
 
 
@@ -78,10 +80,10 @@ export function ViewHostModal({ host }: ViewHostModalProps) {
                 <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
                     <span className="text-xs text-(--text-tertiary)">Host Status</span>
                     <Badge
-                    variant={hostStatusVariant[host.hostStatus]}
-                    className="w-fit rounded-md font-medium capitalize"
+                      variant={host.hostStatus ? hostStatusVariant[host.hostStatus] : "secondary"}
+                      className="w-fit rounded-md font-medium capitalize"
                     >
-                    {host.hostStatus}
+                      {host.hostStatus}
                     </Badge>
                 </div>
 
@@ -143,14 +145,14 @@ export function ViewHostModal({ host }: ViewHostModalProps) {
           </p>
         </div>
 
-        {host.hostReviewedAt && (
+        {/* {host.hostReviewedAt && (
           <div>
             <p className="text-sm text-(--text-tertiary)">Reviewed Date</p>
             <p className="text-lg font-medium text-(--text-primary) mt-1">
               {formatDate2(host.hostReviewedAt)}
             </p>
           </div>
-        )}
+        )} */}
 
         {host.hostStatus === "rejected" && host.hostRejectionReason && (
           <div className="sm:col-span-2 lg:col-span-3">

@@ -35,21 +35,21 @@ import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 
 
 
-interface User {
-  userId: string;
-  name: string;
-  email: string;
-  mobile: string;
-  role: "admin" | "host" | "user";
-  status: "active" | "blocked" | "pending";
-  profilePic?: string;
-  isEmailVerified: boolean;
-  isSuperAdmin: boolean;
-  createdAt: string;
-}
+// interface User {
+//   userId: string;
+//   name: string;
+//   email: string;
+//   mobile: string;
+//   role: "admin" | "host" | "user";
+//   status: "active" | "blocked" | "pending";
+//   profilePic?: string;
+//   isEmailVerified: boolean;
+//   isSuperAdmin: boolean;
+//   createdAt: string;
+// }
 
 interface ApiResponse {
-  usersData: User[];
+  usersData: UserState[];
   total: number;
   page: number;
   limit: number;
@@ -65,22 +65,22 @@ export function UsersList() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   // Data state
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserState[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Modal states
-  const [viewUser, setViewUser] = useState<User | null>(null);
-  const [editUser, setEditUser] = useState<User | null>(null);
-  const [blockUser, setBlockUser] = useState<User | null>(null);
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [viewUser, setViewUser] = useState<UserState | null>(null);
+  const [editUser, setEditUser] = useState<UserState | null>(null);
+  const [blockUser, setBlockUser] = useState<UserState | null>(null);
+  const [deleteUser, setDeleteUser] = useState<UserState | null>(null);
 
   const [blockingUserId, setBlockingUserId] = useState<string | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [convertToHostUser, setConvertToHostUser] = useState<User | null>(null);
+  const [convertToHostUser, setConvertToHostUser] = useState<UserState | null>(null);
   const [isUserFormSubmitting, setIsUserFormSubmitting] = useState(false);
 
 
@@ -164,7 +164,7 @@ export function UsersList() {
     fetchUsers();
   };
 
-  const handleToggleBlockUser = async (handlingUser: User) => {
+  const handleToggleBlockUser = async (handlingUser: UserState) => {
     try {
       setBlockingUserId(handlingUser.userId);
 
@@ -191,7 +191,7 @@ export function UsersList() {
   };
 
 
-  const handleDeleteUser = async (deleteUser: User) => {
+  const handleDeleteUser = async (deleteUser: UserState) => {
     try {
       setDeletingUserId(deleteUser.userId);
 

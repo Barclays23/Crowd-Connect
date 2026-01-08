@@ -37,31 +37,31 @@ import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";
-import type { HostStatus, UserStatus } from "@/types/user.types";
+import type { HostStatus, UserState, UserStatus } from "@/types/user.types";
 import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 
 
-interface Host {
-  userId: string;
-  name: string;
-  email: string;
-  mobile: string;
-  profilePic?: string;
-  status: UserStatus;
+// interface Host {
+//   userId: string;
+//   name: string;
+//   email: string;
+//   mobile: string;
+//   profilePic?: string;
+//   status: UserStatus;
   
-  isEmailVerified: boolean;
-  organizationName?: string;
-  registrationNumber?: string;
-  hostStatus: HostStatus;
-  hostAppliedAt?: string;
-  createdAt: string;
-}
+//   isEmailVerified: boolean;
+//   organizationName?: string;
+//   registrationNumber?: string;
+//   hostStatus: HostStatus;
+//   hostAppliedAt?: string;
+//   createdAt: string;
+// }
 
 
 interface ApiResponse {
-  hostsData: Host[];
+  hostsData: UserState[];
   pagination: {
     total: number;
     page: number;
@@ -78,15 +78,15 @@ export function HostsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedHosts, setSelectedHosts] = useState<string[]>([]);
 
-  const [hosts, setHosts] = useState<Host[]>([]);
+  const [hosts, setHosts] = useState<UserState[]>([]);
   const [totalHosts, setTotalHosts] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Modals
-  const [viewHost, setViewHost] = useState<Host | null>(null);
-  const [editHost, setEditHost] = useState<Host | null>(null);
+  const [viewHost, setViewHost] = useState<UserState | null>(null);
+  const [editHost, setEditHost] = useState<UserState | null>(null);
   const [approveHostId, setApproveHostId] = useState<string | null>(null);
   const [rejectHostId, setRejectHostId] = useState<string | null>(null);
 
@@ -171,7 +171,6 @@ export function HostsList() {
     }
 
     try {
-      // You need to implement this service method
       const response = await hostServices.updateHostStatus(hostId, action, reason);
 
       toast.success(response.message || `Host ${action === "approve" ? "approved" : "rejected"} successfully`);
@@ -195,7 +194,7 @@ export function HostsList() {
   };
 
 
-  const getHostStatusBadgeVariant = (status: string) => {
+  const getHostStatusBadgeVariant = (status?: HostStatus) => {
     switch (status) {
       case "approved":
         return "success";
@@ -209,7 +208,7 @@ export function HostsList() {
   };
 
 
-  const getHostStatusIcon = (status: string) => {
+  const getHostStatusIcon = (status?: HostStatus) => {
     switch (status) {
       case "approved":
         return <CheckCircle className="h-3.5 w-3.5" />;
@@ -399,7 +398,7 @@ export function HostsList() {
                         className="flex items-center gap-1 w-fit"
                       >
                         {getHostStatusIcon(host.hostStatus)}
-                        {capitalize(host.hostStatus)}
+                        {host.hostStatus ? capitalize(host.hostStatus) : "—"}
                       </Badge>
                     </TableCell>
 

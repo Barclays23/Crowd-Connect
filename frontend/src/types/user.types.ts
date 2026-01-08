@@ -16,16 +16,17 @@ export interface UserState {
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;
-  isSuperAdmin: boolean;
+  isSuperAdmin?: boolean;
 
   organizationName?: string | null;
   registrationNumber?: string | null;
   businessAddress?: string | null;
   certificateUrl?: string | null;
+  hostAppliedAt?: string | null;
   hostStatus?: HostStatus;
   hostRejectionReason?: string;
 
-  //   joinedAt: string; // createdAt ISO string
+  createdAt: string;
 }
 
 

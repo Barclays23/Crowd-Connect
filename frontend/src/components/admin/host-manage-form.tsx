@@ -1,131 +1,186 @@
 // frontend/src/components/admin/host-manage-form.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, X, Loader2 } from "lucide-react";
+import { X, Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import { toast } from "react-toastify";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getInitials } from "@/utils/namingConventions";
-import { userServices } from "@/services/userServices";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { ButtonLoader } from "../common/ButtonLoader";
+import { HostUpgradeSchema, MAX_FILE_SIZE, type HostUpgradeFormData } from "@/schemas/host.schema";
+import { hostServices } from "@/services/hostServices";
+import { Badge } from "../ui/badge";
+import type { UserState } from "@/types/user.types";
 
 
-// Define a schema suitable for hosts
-const hostFormSchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  email: z.string().email("Invalid email"),
-  mobile: z.string().optional(),
-  organizationName: z.string().min(2, "Organization name is required"),
-  registrationNumber: z.string().min(3, "Registration number is required"),
-  businessAddress: z.string().optional(),
-  status: z.enum(["active", "blocked", "pending"]),
-  // profileImage is handled separately (file)
-});
-
-type HostFormValues = z.infer<typeof hostFormSchema>;
 
 interface HostManageFormProps {
-   host?: any; // Adjust type according to your Host interface
+   host?: UserState | null;
    onSuccess?: (updatedHost?: any) => void;
    onCancel?: () => void;
 }
 
+
+const allowedTypes = [
+   'application/pdf',
+   'image/jpeg',
+   'image/jpg',
+   'image/png'
+];
+
+
+
+
 export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProps) {
    const isEditMode = !!host;
-   const [profileFile, setProfileFile] = useState<File | null>(null);
-   const [previewImage, setPreviewImage] = useState<string>("");
-   const [imageError, setImageError] = useState("");
    const fileInputRef = useRef<HTMLInputElement>(null);
+   
+   const [hostDocument, setHostDocument] = useState<File | null>(null);
+   const [documentPreview, setDocumentPreview] = useState<string>("");
+   const [documentError, setDocumentError] = useState<string>("");
+   const [imageLoadError, setImageLoadError] = useState(false);
    const [loading, setLoading] = useState(false);
+   // const [numPages, setNumPages] = useState<number>();
+   
 
-   const form = useForm<HostFormValues>({
-      resolver: zodResolver(hostFormSchema),
+
+   const form = useForm<HostUpgradeFormData>({
+      resolver: zodResolver(HostUpgradeSchema),
       defaultValues: {
-         name: "",
-         email: "",
-         mobile: "",
-         organizationName: "",
-         registrationNumber: "",
-         businessAddress: "",
-         status: "pending",
+         organizationName: host?.organizationName || "",
+         registrationNumber: host?.registrationNumber || "",
+         businessAddress: host?.businessAddress || "",
       },
    });
 
    useEffect(() => {
       if (host) {
          form.reset({
-         name: host.name,
-         email: host.email,
-         mobile: host.mobile || "",
          organizationName: host.organizationName || "",
          registrationNumber: host.registrationNumber || "",
          businessAddress: host.businessAddress || "",
-         status: host.status,
          });
-         setPreviewImage(host.profilePic || "");
-         setProfileFile(null);
       }
    }, [host, form]);
 
-   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+   useEffect(() => {
+      return () => {
+         // Clean up any blob URLs when component unmounts
+         if (documentPreview && documentPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(documentPreview);
+         }
+      };
+   }, [documentPreview]);
+
+   useEffect(() => {
+      setImageLoadError(false);
+   }, [documentPreview, host?.certificateUrl]);
+
+
+
+   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-         setImageError("Please select a valid image file");
-         return;
-      }
-      if (file.size > 2 * 1024 * 1024) {
-         setImageError("Image size should be less than 2MB");
-         return;
+      if (documentPreview && documentPreview.startsWith('blob:')) {
+         URL.revokeObjectURL(documentPreview);
       }
 
-      setImageError("");
-      setProfileFile(file);
+      if (file.size > MAX_FILE_SIZE) {
+         setDocumentError("File size exceeds 5MB limit");
+         setHostDocument(null);
+         setDocumentPreview("");
+         return;
+      }
 
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewImage(reader.result as string);
-      reader.readAsDataURL(file);
+      if (!allowedTypes.includes(file.type)) {
+         setDocumentError("Invalid file type. Please upload PDF, JPG, or PNG.");
+         setHostDocument(null);
+         setDocumentPreview("");
+         return;
+      }
+
+      setDocumentError("");
+      setHostDocument(file);
+
+      if (file.type === "application/pdf") {
+         setDocumentPreview("pdf");
+      } else {
+         // const reader = new FileReader();
+         // reader.onloadend = () => setDocumentPreview(reader.result as string);
+         // reader.readAsDataURL(file);
+
+         const objectUrl = URL.createObjectURL(file);
+         setDocumentPreview(objectUrl);
+      }
    };
 
-   const removeImage = () => {
-      setPreviewImage("");
-      setProfileFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+
+
+   const clearUploadedFile = () => {
+      // Only clear newly uploaded files
+      if (hostDocument) {
+         // Clean up blob URL if it exists
+         if (documentPreview && documentPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(documentPreview);
+         }
+         
+         setHostDocument(null);
+         setDocumentPreview(isEditMode && host?.certificateUrl ? "" : "");
+         if (fileInputRef.current) fileInputRef.current.value = "";
+      }
    };
 
-   const onSubmit = async (values: HostFormValues) => {
+
+   const onSubmit = async (values: HostUpgradeFormData) => {
+      // do this validation with zod schema later
+      const isFileMandatory = !isEditMode || (isEditMode && !host?.certificateUrl);
+
+      const isFormValid = await form.trigger();
+      if (!isFormValid) {
+         return; // React Hook Form will show field errors
+      }
+   
+      if (isFileMandatory && !hostDocument && !host?.certificateUrl) {
+         // Show error in UI instead of toast
+         setDocumentError("Business document/certificate is required");
+         return;
+      }
+
       try {
          setLoading(true);
          const formData = new FormData();
 
-         formData.append("name", values.name);
-         formData.append("email", values.email);
-         formData.append("role", "host"); // fixed
-         formData.append("status", values.status);
-         if (values.mobile) formData.append("mobile", values.mobile);
          formData.append("organizationName", values.organizationName);
          formData.append("registrationNumber", values.registrationNumber);
-         if (values.businessAddress) formData.append("businessAddress", values.businessAddress);
-         if (profileFile) formData.append("profileImage", profileFile);
+         formData.append("businessAddress", values.businessAddress);
+         if (hostDocument) formData.append("hostDocument", hostDocument)
 
          let response;
+
          if (isEditMode) {
-         response = await userServices.editUserService(host.userId, formData);
+            response = await hostServices.updateHostDetailsByAdmin(host.userId, formData);
          } else {
-         response = await userServices.createUserService(formData);
+            response = await hostServices.convertToHost(host.userId, formData);
          }
 
-         toast.success(response.message);
+         toast.success(response.message || `Host ${isEditMode ? "updated" : "converted"} successfully`);
          onSuccess?.(response?.userData || response);
+
       } catch (error: any) {
-         toast.error(error.response?.data?.message || "Failed to save host");
+         toast.error(error.response?.data?.message || `Failed to ${isEditMode ? "update" : "convert"} host`);
       } finally {
          setLoading(false);
       }
@@ -134,198 +189,290 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
 
 
 
-   
    return (
       <Form {...form}>
          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
          {loading && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-sm">
-               <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]"></div>
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]">
                <LoadingSpinner1
                size="lg"
-               message={isEditMode ? "Updating host..." : "Creating host..."}
+               message={isEditMode ? "Updating host details..." : "Converting to host..."}
                />
             </div>
          )}
 
-         <div className="mb-6">
-               {isEditMode ? (
-                  <h3 className="text-lg font-semibold">Edit Host Details</h3>
-               ) : (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                     <h3 className="text-lg font-semibold text-amber-800">Convert to Host</h3>
-                     <p className="text-sm text-amber-700 mt-1">
-                           You're converting <strong>{host?.name}</strong> ({host?.email}) to a Host account.
-                           Please fill in the organization and business details.
-                     </p>
-                  </div>
-               )}
+         {/* Header Message */}
+         <div className="mb-8">
+            {!isEditMode ? (
+               <div className="bg-amber-50 border border-amber-200 rounded-lg p-5">
+               <h3 className="text-lg font-semibold text-amber-800">Convert User to Host</h3>
+               <p className="text-sm text-amber-700 mt-2">
+                  You're converting <strong>{host!.name}</strong> ({host!.email}) into a host account.
+                  Please provide their business/organization details below.
+               </p>
+               </div>
+            ) : (
+               <h3 className="text-lg font-semibold">Update Host Business Details</h3>
+            )}
          </div>
 
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Profile Picture */}
-            <div className="lg:col-span-1 flex flex-col items-center">
-               <div className="relative">
-               <Avatar className="h-32 w-32 ring-4 ring-offset-4 ring-(--border-muted)">
-                  <AvatarImage src={previewImage} />
-                  <AvatarFallback className="bg-(--brand-primary-light)/20 text-3xl">
-                     {form.watch("name") ? getInitials(form.watch("name")) : "H"}
+            {/* Left: User Info + Profile (Read-only) */}
+            <div className="lg:col-span-1 space-y-6">
+               <div className="text-center">
+               <Avatar className="h-32 w-32 mx-auto ring-4 ring-offset-4 ring-(--border-muted)">
+                  <AvatarImage src={host?.profilePic} alt={host?.name} />
+                  <AvatarFallback className="bg-(--brand-primary-light)/20 text-3xl text-(--brand-primary)">
+                     {getInitials(host?.name || "H")}
                   </AvatarFallback>
                </Avatar>
-
-               {previewImage && (
-                  <Button
-                     type="button"
-                     size="icon"
-                     variant="destructive"
-                     className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
-                     onClick={removeImage}
-                  >
-                     <X className="h-4 w-4" />
-                  </Button>
-               )}
-
-               <Button
-                  type="button"
-                  size="icon"
-                  className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-(--brand-primary)"
-                  onClick={() => fileInputRef.current?.click()}
-               >
-                  <Camera className="h-5 w-5" />
-               </Button>
-
-               <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-               />
+               <h4 className="mt-4 text-lg font-semibold text-(--text-primary)">{host?.name}</h4>
+               <p className="text-sm text-(--text-secondary)">{host?.email}</p>
+               {host?.mobile && <p className="text-sm text-(--text-tertiary)">📞 {host?.mobile}</p>}
+               
+               <div className="mt-3 flex items-center justify-center gap-2">
+                  <Badge variant={host?.isEmailVerified ? "success" : "outline"}>
+                     {host?.isEmailVerified ? <CheckCircle className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
+                     {host?.isEmailVerified ? "Verified" : "Unverified"}
+                  </Badge>
+               </div>
                </div>
 
-               <div className="mt-4 text-center">
-               <FormLabel>Profile Picture</FormLabel>
-               <p className="text-xs text-(--text-tertiary) mt-1">
-                  Optional • Max 2MB
-               </p>
-               {imageError && <p className="text-sm text-red-500 mt-1">{imageError}</p>}
+               <div className="bg-(--bg-secondary) rounded-xl p-4 space-y-3 text-sm">
+               <div className="flex justify-between">
+                  <span className="text-(--text-secondary)">Role</span>
+                  <span className="font-medium capitalize">{host?.role || "user"} → host</span>
+               </div>
+               <div className="flex justify-between">
+                  <span className="text-(--text-secondary)">Account Status</span>
+                  <Badge variant={host?.status === "active" ? "success" : host?.status === "blocked" ? "destructive" : "outline"}>
+                     {host?.status ? host.status.charAt(0).toUpperCase() + host.status.slice(1) : "Pending"}
+                  </Badge>
+               </div>
                </div>
             </div>
 
-            {/* Form Fields */}
+            {/* Right: Host Details Form */}
             <div className="lg:col-span-2 space-y-6">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-               <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Full Name</FormLabel>
-                     <FormControl>
-                        <Input {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Email</FormLabel>
-                     <FormControl>
-                        <Input type="email" {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="mobile"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Phone Number</FormLabel>
-                     <FormControl>
-                        <Input {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="organizationName"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Organization Name</FormLabel>
-                     <FormControl>
-                        <Input {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="registrationNumber"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Registration Number</FormLabel>
-                     <FormControl>
-                        <Input {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="businessAddress"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Business Address</FormLabel>
-                     <FormControl>
-                        <Input {...field} className="rounded-xl" />
-                     </FormControl>
-                     <FormMessage />
-                     </FormItem>
-                  )}
-               />
-
-               <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                     <FormItem>
-                     <FormLabel>Account Status</FormLabel>
-                     <Select onValueChange={field.onChange} value={field.value}>
+               <div className="space-y-5">
+                  <FormField
+                     control={form.control}
+                     name="organizationName"
+                     render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Organization Name <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                           <SelectTrigger className="rounded-xl">
-                           <SelectValue placeholder="Select status" />
-                           </SelectTrigger>
+                           <Input {...field} placeholder="e.g. ABC Events Pvt Ltd" className="rounded-xl" />
                         </FormControl>
-                        <SelectContent>
-                           <SelectItem value="active">Active</SelectItem>
-                           <SelectItem value="pending">Pending</SelectItem>
-                           <SelectItem value="blocked">Blocked</SelectItem>
-                        </SelectContent>
-                     </Select>
-                     <FormMessage />
-                     </FormItem>
+                        <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+
+                  <FormField
+                     control={form.control}
+                     name="registrationNumber"
+                     render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Registration Number <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                           <Input {...field} placeholder="e.g. U12345KL2020PTC123456" className="rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+
+                  <FormField
+                     control={form.control}
+                     name="businessAddress"
+                     render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Business Address <span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                           <Input {...field} placeholder="Full address with street, city, state, PIN" className="rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+
+                  {/* Host Document Upload */}
+                  <div className="space-y-3">
+                  <FormLabel>
+                     Business Registration Document / Certificate 
+                     <span className="text-red-500">*</span>
+                     {isEditMode && host?.certificateUrl && (
+                        <span className="text-xs font-normal text-green-600 ml-2">(Optional - upload only if changing)</span>
+                     )}
+                  </FormLabel>
+
+                  <div 
+                     className="border-2 border-dashed border-(--border-muted) rounded-xl p-6 text-center cursor-pointer hover:border-(--brand-primary-light) transition-colors"
+                     onClick={() => fileInputRef.current?.click()}
+                  >
+                     {/* Show preview if we have either: uploaded file OR existing URL (edit mode) */}
+                     {(documentPreview || (isEditMode && host?.certificateUrl)) ? (
+                        <div className="space-y-4">
+                        {/* PDF Preview */}
+                        {(documentPreview === "pdf" || 
+                           hostDocument?.type === "application/pdf" || 
+                           (isEditMode && !hostDocument && host?.certificateUrl?.toLowerCase().endsWith('.pdf'))) ? (
+                           <div className="flex flex-col items-center space-y-3">
+                              <div className="relative">
+                              <FileText className="h-16 w-16 text-red-500" />
+                              <div className="absolute -bottom-1 -right-1 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
+                                 PDF
+                              </div>
+                              </div>
+                              <div className="text-center">
+                              <p className="text-sm font-medium truncate max-w-xs">
+                                 {hostDocument?.name || 
+                                    (isEditMode && host?.certificateUrl ? 
+                                    host.certificateUrl.split('/').pop() : 
+                                    "Document.pdf")}
+                              </p>
+                              {hostDocument && (
+                                 <p className="text-xs text-(--text-tertiary) mt-1">
+                                    {(hostDocument.size / (1024 * 1024)).toFixed(2)} MB
+                                 </p>
+                              )}
+                              </div>
+                           </div>
+                        ) : (
+                           /* Image Preview */
+                           <div className="space-y-4">
+                              <div className="relative max-h-64 overflow-hidden rounded-lg bg-(--bg-secondary)">
+                                 {imageLoadError ? (
+                                    <div className="flex flex-col items-center justify-center h-60 text-(--text-tertiary)">
+                                       <FileText className="h-12 w-12 mb-2" />
+                                       <p className="text-sm">Preview not available</p>
+                                    </div>
+                                 ) : (
+                                    <img
+                                       src={(documentPreview && documentPreview !== "pdf") ? documentPreview : host?.certificateUrl || ""}
+                                       alt="Document preview"
+                                       className="w-full h-auto object-contain max-h-60"
+                                       onError={() => setImageLoadError(true)}
+                                    />
+                                 )}
+                                 {hostDocument && !imageLoadError && (
+                                    <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                                       {hostDocument.type.split('/')[1]?.toUpperCase()}
+                                    </div>
+                                 )}
+                              </div>
+                              <div className="text-center">
+                              <p className="text-sm font-medium">
+                                 {hostDocument?.name || "Business Document"}
+                              </p>
+                              {hostDocument && (
+                                 <p className="text-xs text-(--text-tertiary)">
+                                    {(hostDocument.size / (1024 * 1024)).toFixed(2)} MB
+                                 </p>
+                              )}
+                              </div>
+                           </div>
+                        )}
+                        
+                        {/* Action Buttons */}
+                        <div className="flex justify-center gap-2">
+                           {/* Change/Upload Button */}
+                           <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={(e) => { 
+                              e.stopPropagation(); 
+                              fileInputRef.current?.click();
+                              }}
+                              className="gap-2"
+                           >
+                              <Upload className="h-4 w-4" />
+                              {hostDocument ? "Change Document" : "Upload New Document"}
+                           </Button>
+                           
+                           {/* Clear Button - Only show in edit mode when user has selected a new file */}
+                           {isEditMode && hostDocument && (
+                              <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={(e) => { 
+                                 e.stopPropagation(); 
+                                 clearUploadedFile();
+                              }}
+                              className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              >
+                              <X className="h-4 w-4" />
+                              Clear Selection
+                              </Button>
+                           )}
+                        </div>
+                        </div>
+                     ) : (
+                        /* Upload Prompt (when no file selected and no existing URL) */
+                        <div className="space-y-4 py-4">
+                        <div className="mx-auto w-14 h-14 bg-(--brand-primary-light)/20 rounded-full flex items-center justify-center">
+                           <Upload className="h-7 w-7 text-(--brand-primary)" />
+                        </div>
+                        <div>
+                           <p className="text-sm font-medium text-(--text-primary)">
+                              Click to upload document
+                           </p>
+                           <p className="text-xs text-(--text-secondary) mt-1">
+                              Supports PDF, JPG, PNG (Max 5MB)
+                           </p>
+                           <div className="flex items-center justify-center gap-2 mt-2 text-xs text-(--text-tertiary)">
+                              <FileText className="h-3 w-3" />
+                              <span>Business Certificate, GST, Registration Proof</span>
+                           </div>
+                        </div>
+                        </div>
+                     )}
+                  </div>
+
+                  <input
+                     ref={fileInputRef}
+                     type="file"
+                     accept=".pdf,image/jpeg,image/jpg,image/png"
+                     className="hidden"
+                     onChange={handleDocumentChange}
+                     disabled={loading}
+                  />
+
+                  {documentError && (
+                     <div className="flex items-center gap-2 text-sm text-red-500">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{documentError}</span>
+                     </div>
                   )}
-               />
+                  
+                  {/* Helper text */}
+                  <div className="text-xs text-(--text-tertiary) space-y-1">
+                     <p>• Clear, legible document showing business registration details</p>
+                     <p>• Max file size: 5MB</p>
+                     
+                     {isEditMode ? (
+                        host?.certificateUrl ? (
+                        <>
+                           <p className="text-green-600">✓ Document already uploaded</p>
+                           <p className="text-amber-600">Note: Upload new document only if you want to replace the existing one</p>
+                        </>
+                        ) : (
+                        <p className="text-red-600">⚠️ No document found. Upload is required.</p>
+                        )
+                     ) : (
+                        <p className="text-red-600">⚠️ Document upload is required for host conversion</p>
+                     )}
+                  </div>
+                  </div>
+                  
                </div>
             </div>
          </div>
 
-         {/* Buttons */}
+         {/* Action Buttons */}
          <div className="flex justify-end gap-3 pt-6 border-t border-(--border-muted)">
             {onCancel && (
                <Button type="button" variant="outline" onClick={onCancel} className="rounded-xl" disabled={loading}>
@@ -334,11 +481,11 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
             )}
             <Button
                type="submit"
-               className="px-6 bg-(--brand-primary) hover:bg-(--brand-primary-hover) text-white rounded-xl"
+               className="px-8 bg-(--brand-primary) hover:bg-(--brand-primary-hover) text-white rounded-xl font-medium"
                disabled={loading}
             >
-               <ButtonLoader loading={loading} loadingText={isEditMode ? "Updating..." : "Creating..."}>
-               {isEditMode ? "Update Host" : "Convert to Host & Save"}
+               <ButtonLoader loading={loading} loadingText={isEditMode ? "Updating..." : "Converting..."}>
+               {isEditMode ? "Update Host Details" : "Convert to Host"}
                </ButtonLoader>
             </Button>
          </div>
