@@ -5,7 +5,7 @@ import { createHttpError } from "../../utils/httpError.utils";
 import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
 import { HostEntity, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
-import { uploadToCloudinary } from "../../config/cloudinary";
+import { deleteFromCloudinary, uploadToCloudinary } from "../../config/cloudinary";
 import { isHost } from "../../utils/general.utils";
 import { 
     mapHostUpgradeRequestDtoToInput, 
@@ -64,7 +64,15 @@ export class HostServices implements IHostServices {
                 });
 
                 console.log('new hostDocumentUrl:', hostDocumentUrl);
+
                 // delete old document from cloudinary if needed
+                if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
+                    try {
+                        await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});
+                    } catch (cleanupErr) {
+                        console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
+                    }
+                }
             }
 
             const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});

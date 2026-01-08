@@ -253,7 +253,7 @@ export class UserServices implements IUserServices {
                     try {
                         await deleteFromCloudinary({fileUrl: targetUser.profilePic, resourceType: 'image'});
                     } catch (cleanupErr) {
-                        console.warn("Failed to delete user assets from Cloudinary:", cleanupErr);
+                        console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
                     }
                 }
             }
@@ -328,9 +328,10 @@ export class UserServices implements IUserServices {
         targetUserId: string; currentAdminId: string 
     }): Promise<void> {
         try {
-            const [targetUser, currentAdmin] = await Promise.all([
-                this._userRepository.getUserById(targetUserId),
-                this._userRepository.getUserById(currentAdminId)
+            const [targetUser, currentAdmin]: [UserProfileEntity | null, UserEntity | null]
+                = await Promise.all([
+                    this._userRepository.getUserProfile(targetUserId),
+                    this._userRepository.getUserById(currentAdminId)
             ]);
 
             if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
@@ -360,7 +361,16 @@ export class UserServices implements IUserServices {
                 try {
                     await deleteFromCloudinary({fileUrl: targetUser.profilePic, resourceType: 'image'});
                 } catch (cleanupErr) {
-                    console.warn("Failed to delete user assets from Cloudinary:", cleanupErr);
+                    console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
+                }
+            }
+
+            // also delete the host documents incase if user is host
+            if (targetUser.certificateUrl && targetUser.certificateUrl.trim() !== '') {
+                try {
+                    await deleteFromCloudinary({fileUrl: targetUser.certificateUrl, resourceType: 'image'});
+                } catch (cleanupErr) {
+                    console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
                 }
             }
 
