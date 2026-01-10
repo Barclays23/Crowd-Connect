@@ -14,12 +14,15 @@ export interface IAuthService {
     signIn(signInDto: SignInRequestDto): Promise<AuthResult>
     signUp(signUpDto: SignUpRequestDto): Promise<string>
 
-    requestPasswordReset(email: string):Promise<string>
-    resetPassword({token, newPassword}: ResetPasswordDto):Promise<string>
-    validateResetLink(token: string): Promise<boolean>
-
-    verifyOtp(email: string, otp: string): Promise<AuthResult>
+    verifyAccount(email: string, otp: string): Promise<AuthResult>
     resendOtp(email: string): Promise<string>
+    
+    requestPasswordReset(email: string):Promise<string>
+    validateResetLink(token: string): Promise<boolean>
+    resetPassword({token, newPassword}: ResetPasswordDto):Promise<string>
+    
+    requestVerifyEmail(userId: string): Promise<string>
+    verifyEmail(email: string, otp: string): Promise<string>
 
     refreshAccessToken(refreshToken: string): Promise<string>
     revokeRefreshToken(refreshToken: string): Promise<void>

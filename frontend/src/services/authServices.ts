@@ -22,7 +22,6 @@ export const authService = {
         try {
             // console.log('data received in registerService :', data)
             const response = await axiosInstance.post("/api/auth/register", data, { withCredentials: true });
-            // return { data: response.data, error: null };
             return response.data;
 
         } catch (error: unknown) {
@@ -99,10 +98,36 @@ export const authService = {
 
 
 
-    verifyOtpService: async (data: { otpCode: string; email: string }) => {
+    // only for email verification (when changing email or if not already verified)
+    requestAuthenticateEmail: async (email: string) => {
         try {
-            console.log('data received in verifyOtpService :', data);
-            const response = await axiosInstance.post("/api/auth/verify-otp", data, { withCredentials: true });
+            const response = await axiosInstance.post("/api/auth/authenticate-email", { email }, { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    // only for email verification (when changing email or if not already verified)
+    verifyEmailService: async ({otpCode, email: userEmail}: {otpCode: string, email: string}) => {
+        try {
+            const response = await axiosInstance.post("/api/auth/verify-email", {otpCode, email: userEmail}, { withCredentials: true });
+            return response.data;
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+
+    // for verifying account during registration
+    verifyAccountService: async (data: { otpCode: string; email: string }) => {
+        try {
+            console.log('data received in verifyAccountService :', data);
+            const response = await axiosInstance.post("/api/auth/verify-account", data, { withCredentials: true });
             return response.data;
         } catch (error: unknown) {
             const err = error as AxiosError<{ error: string }>;

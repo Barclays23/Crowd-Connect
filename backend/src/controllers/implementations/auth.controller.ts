@@ -170,10 +170,33 @@ export class AuthController implements IAuthController {
     }
 
 
-    async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async requestVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userEmail: string = await this._authService.requestVerifyEmail(req.user?.email);
+
+            res.status(HttpStatus.OK).json({
+                message: HttpResponse.EMAIL_VERIFICATION_CODE_SENT,
+                email: userEmail
+            });
+
+        } catch (err: any) {
+            console.error('Error in AuthController.requestVerifyEmail:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
+
+    async verifyAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { email, otpCode } = req.body;
-            console.log('email and otp in authController.verifyOtp:', req.body);
+            console.log('email and otp in authController.verifyAccount:', req.body);
 
             if (!email || !otpCode) {
                 res.status(HttpStatus.BAD_REQUEST).json({
@@ -182,7 +205,7 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const { safeUser, accessToken, refreshToken } = await this._authService.verifyOtp(email, otpCode);
+            const { safeUser, accessToken, refreshToken } = await this._authService.verifyAccount(email, otpCode);
 
             setRefreshTokenCookie(res, refreshToken);
 
@@ -206,6 +229,8 @@ export class AuthController implements IAuthController {
             return;
         }
     }
+
+    "Success! Your account verification is complete."
 
 
 

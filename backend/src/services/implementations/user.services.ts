@@ -405,7 +405,7 @@ export class UserServices implements IUserServices {
     //             throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
     //         }
 
-    //         // return user email for verification step (/verify-account)
+    
     //         return user.email
 
     //     } catch (error) {

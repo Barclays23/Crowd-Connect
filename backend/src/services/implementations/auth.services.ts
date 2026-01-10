@@ -209,8 +209,6 @@ export class AuthServices implements IAuthService {
     }
 
 
-
-
     async resetPassword({ token, newPassword }: ResetPasswordDto): Promise<string> {
         try {
             const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
@@ -237,10 +235,64 @@ export class AuthServices implements IAuthService {
             throw error;
         }
     }
-        
-        
-        
-    async verifyOtp(email: string, otp: string): Promise<AuthResult> {
+
+
+    async requestVerifyEmail(userId: string): Promise<string> {
+        try {
+            const existingUser: UserEntity | null = await this._userRepository.getUserById(userId);
+            if (!existingUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            }
+
+            const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
+            console.log('Generated OTP (for Verify Email Request):', otpNumber);
+
+            // --- Dynamic HTML Template Loading ---
+            const templateData = {
+                USER_NAME: existingUser?.name || 'User',
+                OTP_NUMBER: otpNumber,
+                EXPIRY_MINUTES: expiryMinutes
+            };
+
+            const htmlTemplate = await renderTemplate('verifyEmail.html', templateData);
+            const mailSubject = 'Verify Your Email Address';
+            const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
+
+            await sendEmail({
+                toAddress: existingUser.email,
+                mailSubject,
+                text,
+                htmlTemplate,
+            });
+
+
+            const redisKey = existingUser.email;
+
+            const redisData = {
+                email: existingUser.email,
+                otp: otpNumber,
+                otpExpiry: expiryDate.getTime(),
+                createdAt: Date.now(),
+            };
+
+            const response = await redisClient.setEx(
+                redisKey,
+                expiryMinutes * 60,
+                JSON.stringify(redisData)
+            );
+
+            return existingUser.email;
+
+        } catch (error) {
+            console.error("Error in AuthServices.requestVerifyEmail:", error);
+            throw error;
+        }
+    }
+
+
+
+
+    async verifyAccount(email: string, otp: string): Promise<AuthResult> {
         try {
             const raw = await redisClient.get(email);
             if (!raw) {
@@ -301,16 +353,14 @@ export class AuthServices implements IAuthService {
 
 
         } catch (error) {
-            console.error("Error in AuthServices.verifyOtp:", error);
+            console.error("Error in AuthServices.verifyAccount:", error);
             throw error;
         }
     }
 
 
-
     async resendOtp(email: string): Promise<string> {
         try {
-
             const raw = await redisClient.get(email);
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
@@ -355,7 +405,6 @@ export class AuthServices implements IAuthService {
             throw error;
         }
     }
-
 
 
     async refreshAccessToken(refreshToken: string): Promise<string> {
@@ -404,8 +453,6 @@ export class AuthServices implements IAuthService {
     }
 
 
-
-
     async revokeRefreshToken(refreshToken: string): Promise<void> {
         try {
             const decoded = verifyRefreshToken(refreshToken);
@@ -431,8 +478,6 @@ export class AuthServices implements IAuthService {
             throw error;
         }
     }
-
-
 
 
     async getAuthUser(userId: string): Promise<AuthUserResponseDto> {

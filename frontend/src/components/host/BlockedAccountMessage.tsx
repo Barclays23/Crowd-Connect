@@ -1,5 +1,7 @@
 import { ShieldX, Mail, HelpCircle } from "lucide-react";
 
+
+
 const BlockedAccountMessage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4 py-12">

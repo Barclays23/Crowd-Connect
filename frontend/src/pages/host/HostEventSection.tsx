@@ -9,6 +9,7 @@ import HostBlockedState from '@/components/host/HostBlockedState';
 import HostEventForm from '@/components/host/HostEventForm';
 import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import EmailVerification from '@/components/host/EmailVerification';
 
 
 
@@ -22,6 +23,7 @@ const HostEventSection = () => {
 
    if (!isAuthenticated || !user) return <AuthRequiredMessage />;
    
+   if (!user.isEmailVerified) return <EmailVerification />;
    if (user.status === 'blocked') return <BlockedAccountMessage />;
    if (user.role === 'admin') return <AdminMessage />;
    if (user.role === 'user') return <HostUpgradeForm />;

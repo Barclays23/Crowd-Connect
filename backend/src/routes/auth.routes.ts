@@ -34,7 +34,9 @@ authRouter.post('/forgot-password', validateRequest({body: ForgotPasswordSchema}
 authRouter.get('/reset-password/validate/:token', validateRequest({params: ResetLinkSchema}), authController.validateResetLink.bind(authController));
 authRouter.post('/reset-password', validateRequest({body: ResetPasswordSchema}), authController.resetPassword.bind(authController));
 
-authRouter.post('/verify-otp', validateRequest({body: OtpSchema}), authController.verifyOtp.bind(authController));
+authRouter.post('/verify-account', validateRequest({body: OtpSchema}), authController.verifyAccount.bind(authController));
+authRouter.post('/authenticate-email', authenticate, authController.requestAuthenticateEmail.bind(authController));
+// authRouter.post('/verify-email', authenticate, authController.verifyEmail.bind(authController));
 authRouter.post('/resend-otp', authController.resendOtp.bind(authController));
 
 authRouter.post('/refresh-token', authController.refreshAccessToken.bind(authController));
