@@ -16,13 +16,14 @@ const ALLOWED_FILE_TYPES = [
 export const organizationNameBase = z
    .string()
    .trim()
-   .min(1, "Full name is required")
-   .min(3, "Full name must be at least 3 characters long")
-   .max(20, "Full name cannot exceed 20 characters")
+   .min(1, "Organization name is required")
+   .min(5, "Organization name must be at least 5 characters long")
+   .max(50, "Organization name cannot exceed 50 characters")
    .regex(
-      /^[A-Za-z]+(?:\s[A-Za-z]+)*$/,
-      "Full name can contain only letters and spaces"
+      /^[A-Za-z0-9\s&.,'\-()]+$/,
+      "Organization name can contain only letters, numbers, spaces, and basic punctuation (&.,'-)"
    );
+
 
 
 
@@ -55,7 +56,7 @@ export const businessAddressBase = z
 
 
 
-export const registrationDocumentBase = z
+export const hostDocumentBase = z
    .instanceof(File, {
       message: "Business document/certificate is required",
    })
@@ -87,7 +88,7 @@ export const hostUpgradeSchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
-   hostDocument: registrationDocumentBase,
+   // hostDocument: hostDocumentBase,  // only need it in frontend (let the multer handle in backend)
 });
 
 

@@ -71,11 +71,11 @@ export const mapUserModelToHostEntity = (doc: IUserModel): HostEntity => {
       organizationName: doc.organizationName ?? '',
       registrationNumber: doc.registrationNumber ?? '',
       businessAddress: doc.businessAddress ?? '',
-      hostStatus: doc.hostStatus ?? HostStatus.PENDING,
       certificateUrl: doc.certificateUrl ?? '',
-      hostRejectionReason: doc.hostRejectionReason ?? '',
+      hostStatus: doc.hostStatus ?? HostStatus.PENDING,
       appliedAt: doc.hostAppliedAt ?? undefined,
       reviewedAt: doc.hostReviewedAt ?? undefined,
+      hostRejectionReason: doc.hostRejectionReason ?? undefined,
       
       // certificateUrl: doc.certificateUrl,
       // hostRejectionReason: doc.hostRejectionReason,

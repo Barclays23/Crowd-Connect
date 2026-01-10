@@ -23,6 +23,8 @@ import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { hostServices } from "@/services/hostServices";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { ButtonLoader } from "../common/ButtonLoader";
 
 
 const HostUpgradeForm = () => {
@@ -94,180 +96,193 @@ const HostUpgradeForm = () => {
       }
    };
 
+
+
+   
+
    return (
-      <div className="min-h-screen bg-(--bg-primary) px-4 py-12">
-         <div className="max-w-2xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-8">
-               <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-(--badge-primary-bg)">
-                  <Building2 className="w-10 h-10 text-(--brand-primary)" />
+      <>
+         {isSubmitting && (
+            <div className="fixed inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay2) backdrop-blur-[0.1px]">
+               <LoadingSpinner1 
+                  message="Processing Your Application"
+                  subMessage="This may take a few moments"
+                  size="lg"
+               />
+            </div>
+         )}
+
+      
+         <div className="min-h-screen bg-(--bg-primary) px-4 py-12">
+            <div className="max-w-2xl mx-auto">
+               {/* Header */}
+               <div className="text-center mb-8">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-(--badge-primary-bg)">
+                     <Building2 className="w-10 h-10 text-(--brand-primary)" />
+                  </div>
+                  <h1 className="text-3xl font-bold mb-3 text-(--heading-primary)">
+                     Become a Host
+                  </h1>
+                  <p className="max-w-md mx-auto text-(--text-secondary)">
+                     Apply to become a verified host and start creating amazing events for your audience.
+                  </p>
                </div>
-               <h1 className="text-3xl font-bold mb-3 text-(--heading-primary)">
-                  Become a Host
-               </h1>
-               <p className="max-w-md mx-auto text-(--text-secondary)">
-                  Apply to become a verified host and start creating amazing events for your audience.
+
+               {/* Benefits */}
+               <div className="rounded-xl p-6 mb-8 bg-(--badge-success-bg) border border-(--badge-success-border)">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2 text-(--badge-success-text)">
+                     <CheckCircle2 className="w-5 h-5" />
+                     Host Benefits
+                  </h3>
+                  <ul className="space-y-2 text-sm text-(--badge-success-text)">
+                     <li>• Create unlimited events and reach thousands of attendees</li>
+                     <li>• Access detailed analytics and attendee insights</li>
+                     <li>• Receive payments directly to your account</li>
+                     <li>• Priority customer support</li>
+                  </ul>
+               </div>
+
+               {/* Form Card */}
+               <div className="rounded-2xl p-8 bg-(--card-bg) border border-(--card-border) shadow-(--shadow-lg)">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                     {/* Organization Name */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           Organization Name *
+                        </label>
+                        <div className="relative">
+                           <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
+                           <Input
+                              {...register('organizationName')}
+                              placeholder="Enter your organization name"
+                              className="pl-12"
+                           />
+                        </div>
+                        <FieldError message={errors.organizationName?.message} />
+                     </div>
+
+                     {/* Registration Number */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           Registration Number *
+                        </label>
+                        <div className="relative">
+                           <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
+                           <Input
+                              {...register('registrationNumber')}
+                              placeholder="Enter business registration number"
+                              className="pl-12"
+                           />
+                        </div>
+                        <FieldError message={errors.registrationNumber?.message} />
+                     </div>
+
+                     {/* Business Address */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           Business Address *
+                        </label>
+                        <div className="relative">
+                           <MapPin className="absolute left-4 top-4 w-5 h-5 text-(--text-tertiary) z-10" />
+                           <TextArea
+                              {...register("businessAddress")}
+                              placeholder="Enter your full business address"
+                              rows={3}
+                              className="pl-12 min-h-[76px]"
+                           />
+                        </div>
+                        <FieldError message={errors.businessAddress?.message} />
+                     </div>
+
+                     {/* Certificate Upload */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           {/* Business Certificate (Optional but recommended) */}
+                           Certificate / Document *
+                        </label>
+                        <div
+                           className={`relative rounded-xl p-6 text-center cursor-pointer transition-all border-2 border-dashed ${
+                              errors.hostDocument
+                              ? 'border-destructive bg-destructive/5'
+                              : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'
+                           }`}
+                        >
+                           <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) setValue('hostDocument', file, { shouldValidate: true });
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           />
+                           <Upload className="w-8 h-8 mx-auto mb-3 text-(--text-tertiary)" />
+
+                           {hostDocument ? (
+                              <div className="space-y-1">
+                              <p className="font-medium text-(--text-primary)">{hostDocument.name}</p>
+                              <p className="text-xs text-(--text-tertiary)">
+                                 {(hostDocument.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                              </div>
+                           ) : (
+                              <>
+                              <p className="text-(--text-secondary)">Drop your file here or click to upload</p>
+                              <p className="text-sm mt-1 text-(--text-tertiary)">
+                                 PDF, JPG, PNG up to {MAX_FILE_SIZE / (1024 * 1024)}MB
+                              </p>
+                              </>
+                           )}
+                        </div>
+                        <FieldError message={errors.hostDocument?.message} />
+                     </div>
+
+                     {/* Submit Button */}
+                     <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        size="lg"
+                        className="w-full"
+                     >
+                        <ButtonLoader 
+                           loading={isSubmitting}
+                           loadingText="Submitting Application..."
+                        >
+                           Apply to Become a Host
+                           <ArrowRight className="ml-2 h-5 w-5" />
+                        </ButtonLoader>
+                     </Button>
+
+                     {/* Feedback messages */}
+                     {submitSuccess && (
+                        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-center">
+                           Application submitted successfully! 🎉
+                           <br />
+                           <span className="text-sm">We'll review it within 2-3 business days.</span>
+                        </div>
+                     )}
+
+                     {submitError && (
+                     <div
+                        className={`
+                           mt-6 p-4 rounded-xl text-center md:text-left
+                           bg-(--badge-error-bg) 
+                           border border-(--badge-error-border)
+                           text-(--badge-error-text)
+                        `}
+                     >
+                        {submitError}
+                     </div>
+                     )}
+                  </form>
+               </div>
+
+               <p className="text-center mt-6 text-sm text-(--text-tertiary)">
+                  Applications are typically reviewed within 2-3 business days
                </p>
             </div>
-
-            {/* Benefits */}
-            <div className="rounded-xl p-6 mb-8 bg-(--badge-success-bg) border border-(--badge-success-border)">
-               <h3 className="font-semibold mb-3 flex items-center gap-2 text-(--badge-success-text)">
-                  <CheckCircle2 className="w-5 h-5" />
-                  Host Benefits
-               </h3>
-               <ul className="space-y-2 text-sm text-(--badge-success-text)">
-                  <li>• Create unlimited events and reach thousands of attendees</li>
-                  <li>• Access detailed analytics and attendee insights</li>
-                  <li>• Receive payments directly to your account</li>
-                  <li>• Priority customer support</li>
-               </ul>
-            </div>
-
-            {/* Form Card */}
-            <div className="rounded-2xl p-8 bg-(--card-bg) border border-(--card-border) shadow-(--shadow-lg)">
-               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Organization Name */}
-                  <div>
-                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                        Organization Name *
-                     </label>
-                     <div className="relative">
-                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
-                        <Input
-                           {...register('organizationName')}
-                           placeholder="Enter your organization name"
-                           className="pl-12"
-                        />
-                     </div>
-                     <FieldError message={errors.organizationName?.message} />
-                  </div>
-
-                  {/* Registration Number */}
-                  <div>
-                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                        Registration Number *
-                     </label>
-                     <div className="relative">
-                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--text-tertiary) z-10" />
-                        <Input
-                           {...register('registrationNumber')}
-                           placeholder="Enter business registration number"
-                           className="pl-12"
-                        />
-                     </div>
-                     <FieldError message={errors.registrationNumber?.message} />
-                  </div>
-
-                  {/* Business Address */}
-                  <div>
-                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                        Business Address *
-                     </label>
-                     <div className="relative">
-                        <MapPin className="absolute left-4 top-4 w-5 h-5 text-(--text-tertiary) z-10" />
-                        <TextArea
-                           {...register("businessAddress")}
-                           placeholder="Enter your full business address"
-                           rows={3}
-                           className="pl-12 min-h-[76px]"
-                        />
-                     </div>
-                     <FieldError message={errors.businessAddress?.message} />
-                  </div>
-
-                  {/* Certificate Upload */}
-                  <div>
-                     <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                        {/* Business Certificate (Optional but recommended) */}
-                        Certificate / Document *
-                     </label>
-                     <div
-                        className={`relative rounded-xl p-6 text-center cursor-pointer transition-all border-2 border-dashed ${
-                           errors.hostDocument
-                           ? 'border-destructive bg-destructive/5'
-                           : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'
-                        }`}
-                     >
-                        <input
-                           type="file"
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           onChange={(e) => {
-                           const file = e.target.files?.[0];
-                           if (file) setValue('hostDocument', file, { shouldValidate: true });
-                           }}
-                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <Upload className="w-8 h-8 mx-auto mb-3 text-(--text-tertiary)" />
-
-                        {hostDocument ? (
-                           <div className="space-y-1">
-                           <p className="font-medium text-(--text-primary)">{hostDocument.name}</p>
-                           <p className="text-xs text-(--text-tertiary)">
-                              {(hostDocument.size / 1024 / 1024).toFixed(2)} MB
-                           </p>
-                           </div>
-                        ) : (
-                           <>
-                           <p className="text-(--text-secondary)">Drop your file here or click to upload</p>
-                           <p className="text-sm mt-1 text-(--text-tertiary)">
-                              PDF, JPG, PNG up to {MAX_FILE_SIZE / (1024 * 1024)}MB
-                           </p>
-                           </>
-                        )}
-                     </div>
-                     <FieldError message={errors.hostDocument?.message} />
-                  </div>
-
-                  {/* Submit Button */}
-                  <Button
-                     type="submit"
-                     disabled={isSubmitting}
-                     size="lg"
-                     className="w-full"
-                  >
-                  {isSubmitting ? (
-                     <>
-                        <div className="w-5 h-5 rounded-full border-2 border-current border-t-transparent animate-spin mr-2" />
-                        Submitting Application...
-                     </>
-                  ) : (
-                     <>
-                        Apply to Become a Host
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                     </>
-                  )}
-                  </Button>
-
-                  {/* Feedback messages */}
-                  {submitSuccess && (
-                     <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-center">
-                        Application submitted successfully! 🎉
-                        <br />
-                        <span className="text-sm">We'll review it within 2-3 business days.</span>
-                     </div>
-                  )}
-
-                  {submitError && (
-                  <div
-                     className={`
-                        mt-6 p-4 rounded-xl text-center md:text-left
-                        bg-(--badge-error-bg) 
-                        border border-(--badge-error-border)
-                        text-(--badge-error-text)
-                     `}
-                  >
-                     {submitError}
-                  </div>
-                  )}
-               </form>
-            </div>
-
-            <p className="text-center mt-6 text-sm text-(--text-tertiary)">
-               Applications are typically reviewed within 2-3 business days
-            </p>
          </div>
-      </div>
+      </>
    );
 };
 

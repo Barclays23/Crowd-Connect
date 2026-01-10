@@ -6,6 +6,7 @@ import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
 import { Button } from "../ui/button";
+import { AlertCircle, CheckCircle } from "lucide-react";
 
 
 interface ViewHostModalProps {
@@ -65,39 +66,56 @@ export function ViewHostModal({ host }: ViewHostModalProps) {
         </Avatar>
 
         <div className="text-center sm:text-left">
-            <h3 className="text-2xl font-bold text-(--heading-primary)">{host.name}</h3>
-            <p className="text-(--text-secondary) mt-1">{host.email}</p>
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Role */}
-                <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
-                    <span className="text-xs text-(--text-tertiary)">Role</span>
-                    <Badge variant="primary" className="w-fit rounded-md font-medium">
-                    Host
-                    </Badge>
-                </div>
+          <h3 className="text-2xl font-bold text-(--heading-primary)">{host.name}</h3>
 
-                {/* Host Status */}
-                <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
-                    <span className="text-xs text-(--text-tertiary)">Host Status</span>
-                    <Badge
-                      variant={host.hostStatus ? hostStatusVariant[host.hostStatus] : "secondary"}
-                      className="w-fit rounded-md font-medium capitalize"
-                    >
-                      {host.hostStatus}
-                    </Badge>
-                </div>
+          <div className="mt-1 flex items-center justify-center sm:justify-start gap-1.5 text-(--text-secondary)">
+            <span>{host.email}</span>
+            {host.isEmailVerified ? (
+              <CheckCircle
+                size={16}
+                className="text-(--status-success)"
+                aria-label="Email verified"
+              />
+            ) : (
+              <AlertCircle
+                size={16}
+                className="text-(--status-error)"
+                aria-label="Email not verified"
+              />
+            )}
+          </div>
 
-                {/* Account Status */}
-                <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
-                    <span className="text-xs text-(--text-tertiary)">Account Status</span>
-                    <Badge
-                    variant={accountStatusVariant[host.status]}
-                    className="w-fit rounded-md font-medium capitalize"
-                    >
-                    {host.status}
-                    </Badge>
-                </div>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Role */}
+            <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
+              <span className="text-xs text-(--text-tertiary)">Role</span>
+              <Badge variant="primary" className="w-fit rounded-md font-medium">
+                Host
+              </Badge>
             </div>
+
+            {/* Host Status */}
+            <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
+              <span className="text-xs text-(--text-tertiary)">Host Status</span>
+              <Badge
+                variant={host.hostStatus ? hostStatusVariant[host.hostStatus] : "secondary"}
+                className="w-fit rounded-md font-medium capitalize"
+              >
+                {host.hostStatus || "Unknown"}
+              </Badge>
+            </div>
+
+            {/* Account Status */}
+            <div className="flex flex-col gap-1 rounded-xl px-2 py-3">
+              <span className="text-xs text-(--text-tertiary)">Account Status</span>
+              <Badge
+                variant={accountStatusVariant[host.status]}
+                className="w-fit rounded-md font-medium capitalize"
+              >
+                {host.status}
+              </Badge>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -166,24 +184,30 @@ export function ViewHostModal({ host }: ViewHostModalProps) {
           </div>
         )}
 
-        {host.certificateUrl && (
-          <div className="sm:col-span-2 lg:col-span-3">
-            <p className="text-sm text-(--text-tertiary) mb-2">Business Certificate</p>
-            <Button
+        <div className="sm:col-span-2 lg:col-span-3">
+          <p className="text-sm text-(--text-tertiary) mb-2">Business Certificate</p>
+          {host.certificateUrl ? (
+              <Button
                 asChild
                 variant="primaryOutline"
                 className="w-fit"
-                >
+              >
                 <a
-                    href={host.certificateUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  href={host.certificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                    View Certificate →
+                  View Certificate →
                 </a>
-            </Button>
-          </div>
-        )}
+              </Button>
+          ) : (
+              <div className="flex items-center gap-2 text-sm text-(--status-error)">
+                <AlertCircle size={16} />
+                <span>No document uploaded yet</span>
+              </div>
+          )}
+        </div>
+
       </div>
 
       {/* User ID (footer style) */}

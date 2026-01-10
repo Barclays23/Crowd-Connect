@@ -65,7 +65,6 @@ export class HostServices implements IHostServices {
 
                 console.log('new hostDocumentUrl:', hostDocumentUrl);
 
-                // delete old document from cloudinary if needed
                 if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
                     try {
                         await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});

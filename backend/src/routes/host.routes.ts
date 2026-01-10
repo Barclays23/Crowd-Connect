@@ -5,6 +5,8 @@ import { HostServices } from "../services/implementations/host.services";
 import { HostController } from "../controllers/implementations/host.controller";
 import { uploadDocument, uploadImage } from "../middlewares/file-upload.middleware";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { validateRequest } from "../middlewares/validate.middleware";
+import { hostUpgradeSchema } from "../schemas/host.schema";
 
 
 const hostRouter = Router();
@@ -15,7 +17,12 @@ const hostServices = new HostServices(userRepo);
 const hostController = new HostController(hostServices);
 
 
-hostRouter.post('/apply-upgrade', authenticate, authorize('user', 'host'), uploadDocument.single('hostDocument'), hostController.applyHostUpgrade.bind(hostController));
+hostRouter.post('/apply-upgrade', authenticate, authorize('user', 'host'), 
+    uploadDocument.single('hostDocument'), validateRequest({body: hostUpgradeSchema}), 
+    hostController.applyHostUpgrade.bind(hostController)
+);
+
+
 
 
 

@@ -43,7 +43,8 @@ body {
   --bg-secondary: #eeeeee;            /* Light Gray */
   --bg-tertiary: #f0f0f0;             /* Slightly Darker Gray */
   --bg-accent: #c6c6c6;               /* Very Light Indigo */
-  --bg-overlay: rgba(82, 81, 81, 0.5);   /* Modal Overlay */
+  --bg-overlay: rgba(255, 255, 255, 0.5);   /* Modal Overlay */
+  --bg-overlay: rgba(255, 255, 255, 0.648);   /* Modal Overlay */
   --bg-neutral: #4f4f4f30;
   --bg-neutral-hover: #4f4f4f60;
 
@@ -235,6 +236,7 @@ body {
   --bg-tertiary: #374151;             /* Medium Gray */
   --bg-accent: #060e24;               /* Dark Indigo */
   --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-overlay2: rgba(0, 0, 0, 0.648);   /* Modal Overlay */
   --bg-neutral: #ffffff30;
   --bg-neutral-hover: #ffffff60;
   
