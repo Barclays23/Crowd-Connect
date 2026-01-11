@@ -70,15 +70,20 @@ export const hostDocumentBase = z
    );
 
 
+export const rejectReasonBase = z
+   .string()
+   .trim()
+   .min(1, "Rejection reason is required")
+   .min(10, "Rejection reason must be at least 10 characters")
+   .max(250, "Rejection reason cannot exceed 250 characters");
+
+
+
 
 export const HostRejectSchema = z.object({
-   reason: z
-      .string()
-      .trim()
-      .min(1, "Rejection reason is required")
-      .min(10, "Rejection reason must be at least 10 characters")
-      .max(250, "Rejection reason cannot exceed 250 characters"),
+   reason: rejectReasonBase
 });
+
 
 
 

@@ -12,7 +12,8 @@ import {
     UserEntity,
     SensitiveUserEntity,
     UpdateHostInput,
-    UserProfileEntity, 
+    UserProfileEntity,
+    HostManageInput, 
 } from "../../entities/user.entity";
 
 import { 
@@ -22,6 +23,7 @@ import {
     mapUserModelToProfileEntity
 } from "../../mappers/user.mapper";
 import { UserStatus } from "../../constants/roles-and-statuses";
+import { UpdateEmailDto } from "src/dtos/auth.dto";
 
 
 
@@ -64,6 +66,19 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         try {
             const userData: IUserModel | null = await this.findById(userId);
             const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
+            return result;
+
+        } catch (error) {
+            console.log('error in getUserById :', error);
+            throw new Error("Error Finding User");
+        }
+    }
+
+
+    async getHostById(hostId: string): Promise<HostEntity | null> {
+        try {
+            const userData: IUserModel | null = await this.findById(hostId);
+            const result: HostEntity | null = userData ? mapUserModelToHostEntity(userData) : null;
             return result;
 
         } catch (error) {
@@ -237,6 +252,38 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
         } catch (error) {
             console.log('error in userRepository.updateUserStatus :', error);
+            throw error;
+        }
+    }
+
+
+    async updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity> {
+        try {
+            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(hostId, hostStatusInput);
+            if (!updatedHostData) {
+                throw new Error("Host not found");
+            }
+            const resultEntity: HostEntity = mapUserModelToHostEntity(updatedHostData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateHostStatus :', error);
+            throw error;
+        }
+    }
+
+
+    async updateUserEmail(userId: string, updateInput: UpdateEmailDto): Promise<UserEntity> {
+        try {
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in userRepository.updateUserEmail :', error);
             throw error;
         }
     }

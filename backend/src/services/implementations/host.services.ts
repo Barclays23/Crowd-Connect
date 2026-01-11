@@ -1,15 +1,17 @@
 import { IUserRepository } from "../../repositories/interfaces/IUserRepository";
-import { HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
+import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 import { IHostServices } from "../interfaces/IHostServices";
 import { createHttpError } from "../../utils/httpError.utils";
 import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
-import { HostEntity, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
+import { HostEntity, HostManageInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
 import { deleteFromCloudinary, uploadToCloudinary } from "../../config/cloudinary";
 import { isHost } from "../../utils/general.utils";
 import { 
+    mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
-    mapUserEntityToProfileDto, 
+    mapUserEntityToProfileDto,
+    mapToHostStatusUpdateResponseDto, 
 } from "../../mappers/user.mapper";
 import { HostStatus, UserRole } from "../../constants/roles-and-statuses";
 import { GetHostsFilter, GetHostsResult } from "../../types/user.types";
@@ -87,6 +89,52 @@ export class HostServices implements IHostServices {
 
         } catch (error: any) {
             console.error('Error in hostServices.applyHostUpgrade:', error);
+            throw error;
+        }
+    }
+
+
+    async manageHostStatus({ hostId, action, reason }: HostManageRequestDto): Promise<HostStatusUpdateResponseDto> {
+        try {
+            const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
+            if (!hostEntity) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
+            }
+
+            const allowedTransitions: Record<HostStatus, Array<'approve' | 'reject' | 'block'>> = {
+                [HostStatus.PENDING]: ['approve', 'reject', 'block'],
+                [HostStatus.APPROVED]: ['block'],
+                [HostStatus.REJECTED]: ['block'],
+                [HostStatus.BLOCKED]: [],  // Can unblock → changes to PENDING
+            };
+
+            const allowedActions = allowedTransitions[hostEntity.hostStatus];
+
+            if (!allowedActions.includes(action)) {
+                throw createHttpError(
+                    HttpStatus.BAD_REQUEST,
+                    `Cannot ${action} a host in ${hostEntity.hostStatus} state.`
+                    // `Cannot ${action} a ${hostEntity.hostStatus} host.`
+                );
+            }
+
+            const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
+            
+            const updatedHostEntity: HostEntity = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
+
+            const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
+
+            // Send notification to host (later)
+            // await this._notificationService.sendHostStatusUpdate(
+            //     hostEntity.userId,
+            //     action,
+            //     reason
+            // );
+
+            return updatedStatusResponse;
+
+        } catch (error: any) {
+            console.error('Error in hostServices.manageHostStatus:', error);
             throw error;
         }
     }

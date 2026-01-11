@@ -36,7 +36,7 @@ authRouter.post('/reset-password', validateRequest({body: ResetPasswordSchema}),
 
 authRouter.post('/verify-account', validateRequest({body: OtpSchema}), authController.verifyAccount.bind(authController));
 authRouter.post('/authenticate-email', authenticate, authController.requestAuthenticateEmail.bind(authController));
-// authRouter.post('/verify-email', authenticate, authController.verifyEmail.bind(authController));
+authRouter.post('/verify-email', authenticate, validateRequest({body: OtpSchema}), authController.updateVerifiedEmail.bind(authController));
 authRouter.post('/resend-otp', authController.resendOtp.bind(authController));
 
 authRouter.post('/refresh-token', authController.refreshAccessToken.bind(authController));

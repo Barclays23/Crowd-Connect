@@ -35,6 +35,14 @@ export interface HostUpgradeRequestDto {
 }
 
 
+export interface HostManageRequestDto {
+  hostId: string;
+  action: 'approve' | 'reject' | 'block';  // can add 'block' later (and can also use HostStatus) 
+  reason?: string
+}
+
+
+
 
 
 
@@ -80,6 +88,12 @@ export type UserProfileResponseDto = BaseUserResponseDto & HostResponseDto;
 
 
 
-
+export interface HostStatusUpdateResponseDto {
+  hostId: string;
+  hostStatus: HostStatus;
+  hostReviewedAt?: Date;
+  hostRejectionReason?: string;
+  // hostBlockReason?: string;
+}
 
 

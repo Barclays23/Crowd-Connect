@@ -111,9 +111,9 @@ export const authService = {
 
 
     // only for email verification (when changing email or if not already verified)
-    verifyEmailService: async ({otpCode, email: userEmail}: {otpCode: string, email: string}) => {
+    verifyEmailService: async ({otpCode, email}: {otpCode: string, email: string}) => {
         try {
-            const response = await axiosInstance.post("/api/auth/verify-email", {otpCode, email: userEmail}, { withCredentials: true });
+            const response = await axiosInstance.post("/api/auth/verify-email", {otpCode, email}, { withCredentials: true });
             return response.data;
         } catch (error: unknown) {
             const err = error as AxiosError<{ error: string }>;

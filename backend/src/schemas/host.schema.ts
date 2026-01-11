@@ -72,19 +72,42 @@ export const hostDocumentBase = z
 
 
 
-export const hostRejectSchema = z.object({
-   reason: z
-      .string()
-      .trim()
-      .min(1, "Rejection reason is required")
-      .min(10, "Rejection reason must be at least 10 characters")
-      .max(250, "Rejection reason cannot exceed 250 characters"),
-});
+export const rejectReasonBase = z
+   .string()
+   .trim()
+   .min(1, "Rejection reason is required")
+   .min(10, "Rejection reason must be at least 10 characters")
+   .max(250, "Rejection reason cannot exceed 250 characters");
 
 
 
+export const HostManageSchema = z
+  .object({
+    action: z.enum(["approve", "reject"]),
+    reason: rejectReasonBase.optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.action === "reject" && !data.reason) {
+      ctx.addIssue({
+        path: ["reason"],
+        message: "Rejection reason is required when rejecting a host",
+        code: z.ZodIssueCode.custom,
+      });
+    }
 
-export const hostUpgradeSchema = z.object({
+    if (data.action === "approve" && data.reason != null) {
+      ctx.addIssue({
+        path: ["reason"],
+        message: "Reason is not allowed when approving a host",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
+
+
+
+// for role Upgrading
+export const HostUpgradeSchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
@@ -96,5 +119,7 @@ export const hostUpgradeSchema = z.object({
 
 
 
-export type HostUpgradeFormData = z.infer<typeof hostUpgradeSchema>;
-export type HostRejectFormData = z.infer<typeof hostRejectSchema>;
+
+
+export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;  // for role upgrading & converting role
+export type HostManageFormData = z.infer<typeof HostManageSchema>; // for approving or rejecting host

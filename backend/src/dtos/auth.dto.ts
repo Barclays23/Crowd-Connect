@@ -19,7 +19,10 @@ export interface SignInRequestDto {
 }
 
 
-
+export interface UpdateEmailDto {
+    email?: string,
+    isEmailVerified: boolean
+}
 
 
 export interface ResetPasswordDto {

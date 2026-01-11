@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
+import { HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 import { IHostController } from "../interfaces/IHostController";
 import { HttpStatus } from "../../constants/statusCodes";
 import { IHostServices } from "../../services/interfaces/IHostServices";
@@ -51,6 +51,43 @@ export class HostController implements IHostController {
     }
 
 
+    async manageHostStatus (req: Request, res: Response, next: NextFunction) : Promise<void> {
+        try {
+            const hostId = req.params?.hostId;
+            const {action, reason} = req.body;
+
+            console.log('manageHostRequest body: ', req.body);
+            console.log("hostId:", hostId);
+
+            const updatedHost: HostStatusUpdateResponseDto = await this._hostService.manageHostStatus({hostId, action, reason});
+            
+            let responseMessage: string = ''
+            if (action === 'approve') responseMessage = HttpResponse.HOST_APPROVE_SUCCESS;
+            else if (action === 'reject') responseMessage = HttpResponse.HOST_REJECT_SUCCESS;
+            else if (action === 'block') responseMessage = HttpResponse.HOST_BLOCK_SUCCESS;
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: responseMessage,
+                updatedHost: updatedHost,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in hostController.manageHostRequest:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            // Fallback to generic internal error
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_APPLY_FAILED}`
+            });
+            return;
+        }
+    }
+
+
     async getAllHosts(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const page = parseInt(req.query.page as string, 10) || 1;
@@ -71,7 +108,7 @@ export class HostController implements IHostController {
             console.log('✅ Parsed filters for getAllHosts:', filters);
 
             const result: GetHostsResult = await this._hostService.getAllHosts(filters);
-            console.log('✅ Result in hostController.getAllHosts:', result);
+            // console.log('✅ Result in hostController.getAllHosts:', result);
 
             res.status(HttpStatus.OK).json({
                 success: true,

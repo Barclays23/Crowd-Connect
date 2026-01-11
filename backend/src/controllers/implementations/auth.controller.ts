@@ -13,6 +13,7 @@ import {
     ResetPasswordDto, 
     SignInRequestDto 
 } from "../../dtos/auth.dto";
+import { success } from "zod";
 
 
 
@@ -170,17 +171,21 @@ export class AuthController implements IAuthController {
     }
 
 
-    async requestVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async requestAuthenticateEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userEmail: string = await this._authService.requestVerifyEmail(req.user?.email);
+            const currentUserEmail = req.user.email;
+            const requestedEmail = req.body.email;
+
+            const userEmail: string = await this._authService.requestAuthenticateEmail({currentUserEmail, requestedEmail});
 
             res.status(HttpStatus.OK).json({
-                message: HttpResponse.EMAIL_VERIFICATION_CODE_SENT,
+                success: true,
+                message: HttpResponse.EMAIL_VERIFICATION_SENT,
                 email: userEmail
             });
 
         } catch (err: any) {
-            console.error('Error in AuthController.requestVerifyEmail:', err);
+            console.error('Error in AuthController.requestAuthenticateEmail:', err);
             if (err && typeof err.statusCode === 'number') {
                 res.status(err.statusCode).json({ message: err.message || 'Error' });
                 return;
@@ -189,6 +194,37 @@ export class AuthController implements IAuthController {
                 message: HttpResponse.INTERNAL_SERVER_ERROR
             });
             return;
+        }
+    }
+
+
+    async updateVerifiedEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const currentUserEmail = req.user.email;
+            const requestedEmail = req.body.email;
+            const otpCode = req.body.otpCode;
+
+            const userEmail: string = await this._authService.updateVerifiedEmail({
+                currentUserEmail,
+                requestedEmail,
+                otpCode
+            });
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.EMAIL_VERIFIED,
+                email: userEmail
+            });
+
+        } catch (err: any) {
+            console.error('Error in AuthController.updateVerifiedEmail:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
         }
     }
 
@@ -229,9 +265,6 @@ export class AuthController implements IAuthController {
             return;
         }
     }
-
-    "Success! Your account verification is complete."
-
 
 
     async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {

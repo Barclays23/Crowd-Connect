@@ -33,3 +33,20 @@ export async function sendEmail({ toAddress, mailSubject, text, htmlTemplate }: 
     throw new Error("Could not send email");
   }
 }
+
+
+
+
+export function normalizeEmail(email: string): string {
+  if (!email || typeof email !== 'string') {
+    throw new Error('Email is required');
+  }
+
+  const normalized = email.trim().toLowerCase();
+
+  if (!normalized.includes('@')) {
+    throw new Error('Invalid email format');
+  }
+
+  return normalized;
+}

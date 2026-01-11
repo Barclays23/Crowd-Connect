@@ -6,7 +6,7 @@ import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
 import { createHttpError } from "../../utils/httpError.utils";
 import { generateOTP } from "../../utils/generateOTP.utils";
-import { sendEmail } from "../../utils/sendEmail.utils";
+import { normalizeEmail, sendEmail } from "../../utils/email.utils";
 import { renderTemplate } from "../../utils/templateLoader2";
 import { REDIS_DATA_TTL_SECONDS, REDIS_TOKEN_PREFIX, redisClient } from '../../config/redis.config';
 import { comparePassword, hashPassword } from "../../utils/bcrypt.utils";
@@ -21,7 +21,8 @@ import {
     SignUpRequestDto, 
     AuthUserResponseDto, 
     SignInRequestDto,
-    ResetPasswordDto,  
+    ResetPasswordDto,
+    UpdateEmailDto,  
 } from "../../dtos/auth.dto";
 
 import { 
@@ -35,6 +36,7 @@ import { AuthResult } from "../../types/auth.types";
 import { generateCryptoToken } from "../../utils/crypto.utils";
 import { UserRole, UserStatus } from "../../constants/roles-and-statuses";
 import { is } from "zod/v4/locales";
+import { email, promise } from "zod";
 
 
 
@@ -237,39 +239,46 @@ export class AuthServices implements IAuthService {
     }
 
 
-    async requestVerifyEmail(userId: string): Promise<string> {
+    // also used for changing email & verifying email if not already verified
+    async requestAuthenticateEmail({currentUserEmail, requestedEmail}: {
+        currentUserEmail: string,
+        requestedEmail: string
+    }): Promise<string> {
         try {
-            const existingUser: UserEntity | null = await this._userRepository.getUserById(userId);
-            if (!existingUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
+            const normalizedRequestedEmail = normalizeEmail(requestedEmail);
+
+            const currentUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
+
+            if (!currentUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+
+            if (currentUser.isEmailVerified) {
+                throw createHttpError(HttpStatus.BAD_REQUEST,
+                    `${HttpResponse.EMAIL_ALREADY_VERIFIED} ${HttpResponse.CANNOT_CHANGE_VERIFIED_EMAIL}
+                    `);
             }
+                
+            const isChangingEmail: boolean = normalizedCurrentEmail !== normalizedRequestedEmail;
+
+            if (isChangingEmail) {
+                const existingEmailUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedRequestedEmail);
+
+                if (existingEmailUser && existingEmailUser.id !== currentUser.id) {
+                    throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST);
+                }
+            }
+
 
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP (for Verify Email Request):', otpNumber);
 
-            // --- Dynamic HTML Template Loading ---
-            const templateData = {
-                USER_NAME: existingUser?.name || 'User',
-                OTP_NUMBER: otpNumber,
-                EXPIRY_MINUTES: expiryMinutes
-            };
-
-            const htmlTemplate = await renderTemplate('verifyEmail.html', templateData);
-            const mailSubject = 'Verify Your Email Address';
-            const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
-
-            await sendEmail({
-                toAddress: existingUser.email,
-                mailSubject,
-                text,
-                htmlTemplate,
-            });
-
-
-            const redisKey = existingUser.email;
+            const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
 
             const redisData = {
-                email: existingUser.email,
+                userId: currentUser.id,
+                currentEmail: normalizedCurrentEmail,
+                requestedEmail: normalizedRequestedEmail,
+                isChangingEmail: isChangingEmail,
                 otp: otpNumber,
                 otpExpiry: expiryDate.getTime(),
                 createdAt: Date.now(),
@@ -281,15 +290,100 @@ export class AuthServices implements IAuthService {
                 JSON.stringify(redisData)
             );
 
-            return existingUser.email;
+            // --- Dynamic HTML Template Loading ---
+            const templateData = {
+                USER_NAME: currentUser?.name || 'User',
+                OTP_NUMBER: otpNumber,
+                EXPIRY_MINUTES: expiryMinutes,
+                CURRENT_YEAR: new Date().getFullYear(),
+                GREETING_SUFFIX: currentUser?.name ? ` ${currentUser.name}` : '',
+                EMAIL_HEADING: isChangingEmail
+                    ? 'Verify Your New Email'
+                    : 'Verify Your Email Address',
+                EMAIL_MESSAGE: isChangingEmail
+                    ? "You’re updating your email address. Please use the code below to confirm your new email."
+                    : "You’re almost there! Use this code to verify your email and start connecting with amazing events and people."
+            };
+
+            const htmlTemplate = await renderTemplate('verifyEmail.html', templateData);
+            const mailSubject = isChangingEmail ? 'Verify Your New Email Address' : 'Verify Your Email Address';
+            const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
+
+            await sendEmail({
+                toAddress: normalizedRequestedEmail,
+                mailSubject,
+                text,
+                htmlTemplate,
+            });
+
+            return normalizedRequestedEmail;
 
         } catch (error) {
-            console.error("Error in AuthServices.requestVerifyEmail:", error);
+            console.error("Error in AuthServices.requestAuthenticateEmail:", error);
             throw error;
         }
     }
 
 
+    async updateVerifiedEmail({ currentUserEmail, requestedEmail, otpCode}: {
+        currentUserEmail: string;
+        requestedEmail: string;
+        otpCode: string;
+    }): Promise<string> {
+        try {
+            const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
+            const normalizedRequestedEmail = normalizeEmail(requestedEmail);
+
+            const currentUser: UserEntity | null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
+
+            if (!currentUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            }
+
+            const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
+            const redisRawValue = await redisClient.get(redisKey);
+
+            if (!redisRawValue) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
+            }
+
+            const redisData = JSON.parse(redisRawValue);
+
+            if (redisData.userId !== currentUser.id) {
+                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            }
+
+            if (Date.now() > redisData.otpExpiry) {
+                await redisClient.del(redisKey);
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
+            }
+
+            if (redisData.otp !== otpCode) {
+                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_INCORRECT);
+            }
+
+
+            const updateInput: UpdateEmailDto = {
+                isEmailVerified: true,
+            }
+
+            const isChangingEmail = redisData.isChangingEmail === true;
+
+            if (isChangingEmail) {
+                updateInput.email = normalizedRequestedEmail
+            }
+
+            const updatedUser: UserEntity = await this._userRepository.updateUserEmail(currentUser.id, updateInput);
+
+            await redisClient.del(redisKey);
+
+            return updatedUser.email;
+
+        } catch (error) {
+            console.error('Error in AuthServices.updateVerifiedEmail:', error);
+            throw error;
+        }
+    }
 
 
     async verifyAccount(email: string, otp: string): Promise<AuthResult> {

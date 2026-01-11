@@ -6,12 +6,12 @@ import * as path from "path";
 /**
  * Dynamically loads an HTML template and renders it with provided data.
  * @param templateName The name of the template file (e.g., 'otpEmail' || 'otpEmail.html').
- * @param data An object containing the data to substitute into the template.
+ * @param templateData An object containing the data to substitute into the template.
  * @returns The fully rendered HTML string.
  */
 export async function renderTemplate(
   templateName: string,
-  data: { [key: string]: string | number }
+  templateData: Record<string, string | number | boolean>
 ): Promise<string> {
   // Construct the absolute path to the template file
   // Assuming templates are in 'src/templates/' and this utility is in 'src/utils/'
@@ -29,14 +29,14 @@ export async function renderTemplate(
     throw new Error(`Failed to load email template: ${templateName}`);
   }
 
-  // Simple placeholder replacement logic (e.g., replaces {{OTP_CODE}} with data.otpCode)
+  // Simple placeholder replacement logic (e.g., replaces {{OTP_CODE}} with templateData.otpCode)
   let finalHtml = htmlContent;
 
-  for (const key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
+  for (const key in templateData) {
+    if (Object.prototype.hasOwnProperty.call(templateData, key)) {
       // Create the placeholder format, e.g., '{{USER_NAME}}', '{{OTP_CODE}}' etc
       const placeholder = new RegExp(`{{${key.toUpperCase()}}}`, "g"); 
-      finalHtml = finalHtml.replace(placeholder, String(data[key]));
+      finalHtml = finalHtml.replace(placeholder, String(templateData[key]));
     }
   }
 

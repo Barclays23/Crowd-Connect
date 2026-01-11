@@ -29,11 +29,14 @@ export function RejectHostModal({
     resolver: zodResolver(HostRejectSchema),
   });
 
+
   const submitHandler = (data: HostRejectFormData) => {
     onConfirm(data.reason);
     reset();
     onClose();
   };
+
+
 
   return (
     <Modal

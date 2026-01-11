@@ -4,7 +4,7 @@ import { Router } from 'express';
 
 // Middlewares
 import { authenticate, authorize } from '../middlewares/auth.middleware';
-import { uploadImage } from '../middlewares/file-upload.middleware';
+import { uploadDocument, uploadImage } from '../middlewares/file-upload.middleware';
 
 
 // Repositories ─────────────────
@@ -36,6 +36,9 @@ const hostServices = new HostServices(userRepo);
 // Controllers ─────────────────
 import { UserController } from '../controllers/implementations/user.controller';
 import { HostController } from '../controllers/implementations/host.controller';
+import { validateBody, validateRequest } from '../middlewares/validate.middleware';
+import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema';
+import { MongoIdParamSchema } from '../schemas/mongo.schema';
 
 
 
@@ -65,8 +68,23 @@ adminRouter.delete('/users/:id', userController.deleteUser.bind(userController))
 adminRouter.patch('/users/:id/toggle-block', userController.toggleUserBlock.bind(userController));
 adminRouter.post('/users', uploadImage.single("profileImage"), userController.createUserByAdmin.bind(userController));
 
+
 // Host management
 adminRouter.get('/hosts', hostController.getAllHosts.bind(hostController));
+adminRouter.patch('/hosts/:hostId/manage-host-request', 
+    validateRequest({body: HostManageSchema, params: MongoIdParamSchema}), 
+    hostController.manageHostStatus.bind(hostController)
+);
+
+adminRouter.put('/hosts/:hostId/update-host', 
+    uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
+    hostController.updateHostByAdmin.bind(hostController)
+);
+
+adminRouter.post('/users/:userId/convert-host',
+    uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
+    hostController.convertToHost.bind(hostController)
+);
 
 
 export default adminRouter;

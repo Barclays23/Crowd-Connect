@@ -126,8 +126,8 @@ export class UserServices implements IUserServices {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
             }
 
-            const tempPassword = 'aaAA22@@'
-            // const tempPassword = generateRandomPassword(8); // temporary password, can be changed later
+            // const tempPassword = 'aaAA22@@'
+            const tempPassword = generateRandomPassword(8); // temporary password, can be changed later
             const hashedPassword = await hashPassword(tempPassword);
 
             let profilePicUrl: string = '';

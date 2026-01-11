@@ -12,6 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { maskEmail } from "@/utils/namingConventions";
+import { FieldError } from "../ui/FieldError";
 
 
 type OtpFormData = z.infer<typeof OtpSchema>;
@@ -23,7 +25,9 @@ const EmailVerification = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const { user, setUser } = useAuth();
-
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  
 
   const form = useForm<OtpFormData>({
     resolver: zodResolver(OtpSchema),
@@ -42,8 +46,6 @@ const EmailVerification = () => {
   } = form;
 
   const otpCode = watch("otpCode");
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   // Update email when user changes
   useEffect(() => {
@@ -52,12 +54,12 @@ const EmailVerification = () => {
     }
   }, [user?.email, setValue]);
 
-  // Clear server error when OTP changes
+  
   useEffect(() => {
     setServerError(null);
   }, [otpCode]);
 
-  // Countdown timer
+  
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -65,8 +67,9 @@ const EmailVerification = () => {
   }, [countdown]);
 
 
+  // authenticate email and send otp
   const handleSendOTP = async () => {
-    const email = user?.email;
+    const email = form.getValues("email");
     if (!email) {
       toast.error("Email not found in your account");
       return;
@@ -78,8 +81,7 @@ const EmailVerification = () => {
 
       const response = await authService.requestAuthenticateEmail(email);
       
-      toast.success(response.message || "Verification code sent to your email------- ----");
-      
+      toast.success(response.message);
       setOtpSent(true);
       setCountdown(60);
       setValue("otpCode", "");
@@ -93,7 +95,9 @@ const EmailVerification = () => {
     }
   };
 
-  const onSubmit = async (data: OtpFormData) => {
+
+  // submit otp
+  const handleVerifyOtp = async (data: OtpFormData) => {
     try {
       setServerError(null);
 
@@ -102,14 +106,19 @@ const EmailVerification = () => {
         email: data.email,
       });
       
-      toast.success("Email verified successfully! --------- 098765e setrcey");
+      toast.success(response.message);
       
       if (user && setUser) {
         setUser({
           ...user,
           isEmailVerified: true,
+          email: response.email ?? user.email,
         });
       }
+
+      setOtpSent(false);
+      setCountdown(0);
+      setValue("otpCode", "");
       
     } catch (error: any) {
       const errorMessage = getApiErrorMessage(error);
@@ -118,9 +127,11 @@ const EmailVerification = () => {
     }
   };
 
-  const hasError = !!errors.otpCode || !!serverError;
+  const hasError = !!errors.otpCode;
+
   const isComplete = otpCode.length === 6;
   const isBusy = isSubmitting || isSendingOtp;
+
   
 
   return (
@@ -169,10 +180,10 @@ const EmailVerification = () => {
                 A verification code will be sent to:
               </p>
 
-              <div className="mb-2 p-2 rounded-lg bg-(--bg-secondary)">
+              <div className="mb-2 p-2 rounded-lg bg-(--bg-tertiary) border border-(--border-muted)">
                 <p className="text-sm text-(--text-tertiary) mb-1">Your email address:</p>
                 <p className="font-medium text-(--text-primary) break-all">
-                  {user?.email || "Loading..."}
+                  {maskEmail(user?.email)}
                 </p>
               </div>
 
@@ -193,31 +204,24 @@ const EmailVerification = () => {
             </>
           ) : (
             <p className="mb-6 text-(--text-secondary)">
-              We sent a 6-digit code to <span className="font-semibold">{user?.email}</span>
+              We sent a 6-digit code to <span className="font-semibold">{maskEmail(user?.email)}</span>
             </p>
           )}
 
           {/* OTP Input (shown only when OTP is sent) */}
           {otpSent && (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(handleVerifyOtp)} className="space-y-6">
               <div className={cn("transition-all duration-300", hasError && "animate-shake")}>
                 <OtpInput
                   value={otpCode}
-                  onChange={(val) => setValue("otpCode", val, { shouldValidate: true })}
+                  onChange={(val) => setValue("otpCode", val)}
                   length={6}
                   error={hasError}
                   autoFocus
                   disabled={isSubmitting}
-                  // onComplete={() => handleSubmit(onSubmit)()}  // auto submit when completion
                 />
               </div>
-
-              {/* Error Message */}
-              {(errors.otpCode?.message || serverError) && (
-                <p className="text-sm text-red-500 text-center">
-                  {errors.otpCode?.message || serverError}
-                </p>
-              )}
+              <FieldError message={errors.otpCode?.message || serverError || undefined} />
 
               {/* Verify Button */}
               <Button
@@ -237,7 +241,7 @@ const EmailVerification = () => {
           {!otpSent && (
             <Button
               onClick={handleSendOTP}
-              disabled={isSendingOtp || countdown > 0}
+              disabled={isSendingOtp}
               variant="default"
               size="lg"
               className="w-full mb-4 hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"

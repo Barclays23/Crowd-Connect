@@ -164,14 +164,14 @@ export function HostsList() {
 
 
   // Approve / Reject host application
-  const handleHostAction = async (hostId: string, action: "approve" | "reject", reason?: string) => {
+  const handleHostApplication = async (hostId: string, action: "approve" | "reject", reason?: string) => {
     if (action === "reject" && !reason?.trim()) {
       toast.error("Rejection reason is required");
       return;
     }
 
     try {
-      const response = await hostServices.updateHostStatus(hostId, action, reason);
+      const response = await hostServices.manageHostRequest({hostId, action, reason});
 
       toast.success(response.message || `Host ${action === "approve" ? "approved" : "rejected"} successfully`);
 
@@ -514,7 +514,7 @@ export function HostsList() {
         <ConfirmationModal
             isOpen={!!approveHostId}
             onClose={() => setApproveHostId(null)}
-            onConfirm={() => handleHostAction(approveHostId!, "approve")}
+            onConfirm={() => handleHostApplication(approveHostId!, "approve")}
             title="Approve Host"
             description="Are you sure you want to approve this host application?"
             confirmText="Approve"
@@ -526,8 +526,8 @@ export function HostsList() {
             onClose={() => setRejectHostId(null)}
             onConfirm={(reason) => {
                 if (rejectHostId) {
-                handleHostAction(rejectHostId, "reject", reason);
-                setRejectHostId(null);
+                  handleHostApplication(rejectHostId, "reject", reason);
+                  setRejectHostId(null);
                 }
             }}
         />

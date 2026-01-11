@@ -148,3 +148,14 @@ export interface UpdateHostInput {
   certificateUrl?: string;
   hostStatus?: HostStatus;
 }
+
+
+// for approve / reject / block host by admin
+export interface HostManageInput {
+  hostStatus: HostStatus;
+  hostRejectionReason?: string;
+  hostReviewedAt?: Date;
+  // hostBlockReason?: string;
+}
+
+

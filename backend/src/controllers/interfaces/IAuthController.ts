@@ -8,7 +8,8 @@ export interface IAuthController {
     validateResetLink(req: Request, res: Response, next: NextFunction): Promise<void>
     resetPassword(req: Request, res: Response, next: NextFunction): Promise<void>
 
-    requestVerifyEmail(req: Request, res: Response, next: NextFunction): Promise<void>
+    requestAuthenticateEmail(req: Request, res: Response, next: NextFunction): Promise<void>
+    updateVerifiedEmail(req: Request, res: Response, next: NextFunction): Promise<void>
 
     verifyAccount(req: Request, res: Response, next: NextFunction): Promise<void>
     resendOtp(req: Request, res: Response, next: NextFunction): Promise<void>

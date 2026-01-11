@@ -11,6 +11,7 @@ import {
     HostEntity,
     UpdateHostInput,
     UserProfileEntity,
+    HostManageInput,
 } from '../../entities/user.entity';
 
 import { IUserModel } from '../../models/implementations/user.model';
@@ -23,6 +24,8 @@ export interface IUserRepository {
     getUserByMobile(mobile: string): Promise<UserEntity | null>;
 
     getUserById(userId: string): Promise<UserEntity | null>;
+
+    getHostById(hostId: string): Promise<HostEntity | null>;
 
     getUserProfile(userId: string): Promise<UserProfileEntity | null>;
 
@@ -47,10 +50,15 @@ export interface IUserRepository {
     updateUserProfile(userId: string, userEntity: Partial<UserEntity>): Promise<UserEntity>;
     // updateHostProfile(userId: string, userEntity: Partial<HostEntity>): Promise<HostEntity>;
     
+    updateUserEmail(userId: string, updateInput: { email?: string; isEmailVerified: boolean }): Promise<UserEntity>
+
+    updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null>;
 
     updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null>;
 
     updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus>;
+
+    updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity>;
 
     // for both upgrading host request & updating host details
     updateHostDetails(userId: string, hostInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity>;

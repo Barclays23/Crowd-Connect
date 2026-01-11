@@ -21,8 +21,17 @@ export interface IAuthService {
     validateResetLink(token: string): Promise<boolean>
     resetPassword({token, newPassword}: ResetPasswordDto):Promise<string>
     
-    requestVerifyEmail(userId: string): Promise<string>
-    verifyEmail(email: string, otp: string): Promise<string>
+    // also used for changing email & verifying email if not already verified
+    requestAuthenticateEmail({currentUserEmail, requestedEmail}: {
+        currentUserEmail: string,
+        requestedEmail: string
+    }): Promise<string>
+    
+    updateVerifiedEmail({ currentUserEmail, requestedEmail, otpCode}: {
+        currentUserEmail: string;
+        requestedEmail: string;
+        otpCode: string;
+    }): Promise<string>
 
     refreshAccessToken(refreshToken: string): Promise<string>
     revokeRefreshToken(refreshToken: string): Promise<void>

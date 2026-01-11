@@ -23,6 +23,27 @@ export const hostServices = {
     },
 
 
+    manageHostRequest: async ({hostId, action, reason}: {
+      hostId: string, 
+      action: "approve" | "reject",
+      reason?: string
+    }) => {
+      console.log('hostId: ', hostId, '- action: ', action, '- reason: ', reason);
+      try {
+          const url = `/api/admin/hosts/${hostId}/manage-host-request`;
+          const response = await axiosInstance.patch(
+            url, 
+            { action, reason }, 
+            { withCredentials: true}
+          );
+          return response.data;
+      } catch (error: unknown) {
+          const err = error as AxiosError<{ error: string }>;
+          throw err;
+      }
+    },
+
+
     getAllHosts: async (queryParams?: string) => {
         try {
             const url = queryParams ? `/api/admin/hosts?${queryParams}` : `/api/admin/hosts`;
@@ -41,7 +62,7 @@ export const hostServices = {
     convertToHost: async (userId: string, formData: FormData) => {
       try {
         const response = await axiosInstance.post(
-          `/api/admin/users/${userId}/convert-to-host`,
+          `/api/admin/users/${userId}/convert-host`,
           formData,
           {
             headers: {
@@ -61,8 +82,8 @@ export const hostServices = {
     // update host details by admin
     updateHostDetailsByAdmin: async (userId: string, formData: FormData) => {
       try {
-        const response = await axiosInstance.patch(
-          `/api/admin/hosts/${userId}`,
+        const response = await axiosInstance.put(
+          `/api/admin/hosts/${userId}/update-host`,
           formData,
           {
             headers: {

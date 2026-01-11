@@ -5,7 +5,9 @@ import {
    UpdateUserRequestDto, 
    HostUpgradeRequestDto, 
    HostResponseDto,
-   BaseUserResponseDto, 
+   BaseUserResponseDto,
+   HostManageRequestDto,
+   HostStatusUpdateResponseDto, 
 } from "../dtos/user.dto";
 
 import { AuthUserResponseDto, SignUpRequestDto } from "../dtos/auth.dto";
@@ -21,6 +23,7 @@ import {
    HostEntity,
    UpdateHostInput,
    UserProfileEntity,
+   HostManageInput,
 } from "../entities/user.entity";
 
 import User, { IUserModel } from "../models/implementations/user.model";
@@ -174,6 +177,19 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
 
 
 
+// HOST ENTITY to HostStatusUpdateResponse DTO
+export const mapToHostStatusUpdateResponseDto = (
+   host: HostEntity
+): HostStatusUpdateResponseDto => {
+   return {
+      hostId: host.id,
+      hostStatus: host.hostStatus,
+      hostReviewedAt: host.reviewedAt,
+      hostRejectionReason: host.hostRejectionReason,
+      // hostBlockReason: host.hostBlockReason,
+   };
+};
+
 
 
 
@@ -273,6 +289,40 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
 
    return udgradeInput;
 };
+
+
+
+export const mapToHostManageInput = (
+  {hostId, action, reason}: HostManageRequestDto
+): HostManageInput => {
+
+   switch (action) {
+      case "approve":
+         return {
+            hostStatus: HostStatus.APPROVED,
+            hostReviewedAt: new Date(),
+         };
+
+      case "reject":
+         return {
+            hostStatus: HostStatus.REJECTED,
+            hostRejectionReason: reason,
+            hostReviewedAt: new Date(),
+         };
+
+      // case "block":
+      //    return {
+      //       hostStatus: HostStatus.BLOCKED,
+      //       hostBlockReason: reason,
+      //       hostReviewedAt: reviewedAt,
+      //    };
+
+      default:
+         throw new Error("Invalid host action");
+   }
+};
+
+
 
 
 

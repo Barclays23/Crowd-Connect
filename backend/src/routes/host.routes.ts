@@ -6,7 +6,7 @@ import { HostController } from "../controllers/implementations/host.controller";
 import { uploadDocument, uploadImage } from "../middlewares/file-upload.middleware";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { validateRequest } from "../middlewares/validate.middleware";
-import { hostUpgradeSchema } from "../schemas/host.schema";
+import { HostUpgradeSchema } from "../schemas/host.schema";
 
 
 const hostRouter = Router();
@@ -18,7 +18,7 @@ const hostController = new HostController(hostServices);
 
 
 hostRouter.post('/apply-upgrade', authenticate, authorize('user', 'host'), 
-    uploadDocument.single('hostDocument'), validateRequest({body: hostUpgradeSchema}), 
+    uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
     hostController.applyHostUpgrade.bind(hostController)
 );
 
