@@ -31,7 +31,7 @@ import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
 // User Pages
 import Home from "@/pages/user/Home";
 import NotFound from "@/pages/user/NotFound";
-import UserAccount from "@/pages/user/UserAccount";
+import UserAccountTabs from "./components/user/UserAccountTabs";
 
 
 // Host pages
@@ -43,6 +43,7 @@ import HostPage from "@/pages/host/HostPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUserList from "@/pages/admin/AdminUserList";
 import AdminHostsList from "./pages/admin/AdminHostsList";
+
 
 
 
@@ -76,14 +77,14 @@ function App() {
 
                               {/* ----------- Protected User Routes ---------- */}
                               <Route element={<ProtectedRoute />} >
-                                 <Route path="/my-account" element={<UserAccount />} />
+                                 <Route path="/my-account" element={<UserAccountTabs />} />
                                  {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
-                                 <Route path="/my-account" element={<UserAccount />} />
-                                 <Route path="/dashboard" element={<UserAccount />} />
-                                 <Route path="/my-events" element={<UserAccount />} />
-                                 <Route path="/my-bookings" element={<UserAccount />} />
-                                 <Route path="/my-wishlist" element={<UserAccount />} />
-                                 <Route path="/my-wallet" element={<UserAccount />} />
+                                 <Route path="/my-account" element={<UserAccountTabs />} />
+                                 <Route path="/dashboard" element={<UserAccountTabs />} />
+                                 <Route path="/my-events" element={<UserAccountTabs />} />
+                                 <Route path="/my-bookings" element={<UserAccountTabs />} />
+                                 <Route path="/my-wishlist" element={<UserAccountTabs />} />
+                                 <Route path="/my-wallet" element={<UserAccountTabs />} />
                               </Route>
                            </Route>
 
