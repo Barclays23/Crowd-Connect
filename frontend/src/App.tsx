@@ -78,6 +78,12 @@ function App() {
                               <Route element={<ProtectedRoute />} >
                                  <Route path="/my-account" element={<UserAccount />} />
                                  {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
+                                 <Route path="/my-account" element={<UserAccount />} />
+                                 <Route path="/dashboard" element={<UserAccount />} />
+                                 <Route path="/my-events" element={<UserAccount />} />
+                                 <Route path="/my-bookings" element={<UserAccount />} />
+                                 <Route path="/my-wishlist" element={<UserAccount />} />
+                                 <Route path="/my-wallet" element={<UserAccount />} />
                               </Route>
                            </Route>
 

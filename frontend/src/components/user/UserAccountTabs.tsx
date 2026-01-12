@@ -1,110 +1,109 @@
-import { useState } from "react";
-import { User, LayoutDashboard, Calendar, BookOpen, Heart, Wallet } from "lucide-react";
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  User,
+  LayoutDashboard,
+  Calendar,
+  BookOpen,
+  Heart,
+  Wallet,
+} from 'lucide-react';
+
+import UserProfile from './UserProfile';
+import UserDashboard from './UserDashboard';
+import UserEvents from './UserEvents';
+import UserBookings from './UserBookings';
+import UserWishlist from './UserWishlist';
+import UserWallet from './UserWallet';
 
 
 
 const tabs = [
-  { id: "profile", label: "My Profile", icon: User },
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "events", label: "My Events", icon: Calendar },
-  { id: "bookings", label: "My Bookings", icon: BookOpen },
-  { id: "wishlist", label: "Wishlist", icon: Heart },
-  { id: "wallet", label: "Wallet", icon: Wallet },
+   { id: 'profile', label: 'My Profile', icon: User, path: '/my-account' },
+   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+   { id: 'events', label: 'My Events', icon: Calendar, path: '/my-events' },
+   { id: 'bookings', label: 'My Bookings', icon: BookOpen, path: '/my-bookings' },
+   { id: 'wishlist', label: 'Wishlist', icon: Heart, path: '/my-wishlist' },
+   { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/my-wallet' },
 ];
 
 
 
+
 const UserAccountTabs = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+   const location = useLocation();
+   const navigate = useNavigate();
+
+
+   const pathToTab: Record<string, string> = {
+      '/my-account': 'profile',
+      '/dashboard': 'dashboard',
+      '/my-events': 'events',
+      '/my-bookings': 'bookings',
+      '/my-wishlist': 'wishlist',
+      '/my-wallet': 'wallet',
+   };
+
+   const currentTab = pathToTab[location.pathname] || 'profile';
+
+   // Optional: if someone lands on invalid subpath → redirect to profile
+   useEffect(() => {
+      if (!Object.keys(pathToTab).includes(location.pathname)) {
+         navigate('/my-account', { replace: true });
+      }
+   }, [location.pathname, navigate]);
+
 
    const renderContent = () => {
-      switch (activeTab) {
-         case "profile":
-         return (
-            <div className="space-y-6">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">My Profile</h2>
-               <div className="grid gap-4 max-w-md">
-               <div>
-                  <label className="text-sm text-[var(--text-secondary)]">Name</label>
-                  <p className="mt-1 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)]">John Doe</p>
-               </div>
-               <div>
-                  <label className="text-sm text-[var(--text-secondary)]">Email</label>
-                  <p className="mt-1 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)]">john.doe@example.com</p>
-               </div>
-               <div>
-                  <label className="text-sm text-[var(--text-secondary)]">Mobile</label>
-                  <p className="mt-1 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)]">+1 234 567 8900</p>
-               </div>
-               </div>
-            </div>
-         );
-         case "dashboard":
-         return (
-            <div className="space-y-4">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">Dashboard</h2>
-               <p className="text-[var(--text-secondary)]">Your dashboard overview will appear here.</p>
-            </div>
-         );
-         case "events":
-         return (
-            <div className="space-y-4">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">My Events</h2>
-               <p className="text-[var(--text-secondary)]">Your events will appear here.</p>
-            </div>
-         );
-         case "bookings":
-         return (
-            <div className="space-y-4">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">My Bookings</h2>
-               <p className="text-[var(--text-secondary)]">Your bookings will appear here.</p>
-            </div>
-         );
-         case "wishlist":
-         return (
-            <div className="space-y-4">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">Wishlist</h2>
-               <p className="text-[var(--text-secondary)]">Your wishlist items will appear here.</p>
-            </div>
-         );
-         case "wallet":
-         return (
-            <div className="space-y-4">
-               <h2 className="text-xl font-semibold text-[var(--heading-primary)]">Wallet</h2>
-               <p className="text-[var(--text-secondary)]">Your wallet balance and transactions will appear here.</p>
-            </div>
-         );
+      switch (currentTab) {
+         case 'profile':
+         return <UserProfile />;
+         case 'dashboard':
+         return <UserDashboard />;
+         case 'events':
+         return <UserEvents />;
+         case 'bookings':
+         return <UserBookings />;
+         case 'wishlist':
+         return <UserWishlist />;
+         case 'wallet':
+         return <UserWallet />;
          default:
-         return null;
+         return <UserProfile />;
       }
    };
 
-   return (
-      <div className="w-full max-w-5xl mx-auto">
-         {/* Tab Navigation */}
-         <div className="rounded-full p-1.5 flex bg-[var(--bg-secondary)]">
-         {tabs.map((tab) => (
-            <button
-               key={tab.id}
-               onClick={() => setActiveTab(tab.id)}
-               className={`flex-1 py-3 px-4 rounded-full text-sm font-medium transition-all duration-200 ${
-               activeTab === tab.id
-                  ? "bg-[var(--brand-primary)] text-[var(--btn-primary-text)] hover:bg-[var(--brand-primary-hover)]"
-                  : "bg-transparent text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
-               }`}
-            >
-               {tab.label}
-            </button>
-         ))}
-         </div>
 
-         {/* Tab Content */}
-         <div className="mt-8 p-6 rounded-2xl min-h-[300px] bg-[var(--card-bg)] border border-[var(--card-border)] shadow-[var(--card-shadow)]">
-         {renderContent()}
+
+   return (
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+         {/* Tab Navigation Area - horizontal scroll on mobile */}
+         <div className="overflow-x-auto pb-2 scrollbar-thin">
+            <div className="flex rounded-full p-1.5 bg-(--bg-secondary) min-w-max lg:min-w-0">
+               {tabs.map((tab) => (
+                  <button
+                     key={tab.id}
+                     onClick={() => navigate(tab.path)}
+                     className={`flex flex-1 lg:flex-auto items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap 
+                        ${currentTab === tab.id
+                           ? 'bg-(--brand-primary) text-(--btn-primary-text) shadow-sm'
+                           : 'text-(--text-primary) hover:bg-(--bg-tertiary)'
+                        }`}
+                     >
+                     <tab.icon size={18} />
+                     {tab.label}
+                  </button>
+               ))}
+            </div>
+         </div>
+         
+
+         {/* Content Area */}
+         <div className="mt-8 p-6 sm:p-8 rounded-2xl bg-(--card-bg) border border-(--card-border) shadow-(--card-shadow) min-h-[400px]">
+            {renderContent()}
          </div>
       </div>
    );
 };
 
 export default UserAccountTabs;
-
