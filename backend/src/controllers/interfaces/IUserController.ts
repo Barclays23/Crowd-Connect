@@ -4,6 +4,9 @@ import { Request, Response, NextFunction } from 'express';
 
 export interface IUserController {
     getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void>;
+    editUserBasicInfo(req: Request, res: Response, next: NextFunction): Promise<void>;
+    updateProfilePicture(req: Request, res: Response, next: NextFunction): Promise<void>;
+
     
     getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void>;
     createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void>;

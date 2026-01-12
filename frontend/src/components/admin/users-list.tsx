@@ -503,7 +503,7 @@ export function UsersList() {
                           </div>
 
                           {/* Row 2: Convert to Host */}
-                          {(currentAdmin?.isSuperAdmin || user.role !== "admin") && !user.isSuperAdmin && 
+                          {/* {(currentAdmin?.isSuperAdmin || user.role !== "admin") && !user.isSuperAdmin && 
                             user.role !== "host" && (
                               <Button
                                 variant="primaryOutline"
@@ -513,7 +513,7 @@ export function UsersList() {
                               >
                                 Convert to Host
                               </Button>
-                            )}
+                            )} */}
                         </div>
                       </TableCell>
 

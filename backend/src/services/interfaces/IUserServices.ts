@@ -5,6 +5,7 @@ import {
     CreateUserRequestDto,
     HostResponseDto,
     UpdateUserRequestDto,
+    UserBasicInfoUpdateDTO,
     UserProfileResponseDto, 
 } from "../../dtos/user.dto";
 import { UserStatus } from "../../constants/roles-and-statuses";
@@ -14,6 +15,10 @@ import { UserStatus } from "../../constants/roles-and-statuses";
 export interface IUserServices {
 
    getUserProfile(userId: string): Promise<UserProfileResponseDto>;
+
+   editUserBasicInfo(userId: string, basicInfoDto: UserBasicInfoUpdateDTO): Promise<UserProfileResponseDto>;
+
+   updateProfilePicture(userId: string, imageFile?: Express.Multer.File): Promise<UserProfileResponseDto>;
 
    getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult>;
 

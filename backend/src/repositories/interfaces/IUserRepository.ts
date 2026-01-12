@@ -12,6 +12,7 @@ import {
     UpdateHostInput,
     UserProfileEntity,
     HostManageInput,
+    UpdateProfilePicInput,
 } from '../../entities/user.entity';
 
 import { IUserModel } from '../../models/implementations/user.model';
@@ -47,8 +48,10 @@ export interface IUserRepository {
 
     deleteUser(userId: string): Promise<void>;
     
-    updateUserProfile(userId: string, userEntity: Partial<UserEntity>): Promise<UserEntity>;
-    // updateHostProfile(userId: string, userEntity: Partial<HostEntity>): Promise<HostEntity>;
+    // update user profile by user
+    updateUserProfile(userId: string, userInput: UpdateUserInput): Promise<UserEntity>;
+    updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
+    updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity>;
     
     updateUserEmail(userId: string, updateInput: { email?: string; isEmailVerified: boolean }): Promise<UserEntity>
 

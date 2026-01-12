@@ -6,7 +6,8 @@ import {
     CreateUserRequestDto, 
     UpdateUserRequestDto, 
     UserProfileResponseDto,
-    HostResponseDto, 
+    HostResponseDto,
+    UserBasicInfoUpdateDTO, 
 } from "../../dtos/user.dto";
 
 import { createHttpError } from "../../utils/httpError.utils";
@@ -47,6 +48,94 @@ export class UserServices implements IUserServices {
         } catch (error: any) {
             console.error('Error in userServices.getUserProfile:', error);
             throw error;
+        }
+    }
+
+
+    async editUserBasicInfo(currentUserId: string, updateDto: UserBasicInfoUpdateDTO): Promise<UserProfileResponseDto> {
+        try {
+            const userData: UserEntity|null = await this._userRepository.getUserById(currentUserId);
+            
+            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+
+            if (userData.status === UserStatus.BLOCKED) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            }
+
+            const isChangingMobile = updateDto.mobile && updateDto.mobile !== userData.mobile;
+            if (isChangingMobile) {
+                const existingMobileUser: UserEntity | null = updateDto.mobile ? await this._userRepository.getUserByMobile(updateDto.mobile) : null;
+                if (existingMobileUser && existingMobileUser.id !== currentUserId) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                }
+            }
+
+            // since profilePic is not included in UserBasicInfo (profilePic will update separately)
+            const profilePicUrl = undefined;  // keeping it undefined for input mapping
+
+            const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
+                
+            const updatedUserResult: UserEntity = await this._userRepository.updateUserProfile(currentUserId, updateInput);
+
+            const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
+
+            return updatedUser
+
+        } catch (error: any) {
+            console.error("Error in UserServices.editUserBasicInfo:", error);
+            throw error;
+        }
+    }
+
+
+    async updateProfilePicture(currentUserId: string, imageFile?: Express.Multer.File): Promise<UserProfileResponseDto> {
+        try {
+            // console.log('✅ currentUserId received in userServices.updateProfilePicture:', currentUserId);
+            // console.log('✅ imageFile received in userServices.updateProfilePicture:', imageFile);
+
+            const currentUser: UserEntity | null = await this._userRepository.getUserById(currentUserId);
+
+            if (!currentUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+
+            if (currentUser.status === UserStatus.BLOCKED) {
+                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            }
+
+            let profilePicUrl: string | undefined;
+
+            // if (isRemoved) profilePicUrl = '';
+            // if profile pic is removed, pass the isRemoved flag and replace with empty string (will implement later)
+
+            if (imageFile){
+                profilePicUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: 'user-profile-pics',
+                    fileType: 'image',
+                });
+
+                console.log('new profilePicUrl:', profilePicUrl);
+
+                if (currentUser.profilePic && currentUser.profilePic.trim() !== '') {
+                    try {
+                        await deleteFromCloudinary({fileUrl: currentUser.profilePic, resourceType: 'image'});
+                    } catch (cleanupErr) {
+                        console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
+                    }
+                }
+            }
+
+
+            const profilPicInput = {profilePic: profilePicUrl}
+            
+            const updatedUserResult: UserEntity = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
+
+            const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
+
+            return updatedUser;
+
+        } catch (err: any) {
+            console.error('Error in userServices.updateProfilePicture:', err);
+            throw err;
         }
     }
   
@@ -161,7 +250,6 @@ export class UserServices implements IUserServices {
             throw err;
         }
     }
-
 
 
 

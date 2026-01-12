@@ -13,7 +13,8 @@ import {
     SensitiveUserEntity,
     UpdateHostInput,
     UserProfileEntity,
-    HostManageInput, 
+    HostManageInput,
+    UpdateProfilePicInput, 
 } from "../../entities/user.entity";
 
 import { 
@@ -214,9 +215,9 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateUserProfile(userId: string, userEntity: Partial<UserEntity>): Promise<UserEntity> {
+    async updateUserProfile(userId: string, updateInput: UpdateUserInput): Promise<UserEntity> {
         try {
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, userEntity);
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
             if (!updatedUserData) {
                 throw new Error("User not found");
             }
@@ -225,6 +226,22 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
 
         } catch (error) {
             console.log('error in updateUserProfile :', error);
+            throw error;
+        }
+    }
+
+    
+    async updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity>{
+        try {
+            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, profilPicInput);
+            if (!updatedUserData) {
+                throw new Error("User not found");
+            }
+            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
+            return resultEntity;
+
+        } catch (error) {
+            console.log('error in updateProfilePicture :', error);
             throw error;
         }
     }

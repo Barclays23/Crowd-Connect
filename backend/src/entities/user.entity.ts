@@ -120,6 +120,10 @@ export interface UpdateUserInput {
   profilePic?: string;
 }
 
+export interface UpdateProfilePicInput {
+  profilePic?: string;
+}
+
 
 
 export interface UpgradeHostInput {

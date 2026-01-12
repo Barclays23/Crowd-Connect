@@ -44,7 +44,7 @@ body {
   --bg-tertiary: #f0f0f0;             /* Slightly Darker Gray */
   --bg-accent: #c6c6c6;               /* Very Light Indigo */
   --bg-overlay: rgba(255, 255, 255, 0.5);   /* Modal Overlay */
-  --bg-overlay: rgba(255, 255, 255, 0.648);   /* Modal Overlay */
+  --bg-overlay2: rgba(255, 255, 255, 0.648);   /* Modal Overlay */
   --bg-neutral: #4f4f4f30;
   --bg-neutral-hover: #4f4f4f60;
 

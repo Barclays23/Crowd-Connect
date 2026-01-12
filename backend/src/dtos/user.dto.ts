@@ -5,6 +5,17 @@ import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuse
 
 // HTTP Request boundary ------------------------------------------------------------------------
 
+
+// to update user basic info (name & mobile) by user himself
+export interface UserBasicInfoUpdateDTO {
+  name?: string;
+  mobile?: string;
+  // email?: string;  // separate editing
+  // add other profile fields as needed
+}
+
+
+
 // for creating a new user by admin
 export interface CreateUserRequestDto {
   name: string;

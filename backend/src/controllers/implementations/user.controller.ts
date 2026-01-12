@@ -6,7 +6,7 @@ import { IUserServices } from '../../services/interfaces/IUserServices';
 import { HttpStatus } from '../../constants/statusCodes';
 import { HttpResponse } from '../../constants/responseMessages';
 import { GetUsersFilter, GetUsersResult } from '../../types/user.types';
-import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserProfileResponseDto } from '../../dtos/user.dto';
+import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto';
 import { UserStatus } from '../../constants/roles-and-statuses';
 
 
@@ -46,26 +46,71 @@ export class UserController implements IUserController {
     }
 
 
+    async editUserBasicInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const basicInfoDto: UserBasicInfoUpdateDTO = req.body;
+            const userId: string = req.user.userId;
 
-    // async editProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
-    //     try {
-    //         const userData = await this._userServices.updateProfile(req.body);
+            console.log('editUserBasicInfo body: ', req.body)
+
+            const updatedUser: UserProfileResponseDto = await this._userServices.editUserBasicInfo(userId, basicInfoDto);
+
+            const updatedUserBasicInfo = {
+                name: updatedUser.name,
+                mobile: updatedUser.mobile
+            }
             
-    //         res.status(HttpStatus.OK).json({message: HttpResponse.PROFILE_PICTURE_CHANGED});
+            res.status(HttpStatus.OK).json({
+                success: true,
+                updatedUser: updatedUserBasicInfo,
+                message: HttpResponse.SUCCESS_UPDATE_PROFILE
+            });
 
 
-    //     } catch (err: any) {
-    //         console.error('Error in AuthController.logout:', err);
-    //         if (err && typeof err.statusCode === 'number') {
-    //             res.status(err.statusCode).json({ message: err.message || 'Error' });
-    //             return;
-    //         }
-    //         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-    //             message: HttpResponse.INTERNAL_SERVER_ERROR
-    //         });
-    //         return;
-    //     }
-    // }
+        } catch (err: any) {
+            console.error('Error in UserController.editUserBasicInfo:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
+
+
+    async updateProfilePicture(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId: string = req.user.userId;
+            const imageFile: Express.Multer.File | undefined = req.file;
+
+            console.log('updateProfilePicture imageFile: ', req?.file);
+
+            const updatedUser: UserProfileResponseDto = await this._userServices.updateProfilePicture(userId, imageFile);
+            
+            res.status(HttpStatus.OK).json({
+                success: true,
+                updatedProfilePic: updatedUser.profilePic,
+                message: HttpResponse.PROFILE_PICTURE_CHANGED
+            });
+
+
+        } catch (err: any) {
+            console.error('Error in UserController.updateProfilePicture:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: HttpResponse.INTERNAL_SERVER_ERROR
+            });
+            return;
+        }
+    }
+
 
 
     async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -72,12 +72,14 @@ export enum HttpResponse {
     SUCCESS_GET_HOSTS = "Hosts fetched successfully.",
     SUCCESS_CREATE_USER = "User account created.",
     SUCCESS_UPDATE_USER = "User details updated.",
+    SUCCESS_UPDATE_PROFILE = "Profile updated successfully.",
     SUCCESS_DELETE_USER = "User has been deleted.",
     SUCCESS_BLOCK_USER = "User has been blocked.",
     SUCCESS_UNBLOCK_USER = "User has been unblocked.",
-
+    
     FAILED_GET_USERS = "Failed to fetch users.",
     FAILED_UPDATE_USER = "Failed to update user.",
+    FAILED_UPDATE_PROFILE = "Failed to update profile.",
     FAILED_DELETE_USER = "Failed to delete user.",
     FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
     FAILED_CREATE_USER = "Failed to create user.",

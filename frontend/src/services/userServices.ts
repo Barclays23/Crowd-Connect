@@ -2,11 +2,11 @@ import axiosInstance from "@/config/axios";
 import type { AxiosError } from "axios";
 
 
-// to update user profile by user himself
-interface UserProfileData {
+// to update user basic info (name & mobile) by user himself
+export interface UserBasicInfo {
     name?: string;
-    email?: string;
     mobile?: string;
+    // email?: string;  // separate editing
     // add other profile fields as needed
 }
 
@@ -54,12 +54,27 @@ export const userServices = {
 
 
 
-    // edit profile by user
-    editProfileService: async (data: UserProfileData) => {
+    // edit basic profile details by user (name & mobile)
+    editUserBasicInfo: async (data: UserBasicInfo) => {
         try {
-            // console.log('data received in registerService :', data)
-            const response = await axiosInstance.post("/api/user/edit-profile", data, { withCredentials: true });
-            // return { data: response.data, error: null };
+            const response = await axiosInstance.patch("/api/user/edit-basic-info", data, { withCredentials: true });
+            return response.data;
+
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
+    updateProfilePicture: async (formData: FormData) => {
+        try {
+            const response = await axiosInstance.put("/api/user/profile-pic", formData, { 
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             return response.data;
 
         } catch (error: unknown) {
