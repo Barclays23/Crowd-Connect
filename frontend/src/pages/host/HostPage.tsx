@@ -73,7 +73,7 @@ const HostPage = () => {
 
          {/* Host Event Logic Section */}
          <div ref={hostEventRef}>
-         <HostEventSection />
+            <HostEventSection />
          </div>
       </div>
    );
