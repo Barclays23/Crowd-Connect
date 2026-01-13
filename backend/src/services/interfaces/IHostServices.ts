@@ -16,9 +16,14 @@ export interface IHostServices {
         documentFile: Express.Multer.File | undefined;
     }): Promise<UserProfileResponseDto>;
 
-    manageHostStatus({ hostId, action, reason }: HostManageRequestDto): Promise<HostStatusUpdateResponseDto>;
-
-
     getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult>;
+    
+    manageHostStatus({ hostId, action, reason }: HostManageRequestDto): Promise<HostStatusUpdateResponseDto>;
+    
+    updateHostByAdmin({hostId, updateDto, documentFile}: {
+        hostId: string;
+        updateDto: HostUpgradeRequestDto;
+        documentFile: Express.Multer.File | undefined;
+    }): Promise<UserProfileResponseDto>;
 
 }

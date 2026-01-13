@@ -26,9 +26,13 @@ import { isPDF, getFileNameFromFileOrUrl, getFileExtension } from "@/utils/fileU
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+
+
 
 interface HostManageFormProps {
-  host?: UserState | null;
+  host: UserState;
+  mode?: "convertMode" | "editMode";
   onSuccess?: (updatedHost?: any) => void;
   onCancel?: () => void;
 }
@@ -40,8 +44,10 @@ const allowedTypes = [
   'image/png'
 ];
 
-export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProps) {
-   const isEditMode = !!host;
+export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFormProps) {
+   const isEditMode = mode === "editMode";
+   const isConvertMode = mode === "convertMode";
+
    const fileInputRef = useRef<HTMLInputElement>(null);
 
    const [hostDocument, setHostDocument] = useState<File | null>(null);
@@ -66,13 +72,11 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
 
 
    useEffect(() => {
-      if (host) {
-         form.reset({
+      form.reset({
          organizationName: host.organizationName || "",
          registrationNumber: host.registrationNumber || "",
          businessAddress: host.businessAddress || "",
-         });
-      }
+      });
    }, [host, form]);
 
 
@@ -80,7 +84,7 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
    useEffect(() => {
       return () => {
          if (documentPreview && documentPreview.startsWith('blob:')) {
-         URL.revokeObjectURL(documentPreview);
+            URL.revokeObjectURL(documentPreview);
          }
       };
    }, [documentPreview]);
@@ -132,9 +136,6 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
       setNumPages(numPages);
       setPdfError('');
    };
-
-
-
    const onDocumentLoadError = (error: Error) => {
       console.error('PDF load error:', error);
       setPdfError('Failed to load PDF preview');
@@ -153,12 +154,13 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
       }
    };
 
-
+   
 
    const onSubmit = async (values: HostUpgradeFormData) => {
-      const isFileMandatory = !isEditMode || (isEditMode && !host?.certificateUrl);
+      const isFileMandatory = isConvertMode || (isEditMode && !host?.certificateUrl);
       const isFormValid = await form.trigger();
       if (!isFormValid) return;
+
 
       if (isFileMandatory && !hostDocument && !host?.certificateUrl) {
          setDocumentError("Business document/certificate is required");
@@ -174,16 +176,19 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
          if (hostDocument) formData.append("hostDocument", hostDocument);
 
          let response;
-         if (isEditMode) {
-         response = await hostServices.updateHostDetailsByAdmin(host.userId, formData);
+         if (mode === 'editMode') {
+            response = await hostServices.updateHostDetailsByAdmin(host.userId, formData);
          } else {
-         response = await hostServices.convertToHost(host.userId, formData);
+            response = await hostServices.convertToHost(host.userId, formData);
          }
 
-         toast.success(response.message || `Host ${isEditMode ? "updated" : "converted"} successfully`);
+         toast.success(response.message);
          onSuccess?.(response?.userData || response);
+
       } catch (error: any) {
-         toast.error(error.response?.data?.message || `Failed to ${isEditMode ? "update" : "convert"} host`);
+         const errorMessage = getApiErrorMessage(error);
+         toast.error(errorMessage);
+
       } finally {
          setLoading(false);
       }
@@ -618,7 +623,7 @@ export function HostManageForm({ host, onSuccess, onCancel }: HostManageFormProp
                   disabled={loading}
                >
                   <ButtonLoader loading={loading} loadingText={isEditMode ? "Updating..." : "Converting..."}>
-                  {isEditMode ? "Update Host Details" : "Convert to Host"}
+                     {isEditMode ? "Update Host Details" : "Convert to Host"}
                   </ButtonLoader>
                </Button>
             </div>

@@ -1,11 +1,22 @@
 import { NextFunction, Request, Response } from "express";
-import { HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../dtos/user.dto";
 import { IHostController } from "../interfaces/IHostController";
 import { HttpStatus } from "../../constants/statusCodes";
 import { IHostServices } from "../../services/interfaces/IHostServices";
 import { HttpResponse } from "../../constants/responseMessages";
 import { UserRole } from "../../constants/roles-and-statuses";
-import { GetHostsFilter, GetHostsResult, GetUsersFilter, GetUsersResult } from "../../types/user.types";
+import { 
+    GetHostsFilter, 
+    GetHostsResult, 
+    GetUsersFilter, 
+    GetUsersResult 
+} from "../../types/user.types";
+
+import { 
+    HostStatusUpdateResponseDto, 
+    HostUpdateRequestDto, 
+    HostUpgradeRequestDto, 
+    UserProfileResponseDto 
+} from "../../dtos/user.dto";
 
 
 
@@ -38,43 +49,6 @@ export class HostController implements IHostController {
         } catch (err: any) {
             next(err);
             console.error('Error in hostController.applyHostUpgrade:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_APPLY_FAILED}`
-            });
-            return;
-        }
-    }
-
-
-    async manageHostStatus (req: Request, res: Response, next: NextFunction) : Promise<void> {
-        try {
-            const hostId = req.params?.hostId;
-            const {action, reason} = req.body;
-
-            console.log('manageHostRequest body: ', req.body);
-            console.log("hostId:", hostId);
-
-            const updatedHost: HostStatusUpdateResponseDto = await this._hostService.manageHostStatus({hostId, action, reason});
-            
-            let responseMessage: string = ''
-            if (action === 'approve') responseMessage = HttpResponse.HOST_APPROVE_SUCCESS;
-            else if (action === 'reject') responseMessage = HttpResponse.HOST_REJECT_SUCCESS;
-            else if (action === 'block') responseMessage = HttpResponse.HOST_BLOCK_SUCCESS;
-
-            res.status(HttpStatus.OK).json({
-                success: true,
-                message: responseMessage,
-                updatedHost: updatedHost,
-            });
-
-        } catch (err: any) {
-            next(err);
-            console.error('Error in hostController.manageHostRequest:', err);
             if (err && typeof err.statusCode === 'number') {
                 res.status(err.statusCode).json({ message: err.message || 'Error' });
                 return;
@@ -138,6 +112,77 @@ export class HostController implements IHostController {
             return;
         }
     
+    }
+
+
+    async manageHostStatus (req: Request, res: Response, next: NextFunction) : Promise<void> {
+        try {
+            const hostId = req.params?.hostId;
+            const {action, reason} = req.body;
+
+            console.log('manageHostStatus body: ', req.body);
+            console.log("hostId:", hostId);
+
+            const updatedHost: HostStatusUpdateResponseDto = await this._hostService.manageHostStatus({hostId, action, reason});
+            
+            let responseMessage: string = ''
+            if (action === 'approve') responseMessage = HttpResponse.HOST_APPROVE_SUCCESS;
+            else if (action === 'reject') responseMessage = HttpResponse.HOST_REJECT_SUCCESS;
+            else if (action === 'block') responseMessage = HttpResponse.HOST_BLOCK_SUCCESS;
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: responseMessage,
+                updatedHost: updatedHost,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in hostController.manageHostStatus:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            // Fallback to generic internal error
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_APPLY_FAILED}`
+            });
+            return;
+        }
+    }
+
+
+    async updateHostByAdmin (req: Request, res: Response, next: NextFunction): Promise<void>{
+        try {
+            const hostId: string = req.params?.hostId;
+            const updateDto: HostUpdateRequestDto = req.body;
+            const documentFile: Express.Multer.File | undefined = req.file;
+
+            console.log("upgradeDto body: ", req.body);
+            console.log("hostId:", hostId);
+            console.log("fileName:", documentFile?.originalname);
+
+            const updatedHostProfile: UserProfileResponseDto = await this._hostService.updateHostByAdmin({hostId, updateDto, documentFile});
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.HOST_UPDATE_SUCCESS,
+                updatedHost: updatedHostProfile,
+            });
+
+        } catch (err: any) {
+            next(err);
+            console.error('Error in hostController.updateHostByAdmin:', err);
+            if (err && typeof err.statusCode === 'number') {
+                res.status(err.statusCode).json({ message: err.message || 'Error' });
+                return;
+            }
+            // Fallback to generic internal error
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_UPDATE_FAILED}`
+            });
+            return;
+        }
     }
 
 }

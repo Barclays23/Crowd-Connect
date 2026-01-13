@@ -4,14 +4,15 @@ import { IHostServices } from "../interfaces/IHostServices";
 import { createHttpError } from "../../utils/httpError.utils";
 import { HttpStatus } from "../../constants/statusCodes";
 import { HttpResponse } from "../../constants/responseMessages";
-import { HostEntity, HostManageInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
+import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../entities/user.entity";
 import { deleteFromCloudinary, uploadToCloudinary } from "../../config/cloudinary";
 import { isHost } from "../../utils/general.utils";
 import { 
     mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto,
-    mapToHostStatusUpdateResponseDto, 
+    mapToHostStatusUpdateResponseDto,
+    mapUpdateHostDTOToInput, 
 } from "../../mappers/user.mapper";
 import { HostStatus, UserRole } from "../../constants/roles-and-statuses";
 import { GetHostsFilter, GetHostsResult } from "../../types/user.types";
@@ -23,6 +24,52 @@ export class HostServices implements IHostServices {
     constructor(
         private _userRepository: IUserRepository,
     ) {}
+
+    async getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult> {
+        try {
+            const { page, limit, search, role, status, hostStatus } = filters;
+            console.log('Filters received in hostServices.getAllHosts:', filters);
+
+            const query: any = {};
+
+            query.role = role ? query.role = role : UserRole.HOST;
+
+            if (search) {
+                query.$or = [
+                    { organizationName: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { mobile: { $regex: search, $options: 'i' } },
+                ];
+            }
+
+            if (status) query.status = status;
+            if (hostStatus) query.hostStatus = hostStatus;
+
+            const skip = (page - 1) * limit;
+
+            console.log('Final query in hostServices.getAllHosts:', query);
+
+            const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
+                this._userRepository.findHosts(query, skip, limit),
+                this._userRepository.countUsers(query)
+            ]);
+
+            const mappedHosts: UserProfileResponseDto[] = hosts ? hosts.map(mapUserEntityToProfileDto) : [];
+
+            return {
+                hosts: mappedHosts,
+                page,
+                limit,
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+            };
+
+        } catch (error: any) {
+            console.error('Error in hostServices.getAllHosts:', error);
+            throw error;
+        }
+    }
+
 
     async applyHostUpgrade({ userId, upgradeDto, documentFile }: {
         userId: string;
@@ -81,9 +128,8 @@ export class HostServices implements IHostServices {
             const hostEntity: HostEntity = await this._userRepository.updateHostDetails(userId, upgradeInput);
 
             const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
-            // entity to userProfileDto if needed later
-            // return hostdto
-            console.log('hostProfile after updateHostDetails:', hostProfile);
+
+            console.log('hostProfile after applyHostUpgrade:', hostProfile);
 
             return hostProfile;
 
@@ -140,49 +186,73 @@ export class HostServices implements IHostServices {
     }
 
 
-    async getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult> {
+    async updateHostByAdmin({hostId, updateDto, documentFile}: {
+        hostId: string;
+        updateDto: HostUpgradeRequestDto;
+        documentFile: Express.Multer.File | undefined;
+    }): Promise<UserProfileResponseDto> {
         try {
-            const { page, limit, search, role, status, hostStatus } = filters;
-            console.log('Filters received in hostServices.getAllHosts:', filters);
+            console.log("✅✅✅✅✅ received data in hostServices.updateHostByAdmin ----");
+            console.log("userId:", hostId);
+            console.log("upgradeDto:", updateDto);
+            console.log("fileName:", documentFile?.originalname);
 
-            const query: any = {};
+            const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
-            query.role = role ? query.role = role : UserRole.HOST;
-
-            if (search) {
-                query.$or = [
-                    { organizationName: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                    { mobile: { $regex: search, $options: 'i' } },
-                ];
+            if (!existingUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
             }
 
-            if (status) query.status = status;
-            if (hostStatus) query.hostStatus = hostStatus;
+            const isHost = existingUser.role === UserRole.HOST;
 
-            const skip = (page - 1) * limit;
+            if (!existingUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_A_HOST);
+            }
 
-            console.log('Final query in hostServices.getAllHosts:', query);
+            // may check any validations
+            // const allowedToEdit = isHost || (
+            //     existingUser.hostStatus === HostStatus.REJECTED || 
+            //     existingUser.hostStatus === HostStatus.BLOCKED ||
+            //     existingUser.hostStatus === HostStatus.APPROVED
+            // );
 
-            const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
-                this._userRepository.findHosts(query, skip, limit),
-                this._userRepository.countUsers(query)
-            ]);
+            let hostDocumentUrl: string | undefined;
 
-            const mappedHosts: UserProfileResponseDto[] = hosts ? hosts.map(mapUserEntityToProfileDto) : [];
+            if (documentFile){
+                hostDocumentUrl = await uploadToCloudinary({
+                    fileBuffer: documentFile.buffer,
+                    folderPath: 'host-documents',
+                    fileType: 'image',
+                });
 
-            return {
-                hosts: mappedHosts,
-                page,
-                limit,
-                total: totalCount,
-                totalPages: Math.ceil(totalCount / limit),
-            };
+                console.log('new hostDocumentUrl:', hostDocumentUrl);
+
+                if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
+                    try {
+                        await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});
+                    } catch (cleanupErr) {
+                        console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
+                    }
+                }
+            }
+
+            const isDoneByAdmin = true;
+
+            const hostUpdateInput: HostUpdateInput = mapUpdateHostDTOToInput({isDoneByAdmin, updateDto, hostDocumentUrl});
+
+            const hostEntity: HostEntity = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
+
+            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
+
+            console.log('hostProfile after updateHostByAdmin:', hostProfile);
+
+            return hostProfile;
 
         } catch (error: any) {
-            console.error('Error in hostServices.getAllHosts:', error);
+            console.error('Error in hostServices.updateHostByAdmin:', error);
             throw error;
         }
     }
+
 
 }

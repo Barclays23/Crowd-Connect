@@ -503,33 +503,34 @@ export function HostsList() {
 
         <Modal isOpen={!!editHost} onClose={() => setEditHost(null)} title="Edit Host" size="lg">
             {editHost && (
-                <HostManageForm
-                    host={editHost}
-                    onSuccess={handleFormSuccess}
-                    onCancel={() => setEditHost(null)}
-                />
+              <HostManageForm
+                  host={editHost}
+                  mode="editMode"
+                  onSuccess={handleFormSuccess}
+                  onCancel={() => setEditHost(null)}
+              />
             )}
         </Modal>
 
         <ConfirmationModal
-            isOpen={!!approveHostId}
-            onClose={() => setApproveHostId(null)}
-            onConfirm={() => handleHostApplication(approveHostId!, "approve")}
-            title="Approve Host"
-            description="Are you sure you want to approve this host application?"
-            confirmText="Approve"
-            variant="default"
+          isOpen={!!approveHostId}
+          onClose={() => setApproveHostId(null)}
+          onConfirm={() => handleHostApplication(approveHostId!, "approve")}
+          title="Approve Host"
+          description="Are you sure you want to approve this host application?"
+          confirmText="Approve"
+          variant="default"
         />
 
         <RejectHostModal
-            isOpen={!!rejectHostId}
-            onClose={() => setRejectHostId(null)}
-            onConfirm={(reason) => {
-                if (rejectHostId) {
-                  handleHostApplication(rejectHostId, "reject", reason);
-                  setRejectHostId(null);
-                }
-            }}
+          isOpen={!!rejectHostId}
+          onClose={() => setRejectHostId(null)}
+          onConfirm={(reason) => {
+              if (rejectHostId) {
+                handleHostApplication(rejectHostId, "reject", reason);
+                setRejectHostId(null);
+              }
+          }}
         />
 
       </CardContent>

@@ -50,7 +50,7 @@ export interface IUserRepository {
     
     // update user profile by user
     updateUserProfile(userId: string, userInput: UpdateUserInput): Promise<UserEntity>;
-    updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
+    
     updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity>;
     
     updateUserEmail(userId: string, updateInput: { email?: string; isEmailVerified: boolean }): Promise<UserEntity>
@@ -64,7 +64,8 @@ export interface IUserRepository {
     updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity>;
 
     // for both upgrading host request & updating host details
-    updateHostDetails(userId: string, hostInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity>;
+    updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity>;
+    // updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
 
 }
 

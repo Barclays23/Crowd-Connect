@@ -21,7 +21,7 @@ import {
    UserEntity, 
    SensitiveUserEntity, 
    HostEntity,
-   UpdateHostInput,
+   HostUpdateInput,
    UserProfileEntity,
    HostManageInput,
 } from "../entities/user.entity";
@@ -274,7 +274,7 @@ export const mapUpdateUserRequestDtoToInput = ({updateDto, profilePicUrl}: {
 
 export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
   upgradeDto: HostUpgradeRequestDto;
-  hostDocumentUrl?: string;
+  hostDocumentUrl?: string;  // when re-apply, mandatory or not??
 }): UpgradeHostInput => {
    const udgradeInput: UpgradeHostInput = {
       role: UserRole.HOST,
@@ -328,16 +328,18 @@ export const mapToHostManageInput = (
 
 
 // to update host details (eg: change host name, regNo, address, document etc) by user or admin
-export const mapUpdateHostDTOToInput = (
+export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentUrl}:{
+   isDoneByAdmin: boolean,
    updateDto: HostUpgradeRequestDto,
    hostDocumentUrl?: string
-): UpdateHostInput => {
-   const updateInput: UpdateHostInput = {};
+}): HostUpdateInput => {
+   const updateInput: HostUpdateInput = {};
 
    if (updateDto.organizationName !== undefined) updateInput.organizationName = updateDto.organizationName;
    if (updateDto.registrationNumber !== undefined) updateInput.registrationNumber = updateDto.registrationNumber;
    if (updateDto.businessAddress !== undefined) updateInput.businessAddress = updateDto.businessAddress;
    if (hostDocumentUrl !== undefined) updateInput.certificateUrl = hostDocumentUrl;
+   if (!isDoneByAdmin) updateInput.hostStatus = HostStatus.PENDING;
 
    return updateInput;
 };

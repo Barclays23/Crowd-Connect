@@ -53,6 +53,7 @@ export enum HttpResponse {
     USER_EXIST = "User already exists",
     USER_NOT_FOUND = "We couldn't find a user with these credentials.",
     HOST_NOT_FOUND = "Couldn't find this host user.",
+    USER_NOT_A_HOST = "The user is not a host right now.",
     USER_ACCOUNT_NOT_EXIST = "Your account is removed or no longer available. Please contact support.",
     USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
 
@@ -63,6 +64,8 @@ export enum HttpResponse {
     HOST_APPLY_SUCCESS = "Host upgrade application submitted successfully.",
     HOST_APPLY_FAILED = "Failed to submit host upgrade application.",
     HOST_APPROVE_SUCCESS = "Host application approved.",
+    HOST_UPDATE_SUCCESS = "Host details has been updated.",
+    HOST_UPDATE_FAILED = "Failed to update host details.",
     HOST_REJECT_SUCCESS = "Host application rejected.",
     HOST_BLOCKED = "Your hosting permissions are blocked by admin.",
     HOST_BLOCK_SUCCESS = "Host has been blocked.",

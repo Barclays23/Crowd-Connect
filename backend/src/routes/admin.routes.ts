@@ -76,14 +76,15 @@ adminRouter.patch('/hosts/:hostId/manage-host-request',
     hostController.manageHostStatus.bind(hostController)
 );
 
-// adminRouter.put('/hosts/:hostId/update-host', 
-//     uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
-//     hostController.updateHostByAdmin.bind(hostController)
-// );
+adminRouter.put('/hosts/:hostId/update-host', 
+    uploadDocument.single('hostDocument'), 
+    validateRequest({body: HostUpgradeSchema, params: MongoIdParamSchema}), 
+    hostController.updateHostByAdmin.bind(hostController)
+);
 
 // adminRouter.post('/users/:userId/convert-host',
-//     uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
-//     hostController.convertToHost.bind(hostController)
+//     // uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
+//     // hostController.convertToHost.bind(hostController)
 // );
 
 

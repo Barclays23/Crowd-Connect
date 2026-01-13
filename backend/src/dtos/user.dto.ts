@@ -45,6 +45,8 @@ export interface HostUpgradeRequestDto {
   // hostDocument: Express.Multer.File;
 }
 
+export type HostUpdateRequestDto = HostUpgradeRequestDto
+
 
 export interface HostManageRequestDto {
   hostId: string;

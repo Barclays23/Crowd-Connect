@@ -59,7 +59,7 @@ export const hostDocumentBase = z
    .instanceof(File, {
       message: "Business document/certificate is required",
    })
-   // .optional()
+   .optional()
    .refine(
       (file) => !file || file.size <= MAX_FILE_SIZE,
       `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`

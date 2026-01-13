@@ -127,30 +127,23 @@ export interface UpdateProfilePicInput {
 
 
 export interface UpgradeHostInput {
-  // organizationName?: string;
-  // registrationNumber?: string;
-  // businessAddress?: string;
-  // certificateUrl?: string;
-  // hostStatus?: HostStatus;
-
   role: UserRole.HOST;  // to upgrade user to host (but hostStatus will be 'pending')
-
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
-  certificateUrl?: string;
+  certificateUrl?: string;  // when host re-apply (upgrading), is it mandatory or not??
   hostStatus: HostStatus.PENDING;  // 'pending' on upgrade request
   hostAppliedAt: Date;
 }
 
 
-// for any update of host details by user or admin (allowed to update by user after approval ??)
-export interface UpdateHostInput {
+// for any update of host details by user or admin
+export interface HostUpdateInput {
   organizationName?: string;
   registrationNumber?: string;
   businessAddress?: string;
   certificateUrl?: string;
-  hostStatus?: HostStatus;
+  hostStatus?: HostStatus;  // no need to change if update by admin; 'pending' if update by host;
 }
 
 

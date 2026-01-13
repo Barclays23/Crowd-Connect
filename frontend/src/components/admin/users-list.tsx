@@ -612,11 +612,12 @@ export function UsersList() {
           {convertToHostUser && (
             <HostManageForm
               host={convertToHostUser}
+              mode="convertMode"
               onSuccess={(updatedUser) => {
                 // Refresh both lists if needed
                 fetchUsers();
                 // Optional: if you have hosts list open in another tab → it will need refresh too
-                toast.success("User successfully converted to Host!");
+                toast.success("User successfully converted to Host-------!");
                 setConvertToHostUser(null);
               }}
               onCancel={() => setConvertToHostUser(null)}
