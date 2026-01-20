@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import {
@@ -8,6 +8,7 @@ import {
   Upload,
   ArrowRight,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 
 import { 
@@ -25,14 +26,21 @@ import { hostServices } from "@/services/hostServices";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { ButtonLoader } from "../common/ButtonLoader";
+import { useNavigate } from "react-router-dom";
 
 
-const HostUpgradeForm = () => {
+interface HostUpgradeFormProps {
+  isReapply?: boolean;
+}
+
+
+const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [submitSuccess, setSubmitSuccess] = useState(false);
    const [submitError, setSubmitError] = useState<string | null>(null);
 
-   const { setUser } = useAuth();
+   const { setUser, user } = useAuth();
+   const navigate = useNavigate();
 
 
    const {
@@ -51,6 +59,18 @@ const HostUpgradeForm = () => {
          hostDocument: undefined,
       },
    });
+
+   // Pre-fill form with previous data when re-applying
+   useEffect(() => {
+      if (isReapply && user) {
+         reset({
+            organizationName: user.organizationName || "",
+            registrationNumber: user.registrationNumber || "",
+            businessAddress: user.businessAddress || "",
+            hostDocument: undefined, // Don't pre-fill file - force re-upload
+         });
+      }
+   }, [isReapply, user, reset]);
 
    // Watch host document to show selected file name
    const hostDocument = watch("hostDocument");
@@ -80,11 +100,7 @@ const HostUpgradeForm = () => {
 
          setSubmitSuccess(true);
          reset();
-
-         // Optional: redirect after few seconds
-         setTimeout(() => {
-         // window.location.href = "/dashboard"; // or wherever you want
-         }, 3000);
+         // navigate('/host', { replace: true });
 
       } catch (error: any) {
          const errorMessage = getApiErrorMessage(error);
@@ -105,7 +121,7 @@ const HostUpgradeForm = () => {
          {isSubmitting && (
             <div className="fixed inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay2) backdrop-blur-[0.1px]">
                <LoadingSpinner1 
-                  message="Processing Your Application"
+                  message={isReapply ? "Submitting Re-application..." : "Processing Your Application"}
                   subMessage="This may take a few moments"
                   size="lg"
                />
@@ -118,13 +134,19 @@ const HostUpgradeForm = () => {
                {/* Header */}
                <div className="text-center mb-8">
                   <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-(--badge-primary-bg)">
+                  {isReapply ? (
+                     <RefreshCw className="w-10 h-10 text-(--brand-primary)" />
+                  ) : (
                      <Building2 className="w-10 h-10 text-(--brand-primary)" />
+                  )}
                   </div>
                   <h1 className="text-3xl font-bold mb-3 text-(--heading-primary)">
-                     Become a Host
+                  {isReapply ? "Re-Apply to Become a Host" : "Become a Host"}
                   </h1>
                   <p className="max-w-md mx-auto text-(--text-secondary)">
-                     Apply to become a verified host and start creating amazing events for your audience.
+                  {isReapply
+                     ? "Update your information and re-submit your host application."
+                     : "Apply to become a verified host and start creating amazing events for your audience."}
                   </p>
                </div>
 
@@ -246,9 +268,9 @@ const HostUpgradeForm = () => {
                      >
                         <ButtonLoader 
                            loading={isSubmitting}
-                           loadingText="Submitting Application..."
+                           loadingText={isReapply ? "Submitting Re-application..." : "Submitting Application..."}
                         >
-                           Apply to Become a Host
+                           {isReapply ? "Re-Submit Application" : "Apply to Become a Host"}
                            <ArrowRight className="ml-2 h-5 w-5" />
                         </ButtonLoader>
                      </Button>
@@ -256,7 +278,9 @@ const HostUpgradeForm = () => {
                      {/* Feedback messages */}
                      {submitSuccess && (
                         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-center">
-                           Application submitted successfully! 🎉
+                           {isReapply 
+                           ? "Re-application submitted successfully! We'll review it again." 
+                           : "Application submitted successfully! 🎉"}
                            <br />
                            <span className="text-sm">We'll review it within 2-3 business days.</span>
                         </div>

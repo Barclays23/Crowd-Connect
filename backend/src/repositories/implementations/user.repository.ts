@@ -11,7 +11,7 @@ import {
     HostEntity, 
     UserEntity,
     SensitiveUserEntity,
-    UpdateHostInput,
+    HostUpdateInput,
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput, 
@@ -319,7 +319,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity> {
+    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity> {
         try {
             const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, hostInput);
             if (!updatedHostData) {

@@ -6,7 +6,6 @@ import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { uploadImage } from "../middlewares/file-upload.middleware";
 
 
-
 const userRouter = Router();
 
 

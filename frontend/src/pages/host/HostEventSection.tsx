@@ -10,7 +10,8 @@ import HostEventForm from '@/components/host/HostEventForm';
 import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
-
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 
 
@@ -18,6 +19,10 @@ import EmailVerification from '@/components/host/EmailVerification';
 
 const HostEventSection = () => {
    const { user, isAuthenticated, isLoading } = useAuth();
+   // const [showReapplyForm, setShowReapplyForm] = useState(false);
+   const [searchParams] = useSearchParams();
+   const isReapplyMode = searchParams.get('reapply') === 'true';
+
 
    if (isLoading) return <LoadingSpinner1 />;
 
@@ -26,19 +31,26 @@ const HostEventSection = () => {
    if (!user.isEmailVerified) return <EmailVerification />;
    if (user.status === 'blocked') return <BlockedAccountMessage />;
    if (user.role === 'admin') return <AdminMessage />;
-   if (user.role === 'user') return <HostUpgradeForm />;
+   if (user.role === 'user' ||
+      user.hostStatus === 'rejected' && isReapplyMode) {
+      return <HostUpgradeForm isReapply={true} />
+   }
 
 
    if (user.role === 'host') {
       switch (user.hostStatus) {
          case 'pending':
-         return <HostPendingState />;
+            return <HostPendingState />;
          case 'rejected':
-         return <HostRejectedState rejectionReason={user.hostRejectionReason} />;
+            return (
+               <HostRejectedState
+                  rejectionReason={user.hostRejectionReason}
+               />
+            );
          case 'blocked':
-         return <HostBlockedState />;
+            return <HostBlockedState />;
          default: // case "approved" :
-         return <HostEventForm />;
+            return <HostEventForm />;
       }
    }
 

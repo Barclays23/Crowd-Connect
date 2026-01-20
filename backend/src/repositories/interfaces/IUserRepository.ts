@@ -9,7 +9,7 @@ import {
     SensitiveUserEntity, 
     UserEntity,
     HostEntity,
-    UpdateHostInput,
+    HostUpdateInput,
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput,
@@ -64,7 +64,7 @@ export interface IUserRepository {
     updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity>;
 
     // for both upgrading host request & updating host details
-    updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | UpdateHostInput): Promise<HostEntity>;
+    updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity>;
     // updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
 
 }

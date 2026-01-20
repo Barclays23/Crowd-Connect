@@ -1,11 +1,21 @@
 import { XCircle, RefreshCw, MessageSquare, AlertTriangle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "../ui/button";
 
 interface HostRejectedStateProps {
   rejectionReason?: string;
 }
 
+
+
+
+
+
 const HostRejectedState = ({ rejectionReason }: HostRejectedStateProps) => {
+  
+  const navigate = useNavigate();
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4 py-12">
       <div className="max-w-lg w-full rounded-2xl p-8 text-center bg-[var(--card-bg)] border border-[var(--card-border)] shadow-[var(--shadow-lg)]">
@@ -51,21 +61,26 @@ const HostRejectedState = ({ rejectionReason }: HostRejectedStateProps) => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            to="/host-upgrade"
+          <Button
+            onClick={() => {
+              navigate('?reapply=true', { replace: true });
+            }}
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] hover:scale-[1.02] active:scale-[0.98]"
           >
             <RefreshCw className="w-5 h-5" />
             Re-Apply for Host Role
-          </Link>
+          </Button>
 
-          <Link
-            to="/support"
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 bg-[var(--btn-secondary-bg)] text-[var(--btn-secondary-text)] hover:bg-[var(--btn-secondary-hover)] hover:scale-[1.02] active:scale-[0.98]"
+          <Button
+            variant="outline"
+            asChild
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200"
           >
-            <MessageSquare className="w-5 h-5" />
-            Contact Support
-          </Link>
+            <Link to ="/support">
+              <MessageSquare className="w-5 h-5" />
+              Contact Support
+            </Link>
+          </Button>
         </div>
 
         {/* Footer Text */}

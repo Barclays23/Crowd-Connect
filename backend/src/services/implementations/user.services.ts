@@ -26,6 +26,7 @@ import { HttpResponse } from "../../constants/responseMessages";
 import { HttpStatus } from "../../constants/statusCodes";
 import { UserRole, UserStatus } from "../../constants/roles-and-statuses";
 import { generateRandomPassword } from "../../utils/password-generator.utils";
+import { IUserRepository } from "../../repositories/interfaces/IUserRepository";
 
 
 

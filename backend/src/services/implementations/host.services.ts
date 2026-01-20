@@ -104,6 +104,10 @@ export class HostServices implements IHostServices {
 
             let hostDocumentUrl: string | undefined;
 
+            // if (!documentFile){
+            //     throw createHttpError(HttpStatus.BAD_REQUEST, 'File is not attached for upgrading.')
+            // }
+
 
             if (documentFile){
                 hostDocumentUrl = await uploadToCloudinary({

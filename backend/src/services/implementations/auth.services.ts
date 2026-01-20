@@ -35,8 +35,6 @@ import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "../../ma
 import { AuthResult } from "../../types/auth.types";
 import { generateCryptoToken } from "../../utils/crypto.utils";
 import { UserRole, UserStatus } from "../../constants/roles-and-statuses";
-import { is } from "zod/v4/locales";
-import { email, promise } from "zod";
 
 
 
@@ -131,9 +129,6 @@ export class AuthServices implements IAuthService {
 
             // return user email for otp verification step (/verify-account)
             return signUpDto.email;
-
-            // better to return object for future scalability
-            // return { email: signUpDto.email };
 
         } catch (error) {
             console.error("Error in AuthServices.signUp:", error);
