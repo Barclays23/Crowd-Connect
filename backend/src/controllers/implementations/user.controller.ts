@@ -2,25 +2,28 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { IUserController } from '../interfaces/IUserController';
-import { IUserServices } from '../../services/interfaces/IUserServices';
-import { HttpStatus } from '../../constants/statusCodes';
-import { HttpResponse } from '../../constants/responseMessages';
+import { HttpStatus } from '../../constants/statusCodes.constants';
+import { HttpResponse } from '../../constants/responseMessages.constants';
 import { GetUsersFilter, GetUsersResult } from '../../types/user.types';
 import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto';
 import { UserStatus } from '../../constants/roles-and-statuses';
+import { IUserProfileService } from '../../services/userSer/user-interfaces/IUserProfileService';
+import { IUserManagementService } from '../../services/userSer/user-interfaces/IUserManagementService';
 
 
 
 
 export class UserController implements IUserController {
-    constructor(private _userServices: IUserServices) {
-    }
+    constructor(
+        private _userProfileServices: IUserProfileService,
+        private _userManagementServices: IUserManagementService
+    ) {}
 
 
     async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?.userId;
-            const userProfile: UserProfileResponseDto = await this._userServices.getUserProfile(userId);
+            const userProfile: UserProfileResponseDto = await this._userProfileServices.getUserProfile(userId);
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -53,7 +56,7 @@ export class UserController implements IUserController {
 
             console.log('editUserBasicInfo body: ', req.body)
 
-            const updatedUser: UserProfileResponseDto = await this._userServices.editUserBasicInfo(userId, basicInfoDto);
+            const updatedUser: UserProfileResponseDto = await this._userProfileServices.editUserBasicInfo(userId, basicInfoDto);
 
             const updatedUserBasicInfo = {
                 name: updatedUser.name,
@@ -89,7 +92,7 @@ export class UserController implements IUserController {
 
             console.log('updateProfilePicture imageFile: ', req?.file);
 
-            const updatedUser: UserProfileResponseDto = await this._userServices.updateProfilePicture(userId, imageFile);
+            const updatedUser: UserProfileResponseDto = await this._userProfileServices.updateProfilePicture(userId, imageFile);
             
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -132,7 +135,7 @@ export class UserController implements IUserController {
 
             console.log('✅ Parsed filters for admin getAllUsers:', filters);
 
-            const result: GetUsersResult = await this._userServices.getAllUsers(filters);
+            const result: GetUsersResult = await this._userManagementServices.getAllUsers(filters);
             // console.log('✅ Result in userController.getAllUsers:', result);
 
             res.status(HttpStatus.OK).json({
@@ -175,7 +178,7 @@ export class UserController implements IUserController {
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentAdminId: string = req.user.userId;
 
-            const createdUser: UserProfileResponseDto = await this._userServices.createUserByAdmin({
+            const createdUser: UserProfileResponseDto = await this._userManagementServices.createUserByAdmin({
                 createDto, 
                 imageFile,
                 currentAdminId
@@ -214,7 +217,7 @@ export class UserController implements IUserController {
             const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            const updatedUser: UserProfileResponseDto = await this._userServices.editUserByAdmin({
+            const updatedUser: UserProfileResponseDto = await this._userManagementServices.editUserByAdmin({
                 targetUserId, 
                 currentAdminId,
                 updateDto, 
@@ -250,7 +253,7 @@ export class UserController implements IUserController {
             const targetUserId: string = req.params.id;
             const currentAdminId: string = req.user.userId;
 
-            const updatedStatus: UserStatus = await this._userServices.toggleUserBlock({ targetUserId, currentAdminId });
+            const updatedStatus: UserStatus = await this._userManagementServices.toggleUserBlock({ targetUserId, currentAdminId });
 
             const responseMessage = updatedStatus === 'blocked'
                 ? HttpResponse.SUCCESS_BLOCK_USER
@@ -284,7 +287,7 @@ export class UserController implements IUserController {
             const targetUserId: string = req.params.id;
             const currentAdminId: string = req.user.userId;
 
-            await this._userServices.deleteUser({ targetUserId, currentAdminId });
+            await this._userManagementServices.deleteUser({ targetUserId, currentAdminId });
 
             res.status(HttpStatus.OK).json({
                 success: true,

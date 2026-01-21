@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodType, ZodError } from 'zod';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import { HttpStatus } from '../constants/statusCodes';
-import { HttpResponse } from '../constants/responseMessages';
+import { HttpStatus } from '../constants/statusCodes.constants';
+import { HttpResponse } from '../constants/responseMessages.constants';
 import { formatZodErrorMessages } from '../utils/formatZodErrors';
 
 

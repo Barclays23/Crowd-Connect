@@ -1,10 +1,9 @@
 // src/controllers/implementations/auth.controller.ts
 
 import {Request, Response, NextFunction} from "express";
-import { IAuthService } from "../../services/interfaces/IAuthServices";
 import {IAuthController} from "../interfaces/IAuthController";
-import { HttpStatus } from "../../constants/statusCodes";
-import { HttpResponse } from "../../constants/responseMessages";
+import { HttpStatus } from "../../constants/statusCodes.constants";
+import { HttpResponse } from "../../constants/responseMessages.constants";
 import { createHttpError } from "../../utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
 import { 
@@ -13,15 +12,21 @@ import {
     ResetPasswordDto, 
     SignInRequestDto 
 } from "../../dtos/auth.dto";
-import { success } from "zod";
+import { IAuthRegistrationService } from "../../services/authSer/auth-interfaces/IAuthRegistration";
+import { IAuthSessionService } from "../../services/authSer/auth-interfaces/IAuthSession";
+import { IAuthRecoveryService } from "../../services/authSer/auth-interfaces/IAuthRecovery";
 
 
 
 
 
 export class AuthController implements IAuthController {
-    constructor(private _authService: IAuthService) {
-    }
+
+    constructor(
+        private _registrationService: IAuthRegistrationService,
+        private _sessionService: IAuthSessionService,
+        private _recoveryService: IAuthRecoveryService
+    ) {}
 
     
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -29,7 +34,7 @@ export class AuthController implements IAuthController {
             console.log('email and password in authController.signIn:', req.body);
             const signInDto: SignInRequestDto = req.body;
 
-            const { safeUser, accessToken, refreshToken } = await this._authService.signIn(signInDto);
+            const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
             // console.log('user in authController.signIn:', safeUser);
 
             setRefreshTokenCookie(res, refreshToken);
@@ -65,7 +70,7 @@ export class AuthController implements IAuthController {
 
     async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userEmail = await this._authService.signUp(req.body);
+            const userEmail = await this._registrationService.signUp(req.body);
             console.log('temporary user email in authController.signUp:', userEmail);
 
             res.status(HttpStatus.OK).json({
@@ -98,7 +103,7 @@ export class AuthController implements IAuthController {
         try {
             const email: string = req.body.email;
             console.log('email in authController.requestPasswordReset:', email);
-            const userEmail: string = await this._authService.requestPasswordReset(email);
+            const userEmail: string = await this._recoveryService.requestPasswordReset(email);
 
             res.status(HttpStatus.OK).json({
                 // even if the email is not registered, respond with success to avoid email enumeration
@@ -125,7 +130,7 @@ export class AuthController implements IAuthController {
             const token: string = req.params.token;
             console.log('token in authController.validateResetLink:', token);
 
-            const isValid: boolean = await this._authService.validateResetLink(token);
+            const isValid: boolean = await this._recoveryService.validateResetLink(token);
 
             res.status(HttpStatus.OK).json({
                 isValid
@@ -151,7 +156,7 @@ export class AuthController implements IAuthController {
             const resetPasswordDto: ResetPasswordDto = req.body;
             
             console.log('token and newPassword in authController.resetPassword:', req.body);
-            await this._authService.resetPassword(resetPasswordDto);
+            await this._recoveryService.resetPassword(resetPasswordDto);
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.PASSWORD_RESET_SUCCESS,
@@ -176,7 +181,7 @@ export class AuthController implements IAuthController {
             const currentUserEmail = req.user.email;
             const requestedEmail = req.body.email;
 
-            const userEmail: string = await this._authService.requestAuthenticateEmail({currentUserEmail, requestedEmail});
+            const userEmail: string = await this._recoveryService.requestAuthenticateEmail({currentUserEmail, requestedEmail});
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -204,7 +209,7 @@ export class AuthController implements IAuthController {
             const requestedEmail = req.body.email;
             const otpCode = req.body.otpCode;
 
-            const userEmail: string = await this._authService.updateVerifiedEmail({
+            const userEmail: string = await this._recoveryService.updateVerifiedEmail({
                 currentUserEmail,
                 requestedEmail,
                 otpCode
@@ -241,7 +246,7 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const { safeUser, accessToken, refreshToken } = await this._authService.verifyAccount(email, otpCode);
+            const { safeUser, accessToken, refreshToken } = await this._registrationService.verifyAccount(email, otpCode);
 
             setRefreshTokenCookie(res, refreshToken);
 
@@ -269,7 +274,7 @@ export class AuthController implements IAuthController {
 
     async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userEmail = await this._authService.resendOtp(req.body.email);
+            const userEmail = await this._registrationService.resendOtp(req.body.email);
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.OTP_RESENT,
@@ -305,7 +310,7 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const newAccessToken = await this._authService.refreshAccessToken(refreshToken);
+            const newAccessToken = await this._sessionService.refreshAccessToken(refreshToken);
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.ACCESS_TOKEN_REFRESHED,
@@ -332,10 +337,9 @@ export class AuthController implements IAuthController {
             const refreshToken = req.cookies.refreshToken;
 
             // if refresh token present, best-effort - revoke it (ignore errors)
-            if (refreshToken && this._authService.revokeRefreshToken) {
-                await this._authService.revokeRefreshToken(refreshToken).catch(() => {});
+            if (refreshToken) {
+                await this._sessionService.revokeRefreshToken(refreshToken).catch(() => {});
             }
-
 
             // Always clear the cookie, regardless of token state
             clearRefreshTokenCookie(res);
@@ -359,12 +363,10 @@ export class AuthController implements IAuthController {
 
 
     
-
     async getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?.userId;
             console.log('userId in authController.getAuthUser:', userId);
-
 
             if (!userId) {
                 console.log('Missing userId in authController.getAuthUser');
@@ -373,7 +375,7 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const userData: AuthUserResponseDto = await this._authService.getAuthUser(userId);
+            const userData: AuthUserResponseDto = await this._sessionService.getAuthUser(userId);
 
             res.status(HttpStatus.OK).json({
                 // message: HttpResponse.AUTH_USER_FETCHED,

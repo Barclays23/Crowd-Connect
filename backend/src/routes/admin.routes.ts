@@ -2,49 +2,45 @@
 
 import { Router } from 'express';
 
-// Middlewares
 import { authenticate, authorize } from '../middlewares/auth.middleware';
 import { uploadDocument, uploadImage } from '../middlewares/file-upload.middleware';
 
-
-// Repositories ─────────────────
 import { UserRepository } from '../repositories/implementations/user.repository';
 
+import { UserManagementService } from '../services/userSer/user-implementations/userManagement.service';
+import { UserProfileService } from '../services/userSer/user-implementations/userProfile.service';
+import { HostManagementServices } from '../services/hostSer/host-implementations/HostManagement.service';
 
-// ── Initialize Repositories
+import { UserController } from '../controllers/implementations/user.controller';
+import { HostController } from '../controllers/implementations/host.controller';
+
+
+import { validateBody, validateRequest } from '../middlewares/validate.middleware';
+import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema';
+import { MongoIdParamSchema } from '../schemas/mongo.schema';
+import { ADMIN_ROUTES } from '../constants/routes.constants';
+
+
+
+
+
+
+// ── Initialize REPOSITORIES
 const userRepo = new UserRepository();
 
 
 
-
-
-// Services ─────────────────
-import { UserServices } from '../services/implementations/user.services';
-import { HostServices } from '../services/implementations/host.services';
-
-
-
-
-
-// ── Initialize Services ──
-const userServices = new UserServices(userRepo);
-const hostServices = new HostServices(userRepo);
+// ── Initialize SERVICES
+const userManagementServices = new UserManagementService(userRepo);
+const userProfileServices = new UserProfileService(userRepo);
+const hostManagementServices = new HostManagementServices(userRepo);
 
 
 
 
-// Controllers ─────────────────
-import { UserController } from '../controllers/implementations/user.controller';
-import { HostController } from '../controllers/implementations/host.controller';
-import { validateBody, validateRequest } from '../middlewares/validate.middleware';
-import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema';
-import { MongoIdParamSchema } from '../schemas/mongo.schema';
-
-
-
-// ── Initialize Controllers ──
-const userController = new UserController(userServices);
-const hostController = new HostController(hostServices);
+// ── Initialize CONTROLLERS ──
+const userController = new UserController(userProfileServices, userManagementServices);
+const hostController = new HostController(hostManagementServices);
 
 
 
@@ -62,21 +58,21 @@ adminRouter.use(authorize('admin'));
 
 
 // User management
-adminRouter.get('/users', userController.getAllUsers.bind(userController));
-adminRouter.put('/users/:id', uploadImage.single("profileImage"), userController.editUserByAdmin.bind(userController));
-adminRouter.delete('/users/:id', userController.deleteUser.bind(userController));
-adminRouter.patch('/users/:id/toggle-block', userController.toggleUserBlock.bind(userController));
-adminRouter.post('/users', uploadImage.single("profileImage"), userController.createUserByAdmin.bind(userController));
+adminRouter.get(ADMIN_ROUTES.GET_USERS, userController.getAllUsers.bind(userController));
+adminRouter.put(ADMIN_ROUTES.EDIT_USER, uploadImage.single("profileImage"), userController.editUserByAdmin.bind(userController));
+adminRouter.delete(ADMIN_ROUTES.DELETE_USER, userController.deleteUser.bind(userController));
+adminRouter.patch(ADMIN_ROUTES.TOGGLE_BLOCK_USER, userController.toggleUserBlock.bind(userController));
+adminRouter.post(ADMIN_ROUTES.CREATE_USER, uploadImage.single("profileImage"), userController.createUserByAdmin.bind(userController));
 
 
 // Host management
-adminRouter.get('/hosts', hostController.getAllHosts.bind(hostController));
-adminRouter.patch('/hosts/:hostId/manage-host-request', 
+adminRouter.get(ADMIN_ROUTES.GET_HOSTS, hostController.getAllHosts.bind(hostController));
+adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_STATUS, 
     validateRequest({body: HostManageSchema, params: MongoIdParamSchema}), 
     hostController.manageHostStatus.bind(hostController)
 );
 
-adminRouter.put('/hosts/:hostId/update-host', 
+adminRouter.put(ADMIN_ROUTES.UPDATE_HOST, 
     uploadDocument.single('hostDocument'), 
     validateRequest({body: HostUpgradeSchema, params: MongoIdParamSchema}), 
     hostController.updateHostByAdmin.bind(hostController)

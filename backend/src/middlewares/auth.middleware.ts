@@ -2,8 +2,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt.utils';
 import { createHttpError } from '../utils/httpError.utils';
-import { HttpStatus } from '../constants/statusCodes';
-import { HttpResponse } from '../constants/responseMessages';
+import { HttpStatus } from '../constants/statusCodes.constants';
+import { HttpResponse } from '../constants/responseMessages.constants';
 import { UserRepository } from '../repositories/implementations/user.repository';
 
 

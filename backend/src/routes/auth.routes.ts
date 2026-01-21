@@ -13,36 +13,55 @@ import {
 import { OtpSchema } from '../schemas/otp.schema';
 
 import { UserRepository } from '../repositories/implementations/user.repository';
-import { AuthServices } from '../services/implementations/auth.services';
+
+import { AuthRegistrationService } from '../services/authSer/auth-implementations/authRegistration.service';
+import { AuthSessionService } from '../services/authSer/auth-implementations/authSession.service';
+import { AuthRecoveryService } from '../services/authSer/auth-implementations/authRecovery.service';
+
 import { AuthController } from '../controllers/implementations/auth.controller';
 
+import { AUTH_ROUTES } from '../constants/routes.constants';
 
+
+
+
+// REPOS
+const userRepository = new UserRepository()
+
+
+// SERVICES
+const registrationService = new AuthRegistrationService(userRepository);
+const sessionService = new AuthSessionService(userRepository);
+const recoveryService = new AuthRecoveryService(userRepository);
+
+
+// CONTROLLER
+const authController = new AuthController(
+    registrationService, 
+    sessionService, 
+    recoveryService
+);
 
 
 const authRouter = Router();
 
-const userRepository = new UserRepository()
-const authServices = new AuthServices(userRepository)
-const authController = new AuthController(authServices)
 
+authRouter.post(AUTH_ROUTES.LOGIN, validateRequest({body: LoginSchema}), authController.signIn.bind(authController));
+authRouter.post(AUTH_ROUTES.REGISTER, validateRequest({body: RegisterSchema}), authController.signUp.bind(authController));
 
+authRouter.post(AUTH_ROUTES.FORGOT_PASSWORD, validateRequest({body: ForgotPasswordSchema}), authController.requestPasswordReset.bind(authController));
+authRouter.get(AUTH_ROUTES.RESET_PASSWORD_VALIDATE, validateRequest({params: ResetLinkSchema}), authController.validateResetLink.bind(authController));
+authRouter.post(AUTH_ROUTES.RESET_PASSWORD, validateRequest({body: ResetPasswordSchema}), authController.resetPassword.bind(authController));
 
-authRouter.post('/login', validateRequest({body: LoginSchema}), authController.signIn.bind(authController));
-authRouter.post('/register', validateRequest({body: RegisterSchema}), authController.signUp.bind(authController));
+authRouter.post(AUTH_ROUTES.VERIFY_ACCOUNT, validateRequest({body: OtpSchema}), authController.verifyAccount.bind(authController));
+authRouter.post(AUTH_ROUTES.AUTHENTICATE_EMAIL, authenticate, authController.requestAuthenticateEmail.bind(authController));
+authRouter.post(AUTH_ROUTES.VERIFY_EMAIL, authenticate, validateRequest({body: OtpSchema}), authController.updateVerifiedEmail.bind(authController));
+authRouter.post(AUTH_ROUTES.RESEND_OTP, authController.resendOtp.bind(authController));
 
-authRouter.post('/forgot-password', validateRequest({body: ForgotPasswordSchema}), authController.requestPasswordReset.bind(authController));
-authRouter.get('/reset-password/validate/:token', validateRequest({params: ResetLinkSchema}), authController.validateResetLink.bind(authController));
-authRouter.post('/reset-password', validateRequest({body: ResetPasswordSchema}), authController.resetPassword.bind(authController));
+authRouter.post(AUTH_ROUTES.REFRESH_TOKEN, authController.refreshAccessToken.bind(authController));
 
-authRouter.post('/verify-account', validateRequest({body: OtpSchema}), authController.verifyAccount.bind(authController));
-authRouter.post('/authenticate-email', authenticate, authController.requestAuthenticateEmail.bind(authController));
-authRouter.post('/verify-email', authenticate, validateRequest({body: OtpSchema}), authController.updateVerifiedEmail.bind(authController));
-authRouter.post('/resend-otp', authController.resendOtp.bind(authController));
-
-authRouter.post('/refresh-token', authController.refreshAccessToken.bind(authController));
-
-authRouter.post('/logout', authController.logout.bind(authController));
-authRouter.get('/me', authenticate, authController.getAuthUser.bind(authController));
+authRouter.post(AUTH_ROUTES.LOGOUT, authController.logout.bind(authController));
+authRouter.get(AUTH_ROUTES.ME, authenticate, authController.getAuthUser.bind(authController));
 // authRouter.post('/edit-profile', authController.editProfile.bind(authController));
 
 

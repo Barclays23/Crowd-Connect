@@ -1,23 +1,43 @@
 import { Router } from "express";
 import { UserController } from "../controllers/implementations/user.controller";
 import { UserRepository } from "../repositories/implementations/user.repository";
-import { UserServices } from "../services/implementations/user.services";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { uploadImage } from "../middlewares/file-upload.middleware";
+import { UserProfileService } from "../services/userSer/user-implementations/userProfile.service";
+import { UserManagementService } from "../services/userSer/user-implementations/userManagement.service";
+import { USER_ROUTES } from "../constants/routes.constants";
+
+
+
+
+// REPOS
+const userRepo = new UserRepository();
+
+
+// SERVICES
+const userProfileServices = new UserProfileService(userRepo);
+const userManagementServices = new UserManagementService(userRepo);
+
+
+// CONTROLLER
+const userController = new UserController(
+    userProfileServices,
+    userManagementServices
+);
+
 
 
 const userRouter = Router();
 
-
-const userRepo = new UserRepository();
-const userServices = new UserServices(userRepo);
-const userController = new UserController(userServices);
+userRouter.use(authenticate);
+userRouter.use(authorize('user', 'host', 'admin'));
 
 
 
-userRouter.get('/profile', authenticate, authorize('admin', 'user', 'host'), userController.getUserProfile.bind(userController));
-userRouter.patch('/edit-basic-info', authenticate, authorize('admin', 'user', 'host'), userController.editUserBasicInfo.bind(userController));
-userRouter.put('/profile-pic', authenticate, authorize('admin', 'user', 'host'), uploadImage.single("profileImage"), userController.updateProfilePicture.bind(userController));
+
+userRouter.get(USER_ROUTES.GET_PROFILE, userController.getUserProfile.bind(userController));
+userRouter.patch(USER_ROUTES.EDIT_BASIC_INFO, userController.editUserBasicInfo.bind(userController));
+userRouter.put(USER_ROUTES.UPDATE_PROFILE_PIC, uploadImage.single("profileImage"), userController.updateProfilePicture.bind(userController));
 
 
 

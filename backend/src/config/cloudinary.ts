@@ -93,3 +93,34 @@ export const deleteFromCloudinary = async ({fileUrl, resourceType}: {
 
 
 
+
+
+
+
+
+// EXAMPLE FUNCTION USAGE:
+    // let profilePicUrl: string | undefined;
+
+    // // if (isRemoved) profilePicUrl = '';
+    // // if profile pic is removed, pass the isRemoved flag and replace with empty string (will implement later)
+
+    // uploaded an image
+    // if (imageFile){
+    //     profilePicUrl = await uploadToCloudinary({
+    //         fileBuffer: imageFile.buffer,
+    //         folderPath: 'user-profile-pics',
+    //         fileType: 'image',
+    //     });
+
+    //     console.log('new profilePicUrl:', profilePicUrl);
+
+    //     if (currentUser.profilePic && currentUser.profilePic.trim() !== '') {
+    //         try {
+    //             await deleteFromCloudinary({fileUrl: currentUser.profilePic, resourceType: 'image'});
+    //         } catch (cleanupErr) {
+    //             console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
+    //         }
+    //     }
+    // }
+
+    //  const profilPicInput = {profilePic: profilePicUrl}

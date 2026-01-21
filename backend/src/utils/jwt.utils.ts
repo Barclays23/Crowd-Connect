@@ -3,8 +3,8 @@
 import jwt from "jsonwebtoken"; // safer import when using TypeScript
 import crypto from "crypto";
 import { createHttpError } from "./httpError.utils";
-import { HttpStatus } from "../constants/statusCodes";
-import { HttpResponse } from "../constants/responseMessages";
+import { HttpStatus } from "../constants/statusCodes.constants";
+import { HttpResponse } from "../constants/responseMessages.constants";
 
 
 
