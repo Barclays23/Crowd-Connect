@@ -104,7 +104,7 @@ export const deleteFromCloudinary = async ({fileUrl, resourceType}: {
     // // if (isRemoved) profilePicUrl = '';
     // // if profile pic is removed, pass the isRemoved flag and replace with empty string (will implement later)
 
-    // uploaded an image
+    // if uploaded an image
     // if (imageFile){
     //     profilePicUrl = await uploadToCloudinary({
     //         fileBuffer: imageFile.buffer,
@@ -124,3 +124,9 @@ export const deleteFromCloudinary = async ({fileUrl, resourceType}: {
     // }
 
     //  const profilPicInput = {profilePic: profilePicUrl}
+
+    // const updatedUserResult: UserEntity = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
+
+    // const updatedProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
+
+    // return updatedProfileDto;

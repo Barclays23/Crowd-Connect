@@ -14,9 +14,9 @@ import { OtpSchema } from '../schemas/otp.schema';
 
 import { UserRepository } from '../repositories/implementations/user.repository';
 
-import { AuthRegistrationService } from '../services/authSer/auth-implementations/authRegistration.service';
-import { AuthSessionService } from '../services/authSer/auth-implementations/authSession.service';
-import { AuthRecoveryService } from '../services/authSer/auth-implementations/authRecovery.service';
+import { AuthRegistrationService } from '../services/auth-services/auth-implementations/authRegistration.service';
+import { AuthSessionService } from '../services/auth-services/auth-implementations/authSession.service';
+import { AuthRecoveryService } from '../services/auth-services/auth-implementations/authRecovery.service';
 
 import { AuthController } from '../controllers/implementations/auth.controller';
 

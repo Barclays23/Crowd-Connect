@@ -7,8 +7,8 @@ import { HttpResponse } from '../../constants/responseMessages.constants';
 import { GetUsersFilter, GetUsersResult } from '../../types/user.types';
 import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto';
 import { UserStatus } from '../../constants/roles-and-statuses';
-import { IUserProfileService } from '../../services/userSer/user-interfaces/IUserProfileService';
-import { IUserManagementService } from '../../services/userSer/user-interfaces/IUserManagementService';
+import { IUserProfileService } from '../../services/user-services/user-interfaces/IUserProfileService';
+import { IUserManagementService } from '../../services/user-services/user-interfaces/IUserManagementService';
 
 
 

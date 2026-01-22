@@ -12,9 +12,9 @@ import {
     ResetPasswordDto, 
     SignInRequestDto 
 } from "../../dtos/auth.dto";
-import { IAuthRegistrationService } from "../../services/authSer/auth-interfaces/IAuthRegistration";
-import { IAuthSessionService } from "../../services/authSer/auth-interfaces/IAuthSession";
-import { IAuthRecoveryService } from "../../services/authSer/auth-interfaces/IAuthRecovery";
+import { IAuthRegistrationService } from "../../services/auth-services/auth-interfaces/IAuthRegistration";
+import { IAuthSessionService } from "../../services/auth-services/auth-interfaces/IAuthSession";
+import { IAuthRecoveryService } from "../../services/auth-services/auth-interfaces/IAuthRecovery";
 
 
 

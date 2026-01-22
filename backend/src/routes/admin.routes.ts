@@ -7,9 +7,9 @@ import { uploadDocument, uploadImage } from '../middlewares/file-upload.middlewa
 
 import { UserRepository } from '../repositories/implementations/user.repository';
 
-import { UserManagementService } from '../services/userSer/user-implementations/userManagement.service';
-import { UserProfileService } from '../services/userSer/user-implementations/userProfile.service';
-import { HostManagementServices } from '../services/hostSer/host-implementations/HostManagement.service';
+import { UserManagementService } from '../services/user-services/user-implementations/userManagement.service';
+import { UserProfileService } from '../services/user-services/user-implementations/userProfile.service';
+import { HostManagementServices } from '../services/host-services/host-implementations/HostManagement.service';
 
 import { UserController } from '../controllers/implementations/user.controller';
 import { HostController } from '../controllers/implementations/host.controller';

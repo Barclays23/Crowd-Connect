@@ -5,7 +5,7 @@ import { uploadDocument, uploadImage } from "../middlewares/file-upload.middlewa
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { validateRequest } from "../middlewares/validate.middleware";
 import { HostUpgradeSchema } from "../schemas/host.schema";
-import { HostManagementServices } from "../services/hostSer/host-implementations/HostManagement.service";
+import { HostManagementServices } from "../services/host-services/host-implementations/HostManagement.service";
 import { HOST_ROUTES } from "../constants/routes.constants";
 
 

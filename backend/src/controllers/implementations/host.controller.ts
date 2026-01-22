@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { IHostController } from "../interfaces/IHostController";
 import { HttpStatus } from "../../constants/statusCodes.constants";
-import { IHostServices } from "../../services/interfaces/IHostServices";
+import { IHostServices } from "../../services/interfaces-DEL/IHostServices";
 import { HttpResponse } from "../../constants/responseMessages.constants";
 import { UserRole } from "../../constants/roles-and-statuses";
 import { 

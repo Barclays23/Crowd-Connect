@@ -3,8 +3,8 @@ import { UserController } from "../controllers/implementations/user.controller";
 import { UserRepository } from "../repositories/implementations/user.repository";
 import { authenticate, authorize } from "../middlewares/auth.middleware";
 import { uploadImage } from "../middlewares/file-upload.middleware";
-import { UserProfileService } from "../services/userSer/user-implementations/userProfile.service";
-import { UserManagementService } from "../services/userSer/user-implementations/userManagement.service";
+import { UserProfileService } from "../services/user-services/user-implementations/userProfile.service";
+import { UserManagementService } from "../services/user-services/user-implementations/userManagement.service";
 import { USER_ROUTES } from "../constants/routes.constants";
 
 

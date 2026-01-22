@@ -19,6 +19,7 @@ import { HttpStatus } from "../../../constants/statusCodes.constants";
 import { UserStatus } from "../../../constants/roles-and-statuses";
 import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
 import { IUserProfileService } from "../user-interfaces/IUserProfileService";
+import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../../../config/aws-s3.config";
 
 
 
@@ -34,9 +35,14 @@ export class UserProfileService implements IUserProfileService {
 
             if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
-            const userProfile: UserProfileResponseDto = mapUserEntityToProfileDto(userData);
+            const userProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(userData);
 
-            return userProfile;
+            // Convert Key to Secured S3 URL
+            // if (userProfileDto.profilePic) {
+            //     userProfileDto.profilePic = await getS3PresignedUrl(userProfileDto.profilePic);
+            // }
+
+            return userProfileDto;
 
         } catch (error: any) {
             console.error('Error in UserProfileService.getUserProfile:', error);
@@ -94,32 +100,34 @@ export class UserProfileService implements IUserProfileService {
                 throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
             }
 
-            let newProfilePicKey: string | undefined;
-            const oldProfilePicKey = currentUser.profilePic;
+            let profilePicUrl: string | undefined;
 
-            if (imageFile) {
-                newProfilePicKey = await uploadToS3(imageFile, 'user-profile-pics');
-                console.log('✅ New S3 Key generated:', newProfilePicKey);
+            // if (isRemoved) profilePicUrl = '';
+            // if profile pic is removed, pass the isRemoved flag and replace with empty string (will implement later)
+
+            if (imageFile){
+                profilePicUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: 'user-profile-pics',
+                    fileType: 'image',
+                });
+
+                console.log('new profilePicUrl:', profilePicUrl);
+
+                if (currentUser.profilePic && currentUser.profilePic.trim() !== '') {
+                    try {
+                        await deleteFromCloudinary({fileUrl: currentUser.profilePic, resourceType: 'image'});
+                    } catch (cleanupErr) {
+                        console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
+                    }
+                }
             }
 
-            // Update Database only with the new KEY
-            const profilPicInput = { profilePic: newProfilePicKey };
-            
+            const profilPicInput = {profilePic: profilePicUrl}
+
             const updatedUserResult: UserEntity = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
 
-            if (imageFile && oldProfilePicKey) {
-                deleteFromS3(oldProfilePicKey).catch(err => 
-                    console.error("Background profile pic delete failed:", err)
-                );
-            }
-
             const updatedProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
-            
-            // The frontend needs a secured viewable link, not a database key.
-            if (updatedProfileDto.profilePic) {
-                updatedProfileDto.profilePic = await getPresignedUrl(updatedProfileDto.profilePic);
-            }
-
 
             return updatedProfileDto;
 
