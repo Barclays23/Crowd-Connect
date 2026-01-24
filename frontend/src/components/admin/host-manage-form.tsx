@@ -33,7 +33,7 @@ import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 interface HostManageFormProps {
   host: UserState;
   mode?: "convertMode" | "editMode";
-  onSuccess?: (updatedHost?: any) => void;
+  onSuccess?: (updatedHost?: UserState) => void;
   onCancel?: () => void;
 }
 
@@ -185,7 +185,7 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
          toast.success(response.message);
          onSuccess?.(response?.userData || response);
 
-      } catch (error: any) {
+      } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          toast.error(errorMessage);
 

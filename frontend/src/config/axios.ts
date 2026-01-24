@@ -1,16 +1,9 @@
 // frontend/src/config/axios.ts
 import axios from "axios";
-import type { AxiosInstance, InternalAxiosRequestConfig, AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { authService } from "@/services/authServices";
 import { toast } from 'react-toastify';
 
-
-// Define common response structure
-interface ApiResponse<T = any> {
-   data: T;
-   message?: string;
-   success: boolean;
-}
 
 
 // AXIOS INSTANCE CREATION & CONFIGURATION
@@ -60,18 +53,21 @@ axiosInstance.interceptors.request.use(
 // DYNAMIC RESPONSE INTERCEPTOR (Handles 401 Unauthorized & Token Refresh)
 let isRefreshingToken = false;
 
-let failedRequestsQueue: Array<{ 
-  resolve: (value: any) => void; 
-  reject: (reason?: any) => void; 
+
+let failedRequestsQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: AxiosError) => void;
 }> = [];
 
 
 // 1. Declare a variable to hold the logout function
-let onTokenRefreshFailure: (() => Promise<void>) | null = null;
+let onTokenRefreshFailure: (() => Promise<unknown>) | null = null;
 
 // 2. Export a setter function to inject the logout callback
-export const setAuthInterceptors = (logoutCallback: () => Promise<void>) => {
-    onTokenRefreshFailure = logoutCallback;
+export const setAuthInterceptors = (
+   logoutCallback: () => Promise<unknown>
+) => {
+   onTokenRefreshFailure = logoutCallback;
 };
 
 

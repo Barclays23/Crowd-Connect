@@ -4,13 +4,12 @@ import {
    CreateUserRequestDto, 
    UpdateUserRequestDto, 
    HostUpgradeRequestDto, 
-   HostResponseDto,
    BaseUserResponseDto,
    HostManageRequestDto,
    HostStatusUpdateResponseDto, 
-} from "../dtos/user.dto";
+} from "../dtos/user.dto.js";
 
-import { AuthUserResponseDto, SignUpRequestDto } from "../dtos/auth.dto";
+import { AuthUserResponseDto, SignUpRequestDto } from "../dtos/auth.dto.js";
 
 
 import { 
@@ -24,10 +23,10 @@ import {
    HostUpdateInput,
    UserProfileEntity,
    HostManageInput,
-} from "../entities/user.entity";
+} from "../entities/user.entity.js";
 
-import User, { IUserModel } from "../models/implementations/user.model";
-import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses";
+import { IUserModel } from "../models/implementations/user.model.js";
+import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses.js";
 
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
@@ -248,7 +247,12 @@ export const mapUpdateUserRequestDtoToInput = ({updateDto, profilePicUrl}: {
    if (updateDto.email !== undefined) userInput.email = updateDto.email;
    if (updateDto.role !== undefined) userInput.role = updateDto.role;
    // if (updateDto.status !== undefined) userInput.status = updateDto.status;  // cannot change - handled separately (eg: block/unblock)
-   if (updateDto.mobile !== undefined) userInput.mobile = updateDto.mobile;
+   // if (updateDto.mobile !== undefined) userInput.mobile = updateDto.mobile ?? '';
+   if (updateDto.mobile !== undefined) {
+      userInput.mobile = (updateDto.mobile === '' || updateDto.mobile === null) 
+         ? null 
+         : updateDto.mobile;
+   }
    if (profilePicUrl !== undefined) userInput.profilePic = profilePicUrl;
 
    return userInput;

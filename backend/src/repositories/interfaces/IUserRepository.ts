@@ -1,5 +1,5 @@
 // backend/src/repositories/interfaces/IUserRepository.ts
-import { UserStatus } from '../../constants/roles-and-statuses';
+import { UserStatus } from '../../constants/roles-and-statuses.js';
 import { 
     AuthUserCheckInput, 
     SignUpUserInput, 
@@ -13,9 +13,16 @@ import {
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput,
-} from '../../entities/user.entity';
+} from '../../entities/user.entity.js';
 
-import { IUserModel } from '../../models/implementations/user.model';
+import { UserFilterQuery } from '../../types/user.types.js';
+
+
+
+
+
+
+
 
 
 
@@ -33,11 +40,11 @@ export interface IUserRepository {
     // for internal auth use only (includes password) eg: login, change password
     findAuthUser(email: AuthUserCheckInput): Promise<SensitiveUserEntity | null>;
 
-    findUsers(query: any, skip: number, limit: number): Promise<UserEntity[] | null>;
+    findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[] | null>;
 
-    findHosts(query: any, skip: number, limit: number): Promise<HostEntity[] | null>;
+    findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[] | null>;
 
-    countUsers(query: any): Promise<number>;
+    countUsers(query: UserFilterQuery): Promise<number>;
 
     // register by user himself after verifying otp
     createUser(user: SignUpUserInput) : Promise<UserEntity>;

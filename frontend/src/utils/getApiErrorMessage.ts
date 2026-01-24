@@ -47,3 +47,13 @@ export function getApiErrorMessage(error: unknown): string {
 
    return userMessage;
 }
+
+
+
+
+export function isUnauthorizedError(error: unknown): boolean {
+  return (
+    error instanceof AxiosError &&
+    error.response?.status === 401
+  );
+}

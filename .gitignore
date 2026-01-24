@@ -36,9 +36,3 @@ yarn-error.log
 /frontend/build/
 /frontend/coverage/
 
-# Shared
-/shared/dist/
-/shared/build/
-/shared/lib/
-/shared/src/generated/
-/shared/*.tsbuildinfo

@@ -1,18 +1,18 @@
 // src/services/auth/implementations/authSessionService.ts
 
-import { AuthUserResponseDto, SignInRequestDto } from "../../../dtos/auth.dto";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
-import { IAuthSessionService } from "../auth-interfaces/IAuthSession";
-import { AuthResult } from "../../../types/auth.types";
-import { createHttpError } from "../../../utils/httpError.utils";
-import { HttpStatus } from "../../../constants/statusCodes.constants";
-import { HttpResponse } from "../../../constants/responseMessages.constants";
-import { UserStatus } from "../../../constants/roles-and-statuses";
-import { comparePassword } from "../../../utils/bcrypt.utils";
-import { mapUserEntityToAuthUserDto } from "../../../mappers/user.mapper";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../../../utils/jwt.utils";
-import { redisClient } from "../../../config/redis.config";
-import { SensitiveUserEntity, UserEntity } from "../../../entities/user.entity";
+import { AuthUserResponseDto, SignInRequestDto } from "../../../dtos/auth.dto.js";
+import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
+import { IAuthSessionService } from "../auth-interfaces/IAuthSession.js";
+import { AuthResult } from "../../../types/auth.types.js";
+import { createHttpError } from "../../../utils/httpError.utils.js";
+import { HttpStatus } from "../../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../../constants/responseMessages.constants.js";
+import { UserStatus } from "../../../constants/roles-and-statuses.js";
+import { comparePassword } from "../../../utils/bcrypt.utils.js";
+import { mapUserEntityToAuthUserDto } from "../../../mappers/user.mapper.js";
+import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../../../utils/jwt.utils.js";
+import { redisClient } from "../../../config/redis.config.js";
+import { SensitiveUserEntity, UserEntity } from "../../../entities/user.entity.js";
 
 
 
@@ -50,8 +50,9 @@ export class AuthSessionService implements IAuthSessionService {
                 refreshToken
             };
 
-        } catch (error) {
-            console.error("Error in AuthSessionService.signIn:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthSessionService.signIn:", msg);
             throw error;
         }
     }
@@ -87,8 +88,9 @@ export class AuthSessionService implements IAuthSessionService {
             console.log('✅ new accessToken generated');
             return newAccessToken;
 
-        } catch (error) {
-            console.error("Error in AuthSessionService.refreshAccessToken:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthSessionService.refreshAccessToken:", msg);
             throw error;
         }
     }
@@ -114,8 +116,9 @@ export class AuthSessionService implements IAuthSessionService {
             }
 
 
-        } catch (error) {
-            console.error("Error in AuthSessionService.revokeRefreshToken:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthSessionService.revokeRefreshToken:", msg);
             throw error;
         }
     }
@@ -140,8 +143,9 @@ export class AuthSessionService implements IAuthSessionService {
 
             return safeUser;
 
-        } catch (error) {
-            console.error("Error in AuthSessionService.getAuthUser:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthSessionService.getAuthUser:", msg);
             throw error;
         }
     }

@@ -86,7 +86,7 @@ const EmailVerification = () => {
       setCountdown(60);
       setValue("otpCode", "");
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage);
       setServerError(errorMessage);
@@ -120,7 +120,7 @@ const EmailVerification = () => {
       setCountdown(0);
       setValue("otpCode", "");
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage);
       setServerError(errorMessage);

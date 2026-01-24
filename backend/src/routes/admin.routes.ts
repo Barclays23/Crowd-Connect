@@ -2,23 +2,24 @@
 
 import { Router } from 'express';
 
-import { authenticate, authorize } from '../middlewares/auth.middleware';
-import { uploadDocument, uploadImage } from '../middlewares/file-upload.middleware';
+import { authenticate, authorize } from '../middlewares/auth.middleware.js';
+import { uploadDocument, uploadImage } from '../middlewares/file-upload.middleware.js';
 
-import { UserRepository } from '../repositories/implementations/user.repository';
+import { UserRepository } from '../repositories/implementations/user.repository.js';
 
-import { UserManagementService } from '../services/user-services/user-implementations/userManagement.service';
-import { UserProfileService } from '../services/user-services/user-implementations/userProfile.service';
-import { HostManagementServices } from '../services/host-services/host-implementations/HostManagement.service';
+import { UserManagementService } from '../services/user-services/user-implementations/userManagement.service.js';
+import { UserProfileService } from '../services/user-services/user-implementations/userProfile.service.js';
+import { HostManagementServices } from '../services/host-services/host-implementations/HostManagement.service.js';
 
-import { UserController } from '../controllers/implementations/user.controller';
-import { HostController } from '../controllers/implementations/host.controller';
+import { UserController } from '../controllers/implementations/user.controller.js';
+import { HostController } from '../controllers/implementations/host.controller.js';
 
 
-import { validateBody, validateRequest } from '../middlewares/validate.middleware';
-import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema';
-import { MongoIdParamSchema } from '../schemas/mongo.schema';
-import { ADMIN_ROUTES } from '../constants/routes.constants';
+import { validateBody, validateRequest } from '../middlewares/validate.middleware.js';
+import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema.js';
+import { MongoIdParamSchema } from '../schemas/mongo.schema.js';
+import { ADMIN_ROUTES } from '../constants/routes.constants.js';
+import { UserRole } from '../constants/roles-and-statuses.js';
 
 
 
@@ -51,7 +52,7 @@ const adminRouter = Router();
 
 
 adminRouter.use(authenticate);
-adminRouter.use(authorize('admin'));
+adminRouter.use(authorize(UserRole.ADMIN));
 
 
 
@@ -67,7 +68,7 @@ adminRouter.post(ADMIN_ROUTES.CREATE_USER, uploadImage.single("profileImage"), u
 
 // Host management
 adminRouter.get(ADMIN_ROUTES.GET_HOSTS, hostController.getAllHosts.bind(hostController));
-adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_STATUS, 
+adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_REQUEST, 
     validateRequest({body: HostManageSchema, params: MongoIdParamSchema}), 
     hostController.manageHostStatus.bind(hostController)
 );

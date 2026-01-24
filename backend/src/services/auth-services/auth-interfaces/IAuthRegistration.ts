@@ -1,5 +1,5 @@
-import { SignUpRequestDto } from "../../../dtos/auth.dto"
-import { AuthResult } from "../../../types/auth.types"
+import { SignUpRequestDto } from "../../../dtos/auth.dto.js";
+import { AuthResult } from "../../../types/auth.types.js";
 
 
 

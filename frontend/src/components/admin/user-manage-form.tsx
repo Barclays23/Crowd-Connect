@@ -18,6 +18,7 @@ import { LoadingSpinner1 } from "../common/LoadingSpinner1"
 import { ButtonLoader } from "../common/ButtonLoader"
 import type { UserState, UserUpsertResult } from "@/types/user.types"
 import { cn } from "@/lib/utils"
+import { getApiErrorMessage } from "@/utils/getApiErrorMessage"
 
 
 
@@ -73,7 +74,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
       });
       setPreviewImage(user.profilePic || "");
       setProfileFile(null);
-      setImageError(""); // Clear any previous image error
+      setImageError(""); // Clear previous image error
     }
   }, [user, form]);
 
@@ -134,7 +135,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       formData.append("email", values.email || "");
       formData.append("role", values.role);
       formData.append("status", values.status);
-      if (values.mobile) formData.append("mobile", values.mobile);
+      formData.append("mobile", values.mobile ?? "");
       if (profileFile) {
          formData.append("profileImage", profileFile);
       }
@@ -157,8 +158,8 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       
       onSuccess?.(response?.userData);
 
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || "Failed to save user";
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

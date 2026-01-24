@@ -89,6 +89,7 @@ export const deleteFromS3 = async (fileKey: string): Promise<void> => {
 
 
 
+// replace currentupdateProfilePicture after AWS s3 configuration setup completed
 
     // async updateProfilePicture(currentUserId: string, imageFile?: Express.Multer.File): Promise<UserProfileResponseDto> {
     //     try {

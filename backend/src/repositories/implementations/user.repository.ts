@@ -1,7 +1,7 @@
 // backend/src/repositories/implementations/user.repository.ts
-import User, { IUser, IUserModel } from "../../models/implementations/user.model";
-import { BaseRepository } from "../base.repository";
-import { IUserRepository } from "../interfaces/IUserRepository";
+import User, { IUser, IUserModel } from "../../models/implementations/user.model.js";
+import { BaseRepository } from "../base.repository.js";
+import { IUserRepository } from "../interfaces/IUserRepository.js";
 import { 
     SignUpUserInput, 
     CreateUserInput, 
@@ -15,18 +15,19 @@ import {
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput, 
-} from "../../entities/user.entity";
+} from "../../entities/user.entity.js";
 
 import { 
     mapUserModelToUserEntity, 
     mapUserModelToSensitiveUserEntity, 
     mapUserModelToHostEntity,
     mapUserModelToProfileEntity
-} from "../../mappers/user.mapper";
-import { UserStatus } from "../../constants/roles-and-statuses";
-import { UpdateEmailDto } from "src/dtos/auth.dto";
+} from "../../mappers/user.mapper.js";
+import { UserStatus } from "../../constants/roles-and-statuses.js";
+import { UpdateEmailDto } from "src/dtos/auth.dto.js";
 
 
+import { UserFilterQuery } from '../../types/user.types.js';
 
 
 export class UserRepository extends BaseRepository<IUserModel> implements IUserRepository {
@@ -115,7 +116,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async findUsers(query: any, skip: number, limit: number): Promise<UserEntity[] | null> {
+    async findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[] | null> {
         try {
             const paginatedUsers: IUserModel[] = await this.model.find(query)
             .select('-password')
@@ -136,7 +137,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
     
-    async findHosts(query: any, skip: number, limit: number): Promise<HostEntity[] | null> {
+    async findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[] | null> {
         try {
             const paginatedHosts: IUserModel[] = await this.model.find(query)
             .select('-password')
@@ -157,7 +158,7 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async countUsers(query: any): Promise<number> {
+    async countUsers(query: UserFilterQuery): Promise<number> {
         try {
             const count: number = await this.countDocuments(query);
             return count;

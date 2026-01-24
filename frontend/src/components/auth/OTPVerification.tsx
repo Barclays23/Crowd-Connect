@@ -13,6 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 
 type OtpFormData = z.infer<typeof OtpSchema>;
 
@@ -99,16 +100,13 @@ export function OTPVerification() {
       setValue("otpCode", "", { shouldValidate: false });
       
       toast.success(response.message || "OTP resent successfully");
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        "Failed to resend OTP. Please try again.";
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error)
 
-      toast.error(message);
-      setServerError(message);
+      toast.error(errorMessage);
+      setServerError(errorMessage);
 
-      if (message.toLowerCase().includes("expired")) {
+      if (errorMessage.toLowerCase().includes("expired")) {
         navigate(-1);
       }
     } finally {
@@ -141,16 +139,12 @@ export function OTPVerification() {
 
       // Most common pattern after verification → dashboard/home
       navigate(successPath || "/", { replace: true });
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        "OTP verification failed. Please try again.";
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error) || "OTP verification failed. Please try again.";
+      toast.error(errorMessage);
+      setServerError(errorMessage);
 
-      toast.error(message);
-      setServerError(message);
-
-      if (message.toLowerCase().includes("session expired")) {
+      if (errorMessage.toLowerCase().includes("session expired")) {
         navigate(-1);
       }
     }

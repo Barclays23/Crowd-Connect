@@ -102,7 +102,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          reset();
          // navigate('/host', { replace: true });
 
-      } catch (error: any) {
+      } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          console.error("Host upgrade submission error:", error);
          setSubmitError(errorMessage);

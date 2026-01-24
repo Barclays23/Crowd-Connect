@@ -1,6 +1,6 @@
 // // backend/src/entities/user.entity.ts
 
-import { UserRole, UserStatus, HostStatus } from "../constants/roles-and-statuses";
+import { UserRole, UserStatus, HostStatus } from "../constants/roles-and-statuses.js";
 
 
 
@@ -116,7 +116,7 @@ export interface UpdateUserInput {
   email?: string;
   role?: UserRole;
   status?: UserStatus;
-  mobile?: string;
+  mobile?: string | null;
   profilePic?: string;
 }
 
@@ -137,7 +137,7 @@ export interface UpgradeHostInput {
 }
 
 
-// for any update of host details by user or admin
+// for update host details by user or admin
 export interface HostUpdateInput {
   organizationName?: string;
   registrationNumber?: string;

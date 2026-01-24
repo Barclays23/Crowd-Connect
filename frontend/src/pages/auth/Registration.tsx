@@ -1,8 +1,11 @@
+// frontend/src/pages/auth/Registration.tsx
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import type { RegisterPayload } from '@/types/auth.types';
 
 
 
@@ -16,7 +19,7 @@ function Registration() {
 
 
   
-  const handleRegistration = useCallback(async (formData: any) => {
+  const handleRegistration = useCallback(async (formData: RegisterPayload) => {
     // console.log('data received in Registration:', formData);
 
     try {
@@ -33,9 +36,9 @@ function Registration() {
         } 
       });
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error in handleRegistration:", err);
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || "Registration failed.";
+      const errorMessage = getApiErrorMessage(err);
       toast.error(errorMessage);
 
     } finally {
@@ -46,7 +49,7 @@ function Registration() {
 
 
   return (
-    <AuthForm 
+    <AuthForm
       key="registration-form"
       mode="register" 
       onSubmit={handleRegistration}

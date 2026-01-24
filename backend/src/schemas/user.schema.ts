@@ -7,7 +7,7 @@ export const nameBase = z
   .string()
   .trim()
   .min(1, "Full name is required")
-  .min(3, "Full name must be at least 3 characters long")
+  .min(3, "Full name should be at least 3 characters long")
   .max(20, "Full name cannot exceed 20 characters")
   .regex(
     /^[A-Za-z]+(?:\s[A-Za-z]+)*$/,

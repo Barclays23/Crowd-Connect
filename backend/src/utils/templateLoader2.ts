@@ -2,6 +2,13 @@
 
 import * as fs from "fs/promises";
 import * as path from "path";
+import { fileURLToPath } from 'url';
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 /**
  * Dynamically loads an HTML template and renders it with provided data.
@@ -15,15 +22,14 @@ export async function renderTemplate(
 ): Promise<string> {
   // Construct the absolute path to the template file
   // Assuming templates are in 'src/templates/' and this utility is in 'src/utils/'
-  const templatePath = path.join(__dirname,"../templates",`${templateName}`
-  );
+  const templatePath = path.join(__dirname, "../templates", `${templateName}`);
 
   let htmlContent: string;
 
   try {
     // Read the HTML file content asynchronously
     htmlContent = await fs.readFile(templatePath, { encoding: "utf-8" });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`Error loading template ${templateName}:`, error);
     // You must handle the case where the template file doesn't exist
     throw new Error(`Failed to load email template: ${templateName}`);

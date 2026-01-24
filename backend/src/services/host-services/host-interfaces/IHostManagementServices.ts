@@ -1,12 +1,12 @@
 // backend/src/services/host/interfaces/IHostManagementServices.ts
 
-import { GetHostsFilter, GetHostsResult } from "../../../types/user.types";
+import { GetHostsFilter, GetHostsResult } from "../../../types/user.types.js";
 import { 
     HostManageRequestDto,
     HostStatusUpdateResponseDto, 
     HostUpgradeRequestDto, 
     UserProfileResponseDto 
-} from "../../../dtos/user.dto";
+} from "../../../dtos/user.dto.js";
 
 
 

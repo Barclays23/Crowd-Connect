@@ -1,6 +1,6 @@
 // backend/src/utils/general.utils.ts
 
-import { HostEntity, UserEntity } from "../entities/user.entity";
+import { HostEntity, UserEntity } from "../entities/user.entity.js";
 
 
 export function isHost(entity: UserEntity | HostEntity): entity is HostEntity {

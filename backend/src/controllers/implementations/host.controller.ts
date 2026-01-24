@@ -1,29 +1,29 @@
 import { NextFunction, Request, Response } from "express";
-import { IHostController } from "../interfaces/IHostController";
-import { HttpStatus } from "../../constants/statusCodes.constants";
-import { IHostServices } from "../../services/interfaces-DEL/IHostServices";
-import { HttpResponse } from "../../constants/responseMessages.constants";
-import { UserRole } from "../../constants/roles-and-statuses";
+import { IHostController } from "../interfaces/IHostController.js";
+import { HttpStatus } from "../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../constants/responseMessages.constants.js";
+import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses.js";
 import { 
     GetHostsFilter, 
     GetHostsResult, 
     GetUsersFilter, 
     GetUsersResult 
-} from "../../types/user.types";
+} from "../../types/user.types.js";
 
 import { 
     HostStatusUpdateResponseDto, 
     HostUpdateRequestDto, 
     HostUpgradeRequestDto, 
     UserProfileResponseDto 
-} from "../../dtos/user.dto";
+} from "../../dtos/user.dto.js";
+import { IHostManagementServices } from "../../services/host-services/host-interfaces/IHostManagementServices.js";
 
 
 
 
 export class HostController implements IHostController {
     constructor(
-        private _hostService: IHostServices
+        private _hostService: IHostManagementServices
     ) {}
 
     async applyHostUpgrade (req: Request, res: Response, next: NextFunction) : Promise<void> {
@@ -46,19 +46,11 @@ export class HostController implements IHostController {
                 hostProfile: upgradedProfile,
             });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in hostController.applyHostUpgrade:', msg);
             next(err);
-            console.error('Error in hostController.applyHostUpgrade:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_APPLY_FAILED}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -75,8 +67,8 @@ export class HostController implements IHostController {
                 limit,
                 search,
                 role: UserRole.HOST,
-                status: status || undefined,
-                hostStatus: hostStatus || undefined,
+                status: status ? status as UserStatus : undefined,
+                hostStatus: hostStatus ? hostStatus as HostStatus : undefined,
             };
 
             console.log('✅ Parsed filters for getAllHosts:', filters);
@@ -96,21 +88,12 @@ export class HostController implements IHostController {
                 },
             });
 
-        } catch (err: any) {
-            next(err);
-            console.error('Error in userController.getAllUsers:', err);
 
-            // If a well-formed HTTP error was thrown, forward its status and message
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_HOSTS}`
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.getAllUsers:', msg);
+            next(err);
+        };
     
     }
 
@@ -136,19 +119,12 @@ export class HostController implements IHostController {
                 updatedHost: updatedHost,
             });
 
-        } catch (err: any) {
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in hostController.manageHostStatus:', msg);
             next(err);
-            console.error('Error in hostController.manageHostStatus:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_APPLY_FAILED}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -170,19 +146,12 @@ export class HostController implements IHostController {
                 updatedHost: updatedHostProfile,
             });
 
-        } catch (err: any) {
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in hostController.updateHostByAdmin:', msg);
             next(err);
-            console.error('Error in hostController.updateHostByAdmin:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.HOST_UPDATE_FAILED}`
-            });
-            return;
-        }
+        };
     }
 
 }

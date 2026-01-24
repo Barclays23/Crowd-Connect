@@ -37,27 +37,11 @@ import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";
-import type { HostStatus, UserState, UserStatus } from "@/types/user.types";
+import type { HostStatus, UserState } from "@/types/user.types";
 import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 
-
-// interface Host {
-//   userId: string;
-//   name: string;
-//   email: string;
-//   mobile: string;
-//   profilePic?: string;
-//   status: UserStatus;
-  
-//   isEmailVerified: boolean;
-//   organizationName?: string;
-//   registrationNumber?: string;
-//   hostStatus: HostStatus;
-//   hostAppliedAt?: string;
-//   createdAt: string;
-// }
 
 
 interface ApiResponse {
@@ -128,7 +112,7 @@ export function HostsList() {
       setTotalHosts(data.pagination.total);
       setTotalPages(data.pagination.totalPages || Math.ceil(data.pagination.total / itemsPerPage));
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch hosts:", err);
       const errorMessage = getApiErrorMessage(err) || 'Failed to fetch hosts. Please try again later.';
       setError(errorMessage);
@@ -188,8 +172,9 @@ export function HostsList() {
       );
 
       fetchHosts(); // refresh anyway
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || `Failed to ${action} host`);
+    } catch (err: unknown) {
+      const errorMessage = getApiErrorMessage(err) || `Failed to ${action} host`;
+      toast.error(errorMessage);
     }
   };
 

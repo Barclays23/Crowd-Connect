@@ -1,7 +1,7 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema, Document, Types } from "mongoose";
-import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses";
+import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses.js";
 
 
 
@@ -60,6 +60,7 @@ const userSchema = new Schema<IUserModel>(
       type: String,
       required: false,
       // unique: true,
+      // sparse: true,
     },
     password: {
       type: String,

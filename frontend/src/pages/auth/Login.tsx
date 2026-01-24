@@ -1,8 +1,11 @@
+// frontend/src/pages/auth/Login.tsx
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import type { LoginPayload } from '@/types/auth.types';
 
 
 
@@ -35,7 +38,7 @@ function Login() {
 
 
   const handleLogin = useCallback(
-    async (formData: { email: string; password: string }) => {
+    async (formData: LoginPayload) => {
       // console.log('Login form submitted:', formData);
 
       try {
@@ -47,9 +50,9 @@ function Login() {
 
         navigate(fromPath, { replace: true });  // Redirect to original path or home after successful login
 
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error in handleLogin:', err);
-        const errorMessage = err.response?.data?.message || err.response?.data?.error || "Something went wrong. Please try again in a moment.";
+        const errorMessage = getApiErrorMessage(err);
         toast.error(errorMessage);
 
       } finally {

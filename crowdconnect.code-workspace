@@ -4,9 +4,6 @@
 			"path": "frontend"
 		},
 		{
-			"path": "shared"
-		},
-		{
 			"path": "backend"
 		}
 	]

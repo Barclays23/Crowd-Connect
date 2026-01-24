@@ -2,9 +2,10 @@
 
 import jwt from "jsonwebtoken"; // safer import when using TypeScript
 import crypto from "crypto";
-import { createHttpError } from "./httpError.utils";
-import { HttpStatus } from "../constants/statusCodes.constants";
-import { HttpResponse } from "../constants/responseMessages.constants";
+import 'dotenv/config';
+import { createHttpError } from "./httpError.utils.js";
+import { HttpStatus } from "../constants/statusCodes.constants.js";
+import { HttpResponse } from "../constants/responseMessages.constants.js";
 
 
 

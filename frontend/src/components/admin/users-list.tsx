@@ -26,27 +26,14 @@ import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import type { UserState, UserUpsertResult } from "@/types/user.types";
 import { HostManageForm } from "./host-manage-form";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage, isUnauthorizedError } from "@/utils/getApiErrorMessage";
 import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import type { AxiosError } from "axios";
 
 
-
-
-// interface User {
-//   userId: string;
-//   name: string;
-//   email: string;
-//   mobile: string;
-//   role: "admin" | "host" | "user";
-//   status: "active" | "blocked" | "pending";
-//   profilePic?: string;
-//   isEmailVerified: boolean;
-//   isSuperAdmin: boolean;
-//   createdAt: string;
-// }
 
 interface ApiResponse {
   usersData: UserState[];
@@ -124,10 +111,11 @@ export function UsersList() {
       setTotalUsers(response.pagination.total);
       setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.total / itemsPerPage));
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch users:", err);
-      const errorMessage = getApiErrorMessage(err) || 'Failed to fetch users. Please try again later.';
-      if (err.status != 401){
+
+      if (!isUnauthorizedError(err)) {
+        const errorMessage = getApiErrorMessage(err) || 'Failed to fetch users. Please try again later.';
         setError(errorMessage);
         toast.error(errorMessage);
       }
@@ -179,7 +167,7 @@ export function UsersList() {
         )
       );
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('error in handleToggleBlockUser:', error)
       const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage);
@@ -200,7 +188,7 @@ export function UsersList() {
 
       setUsers(prev => prev.filter(user => user.userId !== deleteUser.userId));
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('error in deleteUser:', error)
       const errorMessage = getApiErrorMessage(error);
       toast.error(errorMessage);

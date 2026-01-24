@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import 'dotenv/config';
 
 const redisUrl = process.env.REDIS_URL as string;
 

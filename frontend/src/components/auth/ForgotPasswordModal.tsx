@@ -56,7 +56,7 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
       toast.success(response.message || 'Password reset link has been sent!')
       setSubmitState('success')
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in ForgotPasswordModal onSubmit:', error);
       const errorMessage = getApiErrorMessage(error) || 'Failed to send reset email. Please try again later.'
       toast.error(errorMessage)

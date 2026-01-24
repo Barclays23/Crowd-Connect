@@ -1,9 +1,9 @@
 // backend/src/services/interfaces/IAuthServices.ts
-import { AuthResult } from "../../../types/auth.types";
+import { AuthResult } from "../../../types/auth.types.js";
 import { 
     AuthUserResponseDto, 
     SignInRequestDto, 
-} from "../../../dtos/auth.dto";
+} from "../../../dtos/auth.dto.js";
 
 
 

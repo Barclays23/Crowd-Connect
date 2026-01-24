@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { UserController } from "../controllers/implementations/user.controller";
-import { UserRepository } from "../repositories/implementations/user.repository";
-import { authenticate, authorize } from "../middlewares/auth.middleware";
-import { uploadImage } from "../middlewares/file-upload.middleware";
-import { UserProfileService } from "../services/user-services/user-implementations/userProfile.service";
-import { UserManagementService } from "../services/user-services/user-implementations/userManagement.service";
-import { USER_ROUTES } from "../constants/routes.constants";
+import { UserController } from "../controllers/implementations/user.controller.js";
+import { UserRepository } from "../repositories/implementations/user.repository.js";
+import { authenticate, authorize } from "../middlewares/auth.middleware.js";
+import { uploadImage } from "../middlewares/file-upload.middleware.js";
+import { UserProfileService } from "../services/user-services/user-implementations/userProfile.service.js";
+import { UserManagementService } from "../services/user-services/user-implementations/userManagement.service.js";
+import { USER_ROUTES } from "../constants/routes.constants.js";
+import { UserRole } from "src/constants/roles-and-statuses.js";
 
 
 
@@ -30,7 +31,7 @@ const userController = new UserController(
 const userRouter = Router();
 
 userRouter.use(authenticate);
-userRouter.use(authorize('user', 'host', 'admin'));
+userRouter.use(authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN));
 
 
 

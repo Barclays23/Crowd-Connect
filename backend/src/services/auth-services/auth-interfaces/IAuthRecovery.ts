@@ -1,4 +1,4 @@
-import { ResetPasswordDto } from "../../../dtos/auth.dto"
+import { ResetPasswordDto } from "../../../dtos/auth.dto.js";
 
 
 

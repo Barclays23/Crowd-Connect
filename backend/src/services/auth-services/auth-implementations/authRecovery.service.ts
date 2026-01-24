@@ -1,16 +1,16 @@
-import { UserEntity } from "../../../entities/user.entity";
-import { IAuthRecoveryService } from "../auth-interfaces/IAuthRecovery";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
-import { generateCryptoToken } from "../../../utils/crypto.utils";
-import { renderTemplate } from "../../../utils/templateLoader2";
-import { normalizeEmail, sendEmail } from "../../../utils/email.utils";
-import { REDIS_TOKEN_PREFIX, redisClient } from "../../../config/redis.config";
-import { createHttpError } from "../../../utils/httpError.utils";
-import { HttpStatus } from "../../../constants/statusCodes.constants";
-import { HttpResponse } from "../../../constants/responseMessages.constants";
-import { ResetPasswordDto, UpdateEmailDto } from "../../../dtos/auth.dto";
-import { hashPassword } from "../../../utils/bcrypt.utils";
-import { generateOTP } from "../../../utils/generateOTP.utils";
+import { UserEntity } from "../../../entities/user.entity.js";
+import { IAuthRecoveryService } from "../auth-interfaces/IAuthRecovery.js";
+import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
+import { generateCryptoToken } from "../../../utils/crypto.utils.js";
+import { renderTemplate } from "../../../utils/templateLoader2.js";
+import { normalizeEmail, sendEmail } from "../../../utils/email.utils.js";
+import { REDIS_TOKEN_PREFIX, redisClient } from "../../../config/redis.config.js";
+import { createHttpError } from "../../../utils/httpError.utils.js";
+import { HttpStatus } from "../../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../../constants/responseMessages.constants.js";
+import { ResetPasswordDto, UpdateEmailDto } from "../../../dtos/auth.dto.js";
+import { hashPassword } from "../../../utils/bcrypt.utils.js";
+import { generateOTP } from "../../../utils/generateOTP.utils.js";
 
 
 
@@ -69,8 +69,9 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             
             return email;
 
-        } catch (error) {
-            console.error("Error in AuthRecoveryService.requestPasswordReset:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthRecoveryService.requestPasswordReset:", msg);
             throw error;
         }
     }
@@ -109,8 +110,9 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
             return updatedUser.email;
 
-        } catch (error) {
-            console.error("Error in AuthRecoveryService.resetPassword:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthRecoveryService.resetPassword:", msg);
             throw error;
         }
     }
@@ -195,8 +197,9 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
             return normalizedRequestedEmail;
 
-        } catch (error) {
-            console.error("Error in AuthRecoveryService.requestAuthenticateEmail:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in AuthRecoveryService.requestAuthenticateEmail:", msg);
             throw error;
         }
     }
@@ -256,8 +259,9 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
             return updatedUser.email;
 
-        } catch (error) {
-            console.error('Error in AuthRecoveryService.updateVerifiedEmail:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in AuthRecoveryService.updateVerifiedEmail:', msg);
             throw error;
         }
     }

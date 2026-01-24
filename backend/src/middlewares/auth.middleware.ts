@@ -1,10 +1,11 @@
 // backend/src/middlewares/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../utils/jwt.utils';
-import { createHttpError } from '../utils/httpError.utils';
-import { HttpStatus } from '../constants/statusCodes.constants';
-import { HttpResponse } from '../constants/responseMessages.constants';
-import { UserRepository } from '../repositories/implementations/user.repository';
+import { verifyAccessToken } from '../utils/jwt.utils.js';
+import { createHttpError } from '../utils/httpError.utils.js';
+import { HttpStatus } from '../constants/statusCodes.constants.js';
+import { HttpResponse } from '../constants/responseMessages.constants.js';
+import { UserRepository } from '../repositories/implementations/user.repository.js';
+import { UserRole, UserStatus } from '../constants/roles-and-statuses.js';
 
 
 
@@ -13,22 +14,19 @@ import { UserRepository } from '../repositories/implementations/user.repository'
 declare global {
    namespace Express {
       interface Request {
-         userId?: string;
-         user?: any; // Optionally, for role-based middleware
+         user: {
+            userId: string;
+            email: string;
+            role: UserRole;
+            status: UserStatus;
+         };
       }
    }
 }
 
 
 
-interface AuthenticatedRequest extends Request {
-   user?: {
-      userId: string;
-      email: string;
-      role: 'user' | 'host' | 'admin';
-      status: string; // or UserStatus enum
-   };
-}
+interface AuthenticatedRequest extends Request {}
 
 
 
@@ -61,7 +59,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
       throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.USER_ACCOUNT_NOT_EXIST);
    }
 
-   if (user.status === 'blocked') {
+   if (user.status === UserStatus.BLOCKED) {
       throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
    }
 
@@ -79,7 +77,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
 
 
 
-export const authorize = (...allowedRoles: Array<'user' | 'host' | 'admin'>) => {
+export const authorize = (...allowedRoles: Array<UserRole>) => {
    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       const user = req.user;
 

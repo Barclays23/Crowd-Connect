@@ -1,12 +1,14 @@
 // frontend/src/components/common/Navbar.tsx
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Calendar, Menu, X, LogOut, User } from "lucide-react";
+import { Calendar, Menu, X, LogOut } from "lucide-react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'react-toastify';
 import UserAvatar from "../ui/userAvatar";
+import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import type { LogoutResponse } from "@/types/auth.types";
 
 
 
@@ -50,14 +52,14 @@ export function Navbar() {
 
    const handleLogout =  async () => {
       try {
-         const response = await logout();
+         const response: LogoutResponse = await logout();
          closeDrawer();
          navigate('/');
          toast.info(response.message);
 
-      } catch (error: any) {
+      } catch (error: unknown) {
          console.error("Error in handleLogout:", error);
-         const errorMessage = error.response?.data?.error || error.response?.data?.message || "Something went wrong while logging out.";
+         const errorMessage = getApiErrorMessage(error);
          toast.error(errorMessage);
       }
    }
@@ -67,8 +69,8 @@ export function Navbar() {
    const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
       `text-sm font-medium transition-colors ${
          isActive
-         ? "text-[var(--navlink-active)]"
-         : "text-[var(--navlink-inactive)] hover:text-[var(--navlink-inactive-hover)]"
+         ? "text-(--navlink-active)"
+         : "text-(--navlink-inactive) hover:text-(--navlink-inactive-hover)"
    }`;
 
 
@@ -88,12 +90,12 @@ export function Navbar() {
    return (
       <>
          {/* Navbar Header */}
-         <header className="border-b border-[var(--border-default)] bg-[var(--bg-primary)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg-primary)]/60 sticky top-0 z-50">
+         <header className="border-b border-(--border-default) bg-(--bg-primary)/95 backdrop-blur supports-[backdrop-filter]:bg-(--bg-primary)/60 sticky top-0 z-50">
             <div className="container flex h-16 items-center justify-between px-4">
                {/* Logo */}
                <Link to="/" className="flex items-center space-x-2">
-                  <Calendar className="h-8 w-8 text-[var(--brand-primary)]" />
-                  <span className="text-xl font-bold text-[var(--text-primary)]">
+                  <Calendar className="h-8 w-8 text-(--brand-primary)" />
+                  <span className="text-xl font-bold text-(--text-primary)">
                      Crowd Connect
                   </span>
                </Link>
@@ -157,7 +159,7 @@ export function Navbar() {
                   {/* Mobile Hamburger */}
                   <button
                      onClick={() => setMobileOpen(!mobileOpen)}
-                     className="md:hidden p-2 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                     className="md:hidden p-2 rounded-md text-(--text-secondary) hover:bg-(--bg-tertiary)"
                      aria-label="Toggle menu"
                   >
                      {mobileOpen ? (
@@ -174,22 +176,22 @@ export function Navbar() {
          {/* Mobile Drawer – slides in from the left */}
          <div
             ref={drawerRef}
-            className={`fixed inset-y-0 left-0 w-64 z-50 bg-[var(--bg-primary)] border-r border-[var(--border-default)] transform transition-transform duration-300 ease-in-out md:hidden ${
+            className={`fixed inset-y-0 left-0 w-64 z-50 bg-(--bg-primary) border-r border-(--border-default) transform transition-transform duration-300 ease-in-out md:hidden ${
                mobileOpen ? "translate-x-0" : "-translate-x-full"
             }`}
          >
             <div className="flex flex-col h-full">
                {/* Drawer Header */}
-               <div className="flex items-center justify-between p-4.5 border-b border-[var(--border-default)]">
+               <div className="flex items-center justify-between p-4.5 border-b border-(--border-default)">
                   <Link to="/" className="flex items-center space-x-2" onClick={closeDrawer}>
-                  <Calendar className="h-7 w-7 text-[var(--brand-primary)]" />
-                  <span className="text-lg font-bold text-[var(--text-primary)]">
+                  <Calendar className="h-7 w-7 text-(--brand-primary)" />
+                  <span className="text-lg font-bold text-(--text-primary)">
                      Crowd Connect
                   </span>
                   </Link>
                   <button
                   onClick={closeDrawer}
-                  className="p-1 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]"
+                  className="p-1 rounded-md text-(--text-secondary) hover:bg-(--bg-tertiary)"
                   >
                   <X className="h-5 w-5" />
                   </button>
@@ -198,12 +200,12 @@ export function Navbar() {
                {/* Drawer Content */}
                <div className="flex flex-col flex-1 min-h-0">
                   {/* Drawer Auth – Avatar + Logout */}
-                  <div className="p-2 space-y-2 border-b border-[var(--border-default)]">
+                  <div className="p-2 space-y-2 border-b border-(--border-default)">
                      {isAuthenticated ? (
                         <div className="flex items-center justify-between">
                            <div className="flex items-center space-x-3">
                               <UserAvatar name={user?.name} />
-                              <span className="text-sm font-medium text-[var(--text-primary)]">
+                              <span className="text-sm font-medium text-(--text-primary)">
                                  {user?.name || "User"}
                               </span>
                            </div>
@@ -217,7 +219,7 @@ export function Navbar() {
                               <Link 
                                  to="/login" 
                                  onClick={closeDrawer}
-                                 className="bg-[var(--brand-primary)] text-[var(--btn-primary-text)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--brand-primary)]"
+                                 className="bg-(--brand-primary) text-(--btn-primary-text) hover:bg-(--bg-tertiary) hover:text-(--brand-primary)"
                               >
                                  Login
                               </Link>
@@ -226,7 +228,7 @@ export function Navbar() {
                               <Link 
                                  to="/register" 
                                  onClick={closeDrawer}
-                                 className="hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]"
+                                 className="hover:text-(--text-primary) hover:bg-(--bg-tertiary)"
                               >
                                  Register
                               </Link>
@@ -251,8 +253,8 @@ export function Navbar() {
                               className={({ isActive }) =>
                                  `block px-3 py-2 rounded-md text-base font-medium transition-colors ${
                                     isActive
-                                    ? "bg-[var(--bg-tertiary)] text-[var(--brand-primary)]"
-                                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--brand-primary)]"
+                                    ? "bg-(--bg-tertiary) text-(--brand-primary)"
+                                    : "text-(--text-secondary) hover:bg-(--bg-tertiary) hover:text-(--brand-primary)"
                                  }`
                               }
                               onClick={closeDrawer}

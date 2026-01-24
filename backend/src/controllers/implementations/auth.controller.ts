@@ -1,20 +1,20 @@
 // src/controllers/implementations/auth.controller.ts
 
 import {Request, Response, NextFunction} from "express";
-import {IAuthController} from "../interfaces/IAuthController";
-import { HttpStatus } from "../../constants/statusCodes.constants";
-import { HttpResponse } from "../../constants/responseMessages.constants";
-import { createHttpError } from "../../utils/httpError.utils";
-import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils";
+import {IAuthController} from "../interfaces/IAuthController.js";
+import { HttpStatus } from "../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../constants/responseMessages.constants.js";
+import { createHttpError } from "../../utils/httpError.utils.js";
+import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils.js";
 import { 
     AuthResponseDto, 
     AuthUserResponseDto, 
     ResetPasswordDto, 
     SignInRequestDto 
-} from "../../dtos/auth.dto";
-import { IAuthRegistrationService } from "../../services/auth-services/auth-interfaces/IAuthRegistration";
-import { IAuthSessionService } from "../../services/auth-services/auth-interfaces/IAuthSession";
-import { IAuthRecoveryService } from "../../services/auth-services/auth-interfaces/IAuthRecovery";
+} from "../../dtos/auth.dto.js";
+import { IAuthRegistrationService } from "../../services/auth-services/auth-interfaces/IAuthRegistration.js";
+import { IAuthSessionService } from "../../services/auth-services/auth-interfaces/IAuthSession.js";
+import { IAuthRecoveryService } from "../../services/auth-services/auth-interfaces/IAuthRecovery.js";
 
 
 
@@ -31,7 +31,7 @@ export class AuthController implements IAuthController {
     
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            console.log('email and password in authController.signIn:', req.body);
+            // console.log('email and password in authController.signIn:', req.body);
             const signInDto: SignInRequestDto = req.body;
 
             const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
@@ -48,52 +48,28 @@ export class AuthController implements IAuthController {
             res.status(HttpStatus.OK).json(authResponse);
 
 
-        } catch (err: any) {
-            // throw new Error(`Internal server error! \n Failed to login`);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.signIn:', msg);
             next(err);
-            console.error('Error in AuthController.signIn:', err);
-
-            // If a well-formed HTTP error was thrown, forward its status and message
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.LOGIN_FAILED}`
-            });
-            return;
         };
-
     }
 
 
     async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userEmail = await this._registrationService.signUp(req.body);
-            console.log('temporary user email in authController.signUp:', userEmail);
+            // console.log('temporary user email in authController.signUp:', userEmail);
 
             res.status(HttpStatus.OK).json({
                 message: `${HttpResponse.OTP_SENT} ${HttpResponse.VERIFY_ACCOUNT}`,
                 email: userEmail
             });
 
-        } catch (err: any) {
-            // throw new Error(`Internal server error! \n Failed to create account`);
-            // next(err);
-
-            console.error('Error in AuthController.signUp:', err);
-
-            // If a well-formed HTTP error was thrown, forward its status and message
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.USER_CREATION_FAILED}`
-            });
-            return;
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.signUp:', msg);
+            next(err);
         };
 
     }
@@ -111,17 +87,11 @@ export class AuthController implements IAuthController {
                 email: userEmail
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.requestPasswordReset:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.requestPasswordReset:', msg);
+            next(err);
+        };
     }
 
 
@@ -136,17 +106,11 @@ export class AuthController implements IAuthController {
                 isValid
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.validateResetLink:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.validateResetLink:', msg);
+            next(err);
+        };
     }
 
 
@@ -162,17 +126,11 @@ export class AuthController implements IAuthController {
                 message: HttpResponse.PASSWORD_RESET_SUCCESS,
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.resetPassword:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.resetPassword:', msg);
+            next(err);
+        };
     }
 
 
@@ -189,17 +147,11 @@ export class AuthController implements IAuthController {
                 email: userEmail
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.requestAuthenticateEmail:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.requestAuthenticateEmail:', msg);
+            next(err);
+        };
     }
 
 
@@ -221,16 +173,11 @@ export class AuthController implements IAuthController {
                 email: userEmail
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.updateVerifiedEmail:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.updateVerifiedEmail:', msg);
+            next(err);
+        };
     }
 
 
@@ -258,17 +205,11 @@ export class AuthController implements IAuthController {
 
             res.status(HttpStatus.CREATED).json(authResponse);
 
-        } catch (err: any) {
-            console.error('Error in AuthController.verifyOtp:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.verifyAccount:', msg);
+            next(err);
+        };
     }
 
 
@@ -281,17 +222,11 @@ export class AuthController implements IAuthController {
                 email: userEmail
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.resendOtp:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.resendOtp:', msg);
+            next(err);
+        };
     }
 
 
@@ -317,17 +252,11 @@ export class AuthController implements IAuthController {
                 newAccessToken: newAccessToken
             });
 
-        } catch (err: any) {
-            console.error('Error in AuthController.refreshAccessToken:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.refreshAccessToken:', msg);
+            next(err);
+        };
     }
 
 
@@ -348,17 +277,11 @@ export class AuthController implements IAuthController {
             res.status(HttpStatus.OK).json({message: HttpResponse.LOGOUT_SUCCESS});
 
 
-        } catch (err: any) {
-            console.error('Error in AuthController.logout:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.logout:', msg);
+            next(err);
+        };
     }
 
 
@@ -382,17 +305,12 @@ export class AuthController implements IAuthController {
                 authUser: userData
             });
             
-        } catch (err: any) {
-            console.error('Error in AuthController.getAuthUser:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.getAuthUser:', msg);
+            next(err);
+        };
     }
 
 

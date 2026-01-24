@@ -4,12 +4,12 @@ import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
 // import morgan from 'morgan';
 
-import { errorHandler } from './middlewares/error.middleware';
+import { errorHandler } from './middlewares/error.middleware.js';
 
-import authRoutes from './routes/auth.routes';
-import adminRoutes from './routes/admin.routes';
-import userRouter from './routes/user.routes';
-import hostRouter from './routes/host.routes';
+import authRoutes from './routes/auth.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import userRouter from './routes/user.routes.js';
+import hostRouter from './routes/host.routes.js';
 
 
 const app = express();

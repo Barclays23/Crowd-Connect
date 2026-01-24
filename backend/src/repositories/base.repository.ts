@@ -1,20 +1,14 @@
 // backend/src/repositories/base.repository.ts
-import { Router } from "express";
-import { 
+import mongoose, { 
     Document, 
     Model,
+    QueryFilter,
+    UpdateQuery,
     // FilterQuery
 } from "mongoose";
 
 
-type MongooseFilterQuery<T> = {
-    // Allows querying based on document properties (T[P]) or MongoDB operators
-    [P in keyof T]?: T[P] | { $in: T[P][] } | any; 
-} & {
-    // Standard MongoDB operators
-    $and?: MongooseFilterQuery<T>[];
-    $or?: MongooseFilterQuery<T>[];
-} & Record<string, any>; // Allows for other operators like $regex, $gt, etc.
+
 
 
 
@@ -31,7 +25,7 @@ export abstract class BaseRepository<T extends Document> {
     }
 
 
-    async findOne(query: MongooseFilterQuery<T>): Promise<T | null>{
+    async findOne(query: QueryFilter<T>): Promise<T | null>{
         const findDocument = await this.model.findOne(query);
         return findDocument;
     }
@@ -42,7 +36,7 @@ export abstract class BaseRepository<T extends Document> {
         return findDocument;
     }
 
-    async findByIdAndUpdate(updateId: string, updateData: Partial<T>): Promise<T | null>{
+    async findByIdAndUpdate(updateId: string, updateData: UpdateQuery<T>): Promise<T | null>{
         const updatedDocument = await this.model.findByIdAndUpdate(
             updateId,
             { $set: updateData },
@@ -58,7 +52,7 @@ export abstract class BaseRepository<T extends Document> {
     }
 
 
-    async findOneAndUpdate(query: MongooseFilterQuery<T>, updateData: Partial<T>): Promise<T | null>{
+    async findOneAndUpdate(query: QueryFilter<T>, updateData: Partial<T>): Promise<T | null>{
         const updatedDocument = await this.model.findOneAndUpdate(
             query,
             { $set: updateData },
@@ -74,7 +68,7 @@ export abstract class BaseRepository<T extends Document> {
     }
  
 
-    async countDocuments(query: MongooseFilterQuery<T>): Promise<number> {
+    async countDocuments(query: QueryFilter<T>): Promise<number> {
         const count = await this.model.countDocuments(query);
         return count;
     }

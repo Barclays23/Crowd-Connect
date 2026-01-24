@@ -3,23 +3,23 @@
 import { 
     UserProfileResponseDto,
     UserBasicInfoUpdateDTO, 
-} from "../../../dtos/user.dto";
+} from "../../../dtos/user.dto.js";
 
-import { createHttpError } from "../../../utils/httpError.utils";
+import { createHttpError } from "../../../utils/httpError.utils.js";
 
 import { 
     mapUpdateUserRequestDtoToInput, 
     mapUserEntityToProfileDto
-} from "../../../mappers/user.mapper";
+} from "../../../mappers/user.mapper.js";
 
-import { UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary";
-import { HttpResponse } from "../../../constants/responseMessages.constants";
-import { HttpStatus } from "../../../constants/statusCodes.constants";
-import { UserStatus } from "../../../constants/roles-and-statuses";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
-import { IUserProfileService } from "../user-interfaces/IUserProfileService";
-import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../../../config/aws-s3.config";
+import { UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
+import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
+import { HttpResponse } from "../../../constants/responseMessages.constants.js";
+import { HttpStatus } from "../../../constants/statusCodes.constants.js";
+import { UserStatus } from "../../../constants/roles-and-statuses.js";
+import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
+import { IUserProfileService } from "../user-interfaces/IUserProfileService.js";
+import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../../../config/aws-s3.config.js";
 
 
 
@@ -44,8 +44,9 @@ export class UserProfileService implements IUserProfileService {
 
             return userProfileDto;
 
-        } catch (error: any) {
-            console.error('Error in UserProfileService.getUserProfile:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in UserProfileService.getUserProfile:', msg);
             throw error;
         }
     }
@@ -80,8 +81,9 @@ export class UserProfileService implements IUserProfileService {
 
             return updatedUser
 
-        } catch (error: any) {
-            console.error("Error in UserProfileService.editUserBasicInfo:", error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in UserProfileService.editUserBasicInfo:", msg);
             throw error;
         }
     }
@@ -131,9 +133,10 @@ export class UserProfileService implements IUserProfileService {
 
             return updatedProfileDto;
 
-        } catch (err: any) {
-            console.error('Error in UserProfileService.updateProfilePicture:', err);
-            throw err;
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in UserProfileService.updateProfilePicture:', msg);
+            throw error;
         }
     }
 

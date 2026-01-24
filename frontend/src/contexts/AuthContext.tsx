@@ -3,7 +3,14 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/authServices';
 import type { UserState } from '@/types/user.types';
-import type { AuthState, AuthResponse } from '@/types/auth.types';
+import type { 
+    AuthState, 
+    RegisterPayload, 
+    LoginPayload, 
+    RegisterResponse, 
+    LoginResponse, 
+    LogoutResponse
+} from '@/types/auth.types';
 import { setAuthInterceptors } from '@/config/axios';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
@@ -13,10 +20,10 @@ import { setAuthInterceptors } from '@/config/axios';
 
 
 interface AuthContextType extends AuthState {
-    login: (credentials: { email: string; password: string }) => Promise<AuthResponse>;
-    register: (data: { name: string; email: string; password: string }) => Promise<any>;
+    login: (credentials: LoginPayload) => Promise<LoginResponse>;
+    register: (data: RegisterPayload) => Promise<RegisterResponse>;
     loginWithGoogle: () => Promise<void>;
-    logout: () => Promise<any>;
+    logout: () => Promise<LogoutResponse>;
     setAccessToken: React.Dispatch <React.SetStateAction <string | null>>; 
     setUser: React.Dispatch <React.SetStateAction <UserState | null>>;
 }
@@ -72,10 +79,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // --- CENTRALIZED LOGOUT LOGIC ---
     // Clears client state and performs server-side logout.
     // This function is used by both manual logout and the Axios interceptor.
-    const fullLogout = async () => {
+    const fullLogout = async (): Promise<LogoutResponse> => {
         try {
             // 1. Call server logout to clear HTTP-only cookie/session
-            const response = await authService.logoutService();
+            const response: LogoutResponse = await authService.logoutService();
             console.log('fullLogout response:', response);
             return response;
         } catch (error) {
@@ -146,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     // setAccessToken(newAccessToken); // it is already setting in axios incepter (when token refreshes)
                 }
             
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.log('❌ Error in validateSession :', err);
                 // Important: DO NOT THROW OR TOAST HERE (Axios interceptor handles this)
                 // Let the interceptor handle logout
@@ -171,8 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-
-    const login = async (credentials: { email: string; password: string }): Promise<AuthResponse> => {
+    const login = async (credentials: LoginPayload): Promise<LoginResponse> => {
         try {
             const response = await authService.loginService(credentials);
             // console.log('response from authContext login:', response);
@@ -182,7 +188,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(authUser);
             return response;
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             throw err;
         }
     };
@@ -190,19 +196,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const register = async (data: {
-        name: string;
-        email: string;
-        password: string;
-    }) => {
+    const register = async (data: RegisterPayload): Promise<RegisterResponse> => {
         try {
             // Backend must set HTTP-Only refresh cookie here
-            const response = await authService.registerService(data);
+            const response: RegisterResponse = await authService.registerService(data);
             console.log('response in authContext register:', response);
             
             return response;
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             throw err;
         }
     };
@@ -219,10 +221,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Public logout function for components (e.g., Navbar).
     // It uses the centralized fullLogout logic.
-    const logout = async (): Promise<AuthResponse> => {
+    const logout = async (): Promise<LogoutResponse> => {
         try {
-            const response = await fullLogout();
-            return response as AuthResponse;
+            const response: LogoutResponse = await fullLogout();
+            return response;
         } catch (error) {
             console.error("Error in AuthContext logout:", error);
             // Even if the server call fails, we ensure client state is cleared in fullLogout.finally

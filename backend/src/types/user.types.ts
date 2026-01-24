@@ -1,7 +1,11 @@
 // backend/src/types/user.types.ts
 
-import { UserProfileResponseDto } from "../dtos/user.dto";
+import { IUser } from "../models/implementations/user.model.js";
+import { UserProfileResponseDto } from "../dtos/user.dto.js";
+import { HostStatus, UserRole, UserStatus } from "src/constants/roles-and-statuses.js";
 
+
+export type UserFilterQuery = Partial<IUser> & Record<string, unknown>;
 
 
 
@@ -9,18 +13,21 @@ import { UserProfileResponseDto } from "../dtos/user.dto";
 export interface GetUsersFilter {
   page: number;
   limit: number;
+  role?: UserRole;
+  status?: UserStatus;
   search?: string;
-  role?: string;
-  status?: string;
 }
+
+
+
 
 export interface GetHostsFilter {
   page: number;
   limit: number;
-  role: string;
+  role?: UserRole;
+  status?: UserStatus;
+  hostStatus?: HostStatus;
   search?: string;
-  status?: string;
-  hostStatus?: string;
 }
 
 

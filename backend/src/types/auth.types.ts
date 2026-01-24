@@ -1,7 +1,7 @@
 // backend/src/types/auth.types.ts
 
-import { AuthUserResponseDto } from "src/dtos/auth.dto";
-import { UserEntity } from "../entities/user.entity";
+import { AuthUserResponseDto } from "src/dtos/auth.dto.js";
+import { UserEntity } from "../entities/user.entity.js";
 
 
 

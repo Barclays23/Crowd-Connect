@@ -1,18 +1,18 @@
 // src/services/user/implementations/UserManagement.service.ts
 
-import { GetUsersFilter, GetUsersResult } from "../../../types/user.types";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
-import { IUserManagementService } from "../user-interfaces/IUserManagementService";
-import { CreateUserInput, UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity";
-import { CreateUserRequestDto, UpdateUserRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto";
-import { mapCreateUserRequestDtoToInput, mapUpdateUserRequestDtoToInput, mapUserEntityToProfileDto } from "../../../mappers/user.mapper";
-import { createHttpError } from "../../../utils/httpError.utils";
-import { HttpStatus } from "../../../constants/statusCodes.constants";
-import { HttpResponse } from "../../../constants/responseMessages.constants";
-import { UserRole, UserStatus } from "../../../constants/roles-and-statuses";
-import { generateRandomPassword } from "../../../utils/password-generator.utils";
-import { hashPassword } from "../../../utils/bcrypt.utils";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary";
+import { GetUsersFilter, GetUsersResult, UserFilterQuery } from "../../../types/user.types.js";
+import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
+import { IUserManagementService } from "../user-interfaces/IUserManagementService.js";
+import { CreateUserInput, UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
+import { CreateUserRequestDto, UpdateUserRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto.js";
+import { mapCreateUserRequestDtoToInput, mapUpdateUserRequestDtoToInput, mapUserEntityToProfileDto } from "../../../mappers/user.mapper.js";
+import { createHttpError } from "../../../utils/httpError.utils.js";
+import { HttpStatus } from "../../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../../constants/responseMessages.constants.js";
+import { UserRole, UserStatus } from "../../../constants/roles-and-statuses.js";
+import { generateRandomPassword } from "../../../utils/password-generator.utils.js";
+import { hashPassword } from "../../../utils/bcrypt.utils.js";
+import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
 
 
 
@@ -26,7 +26,7 @@ export class UserManagementService implements IUserManagementService {
             // console.log('Query received in UserManagementService.getAllUsers:', filters);
             const { page, limit, search, role, status } = filters;
 
-            const query: any = {};
+            const query: UserFilterQuery = {};
 
             if (search) {
                 query.$or = [
@@ -57,8 +57,9 @@ export class UserManagementService implements IUserManagementService {
                 totalPages: Math.ceil(totalCount / limit),
             };
 
-        } catch (err: any) {
-            console.error('Error in UserManagementService.getAllUsers:', err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Error in UserManagementService.getAllUsers:', msg);
             throw err;
         }
     }
@@ -126,8 +127,9 @@ export class UserManagementService implements IUserManagementService {
             return newUser;
 
             
-        } catch (err: any) {
-            console.error('Error in UserManagementService.createUserByAdmin:', err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Error in UserManagementService.createUserByAdmin:', msg);
             throw err;
         }
     }
@@ -182,11 +184,14 @@ export class UserManagementService implements IUserManagementService {
                 }
             }
 
-            const isChangingMobile = updateDto.mobile && updateDto.mobile !== targetUser.mobile;
+            const isChangingMobile = updateDto.mobile !== undefined && updateDto.mobile !== targetUser.mobile;
             if (isChangingMobile) {
-                const existingMobileUser: UserEntity | null = await this._userRepository.getUserByMobile(updateDto.mobile!);
-                if (existingMobileUser && existingMobileUser.id !== targetUserId) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                if (updateDto.mobile && updateDto.mobile.trim() !== '') {
+                    const existingMobileUser: UserEntity | null = await this._userRepository.getUserByMobile(updateDto.mobile);
+
+                    if (existingMobileUser && existingMobileUser.id !== targetUserId) {
+                        throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                    }
                 }
             }
             
@@ -222,8 +227,10 @@ export class UserManagementService implements IUserManagementService {
                 if (targetUser.profilePic && targetUser.profilePic.trim() !== '') {
                     try {
                         await deleteFromCloudinary({fileUrl: targetUser.profilePic, resourceType: 'image'});
-                    } catch (cleanupErr) {
-                        console.warn("Failed to delete user profile pic from Cloudinary:", cleanupErr);
+                    
+                    } catch (cleanupErr: unknown) {
+                        const msg = cleanupErr instanceof Error ? cleanupErr.message : 'Cloudinary deletion failed';
+                        console.warn("Failed to delete user profile pic from Cloudinary:", msg);
                     }
                 }
             }
@@ -237,8 +244,9 @@ export class UserManagementService implements IUserManagementService {
 
             return updatedUser;
 
-        } catch (err: any) {
-            console.error('Error in UserManagementService.editUserByAdmin:', err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Error in UserManagementService.editUserByAdmin:', msg);
             throw err;
         }
     }
@@ -286,8 +294,9 @@ export class UserManagementService implements IUserManagementService {
 
             return updatedStatus;
 
-        } catch (err: any) {
-            console.error("Error in UserManagementService.toggleUserBlock:", err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error("Error in UserManagementService.toggleUserBlock:", msg);
             throw err;
         }
     }
@@ -347,8 +356,9 @@ export class UserManagementService implements IUserManagementService {
             await this._userRepository.deleteUser(targetUserId);
             return;
 
-        } catch (err: any) {
-            console.error('Error in UserManagementService.deleteUser:', err);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Error in UserManagementService.deleteUser:', msg);
             throw err;
         }
     }

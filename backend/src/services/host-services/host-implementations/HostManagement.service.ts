@@ -1,23 +1,23 @@
 // backend/src/services/host/implementations/hostManagement.services.ts
 
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository";
-import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto";
-import { createHttpError } from "../../../utils/httpError.utils";
-import { HttpStatus } from "../../../constants/statusCodes.constants";
-import { HttpResponse } from "../../../constants/responseMessages.constants";
-import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary";
-import { isHost } from "../../../utils/general.utils";
+import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
+import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto.js";
+import { createHttpError } from "../../../utils/httpError.utils.js";
+import { HttpStatus } from "../../../constants/statusCodes.constants.js";
+import { HttpResponse } from "../../../constants/responseMessages.constants.js";
+import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
+import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
+import { isHost } from "../../../utils/general.utils.js";
 import { 
     mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto,
     mapToHostStatusUpdateResponseDto,
     mapUpdateHostDTOToInput, 
-} from "../../../mappers/user.mapper";
-import { HostStatus, UserRole } from "../../../constants/roles-and-statuses";
-import { GetHostsFilter, GetHostsResult } from "../../../types/user.types";
-import { IHostManagementServices } from "../host-interfaces/IHostManagementServices";
+} from "../../../mappers/user.mapper.js";
+import { HostStatus, UserRole } from "../../../constants/roles-and-statuses.js";
+import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "../../../types/user.types.js";
+import { IHostManagementServices } from "../host-interfaces/IHostManagementServices.js";
 
 
 
@@ -32,9 +32,9 @@ export class HostManagementServices implements IHostManagementServices {
             const { page, limit, search, role, status, hostStatus } = filters;
             console.log('Filters received in HostManagementServices.getAllHosts:', filters);
 
-            const query: any = {};
+            const query: UserFilterQuery = {};
 
-            query.role = role ? query.role = role : UserRole.HOST;
+            query.role = role ?? UserRole.HOST;
 
             if (search) {
                 query.$or = [
@@ -66,8 +66,9 @@ export class HostManagementServices implements IHostManagementServices {
                 totalPages: Math.ceil(totalCount / limit),
             };
 
-        } catch (error: any) {
-            console.error('Error in HostManagementServices.getAllHosts:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in HostManagementServices.getAllHosts:', msg);
             throw error;
         }
     }
@@ -139,8 +140,9 @@ export class HostManagementServices implements IHostManagementServices {
 
             return hostProfile;
 
-        } catch (error: any) {
-            console.error('Error in HostManagementServices.applyHostUpgrade:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in HostManagementServices.applyHostUpgrade:', msg);
             throw error;
         }
     }
@@ -153,14 +155,16 @@ export class HostManagementServices implements IHostManagementServices {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
             }
 
+
             const allowedTransitions: Record<HostStatus, Array<'approve' | 'reject' | 'block'>> = {
                 [HostStatus.PENDING]: ['approve', 'reject', 'block'],
                 [HostStatus.APPROVED]: ['block'],
                 [HostStatus.REJECTED]: ['block'],
                 [HostStatus.BLOCKED]: [],  // Can unblock → changes to PENDING
-            };
+            } as const;
 
-            const allowedActions = allowedTransitions[hostEntity.hostStatus];
+            const allowedActions = allowedTransitions[hostEntity.hostStatus as HostStatus];
+
 
             if (!allowedActions.includes(action)) {
                 throw createHttpError(
@@ -185,8 +189,9 @@ export class HostManagementServices implements IHostManagementServices {
 
             return updatedStatusResponse;
 
-        } catch (error: any) {
-            console.error('Error in HostManagementServices.manageHostStatus:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in HostManagementServices.manageHostStatus:', msg);
             throw error;
         }
     }
@@ -254,8 +259,9 @@ export class HostManagementServices implements IHostManagementServices {
 
             return hostProfile;
 
-        } catch (error: any) {
-            console.error('Error in HostManagementServices.updateHostByAdmin:', error);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Error in HostManagementServices.updateHostByAdmin:', msg);
             throw error;
         }
     }

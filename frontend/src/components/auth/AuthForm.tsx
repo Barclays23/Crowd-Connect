@@ -1,3 +1,4 @@
+// frontend/src/components/auth/AuthForm.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,20 +12,41 @@ import { Link } from "react-router-dom";
 import { LoginSchema, RegisterSchema } from "@/schemas/auth.schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { Modal } from "../ui/modal";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
+import type { LoginPayload, RegisterPayload } from "@/types/auth.types";
 
-type AuthMode = "login" | "register";
 
-interface AuthFormProps {
-  mode: AuthMode;
-  onSubmit?: (data: z.infer<typeof RegisterSchema> | z.infer<typeof LoginSchema>) => Promise<void>;
+
+interface LoginFormProps {
+  mode: "login";
+  onSubmit?: (data: LoginPayload) => Promise<void>;
   isLoading: boolean;
   openForgotPassword?: boolean;
 }
 
-export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword = false }: AuthFormProps) {
+interface RegisterFormProps {
+  mode: "register";
+  onSubmit?: (data: RegisterPayload) => Promise<void>;
+  isLoading: boolean;
+  openForgotPassword?: boolean;
+}
+
+type AuthFormProps = LoginFormProps | RegisterFormProps;
+
+
+
+
+
+export function AuthForm(props: AuthFormProps) {
+  const { 
+    mode, 
+    onSubmit, 
+    isLoading = false, 
+    openForgotPassword = false 
+  } = props;
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
@@ -36,7 +58,10 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
   // ---- forms and zod validations -------------------------------------------------
   const loginForm = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { 
+      email: "", 
+      password: "" 
+    },
   });
 
   const registerForm = useForm<z.infer<typeof RegisterSchema>>({
@@ -50,33 +75,46 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
     },
   });
 
+
   const currentForm = isRegister ? registerForm : loginForm;
-  const { handleSubmit, formState } = currentForm;
+  const { formState } = currentForm;
   const { errors } = formState;
   // console.log('authForm errors :', errors);
 
 
   // ---- form submit -------------------------------------------------
-  const onValid = async (data: z.infer<typeof RegisterSchema> | z.infer<typeof LoginSchema>) => {
-    // console.log(`${isRegister ? "Registration" : "Login"} submitted:`, data);
-    console.log(`${isRegister ? "Registration" : "Login"} submitted:`);
+  const onLoginValid: SubmitHandler<LoginPayload> = async (data) => {
+    console.log('Login Form Submitted : ', data)
 
-    if (!onSubmit) return;
-    
+    if (!onSubmit || mode !== "login") return;
+
     try {
       setIsSubmittingForm(true);
-      await onSubmit?.(data);
-      // currentForm.reset();
-
+      await onSubmit(data);
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error('Login Form submission error:', error);
     } finally {
       setIsSubmittingForm(false);
     }
   };
 
+  const onRegisterValid: SubmitHandler<RegisterPayload> = async (data) => {
+    console.log('Registration Form Submitted : ', data)
+    if (!onSubmit || mode !== "register") return;
+
+    try {
+      setIsSubmittingForm(true);
+      await onSubmit(data);
+    } catch (error) {
+      console.error('Registration Form submission error:', error);
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
+
+
   return (
-    <Card className="w-full max-w-md mx-auto my-10 bg-[var(--card-bg)] shadow-lg">
+    <Card className="w-full max-w-md mx-auto my-10 bg-(--card-bg) shadow-lg">
       <CardHeader className="text-center pb-6">
         <CardTitle className="text-2xl font-bold text-foreground">
           {isRegister ? "Create Your Account" : "Welcome Back"}
@@ -89,7 +127,13 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit(onValid)} className="space-y-4">
+        <form
+          onSubmit={
+            isRegister
+              ? registerForm.handleSubmit(onRegisterValid)
+              : loginForm.handleSubmit(onLoginValid)
+          }
+         className="space-y-4">
           {/* Full Name - Register Only */}
           {isRegister && (
             <div className="space-y-2">
@@ -220,7 +264,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-[var(--link-text)] hover:text-[var(--link-text-hover)] hover:underline font-medium cursor-pointer"
+                className="text-sm text-(--link-text) hover:text-(--link-text-hover) hover:underline font-medium cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -232,7 +276,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
             type="submit"
             variant="default"
             disabled={isSubmittingForm || isLoading}
-            // className="w-full h-11 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:bg-[var(--btn-primary-hover)] font-medium"
+            // className="w-full h-11 bg-(--btn-primary-bg) text-(--btn-primary-text) hover:bg-(--btn-primary-hover) font-medium"
             className="w-full h-11 font-medium"
           >
             {isSubmittingForm || isLoading
@@ -285,7 +329,7 @@ export function AuthForm({ mode, onSubmit, isLoading = false, openForgotPassword
           {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
           <Link
             to={isRegister ? "/login" : "/register"}
-            className="text-[var(--link-text)] hover:text-[var(--link-text-hover)] hover:underline font-medium"
+            className="text-(--link-text) hover:text-(--link-text-hover) hover:underline font-medium"
           >
             {isRegister ? "Login here" : "Register here"}
           </Link>

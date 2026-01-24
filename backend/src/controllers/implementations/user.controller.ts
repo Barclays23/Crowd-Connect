@@ -1,14 +1,14 @@
 // src/controllers/implementations/user.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { IUserController } from '../interfaces/IUserController';
-import { HttpStatus } from '../../constants/statusCodes.constants';
-import { HttpResponse } from '../../constants/responseMessages.constants';
-import { GetUsersFilter, GetUsersResult } from '../../types/user.types';
-import { CreateUserRequestDto, HostResponseDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto';
-import { UserStatus } from '../../constants/roles-and-statuses';
-import { IUserProfileService } from '../../services/user-services/user-interfaces/IUserProfileService';
-import { IUserManagementService } from '../../services/user-services/user-interfaces/IUserManagementService';
+import { IUserController } from '../interfaces/IUserController.js';
+import { HttpStatus } from '../../constants/statusCodes.constants.js';
+import { HttpResponse } from '../../constants/responseMessages.constants.js';
+import { GetUsersFilter, GetUsersResult } from '../../types/user.types.js';
+import { CreateUserRequestDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto.js';
+import { UserRole, UserStatus } from '../../constants/roles-and-statuses.js';
+import { IUserProfileService } from '../../services/user-services/user-interfaces/IUserProfileService.js';
+import { IUserManagementService } from '../../services/user-services/user-interfaces/IUserManagementService.js';
 
 
 
@@ -31,21 +31,11 @@ export class UserController implements IUserController {
                 message: HttpResponse.SUCCESS_GET_USERS,
             });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.getUserProfile:', msg);
             next(err);
-            console.error('Error in userController.getUserProfile:', err);
-
-            // If a well-formed HTTP error was thrown, forward its status and message
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -70,17 +60,11 @@ export class UserController implements IUserController {
             });
 
 
-        } catch (err: any) {
-            console.error('Error in UserController.editUserBasicInfo:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in UserController.editUserBasicInfo:', msg);
+            next(err);
+        };
     }
 
 
@@ -100,18 +84,11 @@ export class UserController implements IUserController {
                 message: HttpResponse.PROFILE_PICTURE_CHANGED
             });
 
-
-        } catch (err: any) {
-            console.error('Error in UserController.updateProfilePicture:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: HttpResponse.INTERNAL_SERVER_ERROR
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in UserController.updateProfilePicture:', msg);
+            next(err);
+        };
     }
 
 
@@ -129,8 +106,8 @@ export class UserController implements IUserController {
                 page,
                 limit,
                 search,
-                role: role || undefined,
-                status: status || undefined,
+                role: role ? role as UserRole : undefined,
+                status: status ? status as UserStatus : undefined,
             };
 
             console.log('✅ Parsed filters for admin getAllUsers:', filters);
@@ -150,21 +127,12 @@ export class UserController implements IUserController {
                 },
             });
 
-        } catch (err: any) {
-            next(err);
-            console.error('Error in userController.getAllUsers:', err);
 
-            // If a well-formed HTTP error was thrown, forward its status and message
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            // Fallback to generic internal error
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_GET_USERS}`
-            });
-            return;
-        }
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.getAllUsers:', msg);
+            next(err);
+        };
     
     }
 
@@ -190,18 +158,12 @@ export class UserController implements IUserController {
                 userData: createdUser,
             });
 
-        } catch (err: any) {
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.createUserByAdmin:', msg);
             next(err);
-            console.error('Error in userController.createUserByAdmin:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_CREATE_USER}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -232,18 +194,11 @@ export class UserController implements IUserController {
                 userData: updatedUser,
             });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.editUserByAdmin:', msg);
             next(err);
-            console.error('Error in userController.editUserByAdmin:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_UPDATE_USER}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -267,18 +222,12 @@ export class UserController implements IUserController {
                 updatedStatus,
             });
 
-        } catch (err: any) {
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.toggleUserBlock:', msg);
             next(err);
-            console.error('Error in userController.toggleUserBlock:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_UPDATE_USER_STATUS}`
-            });
-            return;
-        }
+        };
     }
 
 
@@ -294,18 +243,11 @@ export class UserController implements IUserController {
                 message: HttpResponse.SUCCESS_DELETE_USER,
             });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in userController.deleteUser:', msg);
             next(err);
-            console.error('Error in userController.deleteUser:', err);
-            if (err && typeof err.statusCode === 'number') {
-                res.status(err.statusCode).json({ message: err.message || 'Error' });
-                return;
-            }
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                message: `${HttpResponse.INTERNAL_SERVER_ERROR} \n ${HttpResponse.FAILED_DELETE_USER}`
-            });
-            return;
-        }
+        };
     }
 
 

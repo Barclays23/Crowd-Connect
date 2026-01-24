@@ -6,7 +6,7 @@ export const nameBase = z
   .string()
   .trim()
   .min(1, "Full name is required")
-  .min(3, "Full name is required")
+  .min(3, "Full name should be at least 3 characters")
   .max(20, "Full name cannot exceed 20 characters");
 
 
