@@ -62,7 +62,7 @@ authRouter.post(AUTH_ROUTES.REFRESH_TOKEN, authController.refreshAccessToken.bin
 
 authRouter.post(AUTH_ROUTES.LOGOUT, authController.logout.bind(authController));
 authRouter.get(AUTH_ROUTES.ME, authenticate, authController.getAuthUser.bind(authController));
-// authRouter.post('/edit-profile', authController.editProfile.bind(authController));
+
 
 
 

@@ -31,7 +31,7 @@ import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
-import type { AxiosError } from "axios";
+
 
 
 
@@ -115,9 +115,9 @@ export function UsersList() {
       console.error("Failed to fetch users:", err);
 
       if (!isUnauthorizedError(err)) {
-        const errorMessage = getApiErrorMessage(err) || 'Failed to fetch users. Please try again later.';
+        const errorMessage = getApiErrorMessage(err);
+        if (errorMessage) toast.error(errorMessage);
         setError(errorMessage);
-        toast.error(errorMessage);
       }
 
     } finally {
@@ -170,7 +170,7 @@ export function UsersList() {
     } catch (error: unknown) {
       console.log('error in handleToggleBlockUser:', error)
       const errorMessage = getApiErrorMessage(error);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
 
     } finally {
       setBlockingUserId(null);
@@ -191,7 +191,7 @@ export function UsersList() {
     } catch (error: unknown) {
       console.log('error in deleteUser:', error)
       const errorMessage = getApiErrorMessage(error);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
 
     } finally {
       setDeletingUserId(null);
@@ -578,6 +578,7 @@ export function UsersList() {
           loading={blockingUserId === blockUser?.userId}
         />
 
+        {/* Delete User Confirmation Modal */}
         <ConfirmationModal
           isOpen={!!deleteUser}
           onClose={() => setDeleteUser(null)}

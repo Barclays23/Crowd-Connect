@@ -135,7 +135,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       formData.append("email", values.email || "");
       formData.append("role", values.role);
       formData.append("status", values.status);
-      formData.append("mobile", values.mobile ?? "");
+      formData.append("mobile", values.mobile ?? ""); // changed from undefined
       if (profileFile) {
          formData.append("profileImage", profileFile);
       }
@@ -160,7 +160,7 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
       onSubmitting?.(false);

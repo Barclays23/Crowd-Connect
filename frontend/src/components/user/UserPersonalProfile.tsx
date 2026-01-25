@@ -66,7 +66,8 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          toast.success(response.message);
 
       } catch (err) {
-         toast.error(getApiErrorMessage(err));
+         const errorMessage = getApiErrorMessage(err);
+         if (errorMessage) toast.error(errorMessage);
 
       } finally {
          setIsUpdatingProfilePic(false);
@@ -77,7 +78,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
    const handleUpdateBasicInfo = async () => {
       const updateData: UserBasicInfo = {
          name: editFormData.name.trim(),
-         mobile: editFormData.mobile.trim() || undefined,
+         mobile: editFormData.mobile.trim() || '', // changed undefined
       };
       
       try {
@@ -94,7 +95,8 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          toast.success(response.message);
 
       } catch (err) {
-         toast.error(getApiErrorMessage(err));
+         const errorMessage = getApiErrorMessage(err);
+         if (errorMessage) toast.error(errorMessage);
 
       } finally {
          setIsUpdatingBasicInfo(false);
@@ -121,7 +123,8 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          setIsEditingEmail(false);
 
       } catch (err) {
-         toast.error(getApiErrorMessage(err));
+         const errorMessage = getApiErrorMessage(err);
+         if (errorMessage) toast.error(errorMessage);
 
       } finally {
          setIsUpdatingEmail(false);
@@ -140,7 +143,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       <>
          {/* Profile Header / Hero */}
          <div className="relative mb-10">
-            <div className="h-48 md:h-64 bg-gradient-to-br from-(--brand-primary)/20 to-(--bg-secondary) rounded-3xl" />
+            <div className="h-48 md:h-64 bg-linear-to-br from-(--brand-primary)/20 to-(--bg-secondary) rounded-3xl" />
                <div className="absolute inset-x-0 bottom-0 px-5 pb-8 md:px-12 md:pb-10">
                   <div className="flex flex-col sm:flex-row sm:items-end gap-5">
 
@@ -232,7 +235,9 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         <div className="flex items-center gap-2 mt-1.5">
                            <p className="text-(--text-secondary) text-lg">{profile.email}</p>
                            {profile.isEmailVerified && (
-                              <CheckCircle className="text-(--status-success) text-lg" title="Email verified" />
+                              <span title="Email verified">
+                                 <CheckCircle className="text-(--status-success)" size={20}/>
+                              </span>
                            )}
                         </div>
 
@@ -342,21 +347,21 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         <label className="text-sm text-(--text-secondary)">Mobile</label>
                         {isEditingBasicInfo ? (
                            <input
-                           type="tel"
-                           name="mobile"
-                           value={editFormData.mobile}
-                           onChange={handleInputChange}
-                           className="w-full px-4 py-2 border border-(--form-input-border)
-                                       rounded-lg bg-(--form-input-bg)"
+                              type="tel"
+                              name="mobile"
+                              value={editFormData.mobile}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-2 border border-(--form-input-border)
+                                          rounded-lg bg-(--form-input-bg)"
                            />
                         ) : (
                            <div className="flex items-center gap-2">
-                           <p className="font-medium text-(--text-primary)">
-                              {profile.mobile || 'Not provided'}
-                           </p>
-                           {profile.isMobileVerified && (
-                              <CheckCircle className="text-(--status-success)" size={14} />
-                           )}
+                              <p className="font-medium text-(--text-primary)">
+                                 {profile.mobile || 'Not provided'}
+                              </p>
+                              {profile.isMobileVerified && (
+                                 <CheckCircle className="text-(--status-success)" size={14} />
+                              )}
                            </div>
                         )}
                      </div>
@@ -381,6 +386,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                                  setEditFormData({
                                     name: profile.name || '',
                                     mobile: profile.mobile || '',
+                                    email: profile.email || ''
                                  });
                               }}
                               className="px-5 py-2 border border-(--card-border)

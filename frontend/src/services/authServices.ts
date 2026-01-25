@@ -6,17 +6,6 @@ import type { AxiosError } from "axios";
 
 
 
-// interface AuthFormData {
-//   name?: string;
-//   email: string;
-//   mobile?: string;
-//   password: string;
-//   confirmPassword?: string;
-//   agreeTerms?: boolean;
-// }
-
-
-
 export const authService = {
 
     registerService: async (data: RegisterPayload): Promise<RegisterResponse> => {
@@ -86,7 +75,7 @@ export const authService = {
 
 
     // only for email verification (when changing email or if not already verified)
-    requestAuthenticateEmail: async (email: string) => {
+    requestAuthenticateEmail: async ({ email }: { email: string }) => {
         try {
             const response = await axiosInstance.post("/api/auth/authenticate-email", { email }, { withCredentials: true });
             return response.data;

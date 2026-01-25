@@ -187,7 +187,7 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
-         toast.error(errorMessage);
+         if (errorMessage) toast.error(errorMessage);
 
       } finally {
          setLoading(false);

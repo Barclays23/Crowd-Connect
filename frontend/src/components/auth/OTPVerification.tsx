@@ -102,8 +102,7 @@ export function OTPVerification() {
       toast.success(response.message || "OTP resent successfully");
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error)
-
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
       setServerError(errorMessage);
 
       if (errorMessage.toLowerCase().includes("expired")) {
@@ -140,8 +139,8 @@ export function OTPVerification() {
       // Most common pattern after verification → dashboard/home
       navigate(successPath || "/", { replace: true });
     } catch (error: unknown) {
-      const errorMessage = getApiErrorMessage(error) || "OTP verification failed. Please try again.";
-      toast.error(errorMessage);
+      const errorMessage = getApiErrorMessage(error);
+      if (errorMessage) toast.error(errorMessage);
       setServerError(errorMessage);
 
       if (errorMessage.toLowerCase().includes("session expired")) {

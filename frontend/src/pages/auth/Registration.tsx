@@ -39,7 +39,7 @@ function Registration() {
     } catch (err: unknown) {
       console.error("Error in handleRegistration:", err);
       const errorMessage = getApiErrorMessage(err);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
 
     } finally {
       setIsLoading(false);

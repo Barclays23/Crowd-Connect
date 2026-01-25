@@ -34,7 +34,7 @@ const HostPage = () => {
          } catch (error) {
             console.error('Failed to fetch user profile:', error);
             const errorMessage = getApiErrorMessage(error);
-            toast.error(errorMessage);
+            if (errorMessage) toast.error(errorMessage);
 
          } finally {
             setIsLoading(false);

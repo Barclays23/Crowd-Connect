@@ -60,7 +60,7 @@ export function Navbar() {
       } catch (error: unknown) {
          console.error("Error in handleLogout:", error);
          const errorMessage = getApiErrorMessage(error);
-         toast.error(errorMessage);
+         if (errorMessage) toast.error(errorMessage);
       }
    }
    

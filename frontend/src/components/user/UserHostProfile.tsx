@@ -42,7 +42,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
          setEditingField(null);
          toast.success('Host details updated successfully!');
       } catch (err) {
-         toast.error(getApiErrorMessage(err));
+         const errorMessage = getApiErrorMessage(err);
+         if (errorMessage) toast.error(errorMessage);
       } finally {
          setIsUpdatingHostDetails(false);
       }

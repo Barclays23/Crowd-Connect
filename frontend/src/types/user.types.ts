@@ -16,6 +16,7 @@ export interface UserState {
   role: UserRole;
   status: UserStatus;
   isEmailVerified: boolean;
+  isMobileVerified: boolean;
   isSuperAdmin?: boolean;
 
   organizationName?: string | null;

@@ -114,9 +114,9 @@ export function HostsList() {
 
     } catch (err: unknown) {
       console.error("Failed to fetch hosts:", err);
-      const errorMessage = getApiErrorMessage(err) || 'Failed to fetch hosts. Please try again later.';
+      const errorMessage = getApiErrorMessage(err);
+      if (errorMessage) toast.error(errorMessage);
       setError(errorMessage);
-      toast.error(errorMessage);
 
     } finally {
       setLoading(false);
@@ -173,8 +173,8 @@ export function HostsList() {
 
       fetchHosts(); // refresh anyway
     } catch (err: unknown) {
-      const errorMessage = getApiErrorMessage(err) || `Failed to ${action} host`;
-      toast.error(errorMessage);
+      const errorMessage = getApiErrorMessage(err);
+      if (errorMessage) toast.error(errorMessage);
     }
   };
 

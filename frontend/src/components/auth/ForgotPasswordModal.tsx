@@ -58,8 +58,8 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
 
     } catch (error: unknown) {
       console.error('Error in ForgotPasswordModal onSubmit:', error);
-      const errorMessage = getApiErrorMessage(error) || 'Failed to send reset email. Please try again later.'
-      toast.error(errorMessage)
+      const errorMessage = getApiErrorMessage(error);
+      if (errorMessage) toast.error(errorMessage);
       setSubmitState('error')
 
     } finally {

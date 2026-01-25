@@ -4,6 +4,12 @@ const isDevMode = import.meta.env.DEV;
 
 
 export function getApiErrorMessage(error: unknown): string {
+
+   // prevent showing double session expired message (it is already showing from axios intercepter)
+   if (isUnauthorizedError(error)) {
+      return ""; 
+   }
+
    // const defaultMessage = "Something went wrong. Please try again.";
    const defaultMessage = "We’re having trouble on our side. Please try again shortly.";
 
@@ -26,7 +32,7 @@ export function getApiErrorMessage(error: unknown): string {
             : "Cannot reach the server right now.";
       }
 
-      // 3️⃣ Backend JSON error
+      // 3️⃣ Backend JSON error (need an updation in this block.
       else if (error.response?.data?.message) {
          userMessage = error.response.data.message;
       }
@@ -52,8 +58,8 @@ export function getApiErrorMessage(error: unknown): string {
 
 
 export function isUnauthorizedError(error: unknown): boolean {
-  return (
-    error instanceof AxiosError &&
-    error.response?.status === 401
-  );
+   return (
+      error instanceof AxiosError &&
+      error.response?.status === 401
+   );
 }

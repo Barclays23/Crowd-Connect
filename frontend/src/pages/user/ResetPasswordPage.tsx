@@ -43,9 +43,9 @@ export default function ResetPasswordPage() {
          }
          } catch (error) {
          if (isMounted) {
-            const msg = getApiErrorMessage(error)
-            setErrorMessage(msg)
-            toast.error(msg)
+            const errorMessage = getApiErrorMessage(error)
+            if (errorMessage) toast.error(errorMessage);
+            setErrorMessage(errorMessage)
          }
          } finally {
          if (isMounted) setIsValidating(false)

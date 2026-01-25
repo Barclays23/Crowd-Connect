@@ -106,7 +106,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          const errorMessage = getApiErrorMessage(error);
          console.error("Host upgrade submission error:", error);
          setSubmitError(errorMessage);
-         toast.error(errorMessage);
+         if (errorMessage) toast.error(errorMessage);
       } finally {
          setIsSubmitting(false);
       }

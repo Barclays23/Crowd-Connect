@@ -1,6 +1,7 @@
 // backend/src/utils/jwt.utils.ts
 
-import jwt from "jsonwebtoken"; // safer import when using TypeScript
+import jwt from "jsonwebtoken";
+const { JsonWebTokenError, TokenExpiredError } = jwt;
 import crypto from "crypto";
 import 'dotenv/config';
 import { createHttpError } from "./httpError.utils.js";
@@ -23,9 +24,9 @@ interface RefreshTokenPayload extends jwt.JwtPayload {
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
-const ACCESS_TOKEN_EXPIRY = "5m";  // 5 minutes
+const ACCESS_TOKEN_EXPIRY = "15m";  // 5 minutes
 // const REFRESH_TOKEN_EXPIRY = "7d";  // 7 days  (also check in refreshCookie.utils.ts)
-const REFRESH_TOKEN_EXPIRY = "30m";  // 30 minutes (also check in refreshCookie.utils.ts)
+const REFRESH_TOKEN_EXPIRY = "2h";  // 30 minutes (also check in refreshCookie.utils.ts)
 
 // tell TS these are the types jsonwebtoken expects
 // const ACCESS_SECRET: jwt.Secret = ACCESS_TOKEN_SECRET;
@@ -75,22 +76,37 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     // console.log('Decoded refreshToken payload in verifyRefreshToken:', decoded);
     return decoded;
 
-  } catch (err) {
+  } catch (err: unknown) {
     console.log('refresh token is expired in jwt (but, may be valid in cookie).');
     console.error('Refresh token verification failed:', err);
 
-    // Differentiate between expired and other errors
-    if (typeof err === "object" && err !== null && "name" in err && (err as any).name === 'TokenExpiredError') {
-      throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.LOGIN_AGAIN}`);
+    // 🔒 Token expired
+    if (err instanceof TokenExpiredError) {
+      throw createHttpError(
+        HttpStatus.UNAUTHORIZED,
+        `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.LOGIN_AGAIN}`
+      );
       // message: "Your session has expired. Please log in again to continue."
       // throwing message to auth.services ➜ auth.controller ➜ axios intercepter
     }
 
-    // other errors rather than expiration (eg: null/undefined refreshToken attached, invalid signature, malformed token).
+
+    // 🔒 Invalid / malformed / signature error
+    if (err instanceof JsonWebTokenError) {
+      throw createHttpError(
+        HttpStatus.UNAUTHORIZED,
+        `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`
+      );
+      // message: "Your session has ended. Please log in again to continue."
+      // throwing message to auth.services ➜ auth.controller ➜ axios intercepter
+    }
+
+    // 🔒 Truly unknown error (very rare)
+    throw createHttpError(
+      HttpStatus.UNAUTHORIZED,
+      `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`
+    );
     // message: "Your session has ended. Please log in again to continue."
-    throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
-    // throwing message to auth.services ➜ auth.controller ➜ axios intercepter
-    // throw new Error("Invalid or expired refresh token");
   }
 }
 

@@ -88,7 +88,7 @@ const EmailVerification = () => {
       
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
       setServerError(errorMessage);
     } finally {
       setIsSendingOtp(false);
@@ -122,7 +122,7 @@ const EmailVerification = () => {
       
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
-      toast.error(errorMessage);
+      if (errorMessage) toast.error(errorMessage);
       setServerError(errorMessage);
     }
   };
