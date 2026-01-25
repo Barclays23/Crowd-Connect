@@ -105,7 +105,7 @@ export function UsersList() {
       const response = await userServices.getAllUsers(params.toString());
       console.log('response in fetchUsers: ', response);
 
-      const data: ApiResponse = response.data || response;
+      const responseData: ApiResponse = response.data || response;
 
       setUsers(response.usersData);
       setTotalUsers(response.pagination.total);
@@ -113,12 +113,9 @@ export function UsersList() {
 
     } catch (err: unknown) {
       console.error("Failed to fetch users:", err);
-
-      if (!isUnauthorizedError(err)) {
-        const errorMessage = getApiErrorMessage(err);
-        if (errorMessage) toast.error(errorMessage);
-        setError(errorMessage);
-      }
+      const errorMessage = getApiErrorMessage(err);
+      if (errorMessage) toast.error(errorMessage);
+      setError(errorMessage);
 
     } finally {
       setLoading(false);
@@ -133,7 +130,7 @@ export function UsersList() {
     }
 
     fetchUsers();
-  }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
+  }, [fetchUsers]);
 
   // Reset selection when page/filter changes
   useEffect(() => {

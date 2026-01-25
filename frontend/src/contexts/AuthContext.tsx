@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         let isMounted = true;
 
         const validateSession = async () => {
-            if (!accessToken || !user) {
+            if (!accessToken) {
                 setIsLoading(false);
                 return;
             }
@@ -148,8 +148,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const response = await authService.getAuthUser();
                 console.log('✅ response in validateSession:', response);
             
-                if (isMounted) {
-                    setUser(response.authUser || user);
+                if (isMounted && response.authUser) {
+                    setUser(response.authUser);
                     // setAccessToken(newAccessToken); // it is already setting in axios incepter (when token refreshes)
                 }
             

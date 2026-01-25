@@ -160,7 +160,8 @@ axiosInstance.interceptors.response.use(
             localStorage.setItem("accessToken", newAccessToken);
             // console.log('localStorage accessToken after:', localStorage.getItem("accessToken"));
 
-            console.log(`Token refreshed successfully → retrying original request: ${originalRequest?.url}`);
+            console.log('refreshTokenService response message:', message);
+            console.log(`→ retrying original request: ${originalRequest?.url}`);
             
             // Retry all queued requests with the new token
             processQueue(null, newAccessToken);

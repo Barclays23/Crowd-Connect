@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/AdminDashboard.tsx
 import { AdminLayout } from "@/components/layouts/AdminLayout"
-import { UsersList } from "@/components/admin/users-list"
 import AdminBanner from "@/components/admin/admin-banner"
+// import { UsersList } from "@/components/admin/users-list"
 // import { CategoriesList } from "@/components/categories-list"
 // import { HostSlabsList } from "@/components/host-slabs-list"
 // import { EventsList } from "@/components/events-list"
