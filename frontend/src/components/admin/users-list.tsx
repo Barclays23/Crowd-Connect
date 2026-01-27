@@ -26,7 +26,7 @@ import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import type { UserState, UserUpsertResult } from "@/types/user.types";
 import { HostManageForm } from "./host-manage-form";
-import { getApiErrorMessage, isUnauthorizedError } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
 import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";

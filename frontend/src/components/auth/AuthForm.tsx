@@ -285,8 +285,9 @@ export function AuthForm(props: AuthFormProps) {
           </Button>
         </form>
 
+  {/* Temporarily disabled. It will enable later */}
         {/* Divider */}
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator className="w-full bg-auth-divider" />
           </div>
@@ -295,10 +296,11 @@ export function AuthForm(props: AuthFormProps) {
               Or continue with
             </span>
           </div>
-        </div>
+        </div> */}
 
+  {/* Temporarily disabled. It will enable later */}
         {/* Google Login */}
-        <Button
+        {/* <Button
           variant="outline"
           className="w-full h-11 border-auth-input hover:bg-primary-light font-medium"
           onClick={() => console.log("Continue with Google")}
@@ -322,7 +324,7 @@ export function AuthForm(props: AuthFormProps) {
             />
           </svg>
           Continue with Google
-        </Button>
+        </Button> */}
 
         {/* Toggle Link */}
         <div className="text-center text-sm text-auth-text-muted">
