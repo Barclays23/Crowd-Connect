@@ -15,6 +15,7 @@ import {
 import { IAuthRegistrationService } from "../../services/auth-services/auth-interfaces/IAuthRegistration.js";
 import { IAuthSessionService } from "../../services/auth-services/auth-interfaces/IAuthSession.js";
 import { IAuthRecoveryService } from "../../services/auth-services/auth-interfaces/IAuthRecovery.js";
+import winstonLogger from "../../config/logger.js";
 
 
 
@@ -33,9 +34,16 @@ export class AuthController implements IAuthController {
         try {
             // console.log('email and password in authController.signIn:', req.body);
             const signInDto: SignInRequestDto = req.body;
+            winstonLogger.info("Auth sign-in request received", {
+                email: signInDto.email,
+            });
 
             const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
             // console.log('user in authController.signIn:', safeUser);
+            winstonLogger.info("User signed in successfully", {
+                userId: safeUser.userId,
+                role: safeUser.role,
+            });
 
             setRefreshTokenCookie(res, refreshToken);
 
@@ -50,7 +58,9 @@ export class AuthController implements IAuthController {
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in AuthController.signIn:', msg);
+            winstonLogger.error("Error in AuthController.signIn", {
+                error: msg,
+            });
             next(err);
         };
     }

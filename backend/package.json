@@ -25,6 +25,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
     "redis": "^5.10.0",
+    "winston": "^3.19.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -47,5 +48,3 @@
     "typescript": "^5.9.3"
   }
 }
-
-

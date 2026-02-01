@@ -36,3 +36,20 @@ export function formatDate2(date: string | Date): string {
 
    return `${day}-${month}-${year}`;
 }
+
+
+
+
+
+
+export const parseDDMMYYYY = (date: string, time: string) => {
+   const [yyyy, mm, dd] = date.split("-");
+   
+   return new Date(
+      Number(yyyy),
+      Number(mm) - 1,
+      Number(dd),
+      Number(time.split(":")[0]),
+      Number(time.split(":")[1])
+   );
+};

@@ -60,6 +60,7 @@ export function getApiErrorMessage(error: unknown): string {
 export function isUnauthorizedError(error: unknown): boolean {
    return (
       error instanceof AxiosError &&
-      error.response?.status === 401
+      error.response?.status === 401 &&
+      error.response?.data?.code === "SESSION_EXPIRED"
    );
 }

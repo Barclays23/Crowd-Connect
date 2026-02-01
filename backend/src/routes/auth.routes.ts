@@ -46,6 +46,7 @@ const authController = new AuthController(
 const authRouter = Router();
 
 
+
 authRouter.post(AUTH_ROUTES.LOGIN, validateRequest({body: LoginSchema}), authController.signIn.bind(authController));
 authRouter.post(AUTH_ROUTES.REGISTER, validateRequest({body: RegisterSchema}), authController.signUp.bind(authController));
 

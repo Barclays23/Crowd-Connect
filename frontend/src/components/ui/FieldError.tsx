@@ -12,7 +12,7 @@ export function FieldError({ message, className }: FieldErrorProps) {
   return (
     <p
       className={cn(
-        "mt-1 text-sm text-destructive text-red-400", // Tailwind red colour (or your own)
+        "mt-1 text-xs text-destructive text-red-400", // Tailwind red colour (or your own)
         className
       )}
     >

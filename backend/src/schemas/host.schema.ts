@@ -19,10 +19,26 @@ export const organizationNameBase = z
    .min(1, "Organization name is required")
    .min(5, "Organization name must be at least 5 characters long")
    .max(50, "Organization name cannot exceed 50 characters")
+   // prevent symbol spam at the start
+   .refine(
+      (value) => !/^[^A-Za-z0-9]{3,}/.test(value), "Organization name cannot start with excessive special characters",
+   )
    .regex(
       /^[A-Za-z0-9\s&.,'\-()]+$/,
       "Organization name can contain only letters, numbers, spaces, and basic punctuation (&.,'-)"
-   );
+   )
+   .regex(
+      /\b[A-Za-z]{3,}\b/,
+      "Organization name must contain meaningful words"
+   )
+   // limit special characters
+   .refine((value) => {
+      const total = value.length;
+      const specialCount = (value.match(/[^A-Za-z0-9\s.,'()-]/g) || []).length;
+      return specialCount / total <= 0.3; // 30%
+   }, {
+      message: "Organization name contains too many special characters"
+   });
 
 
 
