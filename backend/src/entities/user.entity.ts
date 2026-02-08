@@ -1,6 +1,6 @@
 // // backend/src/entities/user.entity.ts
 
-import { UserRole, UserStatus, HostStatus } from "../constants/roles-and-statuses.js";
+import { UserRole, UserStatus, HostStatus } from "@/constants/roles-and-statuses";
 
 
 

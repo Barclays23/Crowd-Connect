@@ -1,12 +1,12 @@
 // backend/src/services/user/interfaces/IUserManagementService.ts
 
-import { GetUsersFilter, GetUsersResult } from "../../../types/user.types.js";
+import { GetUsersFilter, GetUsersResult } from "@/types/user.types";
 import { 
     CreateUserRequestDto,
     UpdateUserRequestDto,
     UserProfileResponseDto, 
-} from "../../../dtos/user.dto.js";
-import { UserStatus } from "../../../constants/roles-and-statuses.js";
+} from "@/dtos/user.dto";
+import { UserStatus } from "@/constants/roles-and-statuses";
 
 
 

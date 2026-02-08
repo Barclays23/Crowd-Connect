@@ -14,7 +14,7 @@ import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1'
 
 import { authService } from '@/services/authServices'
 import { toast } from 'react-toastify'
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { getApiErrorMessage } from '@/utils/errorMessages.utils'
 
 import { ResetPasswordSchema } from '@/schemas/auth.schema'
 

@@ -13,7 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
 type OtpFormData = z.infer<typeof OtpSchema>;
 

@@ -21,7 +21,7 @@ import { Button } from "../ui/button";
 import { FieldError } from "../ui/FieldError";
 import { TextArea } from "../ui/text-area";
 import { toast } from "react-toastify";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { hostServices } from "@/services/hostServices";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";

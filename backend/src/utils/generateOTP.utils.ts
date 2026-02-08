@@ -1,4 +1,4 @@
-// utils/generateOTP.util.js
+// utils/generateOTP.util.ts
 export const generateOTP = (length = 6, expiryMinutes = 5) => {
   // generate numeric OTP of specified length (leading zeros allowed)
   const min = Math.pow(10, length - 1);

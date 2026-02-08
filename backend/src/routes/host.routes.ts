@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { UserRepository } from "../repositories/implementations/user.repository.js";
-import { HostController } from "../controllers/implementations/host.controller.js";
-import { uploadDocument, uploadImage } from "../middlewares/file-upload.middleware.js";
-import { authenticate, authorize } from "../middlewares/auth.middleware.js";
-import { validateRequest } from "../middlewares/validate.middleware.js";
-import { HostUpgradeSchema } from "../schemas/host.schema.js";
-import { HostManagementServices } from "../services/host-services/host-implementations/HostManagement.service.js";
-import { HOST_ROUTES } from "../constants/routes.constants.js";
-import { UserRole } from "../constants/roles-and-statuses.js";
+import { UserRepository } from "@/repositories/implementations/user.repository";
+import { HostController } from "@/controllers/implementations/host.controller";
+import { uploadDocument, uploadImage } from "@/middlewares/file-upload.middleware";
+import { authenticate, authorize } from "@/middlewares/auth.middleware";
+import { validateRequest } from "@/middlewares/validate.middleware";
+import { HostUpgradeSchema } from "@/schemas/host.schema";
+import { HostManagementServices } from "@/services/host-services/implementations/HostManagement.service";
+import { HOST_ROUTES } from "@/constants/routes.constants";
+import { UserRole } from "@/constants/roles-and-statuses";
 
 
 

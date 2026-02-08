@@ -1,7 +1,7 @@
 // backend/src/repositories/implementations/user.repository.ts
-import User, { IUser, IUserModel } from "../../models/implementations/user.model.js";
-import { BaseRepository } from "../base.repository.js";
-import { IUserRepository } from "../interfaces/IUserRepository.js";
+import User, { IUserModel } from "@/models/implementations/user.model";
+import { BaseRepository } from "../base.repository";
+import { IUserRepository } from "../interfaces/IUserRepository";
 import { 
     SignUpUserInput, 
     CreateUserInput, 
@@ -15,19 +15,23 @@ import {
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput, 
-} from "../../entities/user.entity.js";
+} from "@/entities/user.entity";
 
 import { 
     mapUserModelToUserEntity, 
     mapUserModelToSensitiveUserEntity, 
     mapUserModelToHostEntity,
     mapUserModelToProfileEntity
-} from "../../mappers/user.mapper.js";
-import { UserStatus } from "../../constants/roles-and-statuses.js";
-import { UpdateEmailDto } from "src/dtos/auth.dto.js";
+} from "@/mappers/user.mapper";
+import { UserStatus } from "@/constants/roles-and-statuses";
+import { UpdateEmailDto } from "@/dtos/auth.dto";
 
 
-import { UserFilterQuery } from '../../types/user.types.js';
+import { UserFilterQuery } from '@/types/user.types';
+
+
+
+
 
 
 export class UserRepository extends BaseRepository<IUserModel> implements IUserRepository {
@@ -49,6 +53,8 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             throw new Error("Error Finding User");
         }
     }
+
+
 
 
     async getUserByMobile(mobile: string): Promise<UserEntity | null> {
@@ -183,9 +189,9 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
     
-    async createUserByAdmin(userEntity: CreateUserInput): Promise<UserEntity> {
+    async createUserByAdmin(userInput: CreateUserInput): Promise<UserEntity> {
         try {
-            const userData: IUserModel = await this.createOne(userEntity);
+            const userData: IUserModel = await this.createOne(userInput);
             const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
             return resultEntity;
 
@@ -334,6 +340,8 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
             throw error;
         }
     }
+
+    
 
     
 }

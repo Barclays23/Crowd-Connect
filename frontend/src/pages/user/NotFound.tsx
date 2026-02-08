@@ -1,5 +1,6 @@
-import React from 'react';
 import { Link } from 'react-router-dom'; // Adjust if using Next.js or another router
+
+
 
 export default function NotFound() {
   return (

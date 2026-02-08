@@ -26,6 +26,7 @@ export interface UserState {
   hostAppliedAt?: string | null;
   hostStatus?: HostStatus;
   hostRejectionReason?: string;
+  reviewedAt?: string;
 
   createdAt: string;
 }

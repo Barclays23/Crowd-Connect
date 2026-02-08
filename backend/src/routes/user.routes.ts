@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { UserController } from "../controllers/implementations/user.controller.js";
-import { UserRepository } from "../repositories/implementations/user.repository.js";
-import { authenticate, authorize } from "../middlewares/auth.middleware.js";
-import { uploadImage } from "../middlewares/file-upload.middleware.js";
-import { UserProfileService } from "../services/user-services/user-implementations/userProfile.service.js";
-import { UserManagementService } from "../services/user-services/user-implementations/userManagement.service.js";
-import { USER_ROUTES } from "../constants/routes.constants.js";
-import { UserRole } from "src/constants/roles-and-statuses.js";
+import { UserController } from "@/controllers/implementations/user.controller";
+import { UserRepository } from "@/repositories/implementations/user.repository";
+import { authenticate, authorize } from "@/middlewares/auth.middleware";
+import { uploadImage } from "@/middlewares/file-upload.middleware";
+import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
+import { UserManagementService } from "@/services/user-services/implementations/userManagement.service";
+import { USER_ROUTES } from "@/constants/routes.constants";
+import { UserRole } from "@/constants/roles-and-statuses";
 
 
 

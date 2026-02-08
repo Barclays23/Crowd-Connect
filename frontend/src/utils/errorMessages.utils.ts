@@ -1,5 +1,6 @@
-// src/utils/getApiErrorMessage.ts
+// src/utils/errorMessages.utils.ts
 import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 const isDevMode = import.meta.env.DEV;
 
 
@@ -64,3 +65,50 @@ export function isUnauthorizedError(error: unknown): boolean {
       error.response?.data?.code === "SESSION_EXPIRED"
    );
 }
+
+
+
+
+// types/apiError.types.ts
+export type ServerZodError<TFields extends string = string> = {
+   field: TFields;
+   message: string;
+};
+
+export type ApiErrorResponse<TFields extends string = string> = {
+   details?: ServerZodError<TFields>[];
+};
+
+
+export type ApiError = {
+   response?: {
+      data?: ApiErrorResponse;
+   };
+};
+
+
+
+
+
+// utils/applyServerZodErrors.ts
+import { type UseFormSetError, type FieldValues, type Path } from "react-hook-form";
+
+
+export const setServerZodErrors = <T extends FieldValues>(
+   error: unknown,
+   setError: UseFormSetError<T>
+) => {
+   const apiError = error as ApiError;
+   const errors = apiError.response?.data?.details;
+
+   if (!errors?.length) return;
+
+   errors.forEach(({ field, message }) => {
+      if (typeof field !== "string") return;
+
+      setError(field as Path<T>, {
+         type: "server",
+         message,
+      });
+   });
+};

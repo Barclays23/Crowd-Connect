@@ -74,11 +74,13 @@ export enum HttpResponse {
     SUCCESS_GET_USERS = "Users fetched successfully.",
     SUCCESS_GET_HOSTS = "Hosts fetched successfully.",
     SUCCESS_CREATE_USER = "User account created.",
+    SUCCESS_CREATE_EVENT = "Event created successfully. Publish to make it live.",
     SUCCESS_UPDATE_USER = "User details updated.",
     SUCCESS_UPDATE_PROFILE = "Profile updated successfully.",
     SUCCESS_DELETE_USER = "User has been deleted.",
     SUCCESS_BLOCK_USER = "User has been blocked.",
     SUCCESS_UNBLOCK_USER = "User has been unblocked.",
+
     
     FAILED_GET_USERS = "Failed to fetch users.",
     FAILED_UPDATE_USER = "Failed to update user.",
@@ -86,6 +88,7 @@ export enum HttpResponse {
     FAILED_DELETE_USER = "Failed to delete user.",
     FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
     FAILED_CREATE_USER = "Failed to create user.",
+    FAILED_CREATE_EVENT = "Oops! We couldn’t create your event.",
 
     FAILED_GET_HOSTS = "Failed to fetch hosts.",
     CANNOT_CHANGE_VERIFIED_EMAIL = "Verified email address cannot be changed.",

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import { toast } from 'react-toastify';
 import { authService } from '@/services/authServices';
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 
 
 

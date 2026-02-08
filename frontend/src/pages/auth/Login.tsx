@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { LoginPayload } from '@/types/auth.types';
 
 

@@ -2,12 +2,18 @@
 import { ZodIssue } from 'zod';
 
 
+export interface ZodFormError {
+  field: string;
+  message: string;
+}
+
 // Returns only the error messages (no field names)
-export const formatZodErrorMessages = (issues: ZodIssue[]): string[] => {
-  return issues.map((issue) => {   
-    const msg = issue.message;
-    const formattedZodMessages = msg.charAt(0).toUpperCase() + msg.slice(1);
-    console.log('formattedZodMessages :', formattedZodMessages);
-    return formattedZodMessages;
-  });
+export const formatZodErrorMessages = (issues: ZodIssue[]): ZodFormError[] => {
+  const zodValidationErrors = issues.map((issue) => ({
+    field: issue.path.join('.'),
+    message: issue.message,
+  }));
+  
+  console.log('zodValidationErrors :', zodValidationErrors);
+  return zodValidationErrors;
 };

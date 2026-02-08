@@ -14,7 +14,7 @@ import { toast } from 'react-toastify'
 import { emailBase } from '@/schemas/auth.schema'
 import { FieldError } from '../ui/FieldError'
 import { SuccessCheckIcon } from '../ui/success-check-icon'
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { getApiErrorMessage } from '@/utils/errorMessages.utils'
 import { LoadingSpinner1 } from '../common/LoadingSpinner1'
 
 

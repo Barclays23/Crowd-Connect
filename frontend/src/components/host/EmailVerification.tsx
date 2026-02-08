@@ -3,7 +3,7 @@ import { Mail, CheckCircle, ArrowRight, RefreshCw } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/authServices";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { Button } from "@/components/ui/button";
 import { OtpInput } from "@/components/ui/otp-input";
 import { cn } from "@/lib/utils";

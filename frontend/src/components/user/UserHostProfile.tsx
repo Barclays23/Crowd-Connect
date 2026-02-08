@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { userServices } from '@/services/userServices';
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { UserState } from '@/types/user.types';
 import DetailItem from '../ui/detail-item';
 import { capitalize } from '@/utils/namingConventions';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
+import { hostServices } from '@/services/hostServices';
 
 
 
@@ -37,7 +38,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
          registrationNumber: editFormData.registrationNumber.trim() || null,
          businessAddress: editFormData.businessAddress.trim() || null,
          };
-         await userServices.updateHostDetails(updateData);
+         // await hostServices.updateHostDetails(updateData);  // or 
+         await hostServices.updateHostDetailsByHost(updateData);
          setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
          setEditingField(null);
          toast.success('Host details updated successfully!');
@@ -170,8 +172,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                   )}
                   {profile.reviewedAt && (
                      <DetailItem
-                     label="Reviewed On"
-                     value={formatDate1(profile.reviewedAt)}
+                        label="Reviewed On"
+                        value={formatDate1(profile.reviewedAt)}
                      />
                   )}
                </div>

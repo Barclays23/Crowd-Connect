@@ -1,18 +1,18 @@
 // src/services/user/implementations/UserManagement.service.ts
 
-import { GetUsersFilter, GetUsersResult, UserFilterQuery } from "../../../types/user.types.js";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { IUserManagementService } from "../user-interfaces/IUserManagementService.js";
-import { CreateUserInput, UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
-import { CreateUserRequestDto, UpdateUserRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto.js";
-import { mapCreateUserRequestDtoToInput, mapUpdateUserRequestDtoToInput, mapUserEntityToProfileDto } from "../../../mappers/user.mapper.js";
-import { createHttpError } from "../../../utils/httpError.utils.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { UserRole, UserStatus } from "../../../constants/roles-and-statuses.js";
-import { generateRandomPassword } from "../../../utils/password-generator.utils.js";
-import { hashPassword } from "../../../utils/bcrypt.utils.js";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
+import { GetUsersFilter, GetUsersResult, UserFilterQuery } from "@/types/user.types";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { IUserManagementService } from "../interfaces/IUserManagementService";
+import { CreateUserInput, UpdateUserInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { CreateUserRequestDto, UpdateUserRequestDto, UserProfileResponseDto } from "@/dtos/user.dto";
+import { mapCreateUserRequestDtoToInput, mapUpdateUserRequestDtoToInput, mapUserEntityToProfileDto } from "@/mappers/user.mapper";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { generateRandomPassword } from "@/utils/password-generator.utils";
+import { hashPassword } from "@/utils/bcrypt.utils";
+import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
 
 
 
@@ -112,9 +112,9 @@ export class UserManagementService implements IUserManagementService {
             }
 
             createDto.status = UserStatus.PENDING;  // status will be changed to ACTIVE once the user is logged in
-            const userEntity: CreateUserInput = mapCreateUserRequestDtoToInput({createDto, profilePicUrl, hashedPassword});
+            const userInput: CreateUserInput = mapCreateUserRequestDtoToInput({createDto, profilePicUrl, hashedPassword});
 
-            const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userEntity);
+            const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userInput);
             if (!createdUserResult) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_USER);
             }

@@ -72,19 +72,19 @@ export const businessAddressBase = z
 
 
 
-export const hostDocumentBase = z
-   .instanceof(File, {
-      message: "Business document/certificate is required",
-   })
-   // .optional()
-   .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
-   )
-   .refine(
-      (file) => !file || ALLOWED_FILE_TYPES.includes(file.type),
-      "Certificate must be a PDF, JPG, or PNG file"
-   );
+// export const hostDocumentBase = z
+//    .instanceof(File, {
+//       message: "Business document/certificate is required",
+//    })
+//    // .optional()
+//    .refine(
+//       (file) => !file || file.size <= MAX_FILE_SIZE,
+//       `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+//    )
+//    .refine(
+//       (file) => !file || ALLOWED_FILE_TYPES.includes(file.type),
+//       "Certificate must be a PDF, JPG, or PNG file"
+//    );
 
 
 
@@ -137,5 +137,5 @@ export const HostUpgradeSchema = z.object({
 
 
 
-export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;  // for role upgrading & converting role
-export type HostManageFormData = z.infer<typeof HostManageSchema>; // for approving or rejecting host
+// export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;  // for role upgrading & converting role
+// export type HostManageFormData = z.infer<typeof HostManageSchema>; // for approving or rejecting host

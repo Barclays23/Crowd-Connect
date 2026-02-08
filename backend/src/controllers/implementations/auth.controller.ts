@@ -1,21 +1,21 @@
 // src/controllers/implementations/auth.controller.ts
 
 import {Request, Response, NextFunction} from "express";
-import {IAuthController} from "../interfaces/IAuthController.js";
-import { HttpStatus } from "../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../constants/responseMessages.constants.js";
-import { createHttpError } from "../../utils/httpError.utils.js";
-import { clearRefreshTokenCookie, setRefreshTokenCookie } from "../../utils/refreshCookie.utils.js";
+import {IAuthController} from "../interfaces/IAuthController";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { createHttpError } from "@/utils/httpError.utils";
+import { clearRefreshTokenCookie, setRefreshTokenCookie } from "@/utils/refreshCookie.utils";
 import { 
     AuthResponseDto, 
     AuthUserResponseDto, 
     ResetPasswordDto, 
     SignInRequestDto 
-} from "../../dtos/auth.dto.js";
-import { IAuthRegistrationService } from "../../services/auth-services/auth-interfaces/IAuthRegistration.js";
-import { IAuthSessionService } from "../../services/auth-services/auth-interfaces/IAuthSession.js";
-import { IAuthRecoveryService } from "../../services/auth-services/auth-interfaces/IAuthRecovery.js";
-import winstonLogger from "../../config/logger.js";
+} from "@/dtos/auth.dto";
+import { IAuthRegistrationService } from "@/services/auth-services/interfaces/IAuthRegistration";
+import { IAuthSessionService } from "@/services/auth-services/interfaces/IAuthSession";
+import { IAuthRecoveryService } from "@/services/auth-services/interfaces/IAuthRecovery";
+import winstonLogger from "@/config/logger";
 
 
 

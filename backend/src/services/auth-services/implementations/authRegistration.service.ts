@@ -1,20 +1,20 @@
-// src/services/auth/implementations/authRegistrationService.ts
+// src/services/auth-services/implementations/authRegistration.service.ts
 
-import { AuthUserResponseDto, SignUpRequestDto } from "../../../dtos/auth.dto.js";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { IAuthRegistrationService } from "../auth-interfaces/IAuthRegistration.js";
-import { SignUpUserInput, UserEntity } from "../../../entities/user.entity.js";
-import { createHttpError } from "../../../utils/httpError.utils.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { generateOTP } from "../../../utils/generateOTP.utils.js";
-import { renderTemplate } from "../../../utils/templateLoader2.js";
-import { sendEmail } from "../../../utils/email.utils.js";
-import { hashPassword } from "../../../utils/bcrypt.utils.js";
-import { REDIS_DATA_TTL_SECONDS, redisClient } from "../../../config/redis.config.js";
-import { AuthResult } from "../../../types/auth.types.js";
-import { mapSignUpRequestDtoToInput } from "../../../mappers/user.mapper.js";
-import { createAccessToken, createRefreshToken } from "../../../utils/jwt.utils.js";
+import { AuthUserResponseDto, SignUpRequestDto } from "@/dtos/auth.dto";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { IAuthRegistrationService } from "../interfaces/IAuthRegistration";
+import { SignUpUserInput, UserEntity } from "@/entities/user.entity";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { generateOTP } from "@/utils/generateOTP.utils";
+import { renderTemplate } from "@/utils/templateLoader2";
+import { sendEmail } from "@/utils/email.utils";
+import { hashPassword } from "@/utils/bcrypt.utils";
+import { REDIS_DATA_TTL_SECONDS, redisClient } from "@/config/redis.config";
+import { AuthResult } from "@/types/auth.types";
+import { mapSignUpRequestDtoToInput } from "@/mappers/user.mapper";
+import { createAccessToken, createRefreshToken } from "@/utils/jwt.utils";
 
 
 

@@ -39,6 +39,13 @@ export const HOST_ROUTES = {
 
 
 
+export const EVENT_ROUTES = {
+    CREATE_EVENT: '/create-event',
+} as const;
+
+
+
+
 export const ADMIN_ROUTES = {
     // User Management
     GET_USERS: '/users',

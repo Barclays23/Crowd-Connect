@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'react-toastify';
 import UserAvatar from "../ui/userAvatar";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { LogoutResponse } from "@/types/auth.types";
 
 

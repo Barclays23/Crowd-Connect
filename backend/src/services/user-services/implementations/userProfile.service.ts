@@ -3,23 +3,23 @@
 import { 
     UserProfileResponseDto,
     UserBasicInfoUpdateDTO, 
-} from "../../../dtos/user.dto.js";
+} from "@/dtos/user.dto";
 
-import { createHttpError } from "../../../utils/httpError.utils.js";
+import { createHttpError } from "@/utils/httpError.utils";
 
 import { 
     mapUpdateUserRequestDtoToInput, 
     mapUserEntityToProfileDto
-} from "../../../mappers/user.mapper.js";
+} from "@/mappers/user.mapper";
 
-import { UpdateUserInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { UserStatus } from "../../../constants/roles-and-statuses.js";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { IUserProfileService } from "../user-interfaces/IUserProfileService.js";
-import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "../../../config/aws-s3.config.js";
+import { UpdateUserInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { UserStatus } from "@/constants/roles-and-statuses";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { IUserProfileService } from "../interfaces/IUserProfileService";
+import { deleteFromS3, getS3PresignedUrl, uploadToS3 } from "@/config/aws-s3.config";
 
 
 

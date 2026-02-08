@@ -1,7 +1,7 @@
 // backend/src/middlewares/error.middleware.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { HttpError } from '../utils/httpError.utils.js';
+import { HttpError } from '@/utils/httpError.utils';
 
 
 
@@ -41,7 +41,7 @@ const isDatabaseError = (err: unknown): boolean => {
 
 
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
-   console.error('🔥 errorHandler error --------------------------:', err);
+   console.error('❌❌❌ errorHandler error --------------------------:', err);
 
    // Very important safety
    if (res.headersSent) {
@@ -72,7 +72,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
          : 'Internal Server Error';
    }
 
-   console.log('🔥 Final error message to send frontend: ', message);
+   console.log('🔥 Final errorHandler error message to send frontend: ', message);
 
    res.status(status).json({
       success: false,

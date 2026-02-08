@@ -42,9 +42,12 @@ export function formatDate2(date: string | Date): string {
 
 
 
-export const parseDDMMYYYY = (date: string, time: string) => {
+
+
+// expected parameter format: date = "YYYY-MM-DD", time = "HH:mm"
+export const parseISODateTime = (date: string, time: string) => {
    const [yyyy, mm, dd] = date.split("-");
-   
+
    return new Date(
       Number(yyyy),
       Number(mm) - 1,
@@ -52,4 +55,14 @@ export const parseDDMMYYYY = (date: string, time: string) => {
       Number(time.split(":")[0]),
       Number(time.split(":")[1])
    );
+};
+
+
+
+
+
+export const parseISODateTime2 = (date?: string, time?: string) => {
+  if (!date || !time) return new Date(NaN);
+
+  return new Date(`${date}T${time}:00`);
 };

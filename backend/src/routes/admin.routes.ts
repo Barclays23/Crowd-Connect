@@ -2,24 +2,24 @@
 
 import { Router } from 'express';
 
-import { authenticate, authorize } from '../middlewares/auth.middleware.js';
-import { uploadDocument, uploadImage } from '../middlewares/file-upload.middleware.js';
+import { authenticate, authorize } from '@/middlewares/auth.middleware';
+import { uploadDocument, uploadImage } from '@/middlewares/file-upload.middleware';
 
-import { UserRepository } from '../repositories/implementations/user.repository.js';
+import { UserRepository } from '@/repositories/implementations/user.repository';
 
-import { UserManagementService } from '../services/user-services/user-implementations/userManagement.service.js';
-import { UserProfileService } from '../services/user-services/user-implementations/userProfile.service.js';
-import { HostManagementServices } from '../services/host-services/host-implementations/HostManagement.service.js';
+import { UserManagementService } from '@/services/user-services/implementations/userManagement.service';
+import { UserProfileService } from '@/services/user-services/implementations/userProfile.service';
+import { HostManagementServices } from '@/services/host-services/implementations/HostManagement.service';
 
-import { UserController } from '../controllers/implementations/user.controller.js';
-import { HostController } from '../controllers/implementations/host.controller.js';
+import { UserController } from '@/controllers/implementations/user.controller';
+import { HostController } from '@/controllers/implementations/host.controller';
 
 
-import { validateBody, validateRequest } from '../middlewares/validate.middleware.js';
-import { HostManageSchema, HostUpgradeSchema } from '../schemas/host.schema.js';
-import { MongoIdParamSchema } from '../schemas/mongo.schema.js';
-import { ADMIN_ROUTES } from '../constants/routes.constants.js';
-import { UserRole } from '../constants/roles-and-statuses.js';
+import { validateBody, validateRequest } from '@/middlewares/validate.middleware';
+import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
+import { MongoIdParamSchema } from '@/schemas/mongo.schema';
+import { ADMIN_ROUTES } from '@/constants/routes.constants';
+import { UserRole } from '@/constants/roles-and-statuses';
 
 
 

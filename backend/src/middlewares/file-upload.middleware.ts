@@ -33,8 +33,8 @@ const DOCUMENT_MIME_TYPES = [
 // ─── file size ───────────────────────────────────
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024; // 5MB
-
-
+const POSTER_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+// const POSTER_IMAGE_TYPES = IMAGE_MIME_TYPES;
 
 // ─── file type checkers ───────────────────────────────────
 const isImage = (mimetype: string) => IMAGE_MIME_TYPES.includes(mimetype);
@@ -55,6 +55,7 @@ export const uploadImage = multer({
 });
 
 
+
 export const uploadDocument = multer({
    storage: memoryStorage,
    limits: { fileSize: MAX_DOCUMENT_SIZE }, // 5MB
@@ -67,6 +68,19 @@ export const uploadDocument = multer({
    },
 });
 
+
+
+export const uploadEventPoster = multer({
+   storage: memoryStorage,
+   limits: { fileSize: POSTER_MAX_FILE_SIZE }, // 5MB
+   fileFilter: (req, file, cb) => {
+      if (isImage(file.mimetype)) {
+         cb(null, true);
+      } else {
+         cb(new Error('Only JPEG, PNG, GIF, WEBP images allowed'));
+      }
+   },
+});
 
 
 

@@ -38,7 +38,7 @@ import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";
 import type { HostStatus, UserState } from "@/types/user.types";
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 

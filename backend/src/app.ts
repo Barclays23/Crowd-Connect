@@ -4,12 +4,13 @@ import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
 // import morgan from 'morgan';
 
-import { errorHandler } from './middlewares/error.middleware.js';
+import { errorHandler } from '@/middlewares/error.middleware';
 
-import authRoutes from './routes/auth.routes.js';
-import adminRoutes from './routes/admin.routes.js';
-import userRouter from './routes/user.routes.js';
-import hostRouter from './routes/host.routes.js';
+import authRoutes from '@/routes/auth.routes';
+import adminRoutes from '@/routes/admin.routes';
+import userRouter from '@/routes/user.routes';
+import hostRouter from '@/routes/host.routes';
+import eventRouter from '@/routes/event.routes';
 
 
 const app = express();
@@ -29,7 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/host', hostRouter);
-
+app.use('/api/event', eventRouter);
 
 
 app.use(errorHandler);

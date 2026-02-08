@@ -1,4 +1,5 @@
-// tsconfig.json (root)
+// tsconfig.old.json (root)
+// can delete this file.
 {
   "files": [],
   "references": [

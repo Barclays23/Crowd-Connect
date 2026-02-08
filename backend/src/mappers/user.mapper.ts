@@ -7,9 +7,9 @@ import {
    BaseUserResponseDto,
    HostManageRequestDto,
    HostStatusUpdateResponseDto, 
-} from "../dtos/user.dto.js";
+} from "@/dtos/user.dto";
 
-import { AuthUserResponseDto, SignUpRequestDto } from "../dtos/auth.dto.js";
+import { AuthUserResponseDto, SignUpRequestDto } from "@/dtos/auth.dto";
 
 
 import { 
@@ -23,10 +23,10 @@ import {
    HostUpdateInput,
    UserProfileEntity,
    HostManageInput,
-} from "../entities/user.entity.js";
+} from "@/entities/user.entity";
 
-import { IUserModel } from "../models/implementations/user.model.js";
-import { HostStatus, UserRole, UserStatus } from "../constants/roles-and-statuses.js";
+import { IUserModel } from "@/models/implementations/user.model";
+import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
 
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 

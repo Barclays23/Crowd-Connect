@@ -3,7 +3,7 @@
 import { 
     UserBasicInfoUpdateDTO,
     UserProfileResponseDto, 
-} from "../../../dtos/user.dto.js";
+} from "@/dtos/user.dto";
 
 
 

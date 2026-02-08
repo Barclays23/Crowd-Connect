@@ -1,5 +1,5 @@
 import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES, EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
-import { parseDDMMYYYY } from "@/utils/dateAndTimeFormats";
+import { parseISODateTime } from "@/utils/dateAndTimeFormats";
 import { z } from "zod";
 
 
@@ -78,7 +78,7 @@ export const dateBase = (label: "Start" | "End") => z
    .min(1, `${label} date is required`)
    .refine(
       (val) => /^\d{4}-\d{2}-\d{2}$/.test(val),
-      "Invalid date format (DD-MM-YYYY)"
+      "Invalid date format (YYYY-MM-DD)"
    );
 
 
@@ -139,7 +139,7 @@ export const coordinatesBase = z
 
 
 
-export const bannerBase = z
+export const imageFileBase = z
    .custom<File>((val) => val instanceof File, "Invalid file")
    .refine((file) => file && file.size <= POSTER_MAX_FILE_SIZE, {
       message: "Banner image must be less than 5MB",
@@ -187,16 +187,16 @@ export const eventFormSchema = z.object({
    capacity: capacityBase,
 
    // Media
-   banner: bannerBase,
-   useAI: z.boolean(),
+   uploadedImage: imageFileBase,
    aiGeneratedImage: aiUrlBase,
+   useAI: z.boolean(),
 })
 .superRefine((data, ctx) => {
    
    // 1. Date Validation: End must be after Start
    const today = new Date();
-   const start = parseDDMMYYYY(data.startDate, data.startTime);
-   const end = parseDDMMYYYY(data.endDate, data.endTime);
+   const start = parseISODateTime(data.startDate, data.startTime);
+   const end = parseISODateTime(data.endDate, data.endTime);
 
    if (isNaN(start.getTime())) {
       ctx.addIssue({
@@ -204,7 +204,6 @@ export const eventFormSchema = z.object({
          message: "Invalid start date or time",
          path: ["startDate"],
       });
-      return;
    }
 
    if (isNaN(end.getTime())) {
@@ -213,7 +212,6 @@ export const eventFormSchema = z.object({
          message: "Invalid end date or time",
          path: ["endDate"],
       });
-      return;
    }
 
    if (start < today) {
@@ -263,24 +261,24 @@ export const eventFormSchema = z.object({
    if (data.ticketType === "paid" && data.ticketPrice <= 0) {
          ctx.addIssue({
          code: z.ZodIssueCode.custom,
-         message: "Price must be greater than 0 for Paid events",
+         message: "Ticket price shouldn't be 0 for paid events",
          path: ["ticketPrice"],
       });
    }
 
    // 4. Banner Validation: Must have either File OR AI Image
-   const hasManualBanner = data.banner instanceof File;
+   const hasManualUploadImage = data.uploadedImage instanceof File;
    const hasAiImage = 
       data.useAI &&
       typeof data.aiGeneratedImage === "string" &&
       data.aiGeneratedImage.length > 10;
 
 
-   if (!hasManualBanner && !hasAiImage) {
+   if (!hasManualUploadImage && !hasAiImage) {
          ctx.addIssue({
          code: z.ZodIssueCode.custom,
          message: "Please upload a banner or generate one using AI",
-         path: ["banner"],
+         path: ["uploadedImage"],
       });
    }
 });

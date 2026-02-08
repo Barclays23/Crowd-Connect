@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken";
 const { JsonWebTokenError, TokenExpiredError } = jwt;
 import crypto from "crypto";
 import 'dotenv/config';
-import { createHttpError } from "./httpError.utils.js";
-import { HttpStatus } from "../constants/statusCodes.constants.js";
-import { HttpResponse } from "../constants/responseMessages.constants.js";
+import { createHttpError } from "./httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
 
 
 

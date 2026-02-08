@@ -1,11 +1,11 @@
 // backend/src/types/user.types.ts
 
-import { IUser } from "../models/implementations/user.model.js";
-import { UserProfileResponseDto } from "../dtos/user.dto.js";
-import { HostStatus, UserRole, UserStatus } from "src/constants/roles-and-statuses.js";
+import { IUserModel } from "@/models/implementations/user.model";
+import { UserProfileResponseDto } from "@/dtos/user.dto";
+import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
 
 
-export type UserFilterQuery = Partial<IUser> & Record<string, unknown>;
+export type UserFilterQuery = Partial<IUserModel> & Record<string, unknown>;
 
 
 

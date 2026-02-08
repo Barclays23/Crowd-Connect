@@ -1,16 +1,17 @@
-import { UserEntity } from "../../../entities/user.entity.js";
-import { IAuthRecoveryService } from "../auth-interfaces/IAuthRecovery.js";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { generateCryptoToken } from "../../../utils/crypto.utils.js";
-import { renderTemplate } from "../../../utils/templateLoader2.js";
-import { normalizeEmail, sendEmail } from "../../../utils/email.utils.js";
-import { REDIS_TOKEN_PREFIX, redisClient } from "../../../config/redis.config.js";
-import { createHttpError } from "../../../utils/httpError.utils.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { ResetPasswordDto, UpdateEmailDto } from "../../../dtos/auth.dto.js";
-import { hashPassword } from "../../../utils/bcrypt.utils.js";
-import { generateOTP } from "../../../utils/generateOTP.utils.js";
+// src/services/auth-services/implementations/authRecovery.service.ts
+import { UserEntity } from "@/entities/user.entity";
+import { IAuthRecoveryService } from "../interfaces/IAuthRecovery";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { generateCryptoToken } from "@/utils/crypto.utils";
+import { renderTemplate } from "@/utils/templateLoader2";
+import { normalizeEmail, sendEmail } from "@/utils/email.utils";
+import { REDIS_TOKEN_PREFIX, redisClient } from "@/config/redis.config";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { ResetPasswordDto, UpdateEmailDto } from "@/dtos/auth.dto";
+import { hashPassword } from "@/utils/bcrypt.utils";
+import { generateOTP } from "@/utils/generateOTP.utils";
 
 
 

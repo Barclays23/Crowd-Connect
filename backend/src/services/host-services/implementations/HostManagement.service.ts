@@ -1,23 +1,22 @@
-// backend/src/services/host/implementations/hostManagement.services.ts
-
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "../../../dtos/user.dto.js";
-import { createHttpError } from "../../../utils/httpError.utils.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "../../../entities/user.entity.js";
-import { deleteFromCloudinary, uploadToCloudinary } from "../../../config/cloudinary.js";
-import { isHost } from "../../../utils/general.utils.js";
+// backend/src/services/host-servies/implementations/hostManagement.service.ts
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "@/dtos/user.dto";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
+import { isHost } from "@/utils/general.utils";
 import { 
     mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto,
     mapToHostStatusUpdateResponseDto,
     mapUpdateHostDTOToInput, 
-} from "../../../mappers/user.mapper.js";
-import { HostStatus, UserRole } from "../../../constants/roles-and-statuses.js";
-import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "../../../types/user.types.js";
-import { IHostManagementServices } from "../host-interfaces/IHostManagementServices.js";
+} from "@/mappers/user.mapper";
+import { HostStatus, UserRole } from "@/constants/roles-and-statuses";
+import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "@/types/user.types";
+import { IHostManagementServices } from "../interfaces/IHostManagementServices";
 
 
 

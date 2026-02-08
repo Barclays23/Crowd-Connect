@@ -1,12 +1,12 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema, Document, Types } from "mongoose";
-import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses.js";
+import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
 
 
 
-
-export interface IUser {
+// export interface IUser {
+export interface IUserModel {
   _id: Types.ObjectId | string;
 
   name : string;
@@ -38,7 +38,7 @@ export interface IUser {
 }
 
 
-export interface IUserModel extends Document, Omit<IUser, "_id"> { }
+// export interface IUserModel extends Document, Omit<IUser, "_id"> { }
 
 
 
@@ -46,6 +46,7 @@ export interface IUserModel extends Document, Omit<IUser, "_id"> { }
 
 
 const userSchema = new Schema<IUserModel>(
+// const userSchema = new Schema<IUser>(
   {
     // _id: Types.ObjectId,
     name: {
@@ -140,4 +141,5 @@ userSchema.index(
 
 
 const User = model<IUserModel>("User", userSchema);
+// const User = model<IUser>("User", userSchema);
 export default User;

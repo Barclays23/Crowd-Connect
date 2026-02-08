@@ -1,11 +1,11 @@
 // backend/src/middlewares/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../utils/jwt.utils.js';
-import { createHttpError } from '../utils/httpError.utils.js';
-import { HttpStatus } from '../constants/statusCodes.constants.js';
-import { HttpResponse } from '../constants/responseMessages.constants.js';
-import { UserRepository } from '../repositories/implementations/user.repository.js';
-import { UserRole, UserStatus } from '../constants/roles-and-statuses.js';
+import { verifyAccessToken } from '@/utils/jwt.utils';
+import { createHttpError } from '@/utils/httpError.utils';
+import { HttpStatus } from '@/constants/statusCodes.constants';
+import { HttpResponse } from '@/constants/responseMessages.constants';
+import { UserRepository } from '@/repositories/implementations/user.repository';
+import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
 
 
 

@@ -8,10 +8,10 @@ import { AxiosError } from "axios";
 export const eventServices = {
    createEvent: async (formData: FormData) => {
       try {
-         const response = await axiosInstance.post("/api/events/create", formData, {
+         const response = await axiosInstance.post("/api/event/create-event", formData, {
             withCredentials: true,
             headers: {
-               "Content-Type": "multipart/form-data",
+              "Content-Type": "multipart/form-data",
             },
          });
          return response.data;

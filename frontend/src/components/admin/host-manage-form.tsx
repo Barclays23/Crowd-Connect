@@ -26,7 +26,7 @@ import { isPDF, getFileNameFromFileOrUrl, getFileExtension } from "@/utils/fileU
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-import { getApiErrorMessage } from "@/utils/getApiErrorMessage";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
 
 

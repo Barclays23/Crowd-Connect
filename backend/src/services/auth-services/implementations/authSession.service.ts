@@ -1,18 +1,18 @@
-// src/services/auth/implementations/authSessionService.ts
+// src/services/auth-services/implementations/authSession.service.ts
 
-import { AuthUserResponseDto, SignInRequestDto } from "../../../dtos/auth.dto.js";
-import { IUserRepository } from "../../../repositories/interfaces/IUserRepository.js";
-import { IAuthSessionService } from "../auth-interfaces/IAuthSession.js";
-import { AuthResult } from "../../../types/auth.types.js";
-import { createHttpError } from "../../../utils/httpError.utils.js";
-import { HttpStatus } from "../../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../../constants/responseMessages.constants.js";
-import { UserStatus } from "../../../constants/roles-and-statuses.js";
-import { comparePassword } from "../../../utils/bcrypt.utils.js";
-import { mapUserEntityToAuthUserDto } from "../../../mappers/user.mapper.js";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "../../../utils/jwt.utils.js";
-import { redisClient } from "../../../config/redis.config.js";
-import { SensitiveUserEntity, UserEntity } from "../../../entities/user.entity.js";
+import { AuthUserResponseDto, SignInRequestDto } from "@/dtos/auth.dto";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { IAuthSessionService } from "../interfaces/IAuthSession";
+import { AuthResult } from "@/types/auth.types";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { UserStatus } from "@/constants/roles-and-statuses";
+import { comparePassword } from "@/utils/bcrypt.utils";
+import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
+import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/utils/jwt.utils";
+import { redisClient } from "@/config/redis.config";
+import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
 
 
 

@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodSchema, ZodType, ZodError } from 'zod';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import { HttpStatus } from '../constants/statusCodes.constants';
-import { HttpResponse } from '../constants/responseMessages.constants';
-import { formatZodErrorMessages } from '../utils/formatZodErrors';
+import { HttpStatus } from '@/constants/statusCodes.constants';
+import { HttpResponse } from '@/constants/responseMessages.constants';
+import { formatZodErrorMessages } from '@/utils/formatZodErrors';
 
 
 export interface ValidationSchemas {
@@ -14,9 +14,10 @@ export interface ValidationSchemas {
 }
 
 
-export const validateRequest = (schemas: ValidationSchemas) => // validateRequest or validateForm
+export const validateRequest = (schemas: ValidationSchemas) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
+
       // 1. Validate req.body
       if (schemas.body) {
         req.body = schemas.body.parse(req.body);
@@ -36,15 +37,15 @@ export const validateRequest = (schemas: ValidationSchemas) => // validateReques
       next();
 
     } catch (error) {
-        if (error instanceof ZodError) {
-            console.log('Zod Validation Error:', error.issues);
-            
-            // Zod validation failed
-            res.status(HttpStatus.BAD_REQUEST).json({
-                error: HttpResponse.INVALID_CREDENTIALS,
-                details: formatZodErrorMessages(error.issues),
-            });
-        }
+      if (error instanceof ZodError) {
+        console.log('Zod Validation Error.issues:', error.issues);
+        
+        // Zod validation failed
+        res.status(HttpStatus.BAD_REQUEST).json({
+          error: HttpResponse.INVALID_CREDENTIALS,
+          details: formatZodErrorMessages(error.issues),
+        });
+      }
       
       // Handle other potential errors (though unlikely here)
       // next(error); 

@@ -1,7 +1,7 @@
 // backend/src/routes/auth.routes.ts
 import { Router } from 'express';
-import { validateRequest } from '../middlewares/validate.middleware.js';
-import { authenticate } from '../middlewares/auth.middleware.js';
+import { validateRequest } from '@/middlewares/validate.middleware';
+import { authenticate } from '@/middlewares/auth.middleware';
 
 import { 
     ForgotPasswordSchema, 
@@ -9,18 +9,18 @@ import {
     RegisterSchema, 
     ResetLinkSchema, 
     ResetPasswordSchema 
-} from '../schemas/auth.schema.js';
-import { OtpSchema } from '../schemas/otp.schema.js';
+} from '@/schemas/auth.schema';
+import { OtpSchema } from '@/schemas/otp.schema';
 
-import { UserRepository } from '../repositories/implementations/user.repository.js';
+import { UserRepository } from '@/repositories/implementations/user.repository';
 
-import { AuthRegistrationService } from '../services/auth-services/auth-implementations/authRegistration.service.js';
-import { AuthSessionService } from '../services/auth-services/auth-implementations/authSession.service.js';
-import { AuthRecoveryService } from '../services/auth-services/auth-implementations/authRecovery.service.js';
+import { AuthRegistrationService } from '@/services/auth-services/implementations/authRegistration.service';
+import { AuthSessionService } from '@/services/auth-services/implementations/authSession.service';
+import { AuthRecoveryService } from '@/services/auth-services/implementations/authRecovery.service';
 
-import { AuthController } from '../controllers/implementations/auth.controller.js';
+import { AuthController } from '@/controllers/implementations/auth.controller';
 
-import { AUTH_ROUTES } from '../constants/routes.constants.js';
+import { AUTH_ROUTES } from '@/constants/routes.constants';
 
 
 

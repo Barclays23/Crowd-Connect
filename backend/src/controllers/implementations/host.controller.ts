@@ -1,22 +1,24 @@
+// src/controllers/implementations/host.controller.ts
+
 import { NextFunction, Request, Response } from "express";
-import { IHostController } from "../interfaces/IHostController.js";
-import { HttpStatus } from "../../constants/statusCodes.constants.js";
-import { HttpResponse } from "../../constants/responseMessages.constants.js";
-import { HostStatus, UserRole, UserStatus } from "../../constants/roles-and-statuses.js";
+import { IHostController } from "../interfaces/IHostController";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
 import { 
     GetHostsFilter, 
     GetHostsResult, 
     GetUsersFilter, 
     GetUsersResult 
-} from "../../types/user.types.js";
+} from "@/types/user.types";
 
 import { 
     HostStatusUpdateResponseDto, 
     HostUpdateRequestDto, 
     HostUpgradeRequestDto, 
     UserProfileResponseDto 
-} from "../../dtos/user.dto.js";
-import { IHostManagementServices } from "../../services/host-services/host-interfaces/IHostManagementServices.js";
+} from "@/dtos/user.dto";
+import { IHostManagementServices } from "@/services/host-services/interfaces/IHostManagementServices";
 
 
 

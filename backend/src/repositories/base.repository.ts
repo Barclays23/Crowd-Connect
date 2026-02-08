@@ -4,7 +4,6 @@ import mongoose, {
     Model,
     QueryFilter,
     UpdateQuery,
-    // FilterQuery
 } from "mongoose";
 
 
@@ -13,27 +12,29 @@ import mongoose, {
 
 
 
-
-export abstract class BaseRepository<T extends Document> {
+// export abstract class BaseRepository<T extends Document> {
+export abstract class BaseRepository<T> {
 
     constructor(protected model: Model<T>) {}
+    
 
     async createOne(data: Partial<T>): Promise<T>{
         const document = new this.model(data);
         const savedDocument = await document.save();
-        return savedDocument;
+        // return savedDocument;
+        return savedDocument as unknown as T;
     }
 
 
     async findOne(query: QueryFilter<T>): Promise<T | null>{
         const findDocument = await this.model.findOne(query);
-        return findDocument;
+        return findDocument as unknown as T;
     }
 
 
     async findById(id: string): Promise<T | null>{
         const findDocument = await this.model.findById(id);
-        return findDocument;
+        return findDocument as unknown as T;
     }
 
     async findByIdAndUpdate(updateId: string, updateData: UpdateQuery<T>): Promise<T | null>{
@@ -42,13 +43,13 @@ export abstract class BaseRepository<T extends Document> {
             { $set: updateData },
             { new: true, runValidators: true }
         );
-        return updatedDocument;
+        return updatedDocument as unknown as T;
     }
 
 
     async findByIdAndDelete(id: string): Promise<T | null>{
         const deletedDocument = await this.model.findByIdAndDelete(id);
-        return deletedDocument;
+        return deletedDocument as unknown as T;
     }
 
 
@@ -58,13 +59,13 @@ export abstract class BaseRepository<T extends Document> {
             { $set: updateData },
             { new: true, runValidators: true }
         );
-        return updatedDocument;
+        return updatedDocument as unknown as T;
     }
 
 
     async findMany(): Promise<T[]>{
         const findDocuments = await this.model.find();
-        return findDocuments;
+        return findDocuments as unknown as T[];
     }
  
 
@@ -72,8 +73,5 @@ export abstract class BaseRepository<T extends Document> {
         const count = await this.model.countDocuments(query);
         return count;
     }
-
-    
-
 
 }

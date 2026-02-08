@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Camera, CheckCircle, Edit, Loader2 } from 'lucide-react';
 import { userServices, type UserBasicInfo } from '@/services/userServices';
-import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { UserState } from '@/types/user.types';
 import { capitalize } from '@/utils/namingConventions';
 import { authService } from '@/services/authServices';
@@ -75,6 +75,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       }
    };
 
+
    const handleUpdateBasicInfo = async () => {
       const updateData: UserBasicInfo = {
          name: editFormData.name.trim(),
@@ -102,7 +103,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          setIsUpdatingBasicInfo(false);
       }
    };
-
 
 
 

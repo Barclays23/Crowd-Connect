@@ -1,5 +1,5 @@
 // backend/src/repositories/interfaces/IUserRepository.ts
-import { UserStatus } from '../../constants/roles-and-statuses.js';
+import { UserStatus } from '@/constants/roles-and-statuses';
 import { 
     AuthUserCheckInput, 
     SignUpUserInput, 
@@ -13,9 +13,9 @@ import {
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput,
-} from '../../entities/user.entity.js';
+} from '@/entities/user.entity';
 
-import { UserFilterQuery } from '../../types/user.types.js';
+import { UserFilterQuery } from '@/types/user.types';
 
 
 
@@ -49,7 +49,7 @@ export interface IUserRepository {
     // register by user himself after verifying otp
     createUser(user: SignUpUserInput) : Promise<UserEntity>;
 
-    createUserByAdmin(userEntity: CreateUserInput): Promise<UserEntity>;
+    createUserByAdmin(userInput: CreateUserInput): Promise<UserEntity>;
 
     updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity>;
 

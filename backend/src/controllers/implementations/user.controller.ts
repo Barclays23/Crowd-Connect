@@ -1,14 +1,14 @@
 // src/controllers/implementations/user.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { IUserController } from '../interfaces/IUserController.js';
-import { HttpStatus } from '../../constants/statusCodes.constants.js';
-import { HttpResponse } from '../../constants/responseMessages.constants.js';
-import { GetUsersFilter, GetUsersResult } from '../../types/user.types.js';
-import { CreateUserRequestDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '../../dtos/user.dto.js';
-import { UserRole, UserStatus } from '../../constants/roles-and-statuses.js';
-import { IUserProfileService } from '../../services/user-services/user-interfaces/IUserProfileService.js';
-import { IUserManagementService } from '../../services/user-services/user-interfaces/IUserManagementService.js';
+import { IUserController } from '../interfaces/IUserController';
+import { HttpStatus } from '@/constants/statusCodes.constants';
+import { HttpResponse } from '@/constants/responseMessages.constants';
+import { GetUsersFilter, GetUsersResult } from '@/types/user.types';
+import { CreateUserRequestDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '@/dtos/user.dto';
+import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
+import { IUserProfileService } from '@/services/user-services/interfaces/IUserProfileService';
+import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
 
 
 
