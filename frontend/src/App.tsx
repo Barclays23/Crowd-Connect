@@ -14,7 +14,7 @@ import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 // Providers
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { GoogleMapsProvider } from "@/contexts/GoogleMapsProvider";
+import { GoogleMapsProvider1 } from "@/contexts/GoogleMapsProvider1";
 
 
 

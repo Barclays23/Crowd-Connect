@@ -11,7 +11,8 @@ import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
-import { GoogleMapsProvider } from '@/contexts/GoogleMapsProvider';
+import { GoogleMapsProvider1 } from '@/contexts/GoogleMapsProvider1';
+import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
 // import GoogleMapsProvider from '@/contexts/GoogleMapsProvider';
 
 
@@ -53,9 +54,9 @@ const HostEventSection = () => {
             
          default: // case "approved" :
             return (
-               <GoogleMapsProvider>
+               <GoogleMapsProvider2>
                   <HostEventForm />
-               </GoogleMapsProvider>
+               </GoogleMapsProvider2>
             );
       }
    }

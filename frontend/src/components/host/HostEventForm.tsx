@@ -26,12 +26,17 @@ import { eventServices } from "@/services/eventServices";
 import { getApiErrorMessage, setServerZodErrors } from "@/utils/errorMessages.utils";
 import { FieldError } from "../ui/FieldError";
 import { ADMIN_COMMISSION_PERCENT, EVENT_CATEGORIES } from "@/types/event.types";
-import { useGoogleMaps } from "@/contexts/GoogleMapsProvider";
-import { setupGooglePlaceAutocomplete2 } from "@/utils/google-place-autocomplete-widget";
-
+import { useGoogleMaps1 } from "@/contexts/GoogleMapsProvider1";
+import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-place-autocomplete-widget";
+import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoComplete";
+import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
+import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
 
 const mapContainerStyle = { width: "100%", height: "200px" };
 const modalMapStyle = { width: "100%", height: "400px" };
+
+
+
 
 
 
@@ -41,6 +46,11 @@ const HostEventForm = () => {
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 }); // Default center
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null); // Temp for modal
 
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const startTimeRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
+  const endTimeRef = useRef<HTMLInputElement>(null);
+  const autocompleteWidgetRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -71,21 +81,16 @@ const HostEventForm = () => {
       useAI: false,
     },
   });
-
-  const startDateRef = useRef<HTMLInputElement>(null);
-  const startTimeRef = useRef<HTMLInputElement>(null);
-  const endDateRef = useRef<HTMLInputElement>(null);
-  const endTimeRef = useRef<HTMLInputElement>(null);
-  // const locationInputRef = useRef<HTMLInputElement | null>(null);
-  // const locationInputContainerRef = useRef<HTMLDivElement>(null);
-  const autocompleteRef = useRef<HTMLDivElement>(null);
-  const { isLoaded } = useGoogleMaps();
-
-
+  
+  
   const { ref: startDateHookRef, ...startDateRest } = register("startDate");
   const { ref: startTimeHookRef, ...startTimeRest } = register("startTime");
   const { ref: endDateHookRef, ...endDateRest } = register("endDate");
   const { ref: endTimeHookRef, ...endTimeRest } = register("endTime");
+  
+  // const { isLoaded } = useGoogleMaps1();  // if using GoogleLocationProvider1
+  const { isLoaded } = useGoogleMaps2();    // if using GoogleLocationProvider2
+
 
   // Watch values for UI logic
   const currentFormat = watch("format");
@@ -106,34 +111,36 @@ const HostEventForm = () => {
 
 
 
-  useEffect(() => {
-    if (!isLoaded || !autocompleteRef.current) return;
 
-    setupGooglePlaceAutocomplete2(
-      autocompleteRef as React.RefObject<HTMLDivElement>,
-      ({ name, lat, lng }) => {
-        setValue("locationName", name, { shouldValidate: true });
-        setValue("locationCoordinates", { lat, lng }, { shouldValidate: true });
-      },
-      {
-        placeholder: "Search for a city or venue...",
-        // Optional: add bias toward Kerala if needed
-        // locationBias: {
-        //   circle: {
-        //     center: { lat: 10.0, lng: 76.3 },
-        //     radius: 200000,
-        //   },
-        // },
-      }
-    );
+  // can be used for both components: GooglePlacesAutoComplete & GooglePlacesWidgetAutoComplete
+  const handlePlaceSelected = React.useCallback(
+    ({ name, lat, lng, formattedAddress }: {
+      name: string;
+      lat: number;
+      lng: number;
+      formattedAddress?: string;
+    }) => {
+      const safeLat = Number(lat);
+      const safeLng = Number(lng);
 
-    // Cleanup (optional but good practice)
-    return () => {
-      if (autocompleteRef.current) {
-        autocompleteRef.current.innerHTML = "";
+      // Optional: add validation / toast
+      if (isNaN(safeLat) || isNaN(safeLng)) {
+        console.warn("Invalid coordinates received", { lat, lng });
+        toast.warn("Invalid location coordinates – please try again");
+        return;
       }
-    };
-  }, [isLoaded]);
+
+      setValue("locationName", name, { shouldValidate: true });
+      setValue("locationCoordinates", { lat: safeLat, lng: safeLng }, { shouldValidate: true });
+
+      // Force validation update
+      trigger(["locationName", "locationCoordinates"]);
+    },
+    [setValue, trigger]
+  );
+
+
+
 
   const confirmMapSelection = () => {
     if (selectedPosition) {
@@ -143,6 +150,7 @@ const HostEventForm = () => {
       toast.success("Location pinned!");
     }
   };
+
 
   const mapOptions = useMemo(() => ({
     disableDefaultUI: true, // Clean UI
@@ -509,43 +517,39 @@ const HostEventForm = () => {
               {currentFormat === "offline" && (
                 <div className="relative z-20">
                   <Label className="block mb-2 text-(--text-primary)">Venue / City *</Label>
-{/* AFTER LOCATION IMPLIMENTATION */}
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary) z-10" />      
-                    <div
-                      ref={autocompleteRef}
-                      className="w-full h-10 border rounded-md focus-within:ring-2 focus-within:ring-(--brand-primary)"
-                    />
-                    {selectedCords && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--status-success) z-10" />
-                    )}
-                  </div>
-                  
 
-{/* BEFORE LOCATION IMPLEMENTATION */}
-                  {/* <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary)" />
-                    <Input
-                      {...register("locationName")}
-                      ref={(el) => {
-                        register("locationName").ref(el);
-                        locationInputRef.current = el;
-                      }}
-                      onChange={handleLocationSearch}
-                      onBlur={() => setShowLocationSuggestions(false)}
-                      placeholder="Search for a city or venue..."
-                      className="pl-10"
-                      autoComplete="off"
-                    />
-                    {selectedCords && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--status-success)" />
-                    )}
-                  </div> */}
+                  {/* GOOGLE PLACE AUTO COMPLETE (OPTION-2) */}
+                  {/* <GooglePlacesAutoComplete
+                    defaultValue={watch("locationName") || ""}
+                    onPlaceSelected={handlePlaceSelected} // your helper function
+                    placeholder="Search venue, city or address in Kerala..."
+                    className="w-full"
+                  /> */}
+
+                  {/* GOOGLE PLACE AUTO COMPLETE (OPTION-1: WIDGET) */}
+                  <GooglePlacesWidgetAutoComplete
+                    onPlaceSelected={handlePlaceSelected}
+                    placeholder="Search venue, city or address in Kerala..."
+                    className="w-full"
+                  />
+
+                  {watch("locationName") && watch("locationCoordinates") && (
+                    <div className="mt-1.5 text-sm text-gray-600 italic">
+                      {watch("locationName")}
+                    </div>
+                  )}
+                  {watch("locationCoordinates") && (
+                    <div className="mt-2 text-xs flex items-center gap-1.5 text-green-600">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Location selected
+                    </div>
+                  )}
 
                   <FieldError message={errors.locationName?.message} />
                   <FieldError message={errors.locationCoordinates?.message} />
                 </div>
               )}
+
             </div>
 
             <div className="h-px bg-(--border-muted) my-6" />
@@ -815,16 +819,6 @@ const HostEventForm = () => {
 
 export default HostEventForm;
 
-
-
 // THINGS TO DO:
-// 1. Real Google Places Integration (replace mock suggestions):
-//     Install use-places-autocomplete and @react-google-maps/api. Load Google Maps script with API key.
-//     Quick alternatives if you want faster / simpler
-//     Option A – @react-google-maps/api StandaloneSearchBox (very clean) 
-//     Wrap your <Input> with <StandaloneSearchBox> → official Google way
-//     Good docs & examples
-
 // 2. Real AI Integration (replace mock):
-
 // 3. Error Handling & Loading States, Spinners, and disable all fields during submit

@@ -2,6 +2,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { LoadScript, useJsApiLoader } from "@react-google-maps/api";
 
+
 // ENABLED APIs
 // Places API (for autocomplete).
 // Places API (New)
@@ -16,11 +17,10 @@ interface Props {
 }
 
 
-// // const myLibraries: ("places")[] = ["places"];
-const myLibraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
 
-export const useGoogleMaps = () => {
+
+export const useGoogleMaps1 = () => {
   const ctx = useContext(GoogleMapsContext);
   if (!ctx) throw new Error("useGoogleMaps must be used within GoogleMapsProvider");
   return ctx;
@@ -28,7 +28,11 @@ export const useGoogleMaps = () => {
 
 
 
-export const GoogleMapsProvider = ({ children }: Props) => {
+// // const myLibraries: ("places")[] = ["places"];
+const myLibraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
+
+
+export const GoogleMapsProvider1 = ({ children }: Props) => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
     libraries: myLibraries,

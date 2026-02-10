@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 // * types are used from src/types/google-maps.d.ts
 
 
-export function setupGooglePlaceAutocomplete2(
+export function setupGooglePlaceAutocompleteWidget(
   containerRef: React.RefObject<HTMLDivElement>,
   onPlaceSelected: (data: {
     name: string;

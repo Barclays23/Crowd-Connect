@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 // Billing risk without proper session management
 
 
-export function setupGooglePlacesAutocomplete1(
+export function setupGooglePlacesAutocompleteLegacy(
    input: HTMLInputElement,
    onSelect: (place: {
       name: string;
