@@ -1,24 +1,27 @@
 // frontent/src/types/event.types.ts
 
 export const EVENT_CATEGORIES = [
-   "Music & Concerts",
-   "Theatre & Arts",
-   "Food & Drink",
-   "Sports & Fitness",
-   "Health & Wellness",
+   "Art & Exhibitions",
    "Business & Networking",
-   "Technology & Innovation",
-   "Education & Workshops",
-   "Parties & Nightlife",
-   "Film & Media",
-   "Weddings & Social Gatherings",
-   "Festivals & Fairs",
-   "Fashion & Beauty",
-   "Travel & Outdoor",
-   "Spiritual & Religious",
    "Charity & Causes",
+   "Conferences & Seminars",
+   "Education & Workshops",
+   "Fashion & Beauty",
+   "Festivals & Fairs",
+   "Film & Media",
+   "Food & Drink",
+   "Health & Wellness",
    "Kids & Family",
+   "Music & Concerts",
+   "Parties & Nightlife",
+   "Spiritual & Religious",
+   "Sports & Fitness",
+   "Technology & Innovation",
+   "Theatre & Live Shows",
+   "Travel & Outdoor",
+   "Weddings & Social Gatherings",
 ] as const;
+
 
 
 

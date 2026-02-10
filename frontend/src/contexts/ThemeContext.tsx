@@ -50,8 +50,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const toggle = () => setThemeState((t) => (t === "dark" ? "light" : "dark"));
 
-  return <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 };
+
 
 export function useTheme(): ThemeContextType {
   const ctx = useContext(ThemeContext);

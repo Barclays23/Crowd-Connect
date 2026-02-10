@@ -8,23 +8,27 @@ export const ADMIN_COMMISSION_PERCENT = 10;
 
 
 export const ALL_EVENT_CATEGORIES = [
-   "Concerts & Music",
-   "Theatre & Arts",
-   "Education & Workshops",
-   "Conferences & Seminars",
-   "Sports & Fitness",
-   "Food & Drink",
-   "Parties & Nightlife",
+   "Art & Exhibitions",
    "Business & Networking",
-   "Weddings & Social Gatherings",
-   "Festivals & Fairs",
-   "Travel & Outdoor",
-   "Spiritual & Religious",
-   "Technology & Innovation",
-   "Kids & Family",
    "Charity & Causes",
+   "Conferences & Seminars",
+   "Education & Workshops",
+   "Fashion & Beauty",
+   "Festivals & Fairs",
    "Film & Media",
+   "Food & Drink",
+   "Health & Wellness",
+   "Kids & Family",
+   "Music & Concerts",
+   "Parties & Nightlife",
+   "Spiritual & Religious",
+   "Sports & Fitness",
+   "Technology & Innovation",
+   "Theatre & Live Shows",
+   "Travel & Outdoor",
+   "Weddings & Social Gatherings",
 ] as const;
+
 
 export type EVENT_CATEGORY = typeof ALL_EVENT_CATEGORIES[number];
 
