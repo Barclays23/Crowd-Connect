@@ -11,6 +11,7 @@ import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
+// import GoogleMapsProvider from '@/contexts/GoogleMapsProvider';
 
 
 
@@ -48,8 +49,13 @@ const HostEventSection = () => {
             );
          case 'blocked':
             return <HostBlockedState />;
+            
          default: // case "approved" :
-            return <HostEventForm />;
+            return (
+               // <GoogleMapsProvider>
+                  <HostEventForm />
+               // </GoogleMapsProvider>
+            );
       }
    }
 

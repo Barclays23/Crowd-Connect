@@ -15,14 +15,12 @@ const eventSchema = new Schema<IEventModel>(
          type: Schema.Types.ObjectId,
          ref: "User",
          required: true,
-         // index: true, // Optimizes "My Events" queries
       },
 
       title: {
          type: String,
          required: true,
          trim: true,
-         // index: true, // For text search
       },
       description: {
          type: String,
@@ -32,7 +30,6 @@ const eventSchema = new Schema<IEventModel>(
          type: String,
          required: true,
          enum: ALL_EVENT_CATEGORIES,
-         // index: true, // For filtering
       },
       posterUrl: {
          type: String, // Store the Cloudinary/S3 URL here
@@ -59,7 +56,6 @@ const eventSchema = new Schema<IEventModel>(
          },
          coordinates: {
             type: [Number], // [Longitude, Latitude]
-            // index: "2dsphere",
          },
       },
 
@@ -74,7 +70,6 @@ const eventSchema = new Schema<IEventModel>(
       startDateTime: {
          type: Date,
          required: true,
-         // index: true, // Crucial for sorting "Upcoming Events"
       },
       endDateTime: {
          type: Date,

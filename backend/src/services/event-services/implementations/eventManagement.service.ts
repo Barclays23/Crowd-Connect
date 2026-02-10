@@ -50,6 +50,8 @@ export class EventManagementServices implements IEventManagementServices {
 
             let eventPosterUrl!: string;
 
+    
+console.time("uploadImage");
             if (imageFile) {
                 eventPosterUrl = await uploadToCloudinary({
                     fileBuffer: imageFile.buffer,
@@ -60,6 +62,7 @@ export class EventManagementServices implements IEventManagementServices {
                 // need to upload the aiGeneratedImage base64 or url to cloudinary ??
                 eventPosterUrl = createDto.aiGeneratedImage;
             }
+console.timeEnd("uploadImage");
                                                  
             const eventInput: CreateEventInput = mapCreateEventRequestDtoToInput({
                 createDto,
@@ -67,7 +70,9 @@ export class EventManagementServices implements IEventManagementServices {
                 // currentUserId,
             });
 
+console.time("saveEvent");
             const createdEvent: EventEntity = await this._eventRepository.createEvent(eventInput);
+console.timeEnd("saveEvent");
 
             if (!createdEvent) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_EVENT);

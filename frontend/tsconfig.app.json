@@ -12,7 +12,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "@types/google.maps"],
     "skipLibCheck": true,
 
     /* Bundler mode */

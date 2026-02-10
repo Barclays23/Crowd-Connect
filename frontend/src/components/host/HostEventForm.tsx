@@ -1,4 +1,7 @@
-import React, { useRef, useState } from "react";
+// src/components/host/HostEventForm.tsx
+
+// / <reference path="../../types/google.maps.d.ts" />
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -23,10 +26,22 @@ import { eventServices } from "@/services/eventServices";
 import { getApiErrorMessage, setServerZodErrors } from "@/utils/errorMessages.utils";
 import { FieldError } from "../ui/FieldError";
 import { ADMIN_COMMISSION_PERCENT, EVENT_CATEGORIES } from "@/types/event.types";
+// import { setupPlacesAutocomplete } from "@/utils/googlePlacesAutocomplete";
+import { useGoogleMaps } from "@/contexts/GoogleMapsProvider";
+import { setupGooglePlaceAutocomplete } from "@/utils/googlePlacesWidget";
+
+
+const mapContainerStyle = { width: "100%", height: "200px" };
+const modalMapStyle = { width: "100%", height: "400px" };
+
+
 
 const HostEventForm = () => {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false); // For map picker modal
+  const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 }); // Default center
+  const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null); // Temp for modal
+
 
   const {
     register,
@@ -62,6 +77,11 @@ const HostEventForm = () => {
   const startTimeRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
   const endTimeRef = useRef<HTMLInputElement>(null);
+  // const locationInputRef = useRef<HTMLInputElement | null>(null);
+  // const locationInputContainerRef = useRef<HTMLDivElement>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+  const { isLoaded } = useGoogleMaps();
+
 
   const { ref: startDateHookRef, ...startDateRest } = register("startDate");
   const { ref: startTimeHookRef, ...startTimeRest } = register("startTime");
@@ -85,21 +105,51 @@ const HostEventForm = () => {
       ? (Number(currentTicketPrice) * (1 - ADMIN_COMMISSION_PERCENT / 100)).toFixed(2)
       : "0.00";
 
-  const handleLocationSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setValue("locationName", val);
-    setValue("locationCoordinates", undefined);
 
-    if (val.length > 2) setShowLocationSuggestions(true);
-    else setShowLocationSuggestions(false);
+
+  useEffect(() => {
+    if (!isLoaded || !autocompleteRef.current) return;
+
+    setupGooglePlaceAutocomplete(
+      autocompleteRef as React.RefObject<HTMLDivElement>,
+      ({ name, lat, lng }) => {
+        setValue("locationName", name, { shouldValidate: true });
+        setValue("locationCoordinates", { lat, lng }, { shouldValidate: true });
+      },
+      {
+        placeholder: "Search for a city or venue...",
+        // Optional: add bias toward Kerala if needed
+        // locationBias: {
+        //   circle: {
+        //     center: { lat: 10.0, lng: 76.3 },
+        //     radius: 200000,
+        //   },
+        // },
+      }
+    );
+
+    // Cleanup (optional but good practice)
+    return () => {
+      if (autocompleteRef.current) {
+        autocompleteRef.current.innerHTML = "";
+      }
+    };
+  }, [isLoaded]);
+
+  const confirmMapSelection = () => {
+    if (selectedPosition) {
+      setValue("locationCoordinates", selectedPosition, { shouldValidate: true });
+      setMapCenter(selectedPosition);
+      setShowMapModal(false);
+      toast.success("Location pinned!");
+    }
   };
 
-  const selectLocationSuggestion = (name: string, lat: number, lng: number) => {
-    setValue("locationName", name);
-    setValue("locationCoordinates", { lat, lng }, { shouldValidate: true });
-    setShowLocationSuggestions(false);
-    trigger("locationName");
-  };
+  const mapOptions = useMemo(() => ({
+    disableDefaultUI: true, // Clean UI
+    zoomControl: true,
+  }), []);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -109,6 +159,7 @@ const HostEventForm = () => {
       trigger();
     }
   };
+  
 
   const handleToggleAI = () => {
     setValue("useAI", !currentUseAI);
@@ -459,10 +510,26 @@ const HostEventForm = () => {
               {currentFormat === "offline" && (
                 <div className="relative z-20">
                   <Label className="block mb-2 text-(--text-primary)">Venue / City *</Label>
+
                   <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary) z-10" />      
+                    <div
+                      ref={autocompleteRef}
+                      className="w-full h-10 border rounded-md focus-within:ring-2 focus-within:ring-(--brand-primary)"
+                    />
+                    {selectedCords && (
+                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--status-success) z-10" />
+                    )}
+                  </div>
+
+                  {/* <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary)" />
                     <Input
                       {...register("locationName")}
+                      ref={(el) => {
+                        register("locationName").ref(el);
+                        locationInputRef.current = el;
+                      }}
                       onChange={handleLocationSearch}
                       onBlur={() => setShowLocationSuggestions(false)}
                       placeholder="Search for a city or venue..."
@@ -472,27 +539,10 @@ const HostEventForm = () => {
                     {selectedCords && (
                       <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--status-success)" />
                     )}
-                  </div>
+                  </div> */}
 
-                  {/* Mock Suggestions – Replace with real Google Places */}
-                  {showLocationSuggestions && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-(--card-bg) border border-(--border-muted) rounded-lg shadow-(--shadow-lg) overflow-hidden z-30">
-                      <div className="p-2 text-xs text-(--text-tertiary)">Suggestions (Mocked)</div>
-                      <div
-                        className="px-4 py-3 hover:bg-(--bg-secondary) cursor-pointer text-sm text-(--text-secondary) hover:text-(--text-primary)"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          // selectLocationSuggestion("Bangalore, Karnataka", 76868.97536, 18739.094756);
-                          selectLocationSuggestion("Bangalore, Karnataka", 12.9716, 77.5946);
-                        }}
-                      >
-                        <span className="font-medium text-(--text-primary)">Bangalore</span>, Karnataka
-                      </div>
-                    </div>
-                  )}
                   <FieldError message={errors.locationName?.message} />
                   <FieldError message={errors.locationCoordinates?.message} />
-                  <FieldError message={errors.location?.message} />
                 </div>
               )}
             </div>
@@ -769,6 +819,10 @@ export default HostEventForm;
 // THINGS TO DO:
 // 1. Real Google Places Integration (replace mock suggestions):
 //     Install use-places-autocomplete and @react-google-maps/api. Load Google Maps script with API key.
+//     Quick alternatives if you want faster / simpler
+//     Option A – @react-google-maps/api StandaloneSearchBox (very clean) 
+//     Wrap your <Input> with <StandaloneSearchBox> → official Google way
+//     Good docs & examples
 
 // 2. Real AI Integration (replace mock):
 
