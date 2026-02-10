@@ -1,4 +1,4 @@
-// frontend/src/utils/googlePlacesNew.ts
+// frontend/src/utils/google-place-new-autocomplete.ts
 // new method for google places New API for autocomplete
 import { toast } from "react-toastify";
 
@@ -7,8 +7,38 @@ import { toast } from "react-toastify";
 let sessionToken: google.maps.places.AutocompleteSessionToken | null = null;
 
 
+
+// pair one
+export async function getPlacePredictions(input: string) {
+   const placesLib = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+   const { AutocompleteSuggestion } = placesLib as typeof placesLib & {
+      AutocompleteSuggestion: typeof google.maps.places.AutocompleteSuggestion;
+   };
+
+   const request = {
+      input,
+      includedPrimaryTypes: ["geocode", "(cities)"],
+      includedRegionCodes: ["in"],
+   };
+   const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+   return suggestions || [];
+}
+
+
+// pair one
+export async function getPlaceDetailsFromPrediction(prediction: any) {
+   const place = prediction.toPlace();
+   await place.fetchFields({ fields: ["formattedAddress", "location"] });
+   return {
+      name: place.formattedAddress || "",
+      lat: place.location?.lat() || 0,
+      lng: place.location?.lng() || 0,
+   };
+}
+
+
 // pair two
-export async function setupPlacesAutocompleteNew(
+export async function fetchPlaceSuggestions(
    inputValue: string,
    onSelect: (place: { name: string; lat: number; lng: number }) => void
    ) {
@@ -58,35 +88,5 @@ export async function getPlaceDetailsFromSuggestion(suggestion: any) {
       name: place.formattedAddress || "",
       lat: place.location?.lat() ?? 0,
       lng: place.location?.lng() ?? 0,
-   };
-}
-
-
-
-// pair one
-export async function getPlacePredictions(input: string) {
-   const placesLib = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
-   const { AutocompleteSuggestion } = placesLib as typeof placesLib & {
-      AutocompleteSuggestion: typeof google.maps.places.AutocompleteSuggestion;
-   };
-
-   const request = {
-      input,
-      includedPrimaryTypes: ["geocode", "(cities)"],
-      includedRegionCodes: ["in"],
-   };
-   const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-   return suggestions || [];
-}
-
-
-// pair one
-export async function getPlaceDetailsFromPrediction(prediction: any) {
-   const place = prediction.toPlace();
-   await place.fetchFields({ fields: ["formattedAddress", "location"] });
-   return {
-      name: place.formattedAddress || "",
-      lat: place.location?.lat() || 0,
-      lng: place.location?.lng() || 0,
    };
 }

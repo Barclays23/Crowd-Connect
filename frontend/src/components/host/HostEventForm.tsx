@@ -26,9 +26,8 @@ import { eventServices } from "@/services/eventServices";
 import { getApiErrorMessage, setServerZodErrors } from "@/utils/errorMessages.utils";
 import { FieldError } from "../ui/FieldError";
 import { ADMIN_COMMISSION_PERCENT, EVENT_CATEGORIES } from "@/types/event.types";
-// import { setupPlacesAutocomplete } from "@/utils/googlePlacesAutocomplete";
 import { useGoogleMaps } from "@/contexts/GoogleMapsProvider";
-import { setupGooglePlaceAutocomplete } from "@/utils/googlePlacesWidget";
+import { setupGooglePlaceAutocomplete2 } from "@/utils/google-place-autocomplete-widget";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };
@@ -110,7 +109,7 @@ const HostEventForm = () => {
   useEffect(() => {
     if (!isLoaded || !autocompleteRef.current) return;
 
-    setupGooglePlaceAutocomplete(
+    setupGooglePlaceAutocomplete2(
       autocompleteRef as React.RefObject<HTMLDivElement>,
       ({ name, lat, lng }) => {
         setValue("locationName", name, { shouldValidate: true });
@@ -510,7 +509,7 @@ const HostEventForm = () => {
               {currentFormat === "offline" && (
                 <div className="relative z-20">
                   <Label className="block mb-2 text-(--text-primary)">Venue / City *</Label>
-
+{/* AFTER LOCATION IMPLIMENTATION */}
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary) z-10" />      
                     <div
@@ -521,7 +520,9 @@ const HostEventForm = () => {
                       <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--status-success) z-10" />
                     )}
                   </div>
+                  
 
+{/* BEFORE LOCATION IMPLEMENTATION */}
                   {/* <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--text-tertiary)" />
                     <Input

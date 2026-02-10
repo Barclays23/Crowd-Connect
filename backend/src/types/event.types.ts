@@ -55,13 +55,15 @@ export interface ILocation {
 export enum EVENT_STATUS {
    DRAFT = "draft",             // DRAFT: Creating / Editing phase.
    PUBLISHED = "published",     // PUBLISHED: Live and bookable. and cannot change back to draft (time-based display computed from here).
-   // UPCOMING = "upcoming",       // only for virtual UI display based on startDateTime & endDateTime
-   // ONGOING = "ongoing",         // only for virtual UI display based on startDateTime & endDateTime
    CANCELLED = "cancelled",     // CANCELLED: Permanent stop.
-   SUSPENDED = "suspended",      // SUSPENDED: admin suspended. (but reason in cancelledReason)
+   SUSPENDED = "suspended",     // SUSPENDED: admin suspended. (but reason in cancelledReason)
    COMPLETED = "completed",     // COMPLETED: Auto or manual (after end / payouts). After every process completed.
-}
 
+   // Onlu for virtual UI display based on startDateTime & endDateTime
+   // use getEventDisplayStatus to generate the display event status.
+   UPCOMING = "upcoming",
+   ONGOING = "ongoing",
+}
 
 
 export interface IEventModel {

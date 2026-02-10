@@ -12,7 +12,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "types": ["vite/client", "@types/google.maps"],
+    // "types": ["vite/client", "@types/google.maps"],
+    "types": ["vite/client"],
     "skipLibCheck": true,
 
     /* Bundler mode */

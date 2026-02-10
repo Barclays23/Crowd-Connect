@@ -1,4 +1,4 @@
-// src/utils/googlePlacesWidget.ts
+// src/utils/google-place-autocomplete-widget.ts
 import { toast } from "react-toastify";
 
 /**
@@ -7,8 +7,12 @@ import { toast } from "react-toastify";
  * @param containerRef - React ref to the HTML div where the widget should render
  * @param onPlaceSelected - Callback when user selects a place
  * @param options - Optional customization (region, types, placeholder, etc.)
- */
-export function setupGooglePlaceAutocomplete(
+*/
+
+// * types are used from src/types/google-maps.d.ts
+
+
+export function setupGooglePlaceAutocomplete2(
   containerRef: React.RefObject<HTMLDivElement>,
   onPlaceSelected: (data: {
     name: string;

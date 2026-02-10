@@ -1,12 +1,14 @@
-// frontent/src/utils/googlePlacesAutocomplete.js
-// Old Places API auto complete method
+// frontent/src/utils/google-legacy-autocomplete.ts
 
 import { toast } from "react-toastify";
 
 
+// Old Places API auto complete method (legacy)
+// Deprecated for new projects (warnings in console, won't work for new API keys post-March 2025).
+// Billing risk without proper session management
 
-// Old Places API auto complete method
-export function setupPlacesAutocomplete(
+
+export function setupGooglePlacesAutocomplete1(
    input: HTMLInputElement,
    onSelect: (place: {
       name: string;

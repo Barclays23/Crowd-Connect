@@ -60,7 +60,7 @@ function App() {
    return (
       <ThemeProvider>
          <AuthProvider>
-            <GoogleMapsProvider>
+         {/* <GoogleMapsProvider> */}
          <Router>
             <ToastContainer position="top-center" theme="colored" transition={Zoom}/>
                {/* <div className="app-container"> */}
@@ -109,7 +109,7 @@ function App() {
                   {/* <Footer /> */}
                {/* </div> */}
          </Router>
-         </GoogleMapsProvider>
+         {/* </GoogleMapsProvider> */}
          </AuthProvider>
       </ThemeProvider>
    );
