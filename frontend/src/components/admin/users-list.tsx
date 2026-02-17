@@ -43,6 +43,7 @@ interface ApiResponse {
   totalPages: number;
 }
 
+
 export function UsersList() {
   // Filters & UI state
   const [searchTerm, setSearchTerm] = useState("");
@@ -184,6 +185,7 @@ export function UsersList() {
       toast.success(response.message);
 
       setUsers(prev => prev.filter(user => user.userId !== deleteUser.userId));
+      setTotalUsers(totalUsers-1);
 
     } catch (error: unknown) {
       console.log('error in deleteUser:', error)
@@ -195,6 +197,7 @@ export function UsersList() {
       setDeleteUser(null);
     }
   };
+  
 
   const getStatusBadgeVariant = (status: string): "default" | "success" | "destructive" | "secondary" | "outline" => {
     switch (status) {

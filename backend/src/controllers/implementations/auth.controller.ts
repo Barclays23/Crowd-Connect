@@ -153,6 +153,7 @@ export class AuthController implements IAuthController {
 
             res.status(HttpStatus.OK).json({
                 success: true,
+                requiresVerification: true,
                 message: HttpResponse.EMAIL_VERIFICATION_SENT,
                 email: userEmail
             });

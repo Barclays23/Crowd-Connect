@@ -28,6 +28,14 @@ export interface CreateEventDTO {
 
 
 
+
+export interface EventStatusUpdateRequestDto {
+  newStatus: string, 
+  reason?: string;
+} 
+
+
+
 /* ───────────────── HTTP RESPONSE BOUNDARY DTOs ───────────────── */
 export interface EventResponseDTO {
   eventId: string;
@@ -58,4 +66,13 @@ export interface EventResponseDTO {
   eventStatus: EVENT_STATUS;
 
   createdAt: string;
+}
+
+
+
+
+export interface EventStatusUpdateResponseDto {
+  eventStatus: EVENT_STATUS;
+  cancelledAt?: Date;
+  cancellationReason?: string;
 }

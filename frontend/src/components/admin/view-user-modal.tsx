@@ -1,23 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { UserState } from "@/types/user.types";
+import { getUserStatusBadgeVariant } from "@/utils/UI.utils";
 import { formatDate1 } from "@/utils/dateAndTimeFormats";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
 
 interface ViewUserModalProps {
-  // user: {
-  //   userId: string;
-  //   name: string;
-  //   email: string;
-  //   mobile: string;
-  //   role: "admin" | "host" | "user";
-  //   status: "active" | "blocked" | "pending";
-  //   isEmailVerified: boolean;
-  //   createdAt: string;
-  //   profilePic?: string;
-  // };
   user: UserState;
 }
 
@@ -25,15 +15,6 @@ const roleVariant = {
   admin: "brand" as const,
   host: "primary" as const,
   user: "neutral" as const,
-};
-
-const getStatusBadgeVariant = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "active": return "success";
-    case "blocked": return "destructive";
-    case "pending": return "outline";
-    default: return "secondary";
-  }
 };
 
 
@@ -69,7 +50,7 @@ export function ViewUserModal({ user }: ViewUserModalProps) {
             <Badge variant={roleVariant[user.role.toLowerCase() as keyof typeof roleVariant]} className="rounded-lg font-medium">
               {capitalize(user.role)}
             </Badge>
-            <Badge variant={getStatusBadgeVariant(user.status)} className="rounded-lg font-medium">
+            <Badge variant={getUserStatusBadgeVariant(user.status)} className="rounded-lg font-medium">
               {capitalize(user.status)}
             </Badge>
           </div>

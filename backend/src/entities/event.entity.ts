@@ -31,6 +31,12 @@ export interface EventEntity {
   grossTicketRevenue: number;
 
   eventStatus: EVENT_STATUS;
+  views: number;       // for trending/popular calculation
+
+  // Event Cancellation
+  cancellationReason?: string;
+  cancelledBy?: Types.ObjectId;  // by host or admin
+  cancelledAt?: Date;
 
   createdAt: Date;
 }
@@ -68,4 +74,14 @@ export interface CreateEventInput {
    // grossTicketRevenue: number;      // no need when creating an event, default: 0
    
    eventStatus: EVENT_STATUS;          // EVENT_STATUS.DRAFT (when creating, before publish)
+}
+
+
+
+// for cancel / suspend / complete the event
+export interface EventStatusUpdateInput {
+  eventStatus: EVENT_STATUS;
+  cancellationReason?: string;  // for cancelling and suspending
+  cancelledBy?: Types.ObjectId;  // need this ?
+  cancelledAt?: Date;
 }

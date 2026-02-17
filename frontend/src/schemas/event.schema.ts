@@ -1,4 +1,4 @@
-import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES, EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
+import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES } from "@/types/event.types";
 import { parseISODateTime } from "@/utils/dateAndTimeFormats";
 import { z } from "zod";
 
@@ -96,12 +96,12 @@ export const timeBase = (label: "Start" | "End") => z
 
 
 export const formatBase = z
-   .enum(EVENT_FORMAT, "Invalid event format");
+   .enum(["offline", "online"], "Invalid event format");
 
 
 
 export const ticketTypeBase = z
-   .enum(TICKET_TYPE, "Invalid ticket type");
+   .enum(["free", "paid"], "Invalid ticket type");
 
 
 

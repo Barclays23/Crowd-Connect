@@ -176,7 +176,7 @@ const HostEventForm = () => {
 
   // ── Generate AI Poster ──
   const handleGenerateAiPoster = async () => {
-    const isValid = await trigger(["title", "category", "startDate", "startTime"]);
+    const isValid = await trigger(["title", "category", "description", "startDate", "startTime"]);
     if (!isValid) {
       toast.error("Please fill title, category, and start date/time first");
       return;
@@ -212,8 +212,12 @@ const HostEventForm = () => {
       trigger();
 
       toast.success("Poster generated! You can regenerate or keep this one.");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to generate poster");
+
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error);
+      if (errorMessage) toast.error(errorMessage);
+      toast.error(error.message || "Failed to generate poster");
+
     } finally {
       setIsGeneratingAI(false);
     }
@@ -518,20 +522,20 @@ const HostEventForm = () => {
                 <div className="relative z-20">
                   <Label className="block mb-2 text-(--text-primary)">Venue / City *</Label>
 
-                  {/* GOOGLE PLACE AUTO COMPLETE (OPTION-2) */}
-                  {/* <GooglePlacesAutoComplete
+                  {/* GOOGLE PLACE AUTO COMPLETE (OPTION-2: CUSTOM) */}
+                  <GooglePlacesAutoComplete
                     defaultValue={watch("locationName") || ""}
                     onPlaceSelected={handlePlaceSelected} // your helper function
                     placeholder="Search venue, city or address in Kerala..."
                     className="w-full"
-                  /> */}
+                  />
 
                   {/* GOOGLE PLACE AUTO COMPLETE (OPTION-1: WIDGET) */}
-                  <GooglePlacesWidgetAutoComplete
+                  {/* <GooglePlacesWidgetAutoComplete
                     onPlaceSelected={handlePlaceSelected}
                     placeholder="Search venue, city or address in Kerala..."
                     className="w-full"
-                  />
+                  /> */}
 
                   {watch("locationName") && watch("locationCoordinates") && (
                     <div className="mt-1.5 text-sm text-gray-600 italic">

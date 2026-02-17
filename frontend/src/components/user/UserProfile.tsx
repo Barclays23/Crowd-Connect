@@ -29,11 +29,11 @@ const UserProfile = () => {
         const response = await userServices.getUserProfile();
         setProfile(response.userProfile);
         setUser(response.userProfile);
-      } catch (err) {
-        const message = getApiErrorMessage(err);
-        setError(message);
-        toast.error(message);
-        console.error('Failed to load profile:', err);
+      } catch (err: unknown) {
+        const errorMessage = getApiErrorMessage(err);
+        if (errorMessage) toast.error(errorMessage);
+        setError(errorMessage);
+
       } finally {
         setIsLoading(false);
       }

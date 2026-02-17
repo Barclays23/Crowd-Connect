@@ -18,8 +18,11 @@ import { HostController } from '@/controllers/implementations/host.controller';
 import { validateBody, validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { MongoIdParamSchema } from '@/schemas/mongo.schema';
-import { ADMIN_ROUTES } from '@/constants/routes.constants';
+import { ADMIN_ROUTES, EVENT_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
+import { EventManagementServices } from '@/services/event-services/implementations/eventManagement.service';
+import { EventRepository } from '@/repositories/implementations/event.repository';
+import { EventController } from '@/controllers/implementations/event.controller';
 
 
 
@@ -28,6 +31,8 @@ import { UserRole } from '@/constants/roles-and-statuses';
 
 // ── Initialize REPOSITORIES
 const userRepo = new UserRepository();
+const eventRepo = new EventRepository();
+
 
 
 
@@ -35,6 +40,7 @@ const userRepo = new UserRepository();
 const userManagementServices = new UserManagementService(userRepo);
 const userProfileServices = new UserProfileService(userRepo);
 const hostManagementServices = new HostManagementServices(userRepo);
+const eventManagementServices = new EventManagementServices(eventRepo);
 
 
 
@@ -42,7 +48,7 @@ const hostManagementServices = new HostManagementServices(userRepo);
 // ── Initialize CONTROLLERS ──
 const userController = new UserController(userProfileServices, userManagementServices);
 const hostController = new HostController(hostManagementServices);
-
+const eventController = new EventController(eventManagementServices);
 
 
 
@@ -72,7 +78,6 @@ adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_REQUEST,
     validateRequest({body: HostManageSchema, params: MongoIdParamSchema}), 
     hostController.manageHostStatus.bind(hostController)
 );
-
 adminRouter.put(ADMIN_ROUTES.UPDATE_HOST, 
     uploadDocument.single('hostDocument'), 
     validateRequest({body: HostUpgradeSchema, params: MongoIdParamSchema}), 
@@ -83,6 +88,14 @@ adminRouter.put(ADMIN_ROUTES.UPDATE_HOST,
 //     // uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
 //     // hostController.convertToHost.bind(hostController)
 // );
+
+
+
+
+// event management
+adminRouter.get(ADMIN_ROUTES.GET_EVENTS, eventController.getAllEvents.bind(eventController));
+adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, eventController.suspendEvent.bind(eventController));
+adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, eventController.deleteEvent.bind(eventController));
 
 
 export default adminRouter;

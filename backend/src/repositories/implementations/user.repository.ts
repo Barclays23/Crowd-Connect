@@ -125,11 +125,11 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     async findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[] | null> {
         try {
             const paginatedUsers: IUserModel[] = await this.model.find(query)
-            .select('-password')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .lean(); // faster + easier to map
+                .select('-password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(); // faster + easier to map
 
             // console.log('✅  paginatedUsers :', paginatedUsers);
 

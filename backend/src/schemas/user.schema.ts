@@ -24,15 +24,35 @@ export const emailBase = z
 
 
 export const mobileBase = z
-   .string()
-   .transform((val) => val.trim())
-   .refine((val) => val === "" || /^\d+$/.test(val), {
-      message: "Mobile number must contain only digits (0-9)",
-   })
-   .refine((val) => val === "" || val.length === 10, {
-      message: "Mobile number must be exactly 10 digits",
-   })
-   .optional();
+  .string()
+  .trim()
+  .optional()
+  .superRefine((val, ctx) => {
+    if (!val) return;
+
+    if (!/^\d+$/.test(val)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Mobile number must contain digits only",
+      });
+      return;
+    }
+
+    if (val.length !== 10) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Mobile number must be exactly 10 digits",
+      });
+      return;
+    }
+
+    if (!/^[6-9]/.test(val)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please enter a valid Indian mobile number (start with 6, 7, 8, or 9)",
+      });
+    }
+  });
 
 
 

@@ -154,7 +154,6 @@ export class HostManagementServices implements IHostManagementServices {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
             }
 
-
             const allowedTransitions: Record<HostStatus, Array<'approve' | 'reject' | 'block'>> = {
                 [HostStatus.PENDING]: ['approve', 'reject', 'block'],
                 [HostStatus.APPROVED]: ['block'],
@@ -163,7 +162,6 @@ export class HostManagementServices implements IHostManagementServices {
             } as const;
 
             const allowedActions = allowedTransitions[hostEntity.hostStatus as HostStatus];
-
 
             if (!allowedActions.includes(action)) {
                 throw createHttpError(

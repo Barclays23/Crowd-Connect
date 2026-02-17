@@ -25,8 +25,45 @@ export const EVENT_CATEGORIES = [
 
 
 
-export const EVENT_FORMAT = ["offline", "online"] as const;
-export const TICKET_TYPE = ["free", "paid"] as const;
+// export const EVENT_FORMAT = ["offline", "online"] as const;
+// export const TICKET_TYPE = ["free", "paid"] as const;
+export type EVENT_FORMAT = "offline" | "online";
+export type TICKET_TYPE = "free" | "paid";
+export type EVENT_STATUS = "draft" | "upcoming" | "ongoing" | "completed" | "cancelled" | "suspended";
+
+
+
+
+export interface IEventState {
+  eventId: string;
+  title: string;
+  category: string;
+  description: string;
+
+  startDateTime: string;
+  endDateTime: string;
+  eventStatus: EVENT_STATUS;
+
+  format: EVENT_FORMAT;
+  locationName: string;
+  location?: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  onlineLink: string;
+
+  ticketType: TICKET_TYPE;
+  ticketPrice: number;
+  capacity: number;
+  soldTickets: number;
+  grossTicketRevenue: number;
+  
+  organizerName?: string; // optional – if populated
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 
 

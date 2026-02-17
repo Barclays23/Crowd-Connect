@@ -172,6 +172,7 @@ export function HostsList() {
       );
 
       fetchHosts(); // refresh anyway
+      
     } catch (err: unknown) {
       const errorMessage = getApiErrorMessage(err);
       if (errorMessage) toast.error(errorMessage);

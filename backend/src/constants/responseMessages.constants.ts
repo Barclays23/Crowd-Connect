@@ -53,6 +53,7 @@ export enum HttpResponse {
     USER_EXIST = "User already exists",
     USER_NOT_FOUND = "We couldn't find a user with these credentials.",
     HOST_NOT_FOUND = "Couldn't find this host user.",
+    EVENT_NOT_FOUND = "Coundn't find this event.",
     USER_NOT_A_HOST = "The user is not a host right now.",
     USER_ACCOUNT_NOT_EXIST = "Your account is removed or no longer available. Please contact support.",
     USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
@@ -71,6 +72,7 @@ export enum HttpResponse {
     HOST_BLOCK_SUCCESS = "Host has been blocked.",
     HOST_UNBLOCK_SUCCESS = "Host has been unblocked.",
 
+    SUCCESS_BLOCK_USER = "User has been blocked.",
     SUCCESS_GET_USERS = "Users fetched successfully.",
     SUCCESS_GET_HOSTS = "Hosts fetched successfully.",
     SUCCESS_CREATE_USER = "User account created.",
@@ -78,7 +80,8 @@ export enum HttpResponse {
     SUCCESS_UPDATE_USER = "User details updated.",
     SUCCESS_UPDATE_PROFILE = "Profile updated successfully.",
     SUCCESS_DELETE_USER = "User has been deleted.",
-    SUCCESS_BLOCK_USER = "User has been blocked.",
+    SUCCESS_DELETE_EVENT = "Event has been deleted",
+    SUCCESS_SUSPEND_EVENT = "Event has been suspended.",
     SUCCESS_UNBLOCK_USER = "User has been unblocked.",
 
     

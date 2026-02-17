@@ -45,6 +45,7 @@ import HostPage from "@/pages/host/HostPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUserList from "@/pages/admin/AdminUserList";
 import AdminHostsList from "./pages/admin/AdminHostsList";
+import AdminEventList from "@/pages/admin/AdminEventsList";
 
 
 
@@ -99,6 +100,7 @@ function App() {
                               <Route path="/admin" element={<AdminDashboard />} />
                               <Route path="/admin/users" element={<AdminUserList />} />
                               <Route path="/admin/hosts" element={<AdminHostsList />} />
+                              <Route path="/admin/events" element={<AdminEventList />} />
                            </Route>
 
 

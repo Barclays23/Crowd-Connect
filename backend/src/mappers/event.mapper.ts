@@ -1,6 +1,8 @@
-import { CreateEventDTO, EventResponseDTO } from "@/dtos/event.dto";
-import { CreateEventInput, EventEntity } from "@/entities/event.entity";
-import { EVENT_STATUS, IEventModel, ILocation } from "@/types/event.types";
+import { CreateEventDTO, EventResponseDTO, EventStatusUpdateRequestDto, EventStatusUpdateResponseDto } from "@/dtos/event.dto";
+import { CreateEventInput, EventEntity, EventStatusUpdateInput } from "@/entities/event.entity";
+import { EVENT_STATUS, IEventModel } from "@/types/event.types";
+import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
+import { capitalize, toTitleCase } from "@/utils/string.utils";
 import { Request } from "express";
 import { Types } from "mongoose";
 
@@ -70,6 +72,7 @@ export const mapEventModelToEventEntity = (doc: IEventModel): EventEntity => ({
   grossTicketRevenue: doc.grossTicketRevenue,
 
   eventStatus: doc.eventStatus,
+  views: doc.views,
 
   createdAt: doc.createdAt,
 });
@@ -110,10 +113,25 @@ export const mapEventEntityToEventResponseDto = (
    checkedInCount: entity.checkedInCount,
    grossTicketRevenue: entity.grossTicketRevenue,
    
-   eventStatus: entity.eventStatus,
+   eventStatus: getEventDisplayStatus(entity),
    
    createdAt: entity.createdAt.toISOString(),
 });
+
+
+
+
+
+// EVENT ENTITY to EventStatusUpdateResponse DTO
+export const mapToEventStatusUpdateResponseDto = (
+   event: EventEntity
+): EventStatusUpdateResponseDto => {
+   return {
+      eventStatus: event.eventStatus,
+      cancelledAt: event.cancelledAt,
+      cancellationReason: event.cancellationReason,
+   };
+};
 
 
 
@@ -135,8 +153,8 @@ export const mapCreateEventRequestDtoToInput = ({
    return {
       hostRef: new Types.ObjectId(createDto.hostRef),
 
-      title: createDto.title,
-      description: createDto.description,
+      title: toTitleCase(createDto.title),
+      description: capitalize(createDto.description),
       category: createDto.category,
       
       posterUrl: eventPosterUrl,
@@ -159,4 +177,35 @@ export const mapCreateEventRequestDtoToInput = ({
       
       eventStatus: EVENT_STATUS.DRAFT,
    };
+};
+
+
+
+export const mapToEventStatusUpdateInput = (
+  {newStatus, reason}: EventStatusUpdateRequestDto
+): EventStatusUpdateInput => {
+
+   switch (newStatus) {
+      case "completed":
+         return {
+            eventStatus: EVENT_STATUS.COMPLETED,
+         };
+
+      case "cancelled":
+         return {
+            eventStatus: EVENT_STATUS.CANCELLED,
+            cancellationReason: reason,
+            cancelledAt: new Date(),
+         };
+
+      case "suspended":
+         return {
+            eventStatus: EVENT_STATUS.SUSPENDED,
+            cancellationReason: reason,
+            cancelledAt: new Date(),
+         };
+
+      default:
+         throw new Error("Invalid event action");
+   }
 };

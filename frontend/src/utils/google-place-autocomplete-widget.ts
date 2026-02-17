@@ -96,8 +96,8 @@ export function setupGooglePlaceAutocompleteWidget(
                     });
                 }
                 } catch (fetchErr) {
-                console.error("fetchFields failed:", fetchErr);
-                toast.error("Failed to load place details");
+                    console.error("fetchFields failed:", fetchErr);
+                    toast.error("Failed to load place details");
                 }
             });
         } catch (error) {

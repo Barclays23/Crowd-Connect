@@ -58,4 +58,11 @@ export const ADMIN_ROUTES = {
     GET_HOSTS: '/hosts',
     MANAGE_HOST_REQUEST: '/hosts/:hostId/manage-host-request',
     UPDATE_HOST: '/hosts/:hostId/update-host',
+    
+    
+    // Event Mangement
+    GET_EVENTS: '/events',
+    SUSPEND_EVENT: '/events/:eventId/suspend',
+    DELETE_EVENT: '/events/:eventId',
+
 } as const;

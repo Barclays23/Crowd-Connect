@@ -18,21 +18,49 @@ export const nameBase = z
 
 export const emailBase = z
   .string()
+  .min(1, { message: "Email is required" })
   .trim()
-  .email("Please enter a valid email address");
+  .toLowerCase()
+  .email({ message: "Please enter a valid email address" });
+
+
 
 
 
 export const mobileBase = z
-   .string()
-   .transform((val) => val.trim())
-   .refine((val) => val === "" || /^\d+$/.test(val), {
-      message: "Mobile number must contain only digits (0-9)",
-   })
-   .refine((val) => val === "" || val.length === 10, {
-      message: "Mobile number must be exactly 10 digits",
-   })
-   .optional();
+  .string()
+  .trim()
+  .optional()
+  .superRefine((val, ctx) => {
+    if (!val) return;
+
+    if (!/^\d+$/.test(val)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Mobile number must contain digits only",
+      });
+      return;
+    }
+
+    if (val.length !== 10) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Mobile number must be exactly 10 digits",
+      });
+      return;
+    }
+
+    if (!/^[6-9]/.test(val)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please enter a valid Indian mobile number (start with 6, 7, 8, or 9)",
+      });
+    }
+  });
+
+
+
+
 
 
 
@@ -48,22 +76,22 @@ export const statusBase = z.enum(["active", "blocked", "pending"], {
 });
 
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+export const ACCEPTED_IMAGE_TYPES = ['image/jpg', "image/jpeg", "image/png", 'image/gif', "image/webp"];
 
 
 
-export const profilePicBase = z
-  .custom<File>((val) => val instanceof File, {
-    message: "Invalid file",
-  })
-  .refine((file) => file.size <= MAX_FILE_SIZE, {
-    message: "Profile image must be less than 2MB",
+
+  export const profilePicBase = z
+  .instanceof(File, { message: "Invalid file" })
+  .refine((file) => file.size <= MAX_IMAGE_SIZE, {
+    message: `Profile image must be less than ${MAX_IMAGE_SIZE / (1024 * 1024)}MB`,
   })
   .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
-    message: "Only JPG, PNG, and WEBP images are allowed",
+    message: "Only JPG, JPEG, PNG, GIF and WEBP images are allowed",
   })
   .optional();
+
 
 
 
@@ -86,3 +114,22 @@ export const userFormSchema = z.object({
 //     path: ["confirmPassword"],
 //     message: "Passwords do not match.",
 //   })
+
+
+
+
+/* ---------- User Basic Info Updating Schema ---------- */
+export const updateBasicInfoSchema = z.object({
+  name: nameBase,
+  mobile: mobileBase,
+});
+
+
+
+
+/* ---------- Profile Pic Updating Schema ---------- */
+export const profilePicUploadSchema = z.object({
+  profileImage: profilePicBase,
+});
+
+

@@ -10,6 +10,10 @@ import { authService } from '@/services/authServices';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
 import { LoadingSpinner1 } from '../common/LoadingSpinner1';
 import { cn } from '@/lib/utils';
+import { MAX_FILE_SIZE } from '@/schemas/host.schema';
+import { ACCEPTED_IMAGE_TYPES, emailBase, MAX_IMAGE_SIZE, profilePicUploadSchema, updateBasicInfoSchema } from '@/schemas/user.schema';
+import { FieldError } from '@/components/ui/FieldError';
+import { Button } from '@/components/ui/button';
 
 
 
@@ -31,6 +35,13 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
    const [isEditingEmail, setIsEditingEmail] = useState(false);
    const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
 
+   const [emailError, setEmailError] = useState<string | undefined>();
+   const [basicInfoErrors, setBasicInfoErrors] = useState<{
+      name?: string;
+      mobile?: string;
+   }>({});
+
+
    const [editFormData, setEditFormData] = useState({
       name: profile.name || '',
       mobile: profile.mobile || '',
@@ -38,20 +49,20 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
    });
 
 
+   const isHost = profile.role === 'host';
+
 
    const handleProfilePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-      const maxSize = 5 * 1024 * 1024;
+      const validation = profilePicUploadSchema.safeParse({
+         profileImage: file,
+      });
 
-      if (!validTypes.includes(file.type)) {
-         toast.error('Please upload a valid image (JPEG, PNG, JPG, GIF)');
-         return;
-      }
-      if (file.size > maxSize) {
-         toast.error('Image size should be less than 5MB');
+      
+      if (!validation.success) {
+         toast.error(validation.error.issues[0].message);
          return;
       }
 
@@ -61,8 +72,10 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       try {
          setIsUpdatingProfilePic(true);
          const response = await userServices.updateProfilePicture(formData);
+
          setProfile((prev) => (prev ? { ...prev, profilePic: response.updatedProfilePic } : null));
          setUser((prev) => (prev ? { ...prev, profilePic: response.updatedProfilePic } : null));
+
          toast.success(response.message);
 
       } catch (err) {
@@ -77,22 +90,41 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
 
    const handleUpdateBasicInfo = async () => {
+      const validation = updateBasicInfoSchema.safeParse({
+         name: editFormData.name,
+         mobile: editFormData.mobile,
+      });
+
+      if (!validation.success) {
+         const fieldErrors: typeof basicInfoErrors = {};
+
+         validation.error.issues.forEach((issue) => {
+            const field = issue.path[0] as keyof typeof fieldErrors;
+            if (!fieldErrors[field]) {
+               fieldErrors[field] = issue.message;
+            }
+         });
+
+         setBasicInfoErrors(fieldErrors);
+         return;
+      }
+
+      setBasicInfoErrors({});
       const updateData: UserBasicInfo = {
-         name: editFormData.name.trim(),
-         mobile: editFormData.mobile.trim() || '', // changed undefined
+         ...validation.data,
+         name: validation.data.name.trim(),
       };
-      
+
       try {
          setIsUpdatingBasicInfo(true);
 
          const response = await userServices.editUserBasicInfo(updateData);
          console.log('response in handleUpdateBasicInfo: ', response)
 
-         // setProfile from response.updatedUser 
-
-         setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
-         setUser((prev) => (prev ? { ...prev, ...updateData } : null));
+         setProfile(prev => prev ? { ...prev, ...response.updatedUser } : null);
+         setUser(prev => prev ? { ...prev, ...response.updatedUser } : null);
          setIsEditingBasicInfo(false);
+
          toast.success(response.message);
 
       } catch (err) {
@@ -107,19 +139,23 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
 
    const handleUpdateEmail = async () => {
-      if (!editFormData.email.trim()) return;
+      const validation = emailBase.safeParse(editFormData.email);
+
+      if (!validation.success) {
+         setEmailError(validation.error.issues[0].message);
+         return;
+      }
+
+      setEmailError(undefined);
+      const email = validation.data;
 
       try {
          setIsUpdatingEmail(true);
 
-         const response = await authService.requestAuthenticateEmail({ email: editFormData.email.trim() });
+         const response = await authService.requestAuthenticateEmail({ email });
 
-         if (response.requiresVerification) {
-            toast.info('Verification email sent. Please check your inbox.');
-         } else {
-            setProfile((prev) => (prev ? { ...prev, email: editFormData.email.trim() } : null));
-            toast.success('Email updated successfully!----------');
-         }
+         toast.info(response.message);
+
          setIsEditingEmail(false);
 
       } catch (err) {
@@ -135,9 +171,16 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setEditFormData((prev) => ({ ...prev, [name]: value }));
+
+      if (name === "name" || name === "mobile") {
+         setBasicInfoErrors(prev => ({ ...prev, [name]: undefined }));
+      }
+
+      if (name === "email") {
+         setEmailError(undefined);
+      }
    };
 
-   const isHost = profile.role === 'host';
 
    return (
       <>
@@ -314,13 +357,12 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         </h3>
 
                         {!isEditingBasicInfo && (
-                           <button
-                           onClick={() => setIsEditingBasicInfo(true)}
-                           className="p-1.5 text-(--text-secondary) hover:text-(--brand-primary)
-                                       hover:bg-(--brand-primary)/10 rounded-lg"
+                           <Button
+                              variant="ghost"
+                              onClick={() => setIsEditingBasicInfo(true)}
                            >
-                           <Edit size={18} />
-                           </button>
+                              <Edit size={18} />
+                           </Button>
                         )}
                      </div>
 
@@ -340,6 +382,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               {profile.name || 'Not provided'}
                            </p>
                         )}
+                        <FieldError message={basicInfoErrors.name} />
                      </div>
 
                      {/* Mobile */}
@@ -364,36 +407,33 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               )}
                            </div>
                         )}
+                        <FieldError message={basicInfoErrors.mobile} />
                      </div>
 
                      {/* Basic Info Action Buttons */}
                      {isEditingBasicInfo && (
                         <div className="flex gap-3 pt-3">
-                           <button
+                           <Button
                               onClick={handleUpdateBasicInfo}
                               disabled={isUpdatingBasicInfo}
-                              className="px-5 py-2 bg-(--btn-primary-bg)
-                                          text-(--btn-primary-text)
-                                          rounded-lg hover:bg-(--btn-primary-hover)
-                                          disabled:opacity-50"
                            >
                               {isUpdatingBasicInfo ? 'Saving...' : 'Save'}
-                           </button>
+                           </Button>
 
-                           <button
+                           <Button
+                              variant="outline"
                               onClick={() => {
                                  setIsEditingBasicInfo(false);
+                                 setBasicInfoErrors({});
                                  setEditFormData({
                                     name: profile.name || '',
                                     mobile: profile.mobile || '',
                                     email: profile.email || ''
                                  });
                               }}
-                              className="px-5 py-2 border border-(--card-border)
-                                          rounded-lg text-(--text-primary)"
                            >
                               Cancel
-                           </button>
+                           </Button>
                         </div>
                      )}
                   </div>
@@ -406,14 +446,12 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         </label>
 
                         {!isEditingEmail && (
-                           <button
-                           onClick={() => setIsEditingEmail(true)}
-                           className="p-1.5 text-(--text-secondary)
-                                       hover:text-(--brand-primary)
-                                       hover:bg-(--brand-primary)/10 rounded-lg"
+                           <Button
+                              variant='ghost'
+                              onClick={() => setIsEditingEmail(true)}
                            >
-                           {/* <Edit size={16} /> */}
-                           </button>
+                              {/* <Edit size={18} /> */}
+                           </Button>
                         )}
                      </div>
 
@@ -426,27 +464,27 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               onChange={handleInputChange}
                               className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
                            />
+                           <FieldError message={emailError} />
 
                            <div className="flex gap-2">
-                           <button
+                           <Button
                               onClick={handleUpdateEmail}
                               disabled={isUpdatingEmail}
-                              className="px-4 py-2 bg-(--btn-primary-bg)
-                                          text-(--btn-primary-text)
-                                          rounded-lg"
                            >
                               {isUpdatingEmail ? 'Saving...' : 'Save'}
-                           </button>
+                           </Button>
 
-                           <button
+                           <Button
+                              variant="outline"
                               onClick={() => {
                                  setIsEditingEmail(false);
+                                 setEmailError(undefined);
                                  setEditFormData((p) => ({ ...p, email: profile.email }));
                               }}
                               className="px-4 py-2 border rounded-lg"
                            >
                               Cancel
-                           </button>
+                           </Button>
                            </div>
                         </div>
                      ) : (

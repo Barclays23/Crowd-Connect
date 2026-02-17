@@ -1,6 +1,5 @@
 // src/utils/errorMessages.utils.ts
 import { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
 const isDevMode = import.meta.env.DEV;
 
 
@@ -62,7 +61,11 @@ export function isUnauthorizedError(error: unknown): boolean {
    return (
       error instanceof AxiosError &&
       error.response?.status === 401 &&
-      error.response?.data?.code === "SESSION_EXPIRED"
+      // error.response?.data?.code === "SESSION_EXPIRED"
+      (
+         error.response?.data?.code === "SESSION_EXPIRED" ||
+         error.response?.data?.message?.toLowerCase().includes("session")
+      )
    );
 }
 

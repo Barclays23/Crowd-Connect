@@ -1,7 +1,6 @@
 // frontend/src/components/user/UserHostProfile.tsx
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { userServices } from '@/services/userServices';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { UserState } from '@/types/user.types';
 import DetailItem from '../ui/detail-item';
@@ -34,15 +33,16 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
       try {
          setIsUpdatingHostDetails(true);
          const updateData = {
-         organizationName: editFormData.organizationName.trim() || null,
-         registrationNumber: editFormData.registrationNumber.trim() || null,
-         businessAddress: editFormData.businessAddress.trim() || null,
+            organizationName: editFormData.organizationName.trim() || null,
+            registrationNumber: editFormData.registrationNumber.trim() || null,
+            businessAddress: editFormData.businessAddress.trim() || null,
          };
          // await hostServices.updateHostDetails(updateData);  // or 
          await hostServices.updateHostDetailsByHost(updateData);
          setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
          setEditingField(null);
          toast.success('Host details updated successfully!');
+
       } catch (err) {
          const errorMessage = getApiErrorMessage(err);
          if (errorMessage) toast.error(errorMessage);

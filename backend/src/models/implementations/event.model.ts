@@ -2,6 +2,7 @@
 
 import { ALL_EVENT_CATEGORIES, EVENT_FORMAT, EVENT_STATUS, IEventModel, TICKET_TYPE } from "@/types/event.types";
 import { model, Model, Schema, HydratedDocument } from "mongoose";
+import { number } from "zod";
 
 
 
@@ -22,15 +23,16 @@ const eventSchema = new Schema<IEventModel>(
          required: true,
          trim: true,
       },
-      description: {
-         type: String,
-         required: true
-      },
       category: {
          type: String,
          required: true,
          enum: ALL_EVENT_CATEGORIES,
       },
+      description: {
+         type: String,
+         required: true
+      },
+
       posterUrl: {
          type: String, // Store the Cloudinary/S3 URL here
          required: false,  // should be able to create event without poster first (especially manual upload).
@@ -42,7 +44,6 @@ const eventSchema = new Schema<IEventModel>(
          enum: Object.values(EVENT_FORMAT),
          required: true,
       },
-
       // --- Location (Hybrid Approach) ---
       locationName: {   // The human-readable name (e.g. "Bangalore, Karnataka")
          type: String,
@@ -58,7 +59,6 @@ const eventSchema = new Schema<IEventModel>(
             type: [Number], // [Longitude, Latitude]
          },
       },
-
       onlineLink: {      // Only valid if format is online
          type: String,
          trim: true,
@@ -114,6 +114,11 @@ const eventSchema = new Schema<IEventModel>(
          enum: Object.values(EVENT_STATUS),
          default: EVENT_STATUS.DRAFT,
          required: true
+      },
+      views: {
+         type: Number,
+         default: 0,
+         min: 0,
       },
 
       // --- Event Cancellation ---

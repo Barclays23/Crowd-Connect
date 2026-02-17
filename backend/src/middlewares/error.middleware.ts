@@ -77,6 +77,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    res.status(status).json({
       success: false,
       message,
+      code: status === 401 ? "SESSION_EXPIRED" : undefined,
       ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack }),
    });
 };

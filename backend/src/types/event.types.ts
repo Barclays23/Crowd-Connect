@@ -1,5 +1,6 @@
 // backend/src/types/event.types.ts
 
+import { EventResponseDTO } from "@/dtos/event.dto";
 import { Types } from "mongoose";
 
 
@@ -114,3 +115,31 @@ export interface IEventModel {
 
 
 
+export type EventFilterQuery = Partial<IEventModel> & Record<string, unknown>;
+
+
+// query filters for fetching events (by admin)
+export interface GetEventsFilter {
+  page: number;
+  limit: number;
+  category?: EVENT_CATEGORY;
+  format?: EVENT_FORMAT;
+  status?: EVENT_STATUS;
+  ticketType?: TICKET_TYPE;
+
+  search?: string;
+  
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+
+
+// result when fetching events (by admin)
+export interface GetEventsResult {
+  events: EventResponseDTO[] | null;
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}

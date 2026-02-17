@@ -1,0 +1,450 @@
+@import "tailwindcss";
+
+/* * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+} */
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* margin-top: 4.5rem; Navbar margin height for all pages */
+}
+
+
+.Toastify__toast {
+  font-size: 13px;
+  padding: 18px 22px;
+  min-height: 60px;
+  width: 300px;
+  font-family: "Intel One Mono", monospace;
+}
+
+
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+}
+
+
+/* ===== LIGHT MODE THEME ===== */
+:root {
+  /* Brand Colors */
+  --brand-primary: #ff6b6b;           /* Coral Red */
+  --brand-primary-hover: #e63946;     /* Darker Coral */
+  --brand-primary-light: #fca5a5;     /* Light Coral */
+
+  /* Background Colors */
+  --bg-primary: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 50%, #ffd4d4 100%);              /* Gradient Coral */
+  --bg-secondary: #ffe5e5;            /* Light Coral Pink */
+  --bg-tertiary: #ffd4d4;             /* Soft Coral */
+  --bg-accent: #ffb8b8;               /* Pastel Coral */
+  --bg-overlay: rgba(255, 245, 245, 0.5);   /* Modal Overlay */
+  --bg-overlay2: rgba(255, 245, 245, 0.648);   /* Modal Overlay */
+  --bg-neutral: #ff6b6b30;
+  --bg-neutral-hover: #ff6b6b60;
+
+
+  /* Text Colors */
+  --text-primary: #2d1515;            /* Dark Brown */
+  --text-secondary: #5a3030;          /* Medium Brown */
+  --text-tertiary: #8a5555;           /* Light Brown */
+  --text-inverse: #ffffff;            /* White for Dark Backgrounds */
+  --text-brand: var(--brand-primary);
+
+
+  /* Headings */
+  --heading-primary: #2d1515;         /* Dark Brown */
+  --heading-secondary: #5a3030;       /* Medium Brown */
+  --heading-accent: var(--brand-primary);
+
+
+  /* Buttons */
+  --btn-primary-bg: var(--brand-primary);
+  --btn-primary-hover: var(--brand-primary-hover);
+  --btn-primary-light-hover: var(--brand-primary-light);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #ffd4d4;
+  --btn-secondary-hover: #ffb8b8;
+  --btn-secondary-text: #5a3030;
+  --btn-ghost-bg: transparent;
+  --btn-ghost-hover: var(--bg-accent);
+  --btn-ghost-text: var(--brand-primary); /* coral red text */
+  --btn-neutral: var(--bg-neutral);
+  --btn-neutral-hover: var(--bg-neutral-hover);
+
+
+
+  /* Links */
+  --link-text: var(--text-secondary);
+  --link-text-hover: var(--brand-primary);
+  --navlink-inactive: var(--text-secondary);
+  --navlink-inactive-hover: var(--brand-primary);
+  --navlink-active: var(--brand-primary);
+
+
+
+  /* Cards */
+  --card-bg: #ffffff;
+  --card-secondary: #ffe5e5;
+  --card-border: #ffd4d4;
+  --card-shadow: 0 2px 4px rgba(255, 107, 107, 0.1);
+  --card-shadow-hover: 0 4px 8px rgba(255, 107, 107, 0.15);
+
+
+
+  /* Status */
+  --status-success: #10b981;          /* Green for Success */
+  --status-success-bg: #d1fae5;
+  --status-error: #ff4444;            /* Red for Error */
+  --status-error-hover: #ff2222;
+  --status-info: var(--brand-primary);
+  --status-info-bg: var(--bg-accent);
+
+
+
+  /* BADGES */
+  --badge-default-bg: var(--bg-secondary);
+  --badge-default-text: var(--text-secondary);
+  --badge-default-border: var(--border-default);
+  
+  --badge-primary-bg: rgba(255, 107, 107, 0.15); /* Light coral tint */
+  --badge-primary-text: var(--brand-primary);
+  --badge-primary-border: var(--brand-primary-light);
+  
+  --badge-success-bg: var(--status-success-bg);
+  --badge-success-text: #059669; /* Darker green for readability */
+  --badge-success-border: var(--status-success);
+  
+  --badge-error-bg: #fee2e2; /* Light red tint */
+  --badge-error-text: #dc2626; /* Darker red for readability */
+  --badge-error-border: var(--status-error);
+  
+  --badge-info-bg: rgba(255, 107, 107, 0.12); /* Very light coral */
+  --badge-info-text: #e63946; /* Darker coral */
+  --badge-info-border: var(--brand-primary-light);
+  
+  --badge-warning-bg: #fef3c7; /* Light amber tint */
+  --badge-warning-text: #d97706; /* Amber for readability */
+  --badge-warning-border: #fbbf24;
+  
+  --badge-secondary-bg: var(--bg-tertiary);
+  --badge-secondary-text: var(--text-primary);
+  --badge-secondary-border: var(--border-muted);
+  
+  --badge-accent-bg: rgba(230, 57, 70, 0.12); /* Darker coral tint */
+  --badge-accent-text: var(--brand-primary-hover);
+  --badge-accent-border: var(--brand-primary);
+  
+  --badge-muted-bg: #fff5f5;
+  --badge-muted-text: var(--text-tertiary);
+  --badge-muted-border: var(--border-default);
+  
+  --badge-outline-bg: transparent;
+  --badge-outline-text: var(--brand-primary);
+  --badge-outline-border: var(--brand-primary);
+  
+  --badge-highlight-bg: rgba(255, 107, 107, 0.25); /* Medium coral tint */
+  --badge-highlight-text: #c92a2a; /* Deep coral */
+  --badge-highlight-border: var(--brand-primary-hover);
+  
+  --badge-subtle-bg: rgba(255, 229, 229, 0.5); /* Very light coral */
+  --badge-subtle-text: var(--text-secondary);
+  --badge-subtle-border: transparent;
+  
+  --badge-brand-bg: var(--brand-primary);
+  --badge-brand-text: #ffffff;
+  --badge-brand-border: var(--brand-primary-hover);
+  
+  --badge-neutral-bg: #ffd4d4;
+  --badge-neutral-text: #5a3030;
+  --badge-neutral-border: #ffb8b8;
+  
+  --badge-inverse-bg: var(--text-primary);
+  --badge-inverse-text: var(--text-inverse);
+  --badge-inverse-border: var(--text-primary);
+  
+  --badge-gradient-bg: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+  --badge-gradient-text: #ffffff;
+  --badge-gradient-border: transparent;
+
+
+
+  /* Borders */
+  --border-default: rgba(255, 107, 107, 0.15);
+  --border-muted: rgba(255, 107, 107, 0.2);
+  --border-strong: rgba(255, 107, 107, 0.3);
+  --border-focus: var(--brand-primary-light);
+  --border-brand: var(--brand-primary);
+  
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(255, 107, 107, 0.1);
+  --shadow-sm: 0 4px 6px rgba(255, 107, 107, 0.1);
+  --shadow-md: 0 10px 15px rgba(255, 107, 107, 0.1);
+  --shadow-lg: 0 10px 25px -5px rgba(255, 107, 107, 0.15);
+  --shadow-xl: 0 20px 40px -10px rgba(255, 107, 107, 0.2);
+  
+
+  /* Forms & Inputs */
+  --form-bg: #ffffff;
+  --form-border: var(--border-default);
+  --form-input-border: rgba(255, 107, 107, 0.25);
+  --form-input-bg: #ffffff;
+  --form-input-text: var(--text-primary);
+  --form-placeholder: #8a5555;
+  --form-disabled-bg: #ffe5e5;
+  --form-focus-ring: 0 0 0 3px rgba(255, 107, 107, 0.2);
+  --form-invalid: #ef4444;
+  --form-valid: #10b981;
+
+
+  /* Modal */
+  --modal-overlay: var(--bg-overlay);
+  --modal-bg: #ffe5e5;
+  --modal-content-bg: #ffd4d4;
+  --modal-border: var(--border-muted);
+  --modal-shadow: var(--shadow-lg);
+
+
+  /* Scrollbar */
+  --scrollbar-track: #ffe5e5;
+  --scrollbar-thumb: #ffb8b8;
+  --scrollbar-thumb-hover: #ff9999;
+}
+
+
+
+
+
+
+/* ===== DARK MODE THEME ===== */
+/* [data-theme="dark"] { */
+.dark {
+  /* Brand Colors */
+  --brand-primary: #ff6b6b;           /* Coral Red */
+  --brand-primary-hover: #e63946;     /* Darker Coral */
+  --brand-primary-light: #fca5a5;     /* Light Coral */
+
+  /* Background Colors */
+  --bg-primary: #111827;              /* Dark Gray */
+  --bg-secondary: #1f2937;            /* Slightly Lighter Gray */
+  --bg-tertiary: #374151;             /* Medium Gray */
+  --bg-accent: #060e24;               /* Dark Indigo */
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-overlay2: rgba(0, 0, 0, 0.648);   /* Modal Overlay */
+  --bg-neutral: #ffffff30;
+  --bg-neutral-hover: #ffffff60;
+  
+  /* Text Colors */
+  --text-primary: #feffff;
+  --text-secondary: #d0d0d0;
+  --text-tertiary: #acacac;
+  --text-inverse: #111111;
+  --text-brand: var(--brand-primary);
+  --text-neutral: #313131;
+
+  /* Navbar */
+  --nav-bg: #00041dbd;  
+
+  /* Headings */
+  --heading-primary: #f9fafb;
+  --heading-secondary: #d1d5db;
+  --heading-accent: var(--brand-primary);
+
+
+  /* Buttons */
+  --btn-primary-bg: var(--brand-primary);
+  --btn-primary-hover: var(--brand-primary-hover);
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #374151;
+  --btn-secondary-hover: #4b5563;
+  --btn-secondary-text: #f9fafb;
+  --btn-ghost-bg: transparent;
+  --btn-ghost-hover: var(--bg-tertiary);
+  --btn-ghost-text: var(--brand-primary);
+  --btn-neutral: var(--bg-neutral);
+  --btn-neutral-hover: var(--bg-neutral-hover);
+
+
+
+  /* Links */
+  --link-text: var(--text-secondary);
+  --link-text-hover: var(--brand-primary);
+  --navlink-inactive: var(--text-secondary);
+  --navlink-inactive-hover: var(--brand-primary);
+  --navlink-active: var(--brand-primary);
+
+
+
+
+  /* Cards */
+  --card-bg: #1f2937;
+  --card-primary: var(--bg-primary);
+  --card-secondary: #232c3d;
+  --card-border: #374151;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+
+  
+  /* Status */
+  --status-success: #10b981;
+  --status-success-hover: #064e3b;
+  --status-error: #ff4444;            /* Red for Error */
+  --status-error-hover: #ff2222;
+  --status-info: var(--brand-primary);
+  --status-info-hover: var(--bg-accent);
+
+
+  
+  /* BADGES */
+  --badge-default-bg: var(--bg-tertiary);
+  --badge-default-text: var(--text-secondary);
+  --badge-default-border: var(--border-default);
+  
+  --badge-primary-bg: rgba(255, 107, 107, 0.15); /* Coral tint for dark */
+  --badge-primary-text: var(--brand-primary-light);
+  --badge-primary-border: var(--brand-primary);
+  
+  --badge-success-bg: rgba(16, 185, 129, 0.15); /* Green tint */
+  --badge-success-text: #34d399; /* Lighter green */
+  --badge-success-border: var(--status-success);
+  
+  --badge-error-bg: rgba(255, 68, 68, 0.15); /* Red tint */
+  --badge-error-text: #fca5a5; /* Lighter red */
+  --badge-error-border: var(--status-error);
+  
+  --badge-info-bg: rgba(255, 107, 107, 0.12); /* Light coral tint */
+  --badge-info-text: var(--brand-primary-light);
+  --badge-info-border: var(--brand-primary);
+  
+  --badge-warning-bg: rgba(251, 191, 36, 0.15); /* Amber tint */
+  --badge-warning-text: #fbbf24; /* Lighter amber */
+  --badge-warning-border: #f59e0b;
+  
+  --badge-secondary-bg: var(--bg-secondary);
+  --badge-secondary-text: var(--text-primary);
+  --badge-secondary-border: var(--border-muted);
+  
+  --badge-accent-bg: rgba(230, 57, 70, 0.2); /* Darker coral tint */
+  --badge-accent-text: #ff8787; /* Lighter coral */
+  --badge-accent-border: var(--brand-primary-hover);
+  
+  --badge-muted-bg: var(--bg-primary);
+  --badge-muted-text: var(--text-tertiary);
+  --badge-muted-border: var(--border-default);
+  
+  --badge-outline-bg: transparent;
+  --badge-outline-text: var(--brand-primary-light);
+  --badge-outline-border: var(--brand-primary);
+  
+  --badge-highlight-bg: rgba(255, 107, 107, 0.25); /* Medium coral tint */
+  --badge-highlight-text: #ffb3b3; /* Light coral */
+  --badge-highlight-border: var(--brand-primary);
+  
+  --badge-subtle-bg: rgba(31, 41, 55, 0.5); /* Very subtle dark */
+  --badge-subtle-text: var(--text-tertiary);
+  --badge-subtle-border: transparent;
+  
+  --badge-brand-bg: var(--brand-primary);
+  --badge-brand-text: #ffffff;
+  --badge-brand-border: var(--brand-primary-light);
+  
+  --badge-neutral-bg: #4b5563;
+  --badge-neutral-text: #e5e7eb;
+  --badge-neutral-border: #6b7280;
+  
+  --badge-inverse-bg: var(--text-primary);
+  --badge-inverse-text: var(--text-inverse);
+  --badge-inverse-border: var(--text-primary);
+  
+  --badge-gradient-bg: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+  --badge-gradient-text: #ffffff;
+  --badge-gradient-border: transparent;
+
+
+
+
+  /* Borders */
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-muted: rgba(255, 255, 255, 0.15);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --border-focus: var(--brand-primary-light);
+  --border-brand: var(--brand-primary);
+  
+
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(255, 255, 255, 0.5);
+  --shadow-sm: 0 4px 6px rgba(255, 255, 255, 0.5);
+  --shadow-md: 0 10px 15px rgba(255, 255, 255, 0.5);
+  --shadow-lg: 0 10px 25px -5px rgba(255, 255, 255, 0.5);
+  --shadow-xl: 0 20px 40px -10px rgba(255, 255, 255, 0.5);
+
+  
+  /* Forms & Inputs */
+  --form-bg: #1f2937;
+  --form-border: var(--border-default);
+  --form-input-border: rgba(255, 255, 255, 0.187);
+  --form-input-bg: var(--bg-primary);
+  --form-input-text: var(--text-primary);
+  --form-placeholder: #6b7280;
+  --form-disabled-bg: #374151;
+  --form-focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.3);
+  --form-invalid: #f87171;
+  --form-valid: #10b981;
+
+  /* Modal */
+  --modal-overlay: var(--bg-overlay);
+  --modal-bg: #1b222d;
+  --modal-content-bg: #222b39;
+  --modal-border: var(--border-muted);
+  --modal-shadow: var(--shadow-lg);
+
+  /* Scrollbar */
+  --scrollbar-track: #374151;
+  --scrollbar-thumb: #6b7280;
+  --scrollbar-thumb-hover: #9ca3af;
+}
+
+
+
+
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes drawPath {
+  from {
+    stroke-dasharray: 30; /* approximate length of the path */
+    stroke-dashoffset: 30;
+  }
+  to {
+    stroke-dasharray: 30;
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+.animate-drawCheck {
+  animation: drawPath 0.8s ease-out forwards;
+}

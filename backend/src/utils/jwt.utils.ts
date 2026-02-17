@@ -26,7 +26,7 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 const ACCESS_TOKEN_EXPIRY = "15m";  // 5 minutes
 // const REFRESH_TOKEN_EXPIRY = "7d";  // 7 days  (also check in refreshCookie.utils.ts)
-const REFRESH_TOKEN_EXPIRY = "2h";  // 30 minutes (also check in refreshCookie.utils.ts)
+const REFRESH_TOKEN_EXPIRY = "1d";  // 30 minutes (also check in refreshCookie.utils.ts)
 
 // tell TS these are the types jsonwebtoken expects
 // const ACCESS_SECRET: jwt.Secret = ACCESS_TOKEN_SECRET;

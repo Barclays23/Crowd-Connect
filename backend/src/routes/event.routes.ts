@@ -33,5 +33,4 @@ eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(UserRole.USE
 )
 
 
-
 export default eventRouter;

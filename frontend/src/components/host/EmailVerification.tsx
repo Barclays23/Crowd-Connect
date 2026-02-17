@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { OtpSchema } from "@/schemas/otp.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { string, type z } from "zod";
+import { type z } from "zod";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { maskEmail } from "@/utils/namingConventions";
 import { FieldError } from "../ui/FieldError";
