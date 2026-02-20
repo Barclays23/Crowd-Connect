@@ -32,7 +32,6 @@ const isDatabaseError = (err: unknown): boolean => {
       return true;
    }
 
-
    return false;
 
 };
@@ -53,6 +52,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
 
    let status = 500; 
    let message = 'Something went wrong. Please try again later.';
+   let code: string | undefined;
 
 
    // NARROWING: 
@@ -60,6 +60,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    if (err instanceof HttpError) {
       status = err.statusCode;
       message = err.message;
+      code = err.code;
 
    // database-related errors (present or future)
    } else if (isDatabaseError(err)) {
@@ -77,7 +78,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    res.status(status).json({
       success: false,
       message,
-      code: status === 401 ? "SESSION_EXPIRED" : undefined,
+      code,
       ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack }),
    });
 };

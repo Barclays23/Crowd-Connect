@@ -17,12 +17,13 @@ import { HostController } from '@/controllers/implementations/host.controller';
 
 import { validateBody, validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
-import { MongoIdParamSchema } from '@/schemas/mongo.schema';
-import { ADMIN_ROUTES, EVENT_ROUTES } from '@/constants/routes.constants';
+import { EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
+import { ADMIN_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/eventManagement.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
+import { suspendEventSchema } from '@/schemas/event.schema';
 
 
 
@@ -75,12 +76,12 @@ adminRouter.post(ADMIN_ROUTES.CREATE_USER, uploadImage.single("profileImage"), u
 // Host management
 adminRouter.get(ADMIN_ROUTES.GET_HOSTS, hostController.getAllHosts.bind(hostController));
 adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_REQUEST, 
-    validateRequest({body: HostManageSchema, params: MongoIdParamSchema}), 
+    validateRequest({body: HostManageSchema, params: HostIdParamSchema}), 
     hostController.manageHostStatus.bind(hostController)
 );
 adminRouter.put(ADMIN_ROUTES.UPDATE_HOST, 
     uploadDocument.single('hostDocument'), 
-    validateRequest({body: HostUpgradeSchema, params: MongoIdParamSchema}), 
+    validateRequest({body: HostUpgradeSchema, params: HostIdParamSchema}), 
     hostController.updateHostByAdmin.bind(hostController)
 );
 
@@ -94,8 +95,8 @@ adminRouter.put(ADMIN_ROUTES.UPDATE_HOST,
 
 // event management
 adminRouter.get(ADMIN_ROUTES.GET_EVENTS, eventController.getAllEvents.bind(eventController));
-adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, eventController.suspendEvent.bind(eventController));
-adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, eventController.deleteEvent.bind(eventController));
+adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, validateRequest({body: suspendEventSchema, params: EventIdParamSchema}), eventController.suspendEvent.bind(eventController));
+adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, validateRequest({params: EventIdParamSchema}), eventController.deleteEvent.bind(eventController));
 
 
 export default adminRouter;

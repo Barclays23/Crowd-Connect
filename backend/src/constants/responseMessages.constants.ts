@@ -82,6 +82,7 @@ export enum HttpResponse {
     SUCCESS_DELETE_USER = "User has been deleted.",
     SUCCESS_DELETE_EVENT = "Event has been deleted",
     SUCCESS_SUSPEND_EVENT = "Event has been suspended.",
+    SUCCESS_PUBLISH_EVENT = "Event has been published.",
     SUCCESS_UNBLOCK_USER = "User has been unblocked.",
 
     

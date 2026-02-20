@@ -251,8 +251,7 @@ export class AuthController implements IAuthController {
                 // reason for an HTTP-only cookie to be missing in this context is if 
                 // the browser auto-deleted it due to expiration.
                 // message: "Your session has ended. Please log in again to continue."
-                // throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
-                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
+                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`, "SESSION_EXPIRED");
                 return;
             }
 

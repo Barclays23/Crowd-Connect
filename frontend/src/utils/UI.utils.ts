@@ -12,21 +12,33 @@ export const getUserStatusBadgeVariant = (status: string) => {
 
 
 
-export const getEventStatusBadgeVariant = (status: EVENT_STATUS) => {
+export const getEventStatusBadgeVariant = (
+  status: EVENT_STATUS
+) => {
   switch (status) {
-      case "draft":
-        return "secondary";
-      case "upcoming":
-      case "ongoing":
-        return "success";
-      case "cancelled":
-        return "destructive";
-      case "completed":
-        return "outline";
-      default:
-        return "secondary";
+    case "draft":
+      return "secondary";
+
+    case "upcoming":
+      return "default";
+
+    case "ongoing":
+      return "success";
+
+    case "completed":
+      return "outline";
+
+    case "cancelled":
+      return "destructive";
+
+    case "suspended":
+      return "warning";
+
+    default:
+      return "secondary";
   }
 };
+
 
 
 

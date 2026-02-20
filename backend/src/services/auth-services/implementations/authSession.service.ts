@@ -62,7 +62,7 @@ export class AuthSessionService implements IAuthSessionService {
         try {
             if (!refreshToken) {
                 // message: "Your session has ended. Please log in again to continue."
-                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`);
+                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`, "SESSION_EXPIRED");
             }
             
             const decoded = verifyRefreshToken(refreshToken);

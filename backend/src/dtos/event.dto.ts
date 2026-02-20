@@ -30,16 +30,21 @@ export interface CreateEventDTO {
 
 
 export interface EventStatusUpdateRequestDto {
-  newStatus: string, 
+  newStatus: EVENT_STATUS, 
   reason?: string;
-} 
+}
 
 
 
 /* ───────────────── HTTP RESPONSE BOUNDARY DTOs ───────────────── */
 export interface EventResponseDTO {
   eventId: string;
-  hostRef: string;
+  // hostRef: string;
+  organizer: {
+    hostId: string;
+    hostName: string;
+    organizerName: string;
+  };
 
   title: string;
   category: EVENT_CATEGORY;
@@ -65,6 +70,12 @@ export interface EventResponseDTO {
 
   eventStatus: EVENT_STATUS;
 
+  cancellation?: {
+    reason: string;
+    cancelledBy: string;
+    cancelledAt: string;
+  };
+
   createdAt: string;
 }
 
@@ -72,7 +83,8 @@ export interface EventResponseDTO {
 
 
 export interface EventStatusUpdateResponseDto {
-  eventStatus: EVENT_STATUS;
-  cancelledAt?: Date;
-  cancellationReason?: string;
+  updatedStatus: EVENT_STATUS;
+  // cancelledAt?: string;
+  // reason?: string;
+  // actedBy: "ADMIN" | "HOST";
 }

@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDate2, formatDate1 } from "@/utils/dateAndTimeFormats";
-import { Calendar, MapPin, Video, IndianRupee, Tag, Users, Ticket } from "lucide-react";
+import { Calendar, MapPin, Video, IndianRupee, Tag, Users, Ticket, AlertTriangle } from "lucide-react";
 import type { IEventState } from "@/types/event.types";
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
@@ -23,36 +23,54 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
          {/* Hero Header */}
          <div className="space-y-5 rounded-xl bg-(--bg-accent) p-6 shadow-(--card-shadow)">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-               <div>
+               <div className="space-y-3 flex-1">
                   <h3 className="text-2xl sm:text-3xl font-bold text-(--heading-primary) tracking-tight">
-                  {event.title}
+                     {event.title}
                   </h3>
+
+                  {/* Category */}
                   {event.category && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-(--text-secondary)">
-                     <Tag className="h-4 w-4" />
-                     <span className="font-medium">{capitalize(event.category)}</span>
-                  </div>
+                     <div className="flex items-center gap-2 text-sm text-(--text-secondary)">
+                        <Tag className="h-4 w-4" />
+                        <span className="font-medium">{capitalize(event.category)}</span>
+                     </div>
+                  )}
+
+                  {/* Organized by – moved here */}
+                  {event.organizer?.organizerName && (
+                     <div className="text-sm text-(--text-secondary) mt-1">
+                        Organized by{" "}
+                        <span className="font-medium text-(--text-primary)">
+                           {event.organizer.organizerName}
+                        </span>
+                        {event.organizer.hostName && event.organizer.hostName !== event.organizer.organizerName && (
+                           <span className="text-(--text-tertiary)">
+                              {" "}({event.organizer.hostName})
+                           </span>
+                        )}
+                     </div>
                   )}
                </div>
 
-               <div className="flex flex-wrap items-center gap-2 self-start">
+               {/* Badges – stay on the right */}
+               <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
                   <Badge
-                  variant={getEventStatusBadgeVariant(event.eventStatus)}
-                  className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
+                     variant={getEventStatusBadgeVariant(event.eventStatus)}
+                     className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
                   >
-                  {capitalize(event.eventStatus)}
+                     {capitalize(event.eventStatus)}
                   </Badge>
                   <Badge
-                  variant={isOnline ? "secondary" : "default"}
-                  className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
+                     variant={isOnline ? "secondary" : "default"}
+                     className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
                   >
-                  {capitalize(event.format)}
+                     {capitalize(event.format)}
                   </Badge>
                   <Badge
-                  variant={isFree ? "success" : "destructive"}
-                  className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
+                     variant={isFree ? "success" : "destructive"}
+                     className="rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-wide"
                   >
-                  {isFree ? "Free" : "Paid"}
+                     {isFree ? "Free" : "Paid"}
                   </Badge>
                </div>
             </div>
@@ -62,7 +80,7 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   <span>
-                  {formatDate2(event.startDateTime)} – {formatDate2(event.endDateTime)}
+                     {formatDate2(event.startDateTime)} – {formatDate2(event.endDateTime)}
                   </span>
                </div>
             </div>
@@ -77,10 +95,27 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                {/* Description */}
                <section>
                   <h4 className="mb-3 text-lg font-semibold text-(--heading-primary)">Description</h4>
-                  <p className="whitespace-pre-line leading-relaxed text-(--text-primary)">
+                  <p className="text-sm whitespace-pre-line leading-relaxed text-(--text-primary)">
                   {event.description || "No description provided."}
                   </p>
                </section>
+
+               {/* Cancellation Section */}
+               {((event.eventStatus === "cancelled" || event.eventStatus === "suspended") && event.cancellation) && (
+                  <section>
+                     <h4 className="mb-3 text-lg font-semibold text-(--status-error)">
+                        Cancellation Reason
+                     </h4>
+
+                     <div className="rounded-lg border border-(--status-error)/40 bg-(--status-error-bg) p-4">
+                        <AlertTriangle className="mt-1 h-5 w-5 shrink-0 text-(--status-error)" />
+                        <p className="text-xs whitespace-pre-line leading-relaxed text-(--text-primary)">
+                           {event?.cancellation?.reason}
+                        </p>
+                     </div>
+                  </section>
+               )}
+
 
 
                {/* Location / Online link */}
@@ -129,16 +164,7 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                   </div>
                )}
                </section>
-
-               {/* Organizer */}
-               {event.organizerName && (
-                  <section>
-                  <h4 className="mb-2 text-lg font-semibold text-(--heading-primary)">Organized by</h4>
-                  <p className="text-lg font-medium text-(--text-primary)">
-                     {event.organizerName}
-                  </p>
-                  </section>
-               )}
+               
             </div>
 
             {/* Right – stats sidebar */}

@@ -2,7 +2,6 @@
 
 import { ALL_EVENT_CATEGORIES, EVENT_FORMAT, EVENT_STATUS, IEventModel, TICKET_TYPE } from "@/types/event.types";
 import { model, Model, Schema, HydratedDocument } from "mongoose";
-import { number } from "zod";
 
 
 
@@ -122,16 +121,20 @@ const eventSchema = new Schema<IEventModel>(
       },
 
       // --- Event Cancellation ---
-      cancellationReason: {
-         type: String,
-         trim: true,
-         maxlength: 500,  // do zod validation
+      cancellation: {
+         reason: {
+            type: String,
+            trim: true,
+         },
+         cancelledBy: {
+            type: String,
+            enum: ["ADMIN", "HOST"],
+         },
+         cancelledAt: {
+            type: Date,
+         },
       },
-      cancelledBy: {
-         type: Schema.Types.ObjectId,
-         ref: 'User', // admin or host
-      },
-      cancelledAt: Date,
+
    },
    {
       timestamps: true,

@@ -1,6 +1,6 @@
 import { CreateEventDTO, EventResponseDTO, EventStatusUpdateRequestDto, EventStatusUpdateResponseDto } from "@/dtos/event.dto";
 import { CreateEventInput, EventEntity, EventStatusUpdateInput } from "@/entities/event.entity";
-import { EVENT_STATUS, IEventModel } from "@/types/event.types";
+import { EVENT_STATUS, IEventModel, IEventModelPopulatedHost, IHostPopulatedFromEvent } from "@/types/event.types";
 import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { capitalize, toTitleCase } from "@/utils/string.utils";
 import { Request } from "express";
@@ -45,38 +45,60 @@ export const mapCreateEventRequestToDto = (
 
 /* ────────────────────────────────── MODEL → ENTITY ────────────────────────────────── */
 
-export const mapEventModelToEventEntity = (doc: IEventModel): EventEntity => ({
-  id: doc._id.toString(),
-  hostRef: doc.hostRef.toString(),
+export const mapEventModelToEventEntity = (
+  doc: IEventModel | IEventModelPopulatedHost
+): EventEntity => {
+   const isPopulated = typeof doc.hostRef === 'object' && doc.hostRef !== null && 'name' in doc.hostRef;
 
-  title: doc.title,
-  category: doc.category,
-  description: doc.description,
+   const host = isPopulated
+    ? (doc.hostRef as IHostPopulatedFromEvent)
+    : { _id: doc.hostRef as Types.ObjectId, name: '', organizationName: undefined };
 
-  posterUrl: doc.posterUrl,
+   return {
+      id: doc._id.toString(),
+      // hostRef: doc.hostRef.toString(),
 
-  format: doc.format,
-  locationName: doc.locationName,
-  location: doc.location,
-  onlineLink: doc.onlineLink,
+      organizer: {
+         hostId: host._id.toString(),
+         hostName: host.name ?? '',
+         organizerName: host.organizationName ?? '',
+      },
+      
+      title: doc.title,
+      category: doc.category,
+      description: doc.description,
+      
+      posterUrl: doc.posterUrl,
+      
+      format: doc.format,
+      locationName: doc.locationName,
+      location: doc.location,
+      onlineLink: doc.onlineLink,
+      
+      startDateTime: doc.startDateTime,
+      endDateTime: doc.endDateTime,
+      
+      ticketType: doc.ticketType,
+      ticketPrice: doc.ticketPrice,
+      capacity: doc.capacity,
+      
+      soldTickets: doc.soldTickets,
+      checkedInCount: doc.checkedInCount,
+      grossTicketRevenue: doc.grossTicketRevenue,
+      
+      eventStatus: doc.eventStatus,
+      views: doc.views,
 
-  startDateTime: doc.startDateTime,
-  endDateTime: doc.endDateTime,
-
-  ticketType: doc.ticketType,
-  ticketPrice: doc.ticketPrice,
-  capacity: doc.capacity,
-
-  soldTickets: doc.soldTickets,
-  checkedInCount: doc.checkedInCount,
-  grossTicketRevenue: doc.grossTicketRevenue,
-
-  eventStatus: doc.eventStatus,
-  views: doc.views,
-
-  createdAt: doc.createdAt,
-});
-
+      cancellation: doc.cancellation ? {
+         reason:       doc.cancellation.reason,
+         cancelledBy:  doc.cancellation.cancelledBy,   // "ADMIN" | "HOST"
+         cancelledAt:  doc.cancellation.cancelledAt,
+         } : undefined,
+      
+      createdAt: doc.createdAt,
+   }
+};
+   
 
 
 
@@ -89,7 +111,12 @@ export const mapEventEntityToEventResponseDto = (
 ): EventResponseDTO => ({
    
    eventId: entity.id,
-   hostRef: entity.hostRef,
+   // hostRef: entity.hostRef,
+   organizer: {
+      hostId: entity.organizer.hostId,
+      hostName: entity.organizer.hostName,
+      organizerName: entity.organizer.organizerName,
+   },
 
    title: entity.title,
    category: entity.category,
@@ -114,6 +141,14 @@ export const mapEventEntityToEventResponseDto = (
    grossTicketRevenue: entity.grossTicketRevenue,
    
    eventStatus: getEventDisplayStatus(entity),
+
+   cancellation: entity.cancellation?.cancelledBy
+      ? {
+            reason: entity.cancellation.reason,
+            cancelledBy: entity.cancellation.cancelledBy,
+            cancelledAt: entity.cancellation.cancelledAt?.toISOString(),
+         }
+      : undefined,
    
    createdAt: entity.createdAt.toISOString(),
 });
@@ -127,9 +162,9 @@ export const mapToEventStatusUpdateResponseDto = (
    event: EventEntity
 ): EventStatusUpdateResponseDto => {
    return {
-      eventStatus: event.eventStatus,
-      cancelledAt: event.cancelledAt,
-      cancellationReason: event.cancellationReason,
+      updatedStatus: event.eventStatus,
+      // cancelledAt: event.cancellation?.cancelledAt.toISOString(),
+      // reason: event.cancellation?.reason,
    };
 };
 
@@ -182,7 +217,7 @@ export const mapCreateEventRequestDtoToInput = ({
 
 
 export const mapToEventStatusUpdateInput = (
-  {newStatus, reason}: EventStatusUpdateRequestDto
+  { newStatus, reason }: EventStatusUpdateRequestDto
 ): EventStatusUpdateInput => {
 
    switch (newStatus) {
@@ -194,15 +229,21 @@ export const mapToEventStatusUpdateInput = (
       case "cancelled":
          return {
             eventStatus: EVENT_STATUS.CANCELLED,
-            cancellationReason: reason,
-            cancelledAt: new Date(),
+            cancellation: {
+               reason: `CANCELLED: ${reason}`,
+               cancelledBy: "ADMIN",
+               cancelledAt: new Date(),
+            },
          };
 
       case "suspended":
          return {
             eventStatus: EVENT_STATUS.SUSPENDED,
-            cancellationReason: reason,
-            cancelledAt: new Date(),
+            cancellation: {
+               reason: `SUSPENDED: ${reason}`,
+               cancelledBy: "ADMIN",
+               cancelledAt: new Date(),
+            },
          };
 
       default:

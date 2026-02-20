@@ -10,5 +10,19 @@ export const MongoIdBase = z
 
 
 export const MongoIdParamSchema = z.object({
-  hostId: MongoIdBase,
+  _id: MongoIdBase,
+});
+
+
+
+export const UserIdParamSchema = z.object({
+  userId: MongoIdBase
+});
+
+export const HostIdParamSchema = z.object({
+  userId: MongoIdBase
+});
+
+export const EventIdParamSchema = z.object({
+  eventId: MongoIdBase
 });

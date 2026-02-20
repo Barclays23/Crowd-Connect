@@ -7,9 +7,10 @@ import { CreateEventInput, EventEntity, EventStatusUpdateInput } from "@/entitie
 import { mapCreateEventRequestDtoToInput, mapEventEntityToEventResponseDto, mapToEventStatusUpdateInput, mapToEventStatusUpdateResponseDto } from "@/mappers/event.mapper";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
-import { EVENT_FORMAT, EVENT_STATUS, EventFilterQuery, GetEventsFilter, GetEventsResult, TICKET_TYPE } from "@/types/event.types";
-import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
+import { EVENT_FORMAT, EVENT_STATUS, EventFilterQuery, GetEventsFilter, GetAllEventsResult, TICKET_TYPE } from "@/types/event.types";
+import { applyEventStatusFilter, getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
+import { Types } from "mongoose";
 
 
 
@@ -92,7 +93,7 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
-    async getAllEvents(filters: GetEventsFilter): Promise<GetEventsResult> {
+    async getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult> {
         try {
             const { 
                 page, 
@@ -114,7 +115,10 @@ export class EventManagementServices implements IEventManagementServices {
                     { locationName: { $regex: search, $options: 'i' } },
                 ];
             }
-            if (status) query.eventStatus = status;
+            
+            // if (status) query.eventStatus = status;
+            applyEventStatusFilter(query, status);
+
             if (category) query.category = category;
             if (format) query.format = format;
             if (ticketType) query.ticketType = ticketType;
@@ -155,14 +159,13 @@ export class EventManagementServices implements IEventManagementServices {
             if (!eventEntity) {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
             }
-            
-            const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
-            const allowedToSuspend = [
-                EVENT_STATUS.UPCOMING,
-                EVENT_STATUS.ONGOING
-            ];
 
-            if (!allowedToSuspend.includes(displayStatus)) {
+            const allowedToSuspend = 
+                eventEntity.eventStatus === EVENT_STATUS.PUBLISHED &&
+                eventEntity.endDateTime > new Date();
+
+            if (!allowedToSuspend) {
+                const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
                 throw createHttpError(
                     HttpStatus.BAD_REQUEST,
                     `Cannot suspend an event with status "${displayStatus}"`
@@ -170,19 +173,12 @@ export class EventManagementServices implements IEventManagementServices {
             }
 
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
-                newStatus: EVENT_STATUS.SUSPENDED, 
-                reason: suspendReason
+                newStatus: EVENT_STATUS.SUSPENDED,
+                reason: suspendReason,
             });
-            
-            // if need full entity
-            // const updatedEventEntity: EventEntity | null = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
-            // const updatedStatusResponse: HostStatusUpdateResponseDto = mapToEventStatusUpdateResponseDto(updatedEventEntity)
-            // return updatedStatusResponse;
 
-            // if need only updated status
-            // const updatedStatus: EVENT_STATUS | undefined = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
-            const updatedStatus = EVENT_STATUS.SUSPENDED;
+            const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
             // Send notification to host and attendees (later)
             // if (updatedStatus === EVENT_STATUS.SUSPENDED) {
@@ -210,6 +206,50 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
+    async publishEvent(eventId: string, userId: string): Promise<void> {
+        try {
+            const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+            if (!eventEntity) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+            }
+
+            if (eventEntity.organizer.hostId.toString() !== userId) {
+                throw createHttpError(
+                    HttpStatus.FORBIDDEN,
+                    "Only the event host can publish this event"
+                );
+            }
+
+            if (eventEntity.eventStatus !== EVENT_STATUS.DRAFT) {
+                throw createHttpError(
+                    HttpStatus.BAD_REQUEST,
+                    "Only draft events can be published"
+                );
+            }
+
+            const now = new Date();
+
+            if (eventEntity.startDateTime <= now) {
+                throw createHttpError(
+                    HttpStatus.BAD_REQUEST,
+                    "This event's scheduled time has already passed. Please update the event date to publish."
+                );
+            }
+
+            const eventStatusUpdateInput: EventStatusUpdateInput = {eventStatus: EVENT_STATUS.PUBLISHED};
+
+            await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.publishEvent:", msg);
+            throw error;
+        }
+    }
+
+
+
     async deleteEvent(eventId: string): Promise<void> {
         try {
             const event = await this._eventRepository.getEventById(eventId);
@@ -233,6 +273,68 @@ export class EventManagementServices implements IEventManagementServices {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error("Error in EventManagementServices.deleteEvent:", msg);
+            throw error;
+        }
+    }
+
+
+    async getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult> {
+        try {
+            const { 
+                page, 
+                limit, 
+                search, 
+                status, 
+                category, 
+                format,
+                ticketType,
+                sortBy, 
+                sortOrder
+            }: GetEventsFilter = filters;
+
+            const query: EventFilterQuery = {};
+
+            query.hostRef = new Types.ObjectId(userId);
+
+            if (search) {
+                query.$or = [
+                    { title: { $regex: search, $options: 'i' } },
+                    { locationName: { $regex: search, $options: 'i' } },
+                ];
+            }
+
+            if (status) query.eventStatus = status;
+            applyEventStatusFilter(query, status);
+
+            if (category) query.category = category;
+            if (format) query.format = format;
+            if (ticketType) query.ticketType = ticketType;
+
+            const skip = (page - 1) * limit;
+            const sort: any = {};
+            sort[sortBy!] = sortOrder === "asc" ? 1 : -1;
+
+            console.log('Final query in EventManagementServices.getUserEvents:', query);
+            console.log("Sort applied:", sort);
+
+            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
+                this._eventRepository.findEvents(query, skip, limit, sort),
+                this._eventRepository.countEvents(query)
+            ]);
+            
+            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
+
+            return {
+                events: mappedEvents,
+                page,
+                limit,
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+            };
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.getUserEvents:", msg);
             throw error;
         }
     }

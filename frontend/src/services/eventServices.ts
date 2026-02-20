@@ -39,9 +39,28 @@ export const eventServices = {
       return res.data;
    },
 
+
+   async publishEvent(eventId: string) {
+      const response = await axiosInstance.patch(`/api/event/${eventId}/publish`);
+      return response.data;
+   },
+
+
    deleteEvent: async (eventId: string) => {
       const res = await axiosInstance.delete(`/api/admin/events/${eventId}`);
       return res.data;
+   },
+   
+
+   getMyEvents: async (queryString: string = "") => {
+      try {
+         const response = await axiosInstance.get(`/api/event/my-events${queryString ? `?${queryString}` : ""}`, {
+            withCredentials: true,
+         });
+         return response.data;
+      } catch (error) {
+         throw error;
+      }
    },
 
 

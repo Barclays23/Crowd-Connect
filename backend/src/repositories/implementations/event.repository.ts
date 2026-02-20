@@ -5,7 +5,7 @@ import { mapEventModelToEventEntity } from "@/mappers/event.mapper";
 import Event from "@/models/implementations/event.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
-import { EVENT_STATUS, EventFilterQuery, IEventModel } from "@/types/event.types";
+import { EVENT_STATUS, EventFilterQuery, IEventModel, IEventModelPopulatedHost } from "@/types/event.types";
 
 
 
@@ -16,7 +16,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
    async createEvent(eventInput: CreateEventInput): Promise<EventEntity> {
       try {
-         const eventData: IEventModel = await this.createOne(eventInput);
+         const eventData = await this.createOne(eventInput);
          const eventEntity: EventEntity = mapEventModelToEventEntity(eventData);
          return eventEntity;
 
@@ -29,13 +29,14 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
 
    async findEvents(query: EventFilterQuery, skip: number, limit: number, sort: any) {
-      const paginatedEvents: IEventModel[] = await this.model.find(query)
+      const paginatedEvents: IEventModelPopulatedHost[] = await this.model.find(query)
          .select('-onlineLink')  // include the fields that event listing not needed
+         .populate("hostRef", "name organizationName")
          .collation({ locale: 'en', strength: 2 })  // for case-insensitive sort
          .sort(sort ? sort : {createdAt: -1})
          .skip(skip)
          .limit(limit)
-         .lean(); // faster + easier to map
+         .lean<IEventModelPopulatedHost[]>() // faster + easier to map
 
          // console.log('paginatedEvents :', paginatedEvents);
 

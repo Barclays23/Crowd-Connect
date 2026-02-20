@@ -33,7 +33,7 @@ import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
 // User Pages
 import Home from "@/pages/user/Home";
 import NotFound from "@/pages/user/NotFound";
-import UserAccountTabs from "./components/user/UserAccountTabs";
+import UserAccountTabs from "./pages/user/UserAccountTabs";
 
 
 // Host pages

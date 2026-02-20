@@ -32,5 +32,9 @@ eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(UserRole.USE
     eventController.createEvent.bind(eventController)
 )
 
+eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(UserRole.HOST), eventController.publishEvent.bind(eventController));
+
+eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), eventController.getUserEvents.bind(eventController));
+
 
 export default eventRouter;

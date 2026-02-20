@@ -1,7 +1,7 @@
 // backend/src/services/interfaces/IAuthRecovery.ts
 
 import { CreateEventDTO, EventResponseDTO } from "@/dtos/event.dto";
-import { EVENT_STATUS, GetEventsFilter, GetEventsResult } from "@/types/event.types";
+import { EVENT_STATUS, GetEventsFilter, GetAllEventsResult } from "@/types/event.types";
 
 
 export interface IEventManagementServices {
@@ -11,10 +11,13 @@ export interface IEventManagementServices {
         // currentUserId: string;
     }): Promise<EventResponseDTO>;
 
-    getAllEvents(filters: GetEventsFilter): Promise<GetEventsResult>;
+    publishEvent(eventId: string, userId: string): Promise<void>;
 
+    getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult>;
+    
     suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EVENT_STATUS | undefined>;
-
+    
     deleteEvent(eventId: string): Promise<void>;
- 
+    
+    getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
 }

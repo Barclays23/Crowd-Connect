@@ -264,10 +264,10 @@ const HostEventForm = () => {
 
     try {
       const response = await eventServices.createEvent(formData);
-      toast.success("Event created successfully......!");
+      toast.success(response.message);
       // Optional: Navigate to dashboard or reset form
+
     } catch (error) {
-      // console.error("Event form submission error:", error);
       const errorMessage = getApiErrorMessage(error);
       if (errorMessage) toast.error(errorMessage);
       setServerZodErrors<EventFormValues>(error, setError);

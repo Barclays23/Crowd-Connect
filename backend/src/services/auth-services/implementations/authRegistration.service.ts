@@ -82,7 +82,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
         try {
             const raw = await redisClient.get(email);
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
 
             const tempRedisData = JSON.parse(raw);
@@ -149,7 +149,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
         try {
             const raw = await redisClient.get(email);
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`);
+                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
             const tempRedisData = JSON.parse(raw);
             console.log('✅ Retrieved user data for resending OTP:', tempRedisData);

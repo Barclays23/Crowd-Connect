@@ -1,5 +1,7 @@
 // frontent/src/types/event.types.ts
 
+import type { IPagination } from "@/types/common.types";
+
 export const EVENT_CATEGORIES = [
    "Art & Exhibitions",
    "Business & Networking",
@@ -40,6 +42,12 @@ export interface IEventState {
   category: string;
   description: string;
 
+  organizer: {
+    hostId: string;
+    hostName: string;
+    organizerName: string;
+  };
+
   startDateTime: string;
   endDateTime: string;
   eventStatus: EVENT_STATUS;
@@ -57,8 +65,12 @@ export interface IEventState {
   capacity: number;
   soldTickets: number;
   grossTicketRevenue: number;
-  
-  organizerName?: string; // optional – if populated
+
+  cancellation?: {
+    reason: string;
+    cancelledBy: string;  // organizer.organizerName or 'Admin'
+    cancelledAt: string;
+  };
 
   createdAt: string;
   updatedAt: string;
@@ -74,3 +86,15 @@ export const ADMIN_COMMISSION_PERCENT = 10;
 
 export const POSTER_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export const POSTER_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+
+
+
+export interface GetEventsApiResponse {
+  eventsData: IEventState[];
+  pagination: IPagination;
+}
+
+
+export type EventSortField = "createdAt" | "startDateTime" | "endDateTime" | "title" | "ticketPrice" | "grossTicketRevenue";
+export type EventSortDirection = "asc" | "desc";

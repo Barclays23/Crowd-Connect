@@ -41,6 +41,8 @@ export const HOST_ROUTES = {
 
 export const EVENT_ROUTES = {
     CREATE_EVENT: '/create-event',
+    PUBLISH_EVENT: '/:eventId/publish',
+    MY_EVENTS: '/my-events',
 } as const;
 
 

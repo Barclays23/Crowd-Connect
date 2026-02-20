@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
 
   loading?: boolean;
+  disableConfirm?: boolean;
 
   title?: string;
   description?: string;
@@ -16,6 +17,7 @@ interface ConfirmationModalProps {
   cancelText?: string;
 
   variant?: "default" | "danger";
+  children?: React.ReactNode;
 }
 
 export function ConfirmationModal({
@@ -23,11 +25,13 @@ export function ConfirmationModal({
   onClose,
   onConfirm,
   loading = false,
+  disableConfirm = false,
   title = "Confirm Action",
   description = "Are you sure you want to proceed?",
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "default",
+  children,
 }: ConfirmationModalProps) {
   const isDanger = variant === "danger";
 
@@ -46,9 +50,13 @@ export function ConfirmationModal({
             <CheckCircle className="h-6 w-6 text-(--status-success)" />
           )}
 
-          <p className="text-(--text-secondary)">
-            {description}
-          </p>
+          <div className="flex-1 space-y-2">
+            <p className="text-sm text-(--text-secondary)">
+              {description}
+            </p>
+
+            {children}
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 pt-4">
@@ -62,12 +70,8 @@ export function ConfirmationModal({
 
           <Button
             variant={isDanger ? "destructive" : "default"}
-            // onClick={() => {
-            //   onConfirm();
-            // //   onClose();
-            // }}
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || disableConfirm}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmText}

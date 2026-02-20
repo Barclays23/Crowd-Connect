@@ -1,6 +1,7 @@
 // backend/src/types/event.types.ts
 
 import { EventResponseDTO } from "@/dtos/event.dto";
+import { DateQueryOperator } from "@/utils/eventStatus.utils";
 import { Types } from "mongoose";
 
 
@@ -68,54 +69,76 @@ export enum EVENT_STATUS {
 
 
 export interface IEventModel {
-   _id: Types.ObjectId;
-   // Relationships
-   hostRef: Types.ObjectId; // Reference to User model
+  _id: Types.ObjectId;
+  // Relationships
+  hostRef: Types.ObjectId; // Reference to User model
 
-   // Basic Details
-   title: string;
-   category: EVENT_CATEGORY;
-   description: string;
+  // Basic Details
+  title: string;
+  category: EVENT_CATEGORY;
+  description: string;
 
-   // Visuals
-   posterUrl: string; // Stores the Cloudinary/S3 URL
+  // Visuals
+  posterUrl: string; // Stores the Cloudinary/S3 URL
 
-   // Format & Location
-   format: EVENT_FORMAT;
-   locationName?: string,             // Optional if online
-   location?: ILocation;       // Optional if online
-   onlineLink?: string;        // Optional if offline
+  // Format & Location
+  format: EVENT_FORMAT;
+  locationName?: string,             // Optional if online
+  location?: ILocation;       // Optional if online
+  onlineLink?: string;        // Optional if offline
 
-   // Timing
-   startDateTime: Date;
-   endDateTime: Date;
+  // Timing
+  startDateTime: Date;
+  endDateTime: Date;
 
-   // Pricing & Capacity
-   ticketType: TICKET_TYPE;
-   ticketPrice: number;
-   capacity: number;
-   soldTickets: number; // To track how many tickets/seats left (booking ++ & cancel booking --)
-   checkedInCount: number; // number of QR scanned or attendedance for the event (used for attendance percentage calculation for payout process)
-   grossTicketRevenue: number; // To track total revenue for the event (every new booking - cancellation)
+  // Pricing & Capacity
+  ticketType: TICKET_TYPE;
+  ticketPrice: number;
+  capacity: number;
+  soldTickets: number; // To track how many tickets/seats left (booking ++ & cancel booking --)
+  checkedInCount: number; // number of QR scanned or attendedance for the event (used for attendance percentage calculation for payout process)
+  grossTicketRevenue: number; // To track total revenue for the event (every new booking - cancellation)
 
-   // Status & Views
-   eventStatus: EVENT_STATUS;
-   views: number;       // for trending/popular calculation
+  // Status & Views
+  eventStatus: EVENT_STATUS;
+  views: number;       // for trending/popular calculation
    
-   // Event Cancellation
-   cancellationReason?: string;
-   cancelledBy?: Types.ObjectId;  // by host or admin
-   cancelledAt?: Date;
+  // Event Cancellation
+  cancellation?: {
+    reason: string;
+    cancelledBy: "ADMIN" | "HOST";
+    cancelledAt: Date;
+  };
 
-   // Timestamps
-   createdAt : Date;
-   updatedAt : Date;
+
+  // Timestamps
+  createdAt : Date;
+  updatedAt : Date;
 }
 
 
 
+export interface IHostPopulatedFromEvent {
+  _id: Types.ObjectId;
+  name: string;
+  organizationName?: string;
+}
 
-export type EventFilterQuery = Partial<IEventModel> & Record<string, unknown>;
+
+export type IEventModelPopulatedHost = Omit<IEventModel, "hostRef"> & {
+  hostRef: IHostPopulatedFromEvent;
+};
+
+
+
+
+
+// export type EventFilterQuery = Partial<IEventModel> & Record<string, unknown>;
+export type EventFilterQuery = Partial<Omit<IEventModel, 'startDateTime' | 'endDateTime'>> & {
+  startDateTime?: DateQueryOperator;
+  endDateTime?: DateQueryOperator;
+} & Record<string, unknown>;
+
 
 
 // query filters for fetching events (by admin)
@@ -135,8 +158,8 @@ export interface GetEventsFilter {
 
 
 
-// result when fetching events (by admin)
-export interface GetEventsResult {
+// result when events listing (for admin side and user side)
+export interface GetAllEventsResult {
   events: EventResponseDTO[] | null;
   page: number;
   limit: number;

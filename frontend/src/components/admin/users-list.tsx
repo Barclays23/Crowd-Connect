@@ -185,7 +185,7 @@ export function UsersList() {
       toast.success(response.message);
 
       setUsers(prev => prev.filter(user => user.userId !== deleteUser.userId));
-      setTotalUsers(totalUsers-1);
+      setTotalUsers(prev => prev - 1);
 
     } catch (error: unknown) {
       console.log('error in deleteUser:', error)

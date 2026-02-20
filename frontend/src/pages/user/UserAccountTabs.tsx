@@ -9,12 +9,12 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import UserProfile from './UserProfile';
-import UserDashboard from './UserDashboard';
-import UserEvents from './UserEvents';
-import UserBookings from './UserBookings';
-import UserWishlist from './UserWishlist';
-import UserWallet from './UserWallet';
+import UserProfile from '@/components/user/UserProfile';
+import UserDashboard from '@/components/user/UserDashboard';
+import UserEvents from '@/components/user/UserEvents';
+import UserBookings from '@/components/user/UserBookings';
+import UserWishlist from '@/components/user/UserWishlist';
+import UserWallet from '@/components/user/UserWallet';
 
 const tabs = [
   { id: 'profile', label: 'My Profile', icon: User, path: '/my-account' },

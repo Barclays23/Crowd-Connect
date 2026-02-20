@@ -97,6 +97,27 @@ body {
 
 
 
+  /* Table */
+  --table-bg: #ffffff;
+  --table-header-bg: var(--card-secondary);     /* #e5e5e5 or similar */
+  --table-header-text: var(--text-secondary);
+  --table-header-border: var(--border-strong);
+
+  --table-row-even-bg: #fafafa;                 /* very subtle zebra */
+  --table-row-hover: var(--bg-tertiary);        /* #f0f0f0 */
+  --table-row-selected: #eff6ff;                /* light blue tint */
+  --table-row-border: var(--border-muted);
+
+  --table-footer-bg: var(--bg-tertiary);
+  --table-footer-text: var(--text-primary);
+  --table-footer-border: var(--border-default);
+
+  --table-border: var(--border-default);
+  --table-shadow: var(--shadow-sm);
+  --table-striped-bg: var(--table-row-even-bg);
+
+
+
   /* Status */
   --status-success: #10b981;          /* Green for Success */
   --status-success-bg: #d1fae5;
@@ -289,6 +310,26 @@ body {
   --card-border: #374151;
   --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+
+  /* Table */
+  --table-bg: var(--card-bg);                   /* #1f2937 */
+  --table-header-bg: #17202e;                   /* slightly darker than card */
+  --table-header-text: #cbd5e1;                 /* slate-300ish */
+  --table-header-border: var(--border-strong);
+
+  --table-row-even-bg: #1e293b;                 /* subtle dark zebra */
+  --table-row-hover: #334155;                   /* slate-700 */
+  --table-row-selected: #1e40af22;              /* subtle blue tint in dark */
+  --table-row-border: var(--border-muted);
+
+  --table-footer-bg: #17202e;
+  --table-footer-text: #e2e8f0;
+  --table-footer-border: var(--border-default);
+
+  --table-border: var(--border-muted);
+  --table-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --table-striped-bg: var(--table-row-even-bg);
 
 
   

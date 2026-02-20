@@ -84,7 +84,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     if (err instanceof TokenExpiredError) {
       throw createHttpError(
         HttpStatus.UNAUTHORIZED,
-        `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.LOGIN_AGAIN}`
+        `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.LOGIN_AGAIN}`,
+        "SESSION_EXPIRED"
       );
       // message: "Your session has expired. Please log in again to continue."
       // throwing message to auth.services ➜ auth.controller ➜ axios intercepter
@@ -95,7 +96,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     if (err instanceof JsonWebTokenError) {
       throw createHttpError(
         HttpStatus.UNAUTHORIZED,
-        `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`
+        `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`,
+        "SESSION_EXPIRED"
       );
       // message: "Your session has ended. Please log in again to continue."
       // throwing message to auth.services ➜ auth.controller ➜ axios intercepter
@@ -104,7 +106,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     // 🔒 Truly unknown error (very rare)
     throw createHttpError(
       HttpStatus.UNAUTHORIZED,
-      `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`
+      `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`,
+      "SESSION_EXPIRED"
     );
     // message: "Your session has ended. Please log in again to continue."
   }

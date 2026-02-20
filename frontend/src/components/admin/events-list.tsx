@@ -1,5 +1,5 @@
 // frontend/src/components/admin/events-list.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Download,
@@ -34,25 +34,16 @@ import { Modal } from "../ui/modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { EVENT_CATEGORIES, type IEventState } from "@/types/event.types";
+import { EVENT_CATEGORIES, type EventSortDirection, type EventSortField, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
-
-interface IPagination {
-  totalCount: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-}
-
-interface ApiResponse {
-  eventsData: IEventState[];
-  pagination: IPagination;
-}
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { suspendEventSchema, type SuspendEventFormValues } from "@/schemas/event.schema";
+import { FieldError } from "@/components/ui/FieldError";
+import { TextArea } from "@/components/ui/text-area";
 
 
-type SortField = "createdAt" | "startDateTime" | "endDateTime" | "title" | "ticketPrice" | "grossTicketRevenue";
-type SortDirection = "asc" | "desc"
 
 
 
@@ -65,10 +56,11 @@ export function EventsList() {
   const [formatFilter, setFormatFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-
+  
+  
   // Sorting state
-  const [sortBy, setSortBy] = useState<SortField>("createdAt");
-  const [sortOrder, setSortOrder] = useState<SortDirection>("desc");
+  const [sortBy, setSortBy] = useState<EventSortField>("createdAt");
+  const [sortOrder, setSortOrder] = useState<EventSortDirection>("desc");
 
   // Data state
   const [events, setEvents] = useState<IEventState[]>([]);
@@ -76,12 +68,12 @@ export function EventsList() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   // Modal states (kept as-is)
   const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
   const [editEvent, setEditEvent] = useState<IEventState | null>(null);
-  const [suspendEvent, setSuspendEvent] = useState<IEventState | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<IEventState | null>(null);
+  const [suspendEvent, setSuspendEvent] = useState<IEventState | null>(null);
 
   const [suspendingEventId, setSuspendingEventId] = useState<string | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
@@ -90,6 +82,18 @@ export function EventsList() {
 
    // Debounced search
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+   const {
+      register,
+      handleSubmit,
+      formState: { errors, isValid },
+      reset,
+   } = useForm<SuspendEventFormValues>({
+      resolver: zodResolver(suspendEventSchema),
+      mode: "onChange",
+   });
+
+
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
@@ -116,7 +120,7 @@ export function EventsList() {
             ...(formatFilter !== "all" && { format: formatFilter }),
          });
 
-         const response: ApiResponse = await eventServices.getAllEvents(params.toString());
+         const response: GetEventsApiResponse = await eventServices.getAllEvents(params.toString());
 
          let fetchedEvents = response.eventsData;
 
@@ -155,19 +159,24 @@ export function EventsList() {
       );
    };
 
-   const handleSuspendEvent = async (event: IEventState) => {
+   const handleSuspendEvent = async (data: SuspendEventFormValues) => {
+      if (!suspendEvent) return;
+
       try {
-         setSuspendingEventId(event.eventId);
-         const response = await eventServices.suspendEvent(event.eventId, "Admin cancelled");
+         setSuspendingEventId(suspendEvent.eventId);
+         const response = await eventServices.suspendEvent(suspendEvent.eventId, data.reason);
          toast.success(response.message);
 
          setEvents((prev) =>
             prev.map((e) =>
-               e.eventId === event.eventId ? { ...e, eventStatus: response.updatedStatus } : e
+               e.eventId === suspendEvent.eventId ? { ...e, eventStatus: response.updatedStatus } : e
             )
          );
+
+         reset();
+
       } catch (error: unknown) {
-         const errorMessage = getApiErrorMessage(error)
+         const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
 
       } finally {
@@ -183,9 +192,9 @@ export function EventsList() {
          toast.success(response.message);
 
          setEvents((prev) => prev.filter((e) => e.eventId !== event.eventId));
-         setTotalEvents(totalEvents-1);
+         setTotalEvents(prev => prev - 1);
 
-      } catch (err) {
+      } catch (error) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
 
@@ -196,7 +205,7 @@ export function EventsList() {
    };
 
 
-   const handleSort = (field: SortField) => {
+   const handleSort = (field: EventSortField) => {
       if (sortBy === field) {
          setSortOrder(sortOrder === "asc" ? "desc" : "asc");
       } else {
@@ -206,7 +215,7 @@ export function EventsList() {
       setCurrentPage(1);
    };
 
-   const getSortIcon = (field: SortField) => {
+   const getSortIcon = (field: EventSortField) => {
       if (sortBy !== field) return <ArrowUpDown className="h-4 w-4 ml-1 opacity-40" />;
       return sortOrder === "asc" ? (
          <ArrowUp className="h-4 w-4 ml-1" />
@@ -251,10 +260,11 @@ export function EventsList() {
                   <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="upcoming">Upcoming</SelectItem>
                   <SelectItem value="ongoing">Ongoing</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                </Select>
 
@@ -419,7 +429,10 @@ export function EventsList() {
                               ₹{(event.grossTicketRevenue || 0).toLocaleString("en-IN")}
                            </TableCell>
                            <TableCell>
-                              <Badge variant={getEventStatusBadgeVariant(event.eventStatus)}>
+                              <Badge 
+                                 variant={getEventStatusBadgeVariant(event.eventStatus)}
+                                 className={event.eventStatus === "ongoing" ? "animate-pulse" : ""}
+                              >
                               {event.eventStatus.charAt(0).toUpperCase() + event.eventStatus.slice(1)}
                               </Badge>
                            </TableCell>
@@ -431,7 +444,7 @@ export function EventsList() {
                               <Button variant="ghost" size="icon" onClick={() => setEditEvent(event)}>
                                  <Edit className="h-4 w-4" />
                               </Button>
-                              {event.eventStatus !== "cancelled" && event.eventStatus !== "completed" && (
+                              {["ongoing", "upcoming"].includes(event.eventStatus) && (
                                  <Button
                                     variant="ghost"
                                     size="icon"
@@ -492,17 +505,35 @@ export function EventsList() {
                )}
             </Modal>
 
-            {/* Cancel Confirmation */}
+            {/* Cancel / Suspend Event Modal */}
             <ConfirmationModal
                isOpen={!!suspendEvent}
-               onClose={() => setSuspendEvent(null)}
-               onConfirm={() => handleSuspendEvent(suspendEvent!)}
+               onClose={() => {
+                  setSuspendEvent(null);
+                  reset();
+               }}
+               onConfirm={handleSubmit(handleSuspendEvent)}
                title="Suspend Event"
-               description="Are you sure you want to suspend this event? Attendees will be notified."
-               confirmText={suspendingEventId === suspendEvent?.eventId ? "Suspending..." : "Suspend Event"}
+               description="Please provide a reason for suspending this event. The host will be notified."
+               confirmText={
+                  suspendingEventId === suspendEvent?.eventId
+                     ? "Suspending..."
+                     : "Suspend Event"
+               }
                variant="danger"
                loading={suspendingEventId === suspendEvent?.eventId}
-            />
+               disableConfirm={!isValid}
+            >
+               <div className="space-y-2">
+                  <TextArea
+                     {...register("reason")}
+                     placeholder="Enter suspension reason..."
+                  />
+                  <FieldError message={errors.reason?.message}/>
+               </div>
+            </ConfirmationModal>
+
+
 
             {/* Delete Confirmation */}
             <ConfirmationModal
@@ -514,6 +545,7 @@ export function EventsList() {
                confirmText={deletingEventId === deleteEvent?.eventId ? "Deleting..." : "Delete Event"}
                variant="danger"
                loading={deletingEventId === deleteEvent?.eventId}
+               disableConfirm={!isValid}
             />
          </CardContent>
       </Card>

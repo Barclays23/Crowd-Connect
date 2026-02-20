@@ -2,11 +2,16 @@ import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, ILocation, TICKET_TYPE } fr
 import { Types } from "mongoose";
 
 
-/* ───────────────── CORE ENTITY ───────────────── */
+/* ───────────────── CORE OUTPUT ENTITY ───────────────── */
 
 export interface EventEntity {
   id: string;
-  hostRef: string;
+  // hostRef: string;
+  organizer: {
+    hostId: string;
+    hostName: string;
+    organizerName: string;
+  };
 
   title: string;
   category: EVENT_CATEGORY;
@@ -34,9 +39,11 @@ export interface EventEntity {
   views: number;       // for trending/popular calculation
 
   // Event Cancellation
-  cancellationReason?: string;
-  cancelledBy?: Types.ObjectId;  // by host or admin
-  cancelledAt?: Date;
+  cancellation?: {
+    reason: string;
+    cancelledBy: 'HOST' | 'ADMIN';
+    cancelledAt: Date;
+  };
 
   createdAt: Date;
 }
@@ -45,7 +52,7 @@ export interface EventEntity {
 
 
 
-/* ───────────────── DB INPUTS ───────────────── */
+/* ───────────────── DB INPUTS ENTITY ───────────────── */
 
 export interface CreateEventInput {
    hostRef: Types.ObjectId;
@@ -81,7 +88,9 @@ export interface CreateEventInput {
 // for cancel / suspend / complete the event
 export interface EventStatusUpdateInput {
   eventStatus: EVENT_STATUS;
-  cancellationReason?: string;  // for cancelling and suspending
-  cancelledBy?: Types.ObjectId;  // need this ?
-  cancelledAt?: Date;
+  cancellation?: {
+    reason: string;  // for cancelling and suspending
+    cancelledBy: "ADMIN" | "HOST";
+    cancelledAt: Date;
+  }
 }
