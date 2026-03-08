@@ -6,13 +6,13 @@ import HostUpgradeForm from '@/components/host/HostUpgradeForm';
 import HostPendingState from '@/components/host/HostPendingState';
 import HostRejectedState from '@/components/host/HostRejectedState';
 import HostBlockedState from '@/components/host/HostBlockedState';
-import HostEventForm from '@/components/host/HostEventForm';
 import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
-import { GoogleMapsProvider1 } from '@/contexts/GoogleMapsProvider1';
+// import { GoogleMapsProvider1 } from '@/contexts/GoogleMapsProvider1';
 import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
+import HostYourEvent from '@/components/host/HostYourEvent';
 // import GoogleMapsProvider from '@/contexts/GoogleMapsProvider';
 
 
@@ -54,9 +54,9 @@ const HostEventSection = () => {
             
          default: // case "approved" :
             return (
-               <GoogleMapsProvider2>
-                  <HostEventForm />
-               </GoogleMapsProvider2>
+               // <GoogleMapsProvider2>
+                  <HostYourEvent />
+               // </GoogleMapsProvider2>
             );
       }
    }

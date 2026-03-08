@@ -29,11 +29,36 @@ export const EVENT_CATEGORIES = [
 
 // export const EVENT_FORMAT = ["offline", "online"] as const;
 // export const TICKET_TYPE = ["free", "paid"] as const;
-export type EVENT_FORMAT = "offline" | "online";
-export type TICKET_TYPE = "free" | "paid";
-export type EVENT_STATUS = "draft" | "upcoming" | "ongoing" | "completed" | "cancelled" | "suspended";
+// export type EVENT_FORMAT = "offline" | "online";
+// export type TICKET_TYPE = "free" | "paid";
+// export type EVENT_STATUS = "draft" | "upcoming" | "ongoing" | "completed" | "cancelled" | "suspended";
+
+export const EVENT_STATUSES = {
+  DRAFT : "draft",             // DRAFT: Creating / Editing phase.
+  PUBLISHED : "published",     // PUBLISHED: Live and bookable ("published" is only stored in DB, not exposing to frontend)
+  CANCELLED : "cancelled",     // CANCELLED: Permanent stop.
+  SUSPENDED : "suspended",     // SUSPENDED: admin suspended. (but reason in cancelledReason)
+  COMPLETED : "completed",     // COMPLETED: Auto or manual (after end / payouts). After every process completed.
+
+  // Only for virtual UI display based on startDateTime & endDateTime
+  UPCOMING   : "upcoming",     // Virtual UI status (from backend getEventDisplayStatus) — derived from startDateTime
+  ONGOING    : "ongoing",      // Virtual UI status (from backend getEventDisplayStatus) — derived from start/endDateTime
+}
+
+export const EVENT_FORMATS = {
+  OFFLINE: "offline",
+  ONLINE: "online"
+} as const;
 
 
+export const TICKET_TYPES = {
+  FREE: "free",
+  PAID: "paid"
+} as const;
+
+export type EVENT_FORMAT = typeof EVENT_FORMATS[keyof typeof EVENT_FORMATS];
+export type TICKET_TYPE = typeof TICKET_TYPES[keyof typeof TICKET_TYPES];
+export type EVENT_STATUS = typeof EVENT_STATUSES[keyof typeof EVENT_STATUSES];
 
 
 export interface IEventState {
@@ -41,6 +66,8 @@ export interface IEventState {
   title: string;
   category: string;
   description: string;
+
+  posterUrl: string;
 
   organizer: {
     hostId: string;
@@ -71,6 +98,9 @@ export interface IEventState {
     cancelledBy: string;  // organizer.organizerName or 'Admin'
     cancelledAt: string;
   };
+
+  views: number;           // Needed for the Trending/Popular filter [cite: 459, 640]
+  checkedInCount: number;  // Useful if you ever need to show "filling up fast!" logic [cite: 646, 647]
 
   createdAt: string;
   updatedAt: string;

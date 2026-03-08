@@ -41,8 +41,20 @@ export const HOST_ROUTES = {
 
 export const EVENT_ROUTES = {
     CREATE_EVENT: '/create-event',
+    UPDATE_EVENT: '/:eventId/update',
     PUBLISH_EVENT: '/:eventId/publish',
     MY_EVENTS: '/my-events',
+    PUBLIC_EVENTS: '/public-events',
+    EVENT_DETAILS: '/events/:eventId',
+    INITIATE_BOOKING: '/:eventId/initiate-booking',
+} as const;
+
+
+
+export const BOOKING_ROUTES = {
+    CANCEL_BOOKING: '/:bookingId/cancel',
+    MY_BOOKINGS: '/my-bookings',
+    BOOKING_DETAILS: '/:bookingId',
 } as const;
 
 
@@ -66,5 +78,9 @@ export const ADMIN_ROUTES = {
     GET_EVENTS: '/events',
     SUSPEND_EVENT: '/events/:eventId/suspend',
     DELETE_EVENT: '/events/:eventId',
+    
+    
+    // Booking Mangement
+    GET_BOOKINGS: '/bookings',
 
 } as const;

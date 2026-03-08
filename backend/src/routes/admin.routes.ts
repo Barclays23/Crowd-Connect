@@ -24,6 +24,9 @@ import { EventManagementServices } from '@/services/event-services/implementatio
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
 import { suspendEventSchema } from '@/schemas/event.schema';
+import { BookingController } from '@/controllers/implementations/booking.controller';
+import { BookingService } from '@/services/booking-services/implementations/booking.service';
+import { BookingRepository } from '@/repositories/implementations/booking.repository';
 
 
 
@@ -33,6 +36,7 @@ import { suspendEventSchema } from '@/schemas/event.schema';
 // ── Initialize REPOSITORIES
 const userRepo = new UserRepository();
 const eventRepo = new EventRepository();
+const bookingRepo = new BookingRepository();
 
 
 
@@ -42,6 +46,7 @@ const userManagementServices = new UserManagementService(userRepo);
 const userProfileServices = new UserProfileService(userRepo);
 const hostManagementServices = new HostManagementServices(userRepo);
 const eventManagementServices = new EventManagementServices(eventRepo);
+const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo);
 
 
 
@@ -50,6 +55,7 @@ const eventManagementServices = new EventManagementServices(eventRepo);
 const userController = new UserController(userProfileServices, userManagementServices);
 const hostController = new HostController(hostManagementServices);
 const eventController = new EventController(eventManagementServices);
+const bookingController = new BookingController(bookingServices);
 
 
 
@@ -97,6 +103,11 @@ adminRouter.put(ADMIN_ROUTES.UPDATE_HOST,
 adminRouter.get(ADMIN_ROUTES.GET_EVENTS, eventController.getAllEvents.bind(eventController));
 adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, validateRequest({body: suspendEventSchema, params: EventIdParamSchema}), eventController.suspendEvent.bind(eventController));
 adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, validateRequest({params: EventIdParamSchema}), eventController.deleteEvent.bind(eventController));
+
+
+
+// booking management
+adminRouter.get(ADMIN_ROUTES.GET_BOOKINGS, bookingController.getAdminBookings.bind(bookingController));
 
 
 export default adminRouter;

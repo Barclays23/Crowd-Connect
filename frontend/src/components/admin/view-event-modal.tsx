@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatDate2, formatDate1 } from "@/utils/dateAndTimeFormats";
 import { Calendar, MapPin, Video, IndianRupee, Tag, Users, Ticket, AlertTriangle } from "lucide-react";
 import type { IEventState } from "@/types/event.types";
-import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
+import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/common/EventMap";
 
@@ -32,7 +32,11 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                   {event.category && (
                      <div className="flex items-center gap-2 text-sm text-(--text-secondary)">
                         <Tag className="h-4 w-4" />
-                        <span className="font-medium">{capitalize(event.category)}</span>
+                        <Badge 
+                        // variant='success'>
+                           variant={getEventCategoryBadgeVariant(event.category)}>
+                           {capitalize(event.category)}
+                        </Badge>
                      </div>
                   )}
 
@@ -155,7 +159,7 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                                  <EventMap
                                     lat={event.location.coordinates[1]} // GeoJSON = [lng, lat] ← reverse!
                                     lng={event.location.coordinates[0]}
-                                    name={event.locationName || event.title}
+                                    locationName={event.locationName || event.title}
                                  />
                               </div>
                            )}

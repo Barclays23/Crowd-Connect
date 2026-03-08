@@ -26,3 +26,4 @@ export const HostIdParamSchema = z.object({
 export const EventIdParamSchema = z.object({
   eventId: MongoIdBase
 });
+

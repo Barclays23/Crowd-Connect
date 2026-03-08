@@ -78,11 +78,11 @@ const UserAccount = () => {
               <button
                 key={tab.id}
                 onClick={() => navigate(tab.path)}
-                className={`flex flex-1 lg:flex-auto items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap 
+                className={`flex flex-1 lg:flex-auto items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap cursor-pointer
                   ${
                     currentTab === tab.id
                       ? 'bg-(--brand-primary) text-(--btn-primary-text) shadow-sm'
-                      : 'text-(--text-primary) hover:bg-(--bg-tertiary)'
+                      : 'text-(--text-primary) hover:bg-(--bg-tertiary) hover:text-(--brand-primary-light) hover:border hover: border-(--brand-primary-light)'
                   }`}
               >
                 <tab.icon size={18} />

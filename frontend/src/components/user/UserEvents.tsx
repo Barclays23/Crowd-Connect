@@ -25,7 +25,7 @@ import {
 import { eventServices } from "@/services/eventServices";
 import { toast } from "react-toastify";
 import { UserPagination } from "@/components/user/UserPagination";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2, toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { Modal } from "@/components/ui/modal";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -39,6 +39,12 @@ import {
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { HostEventForm } from "@/components/host/HostEventForm";
+import { FormProvider, useForm, type Resolver } from "react-hook-form";
+import { type EventFormValues } from "@/schemas/event.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import EditEventForm from "@/components/user/EditEventForm";
+import { capitalize } from "@/utils/namingConventions";
 
 
 
@@ -60,14 +66,69 @@ export default function UserEvents() {
 
    const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
    const [editEvent, setEditEvent] = useState<IEventState | null>(null);
+   const [editModalOpen, setEditModalOpen] = useState(false);
 
-   const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+   const [publishModalOpen, setPublishModalOpen] = useState(false);
    const [eventToPublish, setEventToPublish] = useState<string | null>(null);
    const [isPublishing, setIsPublishing] = useState(false);
 
    const itemsPerPage = 10;
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+
+   const handleEditEventSubmit = async (data: EventFormValues) => {
+      if (!editEvent) return;
+
+      const startDateTime = new Date(`${data.startDate}T${data.startTime}:00`).toISOString();
+      const endDateTime = new Date(`${data.endDate}T${data.endTime}:00`).toISOString();
+
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("description", data.description);
+      formData.append("category", data.category);
+      formData.append("startDateTime", startDateTime);
+      formData.append("endDateTime", endDateTime);
+      formData.append("format", data.format);
+      formData.append("ticketType", data.ticketType);
+      formData.append("ticketPrice", String(data.ticketPrice));
+      formData.append("capacity", String(data.capacity));
+
+      // Location Logic
+      if (data.format === "offline") {
+         formData.append("locationName", data.locationName || "");
+         if (data.locationCoordinates) {
+            formData.append(
+               "location",
+               JSON.stringify({
+                  type: "Point",
+                  coordinates: [data.locationCoordinates.lng, data.locationCoordinates.lat],
+               })
+            );
+         }
+      }
+
+      // Image Logic
+      if (data.useAI && data.aiGeneratedImage) {
+         formData.append("aiPosterData", data.aiGeneratedImage); // base64 data URL
+         // formData.append("aiGeneratedImage", data.aiGeneratedImage); // base64 data URL
+      } else if (data.uploadedImage) {
+         formData.append("eventPosterImage", data.uploadedImage); // File
+      }
+
+      console.log("EDIT EVENT FORM DATA:", Object.fromEntries(formData.entries()));
+
+      try {
+         const response = await eventServices.updateEvent({eventId: editEvent.eventId, formData});
+         toast.success(response.message);
+         setEditModalOpen(false);
+         setEditEvent(null);
+         fetchMyEvents();
+      } catch (error: unknown) {
+         const errorMessage = getApiErrorMessage(error);
+         if (errorMessage) toast.error(errorMessage);
+      }
+   };
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -135,7 +196,7 @@ export default function UserEvents() {
 
    const requestPublish = (eventId: string) => {
       setEventToPublish(eventId);
-      setPublishConfirmOpen(true);
+      setPublishModalOpen(true);
    };
 
 
@@ -147,13 +208,13 @@ export default function UserEvents() {
          const response = await eventServices.publishEvent(eventToPublish);
          toast.success(response.message);
 
-         fetchMyEvents(); // refresh list
+         fetchMyEvents();
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
       } finally {
-         setPublishConfirmOpen(false);
+         setPublishModalOpen(false);
          setEventToPublish(null);
          setIsPublishing(false);
       }
@@ -169,9 +230,6 @@ export default function UserEvents() {
                   Events you have created • {totalEvents} total
                </p>
             </div>
-
-            {/* Optional: Create event button */}
-            {/* <Button>Create Event</Button> */}
          </div>
 
          {/* Filters */}
@@ -277,25 +335,25 @@ export default function UserEvents() {
                   events.map((event, idx) => (
                      <TableRow key={event.eventId}>
                         <TableCell className="font-medium">
-                        {(currentPage - 1) * itemsPerPage + idx + 1}
+                           {(currentPage - 1) * itemsPerPage + idx + 1}
                         </TableCell>
                         <TableCell className="font-medium">{event.title}</TableCell>
                         <TableCell>{event.category}</TableCell>
                         <TableCell className="text-muted-foreground">
-                        {formatDate2(event.startDateTime)}
+                           {formatDate2(event.startDateTime)}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                        {formatDate2(event.endDateTime)}
+                           {formatDate2(event.endDateTime)}
                         </TableCell>
                         <TableCell>
-                        <Badge variant={event.format === "online" ? "secondary" : "outline"}>
-                           {event.format}
-                        </Badge>
+                           <Badge variant={event.format === "online" ? "secondary" : "outline"}>
+                              {capitalize(event.format)}
+                           </Badge>
                         </TableCell>
                         <TableCell>
-                        <Badge variant={getEventStatusBadgeVariant(event.eventStatus)}>
-                           {event.eventStatus}
-                        </Badge>
+                           <Badge variant={getEventStatusBadgeVariant(event.eventStatus)}>
+                              {capitalize(event.eventStatus)}
+                           </Badge>
                         </TableCell>
 
                         {/* Action Buttons */}
@@ -310,11 +368,14 @@ export default function UserEvents() {
                               </Button>
 
                               {/* Show edit only for draft / upcoming events — adjust logic as needed */}
-                              {(event.eventStatus === "draft" || event.eventStatus === "upcoming") && (
+                              {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
                                  <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => setEditEvent(event)}
+                                    onClick={() => {
+                                       setEditEvent(event);
+                                       setEditModalOpen(true);
+                                    }}
                                  >
                                     <Edit className="h-4 w-4" />
                                  </Button>
@@ -344,25 +405,39 @@ export default function UserEvents() {
             onPageChange={setCurrentPage}
          />
 
-         {/* Modals */}
+         {/* View Event Modal */}
          <Modal isOpen={!!viewEvent} onClose={() => setViewEvent(null)} title="Event Details" size="lg">
             {viewEvent && <ViewEventModal event={viewEvent} />}
          </Modal>
 
-         <Modal isOpen={!!editEvent} onClose={() => setEditEvent(null)} title="Edit Event" size="lg">
+         {/* Edit Event Modal */}
+         <Modal
+            isOpen={editModalOpen}
+            onClose={() => {
+               setEditModalOpen(false);
+               setEditEvent(null);
+            }}
+            title={`Edit Event : ${editEvent?.title}`}
+            size="lg"
+         >
             {editEvent && (
-               <div className="py-8 text-center text-muted-foreground">
-                  Edit event form coming soon...
-                  {/* <EditEventForm event={editEvent} onSuccess={() => { fetchMyEvents(); setEditEvent(null); }} /> */}
-               </div>
+               <EditEventForm
+                  key={editEvent.eventId}
+                  editEvent={editEvent}
+                  onSubmit={handleEditEventSubmit}
+                  onCancel={() => {
+                     setEditModalOpen(false);
+                     setEditEvent(null);
+                  }}
+               />
             )}
          </Modal>
 
-         {/* publish event confirmation */}
+         {/* Publish Event Modal */}
          <ConfirmationModal
-            isOpen={publishConfirmOpen}
+            isOpen={publishModalOpen}
             onClose={() => {
-               setPublishConfirmOpen(false);
+               setPublishModalOpen(false);
                setEventToPublish(null);
             }}
             onConfirm={confirmPublish}
@@ -370,8 +445,8 @@ export default function UserEvents() {
             description="Once published, the event will be visible to everyone and users can start registering/booking tickets."
             confirmText="Publish Now"
             cancelText="Cancel"
-            variant="default" // or "success" if you add that variant later
-            loading={false} // you can make this dynamic if publish takes time
+            variant="default"
+            loading={isPublishing}
          />
       </div>
    );

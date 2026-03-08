@@ -1,13 +1,15 @@
 // backend/src/services/event-services/implementations/eventManagement.service.ts
-import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
+import { deleteFromCloudinary, uploadBase64ToCloudinary, uploadToCloudinary } from "@/config/cloudinary";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { CreateEventDTO, EventResponseDTO } from "@/dtos/event.dto";
-import { CreateEventInput, EventEntity, EventStatusUpdateInput } from "@/entities/event.entity";
-import { mapCreateEventRequestDtoToInput, mapEventEntityToEventResponseDto, mapToEventStatusUpdateInput, mapToEventStatusUpdateResponseDto } from "@/mappers/event.mapper";
+import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
+import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
+import { mapCreateEventRequestDtoToInput, mapEventEntityToEventResponseDto, mapToEventStatusUpdateInput, mapToEventStatusUpdateResponseDto, mapUpdateEventRequestDtoToInput } from "@/mappers/event.mapper";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
-import { EVENT_FORMAT, EVENT_STATUS, EventFilterQuery, GetEventsFilter, GetAllEventsResult, TICKET_TYPE } from "@/types/event.types";
+import { EVENT_FORMAT, EVENT_STATUS, EventFilterQuery, GetEventsFilter, GetAllEventsResult, TICKET_TYPE, GetPublicEventsFilter } from "@/types/event.types";
+import { buildChangeSummary, detectMajorEventChanges } from "@/utils/event-change-detector";
+import { validateEventUpdate } from "@/utils/event-update-validations";
 import { applyEventStatusFilter, getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
@@ -25,7 +27,7 @@ export class EventManagementServices implements IEventManagementServices {
 
     
     async createEvent({ createDto, imageFile }: { 
-        createDto: CreateEventDTO; 
+        createDto: CreateEventRequestDTO; 
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
@@ -81,13 +83,149 @@ export class EventManagementServices implements IEventManagementServices {
             }
 
             const newEvent: EventResponseDTO = mapEventEntityToEventResponseDto(createdEvent);
-            console.log('✅✅ created event : ', newEvent);
+            // console.log('✅✅ created event : ', newEvent);
             
             return newEvent;
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error("Error in EventManagementServices.createEvent:", msg);
+            throw error;
+        }
+    }
+
+
+    async updateEvent({ currentUserId, eventId, updateEventDto, imageFile}: {
+        currentUserId: string;
+        eventId: string;
+        updateEventDto: UpdateEventRequestDTO;
+        imageFile?: Express.Multer.File;
+    }): Promise<EventResponseDTO> {
+        try {
+            const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+            console.log('existingEvent.location :', existingEvent?.location)
+            console.log('updateEventDto.location :', updateEventDto.location)
+
+            if (!existingEvent) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+            }
+
+            if (existingEvent.organizer.hostId.toString() !== currentUserId) {
+                throw createHttpError(
+                    HttpStatus.FORBIDDEN,
+                    "Only the event host can update this event"
+                );
+            }
+
+            // ── All update input validation ─────────────────────────────────
+            validateEventUpdate(existingEvent, updateEventDto);
+
+
+            if (!existingEvent.posterUrl && !imageFile && !updateEventDto.aiGeneratedImage) {
+                throw createHttpError(
+                    HttpStatus.BAD_REQUEST,
+                    "Event poster is required"
+                );
+            }
+
+            let updatedPosterUrl: string | undefined = undefined;
+
+            if (imageFile) {
+                updatedPosterUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: "event-posters",
+                    fileType:   "image",
+                });
+            } else if (updateEventDto.aiGeneratedImage) {
+                // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
+                updatedPosterUrl = await uploadBase64ToCloudinary({
+                    base64Data: updateEventDto.aiGeneratedImage,
+                    folderPath: "event-posters",
+                });
+            }
+
+            const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
+                existingEvent,
+                updateEventDto,
+                updatedPosterUrl,
+            });
+
+            const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
+            const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
+
+            if (formatChanged) {
+                if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
+                    // Switching to offline: clear the online link, ensure location is present
+                    updateEventInput.onlineLink    = null;
+                    updateEventInput.locationName  = updateEventDto.locationName;
+                    updateEventInput.location      = updateEventDto.location;
+                }
+
+                if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
+                    // Switching to online: clear location fields
+                    updateEventInput.locationName = undefined;
+                    updateEventInput.location     = null;
+
+                    // If event is already published, generate the online link immediately.
+                    // If still draft, the link will be generated at publish time.
+                    if (isPublished) {
+                        // updateEventInput.onlineLink = generateMeetingLink(existingEvent);
+                    }
+                }
+            }
+
+
+            // if no any changes made while updating event
+            if (Object.keys(updateEventInput).length === 0) {
+                // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
+            }
+
+            const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(eventId, updateEventInput);
+
+            if (!updatedEvent) {
+                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
+            }
+
+            // ── Major change detection → grace period implememtation ────────────────────────────
+            const hasStarted = existingEvent.startDateTime <= new Date();
+            if (!hasStarted) {
+                const majorChanges = detectMajorEventChanges(existingEvent, updateEventDto);
+
+                if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
+
+                    const gracePeriodEnd = new Date(
+                        Math.min(
+                            existingEvent.startDateTime.getTime(),
+                            Date.now() + 48 * 60 * 60 * 1000
+                        )
+                    );
+    
+                    // await Booking.updateMany(
+                    //     { eventRef: eventId, bookingStatus: "CONFIRMED" },
+                    //     {
+                    //         $set: {
+                    //             majorEventChange: {
+                    //                 changedAt: new Date(),
+                    //                 changes:   majorChanges,
+                    //                 summary:   buildChangeSummary(majorChanges),
+                    //             },
+                    //             refundGracePeriodEnd: gracePeriodEnd,
+                    //         },
+                    //     }
+                    // );
+    
+                    // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
+                }
+            }
+
+
+            const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
+            return mappedEvent;
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            console.error("Error in EventManagementServices.updateEvent:", msg);
             throw error;
         }
     }
@@ -148,6 +286,68 @@ export class EventManagementServices implements IEventManagementServices {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error("Error in EventManagementServices.getAllEvents:", msg);
+            throw error;
+        }
+    }
+
+
+    async getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult> {
+        try {
+            const { 
+                page, 
+                limit, 
+                search, 
+                status, 
+                category, 
+                format,
+                ticketType,
+                sortBy, 
+                sortOrder
+            }: GetEventsFilter = filters;
+
+            const query: EventFilterQuery = {};
+
+            query.hostRef = new Types.ObjectId(userId);
+
+            if (search) {
+                query.$or = [
+                    { title: { $regex: search, $options: 'i' } },
+                    { locationName: { $regex: search, $options: 'i' } },
+                ];
+            }
+
+            if (status) query.eventStatus = status;
+            applyEventStatusFilter(query, status);
+
+            if (category) query.category = category;
+            if (format) query.format = format;
+            if (ticketType) query.ticketType = ticketType;
+
+            const skip = (page - 1) * limit;
+            const sort: any = {};
+            sort[sortBy!] = sortOrder === "asc" ? 1 : -1;
+
+            console.log('Final query in EventManagementServices.getUserEvents:', query);
+            console.log("Sort applied:", sort);
+
+            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
+                this._eventRepository.findEvents(query, skip, limit, sort),
+                this._eventRepository.countEvents(query)
+            ]);
+            
+            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
+
+            return {
+                events: mappedEvents,
+                page,
+                limit,
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+            };
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.getUserEvents:", msg);
             throw error;
         }
     }
@@ -239,6 +439,11 @@ export class EventManagementServices implements IEventManagementServices {
 
             const eventStatusUpdateInput: EventStatusUpdateInput = {eventStatus: EVENT_STATUS.PUBLISHED};
 
+            // generate online link at publish time
+            // if (event.format === "online" && !event.onlineLink) {
+            //     updateData.onlineLink = generateMeetingLink(event);
+            // }
+
             await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
         } catch (error: unknown) {
@@ -278,65 +483,70 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
-    async getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult> {
-        try {
-            const { 
-                page, 
-                limit, 
-                search, 
-                status, 
-                category, 
-                format,
-                ticketType,
-                sortBy, 
-                sortOrder
-            }: GetEventsFilter = filters;
+    async getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult> {
+        const { page, limit, search, category, format, ticketType, lat, lng, radiusKm } = filters;
+        const skip = (page - 1) * limit;
+        
+        const dbQuery: EventFilterQuery = { 
+            eventStatus: EVENT_STATUS.PUBLISHED,
+            endDateTime: { $gt: new Date() } // Only show events that haven't ended
+        };
 
-            const query: EventFilterQuery = {};
-
-            query.hostRef = new Types.ObjectId(userId);
-
-            if (search) {
-                query.$or = [
-                    { title: { $regex: search, $options: 'i' } },
-                    { locationName: { $regex: search, $options: 'i' } },
-                ];
-            }
-
-            if (status) query.eventStatus = status;
-            applyEventStatusFilter(query, status);
-
-            if (category) query.category = category;
-            if (format) query.format = format;
-            if (ticketType) query.ticketType = ticketType;
-
-            const skip = (page - 1) * limit;
-            const sort: any = {};
-            sort[sortBy!] = sortOrder === "asc" ? 1 : -1;
-
-            console.log('Final query in EventManagementServices.getUserEvents:', query);
-            console.log("Sort applied:", sort);
-
-            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
-                this._eventRepository.findEvents(query, skip, limit, sort),
-                this._eventRepository.countEvents(query)
-            ]);
-            
-            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
-
-            return {
-                events: mappedEvents,
-                page,
-                limit,
-                totalCount,
-                totalPages: Math.ceil(totalCount / limit),
-            };
-
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in EventManagementServices.getUserEvents:", msg);
-            throw error;
+        if (search) {
+            dbQuery.$text = { $search: search }; // Relies on your text index [cite: 458]
         }
+
+        if (category) dbQuery.category = category;
+        if (format) dbQuery.format = format;
+        if (ticketType) dbQuery.ticketType = ticketType;
+
+        if (lat && lng && radiusKm) {
+            dbQuery.location = {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [lng, lat] // [Longitude, Latitude] [cite: 596]
+                    },
+                    $maxDistance: radiusKm * 1000 // meters
+                }
+            };
+        }
+
+        const { eventEntity, totalCount } = await this._eventRepository.getPublicEvents(
+            dbQuery, 
+            skip, 
+            limit, 
+            "startDateTime", 
+            1
+        );
+
+        // 3. Map Mongoose documents to secure public DTOs
+        // (Removing sensitive info like onlineLink [cite: 186, 523])
+        const eventsData: EventResponseDTO[] = eventEntity ? eventEntity.map(mapEventEntityToEventResponseDto) : [];
+
+        return {
+            eventsData,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalItems: totalCount,
+                itemsPerPage: limit
+            }
+        };
+    }
+
+
+
+    async getEventDetails(eventId: string): Promise<EventResponseDTO> {
+        const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+        if (!eventEntity){
+            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        }
+        
+        const eventDetails: EventResponseDTO = mapEventEntityToEventResponseDto(eventEntity);
+
+        return eventDetails;
     }
 
 

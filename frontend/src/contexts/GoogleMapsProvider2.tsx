@@ -2,7 +2,11 @@
 import React, { createContext, useContext, type ReactNode } from 'react';
 import { APIProvider } from '@vis.gl/react-google-maps';
 
-
+// ENABLED APIs
+// Places API (for autocomplete).
+// Places API (New)
+// Maps JavaScript API (for maps).
+// Geocoding API (if needed for reverse lookups).
 
 
 interface Props {
@@ -34,8 +38,8 @@ export const GoogleMapsProvider2 = ({ children }: Props) => {
   return (
     <APIProvider
       apiKey={import.meta.env.VITE_GOOGLE_MAPS_KEY}
-      libraries={['places']}          // ← Critical: loads Places (New)
-      region="IN"                     // Bias to India / Kerala
+      libraries={['places']} 
+      region="IN"
       language="en"
       onLoad={() => console.log('Google Maps APIProvider loaded successfully')}
     >

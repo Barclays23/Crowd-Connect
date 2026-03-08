@@ -14,8 +14,8 @@ import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 // Providers
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { GoogleMapsProvider1 } from "@/contexts/GoogleMapsProvider1";
-
+// import { GoogleMapsProvider1 } from "@/contexts/GoogleMapsProvider1";
+import { GoogleMapsProvider2 } from "@/contexts/GoogleMapsProvider2";
 
 
 
@@ -34,6 +34,9 @@ import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
 import Home from "@/pages/user/Home";
 import NotFound from "@/pages/user/NotFound";
 import UserAccountTabs from "./pages/user/UserAccountTabs";
+import EventsDiscoveryPage from "@/pages/event/EventsDiscoveryPage";
+import EventDetailsPage from "@/pages/event/EventDetailsPage";
+
 
 
 // Host pages
@@ -46,11 +49,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUserList from "@/pages/admin/AdminUserList";
 import AdminHostsList from "./pages/admin/AdminHostsList";
 import AdminEventList from "@/pages/admin/AdminEventsList";
-
-
-
-
-
+import AdminBookingsList from "@/pages/admin/AdminBookingsList";
 
 
 
@@ -62,6 +61,7 @@ function App() {
       <ThemeProvider>
          <AuthProvider>
          {/* <GoogleMapsProvider> */}
+         <GoogleMapsProvider2>
          <Router>
             <ToastContainer position="top-center" theme="colored" transition={Zoom}/>
                {/* <div className="app-container"> */}
@@ -71,6 +71,8 @@ function App() {
                            <Route element={<UserLayout />}>
                               {/* ----------- Public Routes ---------- */}
                               <Route path="/" element={<Home />} />
+                              <Route path="/events" element={<EventsDiscoveryPage />} />
+                              <Route path="/events/:eventId" element={<EventDetailsPage />} />
                               <Route path="/host" element={<HostPage />} />
                               <Route path="/otp-verification" element={<OTPVerification />} />
                               <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -101,6 +103,7 @@ function App() {
                               <Route path="/admin/users" element={<AdminUserList />} />
                               <Route path="/admin/hosts" element={<AdminHostsList />} />
                               <Route path="/admin/events" element={<AdminEventList />} />
+                              <Route path="/admin/bookings" element={<AdminBookingsList />} />
                            </Route>
 
 
@@ -111,6 +114,7 @@ function App() {
                   {/* <Footer /> */}
                {/* </div> */}
          </Router>
+         </GoogleMapsProvider2>
          {/* </GoogleMapsProvider> */}
          </AuthProvider>
       </ThemeProvider>

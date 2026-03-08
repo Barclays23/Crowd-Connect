@@ -228,123 +228,138 @@ export const rejectReasonBase = z
 
 
 /* ---------- Event Form Schema ---------- */
-export const EventFormSchema = z.object({
-   title: titleBase,
-   category: categoryBase,
-   description: descriptionBase,
+const eventFormSchemaFactory = (isEditMode = false) =>
+   z.object({
+      title: titleBase,
+      category: categoryBase,
+      description: descriptionBase,
 
-   // Date & Time
-   startDateTime: isoDateTime,
-   endDateTime: isoDateTime,
-   // startDate: dateBase("Start"),
-   // startTime: timeBase("Start"),
-   // endDate: dateBase("End"),
-   // endTime: timeBase("End"),
+      // Date & Time
+      startDateTime: isoDateTime,
+      endDateTime: isoDateTime,
+      // startDate: dateBase("Start"),
+      // startTime: timeBase("Start"),
+      // endDate: dateBase("End"),
+      // endTime: timeBase("End"),
 
-   // Enums
-   format: formatBase,
-   ticketType: ticketTypeBase,
+      // Enums
+      format: formatBase,
+      ticketType: ticketTypeBase,
 
-   // Location
-   locationName: locationNameBase,
-   location: coordinatesBase,
+      // Location
+      locationName: locationNameBase,
+      location: coordinatesBase,
 
-   // Pricing
-   ticketPrice: priceBase,
-   capacity: capacityBase,
+      // Pricing
+      ticketPrice: priceBase,
+      capacity: capacityBase,
 
-   // Media
-   // uploadedImage: imageFileBase,  (file is not validating with zod. let the multer handle in backend)
-   aiGeneratedImage: aiUrlBase,
-})
-.superRefine((data, ctx) => {
-   
-   // 1. Date Validation: End must be after Start
-   // Server timezone ≠ user timezone
-   const now = Date.now();
-   const start = Date.parse(data.startDateTime);
-   const end = Date.parse(data.endDateTime);
+      // Media
+      // uploadedImage: imageFileBase,  (file is not validating with zod. let the multer handle in backend)
+      aiGeneratedImage: aiUrlBase,   // which one??
+      aiPosterData: aiUrlBase,  // which one??
+   })
+   .superRefine((data, ctx) => {
+      
+      // 1. Date Validation: End must be after Start
+      // Server timezone ≠ user timezone
+      const now = Date.now();
+      const start = Date.parse(data.startDateTime);
+      const end = Date.parse(data.endDateTime);
 
-   if (Number.isNaN(start)) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         path: ["startDateTime"],
-         message: "Invalid start date or time",
-      });
-   }
-
-   if (Number.isNaN(end)) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         path: ["endDateTime"],
-         message: "Invalid end date or time",
-      });
-   }
-
-   if (Number.isNaN(start) || Number.isNaN(end)) {
-      return;
-   }
-
-   const BUFFER_MS = 60 * 1000;
-
-   if (start < now - BUFFER_MS) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         path: ["startDateTime"],
-         message: "Start date & time cannot be in the past",
-      });
-   }
-
-
-   if (end <= start) {
-         ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "End date & time must be after start date & time",
-         path: ["endDateTime"], 
-      });
-   }
-
-   // if (data.startDate === data.endDate && end <= start) {
-   //    ctx.addIssue({
-   //       code: z.ZodIssueCode.custom,
-   //       message: "End time must be after start time",
-   //       path: ["endTime"],
-   //    });
-   // }
-
-   // 2. Location Validation: Required if IN-PERSON
-   if (data.format === EVENT_FORMAT.OFFLINE) {
-      if (!data.locationName) {
+      if (Number.isNaN(start)) {
          ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ["locationName"],
-            message: "Venue location is required for offline events",
+            path: ["startDateTime"],
+            message: "Invalid start date or time",
          });
       }
-      // Ensure coordinates were actually selected (not just typed text)
-      if (!data.location) {
+
+      if (Number.isNaN(end)) {
          ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ["locationCoordinates"],
-            message: "You must choose a valid location for offline events.",
+            path: ["endDateTime"],
+            message: "Invalid end date or time",
          });
       }
-   }
 
-   // 3. Price Validation: Required if PAID
-   if (data.ticketType === TICKET_TYPE.PAID && data.ticketPrice <= 0) {
+      if (Number.isNaN(start) || Number.isNaN(end)) {
+         return;
+      }
+
+      // ✅ Only block past dates when creating — not editing
+      if (!isEditMode) {
+         const BUFFER_MS = 60 * 1000;
+         if (start < now - BUFFER_MS) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               path: ["startDateTime"],
+               message: "Start date & time cannot be in the past",
+            });
+         }
+      }
+
+
+      if (end <= start) {
+            ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "End date & time must be after start date & time",
+            path: ["endDateTime"], 
+         });
+      }
+
+      if (end < now) {
          ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         path: ["ticketPrice"],
-         message: "Paid events must have a valid ticket price.",
-      });
-   }
+            code: z.ZodIssueCode.custom,
+            message: "End date & time cannot be in the past",
+            path: ["endDateTime"],
+         });
+      }
+
+      // if (data.startDate === data.endDate && end <= start) {
+      //    ctx.addIssue({
+      //       code: z.ZodIssueCode.custom,
+      //       message: "End time must be after start time",
+      //       path: ["endTime"],
+      //    });
+      // }
+
+      // 2. Location Validation: Required if IN-PERSON
+      if (data.format === EVENT_FORMAT.OFFLINE) {
+         if (!data.locationName) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               path: ["locationName"],
+               message: "Venue location is required for offline events",
+            });
+         }
+         // Ensure coordinates were actually selected (not just typed text)
+         if (!data.location) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               path: ["locationCoordinates"],
+               message: "You must choose a valid location for offline events.",
+            });
+         }
+      }
+
+      // 3. Price Validation: Required if PAID
+      if (data.ticketType === TICKET_TYPE.PAID && data.ticketPrice <= 0) {
+            ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["ticketPrice"],
+            message: "Paid events must have a valid ticket price.",
+         });
+      }
 
 
-});
+   });
 
 
 
 export const suspendEventSchema = z.object({
   reason: rejectReasonBase
 });
+
+export const CreateEventFormSchema = eventFormSchemaFactory(false); // create — past date blocked
+export const UpdateEventFormSchema = eventFormSchemaFactory(true);  // edit   — past date allowed

@@ -1,0 +1,165 @@
+// frontend/src/utils/UI.utils.tsx
+
+import type { EVENT_STATUS, IEventState } from "@/types/event.types";
+import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
+import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+
+
+export type BadgeVariant = 
+  | "default"
+  | "primary"
+  | "secondary"
+  | "success"
+  | "destructive"
+  | "info"
+  | "warning"
+  | "accent"
+  | "outline"
+  | "muted"
+  | "highlight"
+  | "subtle"
+  | "brand"
+  | "neutral"
+  | "inverse"
+  | "gradient"
+  | null
+  | undefined;
+
+  
+// ─── User UI helpers ────────────────────────────────────────────────────
+
+export const getUserStatusBadgeVariant = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "active": return "success";
+    case "blocked": return "destructive";
+    case "pending": return "outline";
+    default: return "secondary";
+  }
+};
+
+
+
+// ─── Event UI helpers ────────────────────────────────────────────────────
+
+export const getEventStatusBadgeVariant = (
+  status: EVENT_STATUS
+) => {
+  switch (status) {
+    case "draft":
+      return "secondary";
+
+    case "upcoming":
+      return "default";
+
+    case "ongoing":
+      return "success";
+
+    case "completed":
+      return "outline";
+
+    case "cancelled":
+      return "destructive";
+
+    case "suspended":
+      return "warning";
+
+    default:
+      return "secondary";
+  }
+};
+
+
+const eventCategoryVariantMap: Record<string, BadgeVariant> = {
+  "Art & Exhibitions": "accent",
+  "Fashion & Beauty": "accent",
+  "Film & Media": "accent",
+  "Theatre & Live Shows": "accent",
+  "Music & Concerts": "accent",
+
+  "Business & Networking": "info",
+  "Conferences & Seminars": "info",
+  "Technology & Innovation": "info",
+
+  "Education & Workshops": "default",
+  "Kids & Family": "default",
+
+  "Health & Wellness": "success",
+  "Spiritual & Religious": "success",
+  "Charity & Causes": "success",
+
+  "Food & Drink": "warning",
+  "Festivals & Fairs": "warning",
+  "Parties & Nightlife": "warning",
+
+  "Sports & Fitness": "secondary",
+  "Travel & Outdoor": "secondary",
+
+  "Weddings & Social Gatherings": "highlight",
+};
+
+
+export const getEventCategoryBadgeVariant = (category: string): BadgeVariant => {
+  if (!category?.trim()) {
+    return "secondary";
+  }
+
+  const normalized = category.trim();
+
+  // Look up exact match (case-sensitive)
+  return eventCategoryVariantMap[normalized] ?? "secondary";
+};
+
+
+
+export function getSeatsInfo(event: IEventState) {
+  if (!event.capacity) return null;
+  const sold      = event.soldTickets ?? 0;
+  const remaining = event.capacity - sold;
+  const percentage = (sold / event.capacity) * 100;
+  return { remaining, sold, capacity: event.capacity, percentage: Math.min(percentage, 100) };
+}
+
+
+
+// ─── Booking UI helpers ────────────────────────────────────────────────────
+
+export function getBookingStatusVariant(
+  status: BOOKING_STATUS
+): BadgeVariant {
+  switch (status) {
+    case BOOKING_STATUS.CONFIRMED: return "success";    // green — booking is active
+    case BOOKING_STATUS.ATTENDED:  return "info";       // blue — past but positive
+    case BOOKING_STATUS.PENDING:   return "warning";    // amber — waiting/uncertain
+    case BOOKING_STATUS.CANCELLED: return "neutral";    // gray — inactive, not an error
+    case BOOKING_STATUS.FAILED:    return "destructive"; // red — something went wrong
+    default:                       return "muted";
+  }
+}
+
+
+export function getBookingStatusIcon(status: BOOKING_STATUS) {
+  switch (status) {
+    case BOOKING_STATUS.CONFIRMED: return <CheckCircle className="h-4 w-4" />;
+    case BOOKING_STATUS.ATTENDED:  return <CheckCircle className="h-4 w-4" />;
+    case BOOKING_STATUS.PENDING:   return <Clock       className="h-4 w-4" />;
+    case BOOKING_STATUS.CANCELLED: return <XCircle     className="h-4 w-4" />;
+    case BOOKING_STATUS.FAILED:    return <AlertCircle className="h-4 w-4" />;
+    default:                       return null;
+  }
+}
+
+
+
+// ─── Payment UI helpers ────────────────────────────────────────────────────
+
+export function getPaymentStatusVariant(
+  status: PAYMENT_STATUS
+): "default" | "secondary" | "destructive" | "outline" | "success" {
+  switch (status) {
+    case PAYMENT_STATUS.PAID:     return "success";
+    case PAYMENT_STATUS.REFUNDED: return "secondary";
+    case PAYMENT_STATUS.PENDING:  return "outline";
+    case PAYMENT_STATUS.FAILED:   return "destructive";
+    default:                      return "outline";
+  }
+}

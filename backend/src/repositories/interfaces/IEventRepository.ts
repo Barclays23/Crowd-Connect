@@ -1,14 +1,23 @@
 // backend/src/repositories/interfaces/IEventRepository.ts
 
-import { CreateEventInput, EventEntity, EventStatusUpdateInput } from "@/entities/event.entity";
-import { EVENT_STATUS, EventFilterQuery } from "@/types/event.types";
+import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
+import { EVENT_STATUS, EventFilterQuery, IEventModelPopulatedHost } from "@/types/event.types";
 
 
 export interface IEventRepository {
     createEvent(eventInput: CreateEventInput) : Promise<EventEntity>;
+    updateEvent(eventId: string, eventInput: UpdateEventInput) : Promise<EventEntity|null>;
     findEvents(filterQuery: EventFilterQuery, skip: number, limit: number, sort: any): Promise<EventEntity[] | null>;
     countEvents(filterQuery: EventFilterQuery): Promise<number>;
     getEventById(eventId: string): Promise<EventEntity | null>;
     updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS | undefined>;
     deleteEvent(eventId: string): Promise<void>;
+    getPublicEvents(
+        filters: EventFilterQuery, 
+        skip: number, limit: number, 
+        sortField: string, sortDirection: 1 | -1
+    ): Promise<{ eventEntity: EventEntity[] | null; totalCount: number }>;
+
+    incrementSoldTickets(eventId: string, newBookingQty: number, totalAmount: number): Promise<void>;
+    decrementSoldTickets(eventId: string, cancelledQty: number, totalAmount: number): Promise<void>;
 }

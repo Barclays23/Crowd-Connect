@@ -21,7 +21,6 @@ export abstract class BaseRepository<T> {
     async createOne(data: Partial<T>): Promise<T>{
         const document = new this.model(data);
         const savedDocument = await document.save();
-        // return savedDocument;
         return savedDocument as unknown as T;
     }
 
@@ -35,6 +34,11 @@ export abstract class BaseRepository<T> {
     async findById(id: string): Promise<T | null>{
         const findDocument = await this.model.findById(id);
         return findDocument as unknown as T;
+    }
+    
+    // Query builders for complex operations (populations)
+    findByPopulateQuery(id: string) { // findByIdQuery
+        return this.model.findById(id);  // Returns a Query object, not a Promise
     }
 
     async findByIdAndUpdate(updateId: string, updateData: UpdateQuery<T>): Promise<T | null>{

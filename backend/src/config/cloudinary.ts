@@ -21,6 +21,7 @@ const projectFolder = 'crowd-connect';
 
 
 
+// for uploaing attached file to cloudinary.
 export const uploadToCloudinary = ({
     fileBuffer,
     folderPath,
@@ -42,6 +43,30 @@ export const uploadToCloudinary = ({
         // Write the buffer to the stream
         uploadStream.end(fileBuffer);
     });
+};
+
+
+
+
+// for uploading AI genenated image to cloudinary
+export const uploadBase64ToCloudinary = async ({
+    base64Data,
+    folderPath,
+}: {
+    base64Data: string;
+    folderPath: string;
+}): Promise<string> => {
+    // base64Data may come with a data URI prefix — strip it if present
+    const data = base64Data.startsWith("data:")
+        ? base64Data
+        : `data:image/png;base64,${base64Data}`;
+
+    const result = await cloudinary.uploader.upload(data, {
+        folder: folderPath,
+        resource_type: "image",
+    });
+
+    return result.secure_url;
 };
 
 
@@ -90,6 +115,9 @@ export const deleteFromCloudinary = async ({fileUrl, resourceType}: {
         throw error;
     }
 };
+
+
+
 
 
 

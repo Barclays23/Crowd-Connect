@@ -85,6 +85,29 @@ export interface CreateEventInput {
 
 
 
+export interface UpdateEventInput {
+  title?:         string;
+  description?:   string;
+  category?:      string;
+
+  posterUrl?:     string;
+
+  format?:        string;
+  locationName?:  string;
+  location?:      { type: "Point"; coordinates: [number, number] } | null; // null to clear
+  onlineLink?:    string | null; // null to clear
+
+  startDateTime?: Date;
+  endDateTime?:   Date;
+
+  ticketType?:    string;
+  ticketPrice?:   number;
+  capacity?:      number;
+
+  eventStatus?:   string;
+}
+
+
 // for cancel / suspend / complete the event
 export interface EventStatusUpdateInput {
   eventStatus: EVENT_STATUS;

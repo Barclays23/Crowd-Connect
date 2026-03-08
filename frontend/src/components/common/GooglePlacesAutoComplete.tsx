@@ -1,9 +1,20 @@
 // src/components/common/GooglePlacesAutoComplete.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMapsLibrary, APIProvider, Map } from '@vis.gl/react-google-maps';
 import { CheckCircle2 } from 'lucide-react';
 
+// Uses 
+// useMapsLibrary('places') from @vis.gl/react-google-maps and 
+// manually fetches suggestions + renders a custom <ul> dropdown.
 
+// Pros:
+// Full control over styling — matches your design system perfectly
+// You can customize every pixel of the dropdown
+
+// Cons:
+// More code to maintain
+// You're responsible for UX edge cases (keyboard nav, blur timing, etc.)
+// sessionToken is recreated on every render (bug in your current code — it should be in a useRef or useMemo)
 
 interface PlacesAutocompleteProps {
    onPlaceSelected: (place: {
@@ -33,7 +44,10 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
    const [loading, setLoading] = useState(false);
    const [justSelected, setJustSelected] = useState(false);
 
-   const sessionToken = placesLibrary ? new placesLibrary.AutocompleteSessionToken() : undefined;
+   const sessionToken = useMemo(
+      () => placesLibrary ? new placesLibrary.AutocompleteSessionToken() : undefined,
+      [placesLibrary]
+   );
 
    const fetchSuggestions = async (input: string) => {
       if (!placesLibrary || input.length < 3) {

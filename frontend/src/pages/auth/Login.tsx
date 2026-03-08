@@ -16,6 +16,8 @@ type LocationState = {
     search: string; // The query string (e.g., ?tab=info)
     hash: string; // The fragment identifier (e.g., #details)
   };
+  openForgotPassword?: boolean;
+  openBooking?: boolean;
 };
 
 
@@ -28,12 +30,13 @@ function Login() {
   const location = useLocation();
   const state = location.state as LocationState | null;
   // navigate back to original path || or home
-  const fromPath = (state?.from?.pathname ?? '') + (state?.from?.search ?? '') || '/';
+  // const fromPath = (state?.from?.pathname ?? '') + (state?.from?.search ?? '') || '/';
+  const fromPath = state?.from 
+    ? state.from.pathname + state.from.search + state.from.hash 
+    : '/';
 
-  const openForgotPassword =
-  location.state?.openForgotPassword === true;
-
-
+  const openForgotPassword = state?.openForgotPassword === true;
+  const openBookingAfterLogin = state?.openBooking === true;
 
 
 
@@ -48,7 +51,13 @@ function Login() {
 
         toast.success(response.message);
 
-        navigate(fromPath, { replace: true });  // Redirect to original path or home after successful login
+        navigate(fromPath, { 
+          replace: true,
+          state: { 
+            openBooking: openBookingAfterLogin 
+          }
+        }
+        );  // Redirect to original path or home after successful login
 
       } catch (err: unknown) {
         console.error('Error in handleLogin:', err);
@@ -61,7 +70,7 @@ function Login() {
     },
 
     
-    [login, navigate, fromPath]
+    [login, navigate, fromPath, openBookingAfterLogin]
   );
 
 

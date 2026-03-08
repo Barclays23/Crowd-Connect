@@ -4,26 +4,47 @@ import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, ILocation, TICKET_TYPE } fr
 
 /* ───────────────── HTTP REQUEST BOUNDARY DTOs ───────────────── */
 
-export interface CreateEventDTO {
-    hostRef: string; // The User ID
+export interface CreateEventRequestDTO {
+  hostRef: string; // The User ID
 
-    title: string;
-    category: EVENT_CATEGORY;
-    description: string;
+  title: string;
+  category: EVENT_CATEGORY;
+  description: string;
 
-    aiGeneratedImage?: string;   // if generated AI poster image (Base64 / URL)
-    
-    format: EVENT_FORMAT;
-    locationName?: string;       //  if offline event (human readable string)
-    location?: ILocation;        //  if offline event (location coordinatory points- lat/lng)
-    onlineLink?: string;
-    
-    startDateTime: Date;
-    endDateTime: Date;
-    
-    ticketType: TICKET_TYPE;
-    ticketPrice: number;
-    capacity: number;
+  aiGeneratedImage?: string;   // if generated AI poster image (Base64 / URL)
+  
+  format: EVENT_FORMAT;
+  locationName?: string;       //  if offline event (human readable string)
+  location?: ILocation;        //  if offline event (location coordinatory points- lat/lng)
+  onlineLink?: string;
+  
+  startDateTime: Date;
+  endDateTime: Date;
+  
+  ticketType: TICKET_TYPE;
+  ticketPrice: number;
+  capacity: number;
+}
+
+
+export interface UpdateEventRequestDTO {
+  title: string;
+  category: EVENT_CATEGORY;
+  description: string;
+
+  aiGeneratedImage?: string;   // if generated AI poster image (Base64 / URL)
+  
+  format: EVENT_FORMAT;
+  locationName?: string;       //  if offline event (human readable string)
+  location?: ILocation;        //  if offline event (location coordinatory points- lat/lng)
+  onlineLink?: string;
+  
+  startDateTime: Date;
+  endDateTime: Date;
+  
+  ticketType: TICKET_TYPE;
+  ticketPrice: number;
+  capacity: number;
 }
 
 
@@ -79,6 +100,17 @@ export interface EventResponseDTO {
   createdAt: string;
 }
 
+
+
+export interface GetDiscoveryEventsResult {
+  eventsData: EventResponseDTO[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
 
 
 

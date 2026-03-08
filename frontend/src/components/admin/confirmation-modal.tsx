@@ -16,7 +16,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
 
-  variant?: "default" | "danger";
+  variant?: "default" | "danger" | "destructive";
   children?: React.ReactNode;
 }
 

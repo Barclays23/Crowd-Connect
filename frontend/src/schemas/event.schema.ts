@@ -1,4 +1,4 @@
-import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES } from "@/types/event.types";
+import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES, type EVENT_STATUS } from "@/types/event.types";
 import { parseISODateTime } from "@/utils/dateAndTimeFormats";
 import { z } from "zod";
 
@@ -189,125 +189,152 @@ export const rejectReasonBase = z
 
 
 /* ---------- Event Form Schema ---------- */
-export const eventFormSchema = z.object({
-   title: titleBase,
-   description: descriptionBase,
-   category: categoryBase,
+export const eventFormSchemaFactory = (
+   isEditWithExistingImage = false, 
+   isEditMode = false, 
+   eventStatus?: EVENT_STATUS
+) =>
+   z.object({
+      title: titleBase,
+      description: descriptionBase,
+      category: categoryBase,
 
-   // Date & Time
-   startDate: dateBase("Start"),
-   startTime: timeBase("Start"),
-   endDate: dateBase("End"),
-   endTime: timeBase("End"),
+      // Date & Time
+      startDate: dateBase("Start"),
+      startTime: timeBase("Start"),
+      endDate: dateBase("End"),
+      endTime: timeBase("End"),
 
-   // Enums
-   format: formatBase,
-   ticketType: ticketTypeBase,
+      // Enums
+      format: formatBase,
+      ticketType: ticketTypeBase,
 
-   // Location
-   locationName: locationNameBase,
-   locationCoordinates: coordinatesBase,
+      // Location
+      locationName: locationNameBase,
+      locationCoordinates: coordinatesBase,
 
-   // Pricing
-   ticketPrice: priceBase,
-   capacity: capacityBase,
+      // Pricing
+      ticketPrice: priceBase,
+      capacity: capacityBase,
 
-   // Media
-   uploadedImage: imageFileBase,
-   aiGeneratedImage: aiUrlBase,
-   useAI: z.boolean(),
-})
-.superRefine((data, ctx) => {
-   
-   // 1. Date Validation: End must be after Start
-   const today = new Date();
-   const start = parseISODateTime(data.startDate, data.startTime);
-   const end = parseISODateTime(data.endDate, data.endTime);
+      // Media
+      uploadedImage: imageFileBase,
+      aiGeneratedImage: aiUrlBase,
+      useAI: z.boolean(),
+   })
+   .superRefine((data, ctx) => {
+      
+      // 1. Date Validation: End must be after Start
+      const today = new Date();
+      const start = parseISODateTime(data.startDate, data.startTime);
+      const end = parseISODateTime(data.endDate, data.endTime);
 
-   if (isNaN(start.getTime())) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "Invalid start date or time",
-         path: ["startDate"],
-      });
-   }
-
-   if (isNaN(end.getTime())) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "Invalid end date or time",
-         path: ["endDate"],
-      });
-   }
-
-   if (start < today) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "Start date & time cannot be in the past",
-         path: ["startDate"],
-      });
-   }
-
-   if (end <= start) {
-         ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "End date must be after start date",
-         path: ["endDate"], 
-      });
-   }
-
-   if (data.startDate === data.endDate && end <= start) {
-      ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "End time must be after start time",
-         path: ["endTime"],
-      });
-   }
-
-   // 2. Location Validation: Required if IN-PERSON
-   if (data.format === "offline") {
-      if (!data.locationName || data.locationName.trim().length < 3) {
+      if (isNaN(start.getTime())) {
          ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Venue location is required for offline events",
-            path: ["locationName"],
+            message: "Invalid start date or time",
+            path: ["startDate"],
          });
       }
-      // Ensure coordinates were actually selected (not just typed text)
-      if (!data.locationCoordinates) {
+
+      if (isNaN(end.getTime())) {
          ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Please select a valid location from the suggestions",
-            path: ["locationName"],
+            message: "Invalid end date or time",
+            path: ["endDate"],
          });
       }
-   }
 
-   // 3. Price Validation: Required if PAID
-   if (data.ticketType === "paid" && data.ticketPrice <= 0) {
+      // ✅ Only block past start date when creating, not when editing
+      if (!isEditMode && start < today) {
          ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "Ticket price shouldn't be 0 for paid events",
-         path: ["ticketPrice"],
-      });
-   }
+            code: z.ZodIssueCode.custom,
+            message: "Start date & time cannot be in the past",
+            path: ["startDate"],
+         });
+      }
 
-   // 4. Banner Validation: Must have either File OR AI Image
-   const hasManualUploadImage = data.uploadedImage instanceof File;
-   const hasAiImage = 
-      data.useAI &&
-      typeof data.aiGeneratedImage === "string" &&
-      data.aiGeneratedImage.length > 10;
-
-
-   if (!hasManualUploadImage && !hasAiImage) {
+      if (end < today) {
          ctx.addIssue({
-         code: z.ZodIssueCode.custom,
-         message: "Please upload a banner or generate one using AI",
-         path: ["uploadedImage"],
-      });
-   }
-});
+            code: z.ZodIssueCode.custom,
+            message: "End date & time cannot be in the past",
+            path: ["endDate"],
+         });
+      }
+
+      // 3. Draft Edit Rule: Drafts must ALWAYS be pushed to the future
+      if (isEditMode && eventStatus === "draft" && start < today) {
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            // path: ["startDateTime"],
+            path: ["startDate"],
+            message: "The start date/time has passed. Please choose a future date & time."
+         });
+      }
+
+      if (end <= start) {
+            ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "End date must be after start date",
+            path: ["endDate"], 
+         });
+      }
+
+      if (data.startDate === data.endDate && end <= start) {
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "End time must be after start time",
+            path: ["endTime"],
+         });
+      }
+
+      // 2. Location Validation: Required if IN-PERSON
+      if (data.format === "offline") {
+         if (!data.locationName || data.locationName.trim().length < 3) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               message: "Venue location is required for offline events",
+               path: ["locationName"],
+            });
+         }
+         // Ensure coordinates were actually selected (not just typed text)
+         if (!data.locationCoordinates) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               message: "Please select a valid location from the suggestions",
+               path: ["locationName"],
+            });
+         }
+      }
+
+      // 3. Price Validation: Required if PAID
+      if (data.ticketType === "paid" && data.ticketPrice <= 0) {
+            ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ticket price shouldn't be 0 for paid events",
+            path: ["ticketPrice"],
+         });
+      }
+
+      // 4. Poster Validation: Must have either File OR AI Image
+      if (!isEditWithExistingImage) {
+         const hasManualUploadImage = data.uploadedImage instanceof File;
+         const hasAiImage = 
+         data.useAI &&
+         typeof data.aiGeneratedImage === "string" &&
+         data.aiGeneratedImage.length > 10;
+         
+         
+         if (!hasManualUploadImage && !hasAiImage) {
+            ctx.addIssue({
+               code: z.ZodIssueCode.custom,
+               message: "Please upload a banner or generate one using AI",
+               path: ["uploadedImage"],
+            });
+         }
+      }
+
+   });
 
 
 
@@ -321,5 +348,7 @@ export const suspendEventSchema = z.object({
 
 
 // Export the type for use in React Hook Form
-export type EventFormValues = z.infer<typeof eventFormSchema>;
+export const createEventFormSchema = eventFormSchemaFactory(false, false); // banner required, past blocked
+export const editEventFormSchema   = eventFormSchemaFactory(true,  true);  // banner optional, past allowed
+export type EventFormValues = z.infer<ReturnType<typeof eventFormSchemaFactory>>;
 export type SuspendEventFormValues = z.infer<typeof suspendEventSchema>;

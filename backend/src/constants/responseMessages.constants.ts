@@ -17,6 +17,7 @@ export enum HttpResponse {
     LOGIN_FAILED = "Login attempt failed.",
     LOGIN_AGAIN = "Please log in again to continue.",
     NO_PAYLOAD = "Payload not found",
+    NO_CHANGE_MADE = "It looks like you haven't made any changes yet. Make at least one change to save an update.",
     OTP_INCORRECT = "Incorrect OTP, please enter the correct code.",
     OTP_RESENT = "A new OTP has been sent to your email.",
     OTP_SENT = "We've sent an OTP to your email.",
@@ -77,6 +78,7 @@ export enum HttpResponse {
     SUCCESS_GET_HOSTS = "Hosts fetched successfully.",
     SUCCESS_CREATE_USER = "User account created.",
     SUCCESS_CREATE_EVENT = "Event created successfully. Publish to make it live.",
+    SUCCESS_UPDATE_EVENT = "Event has been updated.",
     SUCCESS_UPDATE_USER = "User details updated.",
     SUCCESS_UPDATE_PROFILE = "Profile updated successfully.",
     SUCCESS_DELETE_USER = "User has been deleted.",
@@ -87,12 +89,13 @@ export enum HttpResponse {
 
     
     FAILED_GET_USERS = "Failed to fetch users.",
-    FAILED_UPDATE_USER = "Failed to update user.",
-    FAILED_UPDATE_PROFILE = "Failed to update profile.",
-    FAILED_DELETE_USER = "Failed to delete user.",
-    FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
     FAILED_CREATE_USER = "Failed to create user.",
     FAILED_CREATE_EVENT = "Oops! We couldn’t create your event.",
+    FAILED_UPDATE_EVENT = "Oops! We couldn’t update your event.",
+    FAILED_UPDATE_PROFILE = "Failed to update profile.",
+    FAILED_UPDATE_USER = "Failed to update user.",
+    FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
+    FAILED_DELETE_USER = "Failed to delete user.",
 
     FAILED_GET_HOSTS = "Failed to fetch hosts.",
     CANNOT_CHANGE_VERIFIED_EMAIL = "Verified email address cannot be changed.",
@@ -111,3 +114,6 @@ export enum HttpResponse {
     ADMIN_CANNOT_DELETE_ADMIN = "Only Super Admin can delete another Admin",
     ADMIN_CANNOT_DELETE_SUPER_ADMIN = "Super Admin cannot be deleted",
 }
+
+
+

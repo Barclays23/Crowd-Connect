@@ -4,7 +4,16 @@ import { setupGooglePlaceAutocompleteWidget } from '@/utils/google-place-autocom
 import { MapPin, CheckCircle2 } from 'lucide-react';
 import { useGoogleMaps2 } from '@/contexts/GoogleMapsProvider2'; // or whichever provider you're using
 
+// Uses 
+// PlaceAutocompleteElement, which is Google's own pre-built web component rendered into a div.
 
+// Pros:
+// Minimal code — Google handles all the UX, keyboard nav, accessibility
+// Automatically styled by Google (works out of the box)
+
+// Cons:
+// Hard to style to match your design — it renders a shadow DOM web component
+// Less control
 
 interface GooglePlacesWidgetAutoCompleteProps {
   onPlaceSelected: (data: {

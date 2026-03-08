@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import UserAvatar from "../ui/userAvatar";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { LogoutResponse } from "@/types/auth.types";
-
+import logo from "@/assets/crowdconnect-icon-1.png";
 
 
 
@@ -94,8 +94,8 @@ export function Navbar() {
             <div className="container flex h-16 items-center justify-between px-4">
                {/* Logo */}
                <Link to="/" className="flex items-center space-x-2">
-                  <Calendar className="h-8 w-8 text-(--brand-primary)" />
-                  <span className="text-xl font-bold text-(--text-primary)">
+                  <img src={logo} alt="crowd-connect-logo" className="h-8 w-8" />
+                  <span className="text-xl font-bold text-(--brand-primary)">
                      Crowd Connect
                   </span>
                </Link>

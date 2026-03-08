@@ -2,7 +2,7 @@
 
 import { EventResponseDTO } from "@/dtos/event.dto";
 import { DateQueryOperator } from "@/utils/eventStatus.utils";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 
 // Also check the same percentage value in backend
@@ -132,29 +132,74 @@ export type IEventModelPopulatedHost = Omit<IEventModel, "hostRef"> & {
 
 
 
+// Strictly types the MongoDB $near operator for GeoJSON points
+export interface GeoNearQueryOperator {
+  $near: {
+    $geometry: {
+      type: "Point";
+      coordinates: [number, number]; // [longitude, latitude]
+    };
+    $maxDistance?: number;
+    $minDistance?: number;
+  };
+}
+
+
+// Strictly types the MongoDB $text search operator
+export interface TextSearchOperator {
+  $search: string;
+  $language?: string;
+  $caseSensitive?: boolean;
+  $diacriticSensitive?: boolean;
+}
+
+
+
+
 
 // export type EventFilterQuery = Partial<IEventModel> & Record<string, unknown>;
-export type EventFilterQuery = Partial<Omit<IEventModel, 'startDateTime' | 'endDateTime'>> & {
+export type EventFilterQuery = Partial<Omit<IEventModel, 'startDateTime' | 'endDateTime' | 'location'>> & {
   startDateTime?: DateQueryOperator;
   endDateTime?: DateQueryOperator;
+  location?: ILocation | GeoNearQueryOperator;
+
+  $text?: TextSearchOperator;
+  $or?: Array<Record<string, unknown>>;
 } & Record<string, unknown>;
 
 
 
-// query filters for fetching events (by admin)
-export interface GetEventsFilter {
+interface IBaseEventFilter {
   page: number;
   limit: number;
+  search?: string;
   category?: EVENT_CATEGORY;
   format?: EVENT_FORMAT;
-  status?: EVENT_STATUS;
   ticketType?: TICKET_TYPE;
+}
 
-  search?: string;
-  
+
+// query filters for fetching events (by admin)
+export interface GetEventsFilter extends IBaseEventFilter {
+  status?: EVENT_STATUS;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }
+
+
+
+// query filters for fetching events in public events discovery page
+export interface GetPublicEventsFilter extends IBaseEventFilter {
+  lat?: number;
+  lng?: number;
+  // location: string;  // need this ??
+  radiusKm?: number;
+}
+
+
+export type SortQuery = Record<string, 1 | -1>;
+
+
 
 
 

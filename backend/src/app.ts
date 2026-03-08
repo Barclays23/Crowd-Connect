@@ -11,6 +11,7 @@ import adminRoutes from '@/routes/admin.routes';
 import userRouter from '@/routes/user.routes';
 import hostRouter from '@/routes/host.routes';
 import eventRouter from '@/routes/event.routes';
+import bookingRouter from '@/routes/booking.routes';
 
 
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/host', hostRouter);
 app.use('/api/event', eventRouter);
+app.use('/api/booking', bookingRouter);
 
 
 app.use(errorHandler);

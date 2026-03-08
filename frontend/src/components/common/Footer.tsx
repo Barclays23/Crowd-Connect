@@ -10,6 +10,10 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import logo from "@/assets/crowdconnect-icon-1.png";
+
+
+
 
 export function Footer() {
   return (
@@ -25,15 +29,10 @@ export function Footer() {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Calendar
-                className="h-8 w-8"
-                style={{ color: "var(--brand-primary)" }}
-              />
+              <img src={logo} alt="crowd-connect-logo" className="h-8 w-8" />
               <span
-                className="text-xl font-bold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                EventHub
+                className="text-xl font-bold text-(--brand-primary)">
+                Crowd Connect
               </span>
             </div>
 
@@ -196,70 +195,68 @@ export function Footer() {
 
         {/* Bottom Section */}
         <div
-          className="mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
-          style={{ borderTopColor: "var(--border-default)" }}
+          className="mt-5 rounded-lg p-3"
+          style={{
+            backgroundColor: "var(--bg-secondary)",
+            border: "1px solid var(--border-default)",
+          }}
         >
-          <div className="flex flex-col sm:flex-row items-center gap-6 text-sm">
-            <div
-              className="flex items-center"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <MapPin className="w-4 h-4 mr-1" />
-              Kerala, India
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Brand and Copyright */}
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
+                <img src={logo} alt="crowd-connect-logo" className="h-6 w-6" />
+                <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Crowd Connect
+                </span>
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                © {new Date().getFullYear()} All Rights Reserved
+              </p>
             </div>
-            <div
-              className="flex items-center"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <Phone className="w-4 h-4 mr-1" />
-              (+91) 9633 699-766
-            </div>
-            <div
-              className="flex items-center"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              <Mail className="w-4 h-4 mr-1" />
-              hello@crowdconnect.com
-            </div>
-          </div>
 
-          <div className="flex space-x-6 text-sm mt-4 md:mt-0">
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map(
-              (label) => (
+            {/* Contact Info - Horizontal */}
+            <div className="flex flex-wrap justify-center gap-4">
+              {[
+                { icon: MapPin, text: "Kerala, India" },
+                { icon: Phone, text: "+91 9633 699-766" },
+                { icon: Mail, text: "hello@crowdconnect.com" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center space-x-1">
+                  <item.icon className="w-3 h-3" style={{ color: "var(--brand-primary)" }} />
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    {item.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Policy Links - Pill Buttons */}
+            <div className="flex gap-2">
+              {["Privacy", "Terms", "Cookies"].map((label) => (
                 <a
                   key={label}
                   href="#"
-                  className="transition-colors"
+                  className="px-3 py-1 text-xs rounded-full transition-colors"
                   style={{
                     color: "var(--text-secondary)",
+                    backgroundColor: "var(--card-bg)",
+                    border: "1px solid var(--border-default)",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color =
-                      "var(--brand-primary)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color =
-                      "var(--text-secondary)")
-                  }
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--brand-primary)";
+                    e.currentTarget.style.color = "white";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--card-bg)";
+                    e.currentTarget.style.color = "var(--text-secondary)";
+                  }}
                 >
                   {label}
                 </a>
-              )
-            )}
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* Copyright */}
-        <div className="mt-2 pt-2 text-center">
-          <p
-            className="text-sm"
-            style={{
-              color: "var(--text-secondary)",
-              borderTopColor: "var(--border-default)",
-            }}
-          >
-            © {new Date().getFullYear()} Crowd Connect. All Rights Reserved.
-          </p>
         </div>
       </div>
     </footer>

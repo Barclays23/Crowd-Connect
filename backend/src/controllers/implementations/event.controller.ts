@@ -3,11 +3,11 @@
 import { Request, Response, NextFunction } from "express";
 import { IEventController } from "../interfaces/IEventController";
 import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
-import { CreateEventDTO, EventResponseDTO } from "@/dtos/event.dto";
+import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { mapCreateEventRequestToDto } from "@/mappers/event.mapper";
-import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, TICKET_TYPE } from "@/types/event.types";
+import { mapCreateEventRequestToDto, mapEventDiscoveryQueryToFilters } from "@/mappers/event.mapper";
+import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, GetPublicEventsFilter, TICKET_TYPE } from "@/types/event.types";
 
 
 
@@ -25,16 +25,12 @@ export class EventController implements IEventController {
             const body = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentUserId: string = req.user.userId;
-            console.log('body :', body);
-            console.log('imageFile :', imageFile);
-            console.log('currentUserId :', currentUserId);
 
-            const createDto: CreateEventDTO = mapCreateEventRequestToDto(req);
+            const createDto: CreateEventRequestDTO = mapCreateEventRequestToDto(req);
 
             const createdEvent: EventResponseDTO = await this._eventServices.createEvent({
                 createDto,
                 imageFile,
-                // currentUserId
             });
 
             res.status(HttpStatus.CREATED).json({
@@ -46,6 +42,40 @@ export class EventController implements IEventController {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
             console.error('Error in eventController.createEvent:', msg);
+            next(error);
+        };
+    }
+
+    
+    async updateEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const body = req.body;
+            const imageFile: Express.Multer.File | undefined = req.file;
+            const currentUserId: string = req.user.userId;
+            const eventId: string = req.params.eventId;
+            console.log('body :', body);
+            console.log('imageFile :', imageFile);
+            console.log('currentUserId :', currentUserId);
+            console.log('eventId :', eventId);
+
+            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req);
+
+            const updatedEvent: EventResponseDTO = await this._eventServices.updateEvent({
+                currentUserId,
+                eventId,
+                updateEventDto,
+                imageFile
+            });
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.SUCCESS_UPDATE_EVENT,
+                updatedEvent,
+            });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.updateEvent:', msg);
             next(error);
         };
     }
@@ -173,7 +203,7 @@ export class EventController implements IEventController {
         };
     }
 
-
+ 
     async getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user.userId;
@@ -235,5 +265,43 @@ export class EventController implements IEventController {
         };
     }
 
+
+
+    async getDiscoveryEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const filters: GetPublicEventsFilter = mapEventDiscoveryQueryToFilters(req);
+            
+            const {eventsData, pagination}: GetDiscoveryEventsResult = await this._eventServices.getEventsForDiscovery(filters);
+            
+            res.status(HttpStatus.OK).json({
+                eventsData,
+                pagination
+            });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.getDiscoveryEvents:', msg);
+            next(error);
+        };
+    };
+
+
+
+    async getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId: string = req.params.eventId;
+
+            const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
+
+            res.status(HttpStatus.OK).json({
+                eventDetails
+            });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.getEventDetails:', msg);
+            next(error);
+        };
+    }
 
 }
