@@ -51,7 +51,7 @@ export const BOOKING_CONSTRAINTS = {
 // Feed directly to Razorpay frontend SDK
 export interface BookingPaymentOrderResponse {  // same interface BookingOrderResponseDTO why that separate??
   bookingId:       string;   // pending booking _id — stored by frontend for reference
-  razorpayOrderId: string;
+  orderId: string;
   amount:          number;   // in paise (₹ × 100)
   currency:        string;
   keyId:           string;   // Razorpay key_id for frontend SDK
@@ -84,8 +84,8 @@ export interface IBookingState {
   eventFormat:      EVENT_FORMAT;
   bookingStatus:    BOOKING_STATUS;
   payment: {
-    razorpayOrderId:    string;
-    razorpayPaymentId?: string;
+    orderId:    string;
+    paymentId?: string;
     status:             PAYMENT_STATUS;
     paidAt?:            string;
   };

@@ -41,6 +41,9 @@ import {
 import BookingDetails              from "@/components/booking/BookingDetails";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
 import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
+import { TextArea } from "@/components/ui/text-area";
+import { FieldError } from "@/components/ui/FieldError";
+import { cancelReasonBase } from "@/schemas/booking.schema";
 
 
 
@@ -64,6 +67,8 @@ function UserBookings() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
   const [isCancelling,    setIsCancelling]    = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const itemsPerPage = 10;
 
@@ -132,21 +137,36 @@ function UserBookings() {
 
   const requestCancel = (bookingId: string) => {
     setBookingToCancel(bookingId);
+    setCancelReason("");
+    setCancelError(null);
     setCancelModalOpen(true);
   };
 
   const confirmCancel = async () => {
     if (!bookingToCancel) return;
+    const validation = cancelReasonBase.safeParse(cancelReason);
+
+    if (!validation.success) {
+      setCancelError(validation.error.issues[0].message);
+      return;
+    }
+
     try {
+      const response = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
       setIsCancelling(true);
-      toast.success("Booking cancelled successfully");
+      toast.success(response.message);
       fetchMyBookings();
+
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
+      console.log("error in confirm cancel booking", error);
       if (errorMessage) toast.error(errorMessage);
+
     } finally {
       setCancelModalOpen(false);
       setBookingToCancel(null);
+      setCancelReason("");
+      setCancelError(null);
       setIsCancelling(false);
     }
   };
@@ -265,8 +285,8 @@ function UserBookings() {
               >
                 Tickets {getSortIcon("quantity")}
               </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right pr-5">Manage</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center pr-5">Manage</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -372,24 +392,22 @@ function UserBookings() {
 
                     {/* Manage */}
                     <TableCell className="text-right pr-5">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-2">
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          title="View Booking Details"
+                          variant="primaryOutline"
+                          size="xs"
                           onClick={() => setViewBooking(booking)}
                         >
-                          <Eye className="h-4 w-4" />
+                          View
                         </Button>
 
                         {canCancel && (
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Cancel Booking"
+                            variant="destructive"
+                            size="xs"
                             onClick={() => requestCancel(booking.bookingId)}
                           >
-                            <XCircle className="h-4 w-4 text-destructive" />
+                            Cancel
                           </Button>
                         )}
                       </div>
@@ -419,22 +437,41 @@ function UserBookings() {
       >
         {viewBooking && <BookingDetails booking={viewBooking} />}
       </Modal>
-
+   
       {/* Cancel Confirmation Modal */}
       <ConfirmationModal
         isOpen={cancelModalOpen}
         onClose={() => {
           setCancelModalOpen(false);
           setBookingToCancel(null);
+          setCancelReason("");
+          setCancelError(null);
         }}
         onConfirm={confirmCancel}
         title="Cancel Booking"
         description="Are you sure you want to cancel this booking? This action cannot be undone. If eligible, a refund will be processed within 5–7 business days."
         confirmText="Cancel Booking"
         cancelText="Keep Booking"
-        variant="destructive"
+        variant="danger"
         loading={isCancelling}
-      />
+        disableConfirm={!cancelReason.trim()}
+      >
+        <div className="mt-4 space-y-2">
+          <label htmlFor="cancel-reason" className="text-sm font-medium text-(--text-primary)">
+            Reason for cancellation <span className="text-(--status-error)">*</span>
+          </label>
+          <TextArea
+            id="cancel-reason"
+            placeholder="Please tell us why you are cancelling..."
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            disabled={isCancelling}
+            className="w-full"
+            autoFocus
+          />
+          {cancelError && <FieldError message={cancelError}/>}
+        </div>
+      </ConfirmationModal>
     </div>
   );
 }

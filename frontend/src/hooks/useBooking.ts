@@ -4,10 +4,10 @@ import { bookingServices } from "@/services/bookingServices";
 // import { loadRazorpayScript } from "@/utils/razorpay";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { IBookingState, InitiateBookingResponse } from "@/types/booking.types";
-import { toast } from "react-toastify";
+
 
 interface UseBookingOptions {
-    onSuccess?: (populatedBooking: IBookingState) => void;
+    onSuccess?: (populatedBooking: IBookingState) => void;  // also add response message
     onError?:   (message: string) => void;
 }
 
@@ -59,7 +59,7 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                         currency:    order.currency,
                         name:        "CrowdConnect",
                         description: `Booking for ${eventTitle}`,
-                        order_id:    order.razorpayOrderId,
+                        order_id:    order.orderId,
                         prefill: {
                             name:    userName,
                             email:   userEmail,
@@ -75,9 +75,9 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                             try {
                             // Step 2 — verify payment
                             const booking: IBookingState = await bookingServices.verifyPayment({
-                                razorpayOrderId:   response.razorpay_order_id,
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                razorpaySignature: response.razorpay_signature,
+                                orderId:   response.razorpay_order_id,
+                                paymentId: response.razorpay_payment_id,
+                                signature: response.razorpay_signature,
                             });
     
                             setConfirmedBooking(booking);
@@ -101,11 +101,9 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                 });
             }
 
-        } catch (err: unknown) {
-            const message = getApiErrorMessage(err) ?? "Booking failed. Please try again.....";
-            onError?.(message);
-            toast.error('book event error..');
-            toast.error(message);
+        } catch (error: unknown) {
+            const errorMessage = getApiErrorMessage(error);
+            if (errorMessage) onError?.(errorMessage);
 
         } finally {
             setIsLoading(false);

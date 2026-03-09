@@ -17,9 +17,9 @@ export const initiateBookingSchema = z.object({
 
 // ─── Payment Verification (paid events only) ─────────────────────────────────
 export const verifyPaymentSchema = z.object({
-  razorpayOrderId:   z.string().min(1, "razorpayOrderId is required"),
-  razorpayPaymentId: z.string().min(1, "razorpayPaymentId is required"),
-  razorpaySignature: z.string().min(1, "razorpaySignature is required"),
+  orderId:   z.string().min(1, "OrderId is required"),
+  paymentId: z.string().min(1, "PaymentId is required"),
+  signature: z.string().min(1, "Signature is required"),
 });
 
 // ─── Cancellation ─────────────────────────────────────────────────────────────

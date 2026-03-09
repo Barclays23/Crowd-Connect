@@ -155,7 +155,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
 
-   async incrementSoldTickets(eventId: string, newBookingQty: number, totalAmount: number): Promise<void> {
+   async incrementEventTicketStats(eventId: string, newBookingQty: number, totalAmount: number): Promise<void> {
       try {
          await this.model.findByIdAndUpdate(eventId, {
             $inc: {
@@ -170,12 +170,12 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       }
    }
 
-   async decrementSoldTickets(eventId: string, cancelledQty: number, totalAmount: number): Promise<void> {
+   async decrementEventTicketStats(eventId: string, cancelledQty: number, totalAmount: number): Promise<void> {
       try {
          await this.model.findByIdAndUpdate(eventId, {
             $inc: {
-            soldTickets:        -cancelledQty,
-            grossTicketRevenue: -totalAmount,
+               soldTickets:        -cancelledQty,
+               grossTicketRevenue: -totalAmount,
             },
          });
       } catch (error) {

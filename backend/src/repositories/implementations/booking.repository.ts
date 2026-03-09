@@ -4,7 +4,7 @@ import { PipelineStage, Types } from "mongoose";
 import Booking from "@/models/implementations/booking.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
-import { BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
 import { mapBookingModelToEntity, mapPopulatedBookingModelToEntity } from "@/mappers/booking.mapper";
 import { BOOKING_STATUS, BookingFilterQuery, GetBookingsFilter, GetBookingsResult, IBookingModel, IBookingPopulatedUserAndEvent } from "@/types/booking.types";
 import { PAYMENT_STATUS } from "@/types/booking.types";
@@ -46,16 +46,16 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   }
 
 
-  async getBookingByRazorpayOrderId(orderId: string): Promise<BookingEntity | null> {
+  async getBookingByOrderId(orderId: string): Promise<BookingEntity | null> {
     try {
       const booking = await this.model
-        .findOne({ "payment.razorpayOrderId": orderId })
+        .findOne({ "payment.orderId": orderId })
         .lean<IBookingModel>();
 
       return booking ? mapBookingModelToEntity(booking) : null;
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingRepository.getBookingByRazorpayOrderId:", msg);
+      console.error("Error in BookingRepository.getBookingByOrderId:", msg);
       throw error;
     }
   }
@@ -300,4 +300,20 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       throw error;
     }
   }
+
+
+  async cancelBooking(bookingId: string, cancellationInput: BookingCancelInput): Promise<BookingEntity | null> {
+    try {
+      const updated: IBookingModel | null = await this.findByIdAndUpdate(bookingId, cancellationInput);
+
+      return updated ? mapBookingModelToEntity(updated) : null;
+
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error in BookingRepository.cancelBooking:", msg);
+      throw error;
+    }
+  }
+
+
 }

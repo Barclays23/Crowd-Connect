@@ -2,11 +2,9 @@
 
 import { EventResponseDTO } from "@/dtos/event.dto";
 import { DateQueryOperator } from "@/utils/eventStatus.utils";
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 
 
-// Also check the same percentage value in backend
-export const ADMIN_COMMISSION_PERCENT = 10;
 
 
 export const ALL_EVENT_CATEGORIES = [

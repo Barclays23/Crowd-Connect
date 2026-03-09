@@ -16,6 +16,8 @@ import {
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
+import { PaymentService } from "@/services/payment-services/implementations/payment.service";
+import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 
 
 
@@ -26,7 +28,13 @@ const eventRepo         = new EventRepository();
 const userRepo          = new UserRepository();
 
 
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo);
+const razorpayProvider = new RazorpayProvider();
+const paymentService   = new PaymentService(razorpayProvider);
+
+
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService);
+
+
 const bookingController = new BookingController(bookingService);
 
 
@@ -48,6 +56,10 @@ bookingRouter.get(
 bookingRouter.get(
   BOOKING_ROUTES.BOOKING_DETAILS,
   bookingController.getBookingById.bind(bookingController)
+);
+bookingRouter.put(
+  BOOKING_ROUTES.CANCEL_BOOKING,
+  bookingController.cancelBookingByUser.bind(bookingController)
 );
 
 
@@ -72,7 +84,7 @@ export default bookingRouter;
 //     → validates rules
 //     → creates PENDING booking (no QR yet)
 //     → creates Razorpay order
-//     → returns { isFree: false, order: { razorpayOrderId, amount, keyId } }
+//     → returns { isFree: false, order: { orderId, amount, keyId } }
 //   Frontend → opens Razorpay SDK
 
 //   POST /bookings/verify-payment

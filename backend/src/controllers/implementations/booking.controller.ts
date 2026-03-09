@@ -7,6 +7,7 @@ import { BOOKING_STATUS, GetBookingsFilter, BookingSortField, ALLOWED_BOOKING_SO
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { IBookingController } from "@/controllers/interfaces/IBookingController";
 import { EVENT_FORMAT } from "@/types/event.types";
+import { BOOKING_MESSAGES } from "@/constants/booking.constants";
 
 
 
@@ -144,4 +145,27 @@ export class BookingController implements IBookingController{
       next(error);
     }
   }
+
+
+  async cancelBookingByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId    = req.user.userId;
+      const { bookingId } = req.params;
+      const { cancelReason } = req.body;
+      
+      await this._bookingService.cancelBookingByUser(bookingId, userId, cancelReason);
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
+      });
+
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error in BookingController.cancelBookingByUser:", msg);
+      next(error);
+    }
+  }
+
+
 }

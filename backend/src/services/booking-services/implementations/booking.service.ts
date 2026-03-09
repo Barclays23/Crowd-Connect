@@ -1,8 +1,7 @@
 // backend/src/services/booking-services/implementations/booking.service.ts
 
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
-// import Razorpay from "razorpay";
+import Razorpay from "razorpay";
 
 import { IBookingService }    from "@/services/booking-services/interfaces/IBookingService";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
@@ -24,8 +23,11 @@ import { HttpStatus } from "@/constants/statusCodes.constants";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { BOOKING_MESSAGES, MIN_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_USER, ONLINE_MAX_TICKETS_PER_USER } from "@/constants/booking.constants";
-import { BookingEntity, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, CreateBookingInput } from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { ABOVE_H48_REFUND_PERCENT, ADMIN_COMMISSION_PERCENT, BELOW_H24_REFUND_PERCENT, BELOW_H48_REFUND_PERCENT, GRACE_PERIOD_REFUND_PERCENT, NO_REFUND_PERCENT } from "@/types/payment.types";
+import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
+import { RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
 
 
 
@@ -33,8 +35,9 @@ export class BookingService implements IBookingService {
 
    constructor(
       private readonly _bookingRepository: IBookingRepository,
-      private readonly _eventRepository:   IEventRepository,
-      private readonly _userRepository:   IUserRepository,
+      private readonly _eventRepository:  IEventRepository,
+      private readonly _userRepository:  IUserRepository,
+      private readonly _paymentService:  IPaymentService,
    ) {}
 
 
@@ -133,7 +136,7 @@ export class BookingService implements IBookingService {
 
             const bookingEntity: BookingEntity = await this._bookingRepository.createBooking(createBookingInput);
 
-            await this._eventRepository.incrementSoldTickets(eventId, newBookingQty, totalAmount);
+            await this._eventRepository.incrementEventTicketStats(eventId, newBookingQty, totalAmount);
 
             const populated = await this._bookingRepository.getBookingById(bookingEntity.bookingId);
             if (!populated) {
@@ -222,6 +225,104 @@ export class BookingService implements IBookingService {
          throw error;
       }
    }
+
+
+   async cancelBookingByUser(bookingId: string, userId: string, cancelReason: string): Promise<void> {
+      try {
+         const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);
+         if (!booking) {
+            throw createHttpError(HttpStatus.NOT_FOUND, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
+         }
+         if (booking.user.userId !== userId) {
+            throw createHttpError(HttpStatus.FORBIDDEN, BOOKING_MESSAGES.UNAUTHORIZED_BOOKING_CANCELLATION);
+         }
+         if (booking.bookingStatus === BOOKING_STATUS.CANCELLED) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.BOOKING_ALREADY_CANCELLED);
+         }
+         if (booking.bookingStatus === BOOKING_STATUS.FAILED || 
+            booking.bookingStatus === BOOKING_STATUS.PENDING ||
+            booking.bookingStatus === BOOKING_STATUS.ATTENDED
+         ) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.CANCELLATION_NOT_ALLOWED);
+         }
+         if (booking.event.startDateTime <= new Date()) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.CANCELLATION_WINDOW_CLOSED);
+         }
+
+         // QR scanning opens 30 min before startDateTime — entries may already
+         // be consumed before the event-started guard above triggers.
+         if (booking.remainingEntries === 0 || booking.quantity !== booking.remainingEntries) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.CANNOT_CANCEL_AFTER_ENTRY);
+         }
+
+         // ── Refund Calculation ────────────────────────────────────────
+         const isFree = booking.ticketRate === 0;
+         let refundAmount = 0;
+
+         if (!isFree) {
+            let refundPercentage = NO_REFUND_PERCENT;
+            const isGraceRefundActive = !!booking.refundGracePeriodEnd && new Date() <= booking.refundGracePeriodEnd;
+
+            if (isGraceRefundActive) {
+               refundPercentage = GRACE_PERIOD_REFUND_PERCENT;
+            } else {
+               const hoursToStart =
+                  (new Date(booking.event.startDateTime).getTime() - Date.now()) / (1000 * 60 * 60);
+
+               if (hoursToStart >= 48)                           refundPercentage = ABOVE_H48_REFUND_PERCENT;
+               else if (hoursToStart < 48 && hoursToStart >= 24) refundPercentage = BELOW_H48_REFUND_PERCENT;
+               else if (hoursToStart < 24 && hoursToStart > 0)   refundPercentage = BELOW_H24_REFUND_PERCENT;
+               else                                              refundPercentage = NO_REFUND_PERCENT;
+            }
+
+            refundAmount = Math.round(
+               booking.totalAmount * (1 - ADMIN_COMMISSION_PERCENT / 100) * (refundPercentage / 100)
+            );
+         }
+
+         let refundId: string | undefined;
+
+         if (refundAmount > 0) {
+            if (!booking.payment.paymentId) {
+               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Payment ID missing — cannot initiate refund");
+            }
+            const refund: RefundResult = await this._paymentService.initiateBookingRefund({
+               paymentId: booking.payment.paymentId,
+               bookingId,
+               amount: refundAmount * 100, // paise
+            });
+            refundId = refund.refundId;
+         }
+
+         // ── Cancel Booking ────────────────────────────────────────────
+         const cancellationInput: BookingCancelInput = {
+            bookingStatus:  BOOKING_STATUS.CANCELLED,
+            paymentStatus:  refundAmount > 0 ? PAYMENT_STATUS.REFUNDED : PAYMENT_STATUS.PAID,
+            cancellation: {
+               cancelledAt: new Date(),
+               reason: cancelReason,
+               ...(refundId && { refundId: refundId }),
+            },
+            // qrToken: "",  // should clear QR token ??
+         };
+
+         await this._bookingRepository.cancelBooking(bookingId, cancellationInput);
+
+         // ── Update Event Ticket Stats ───────────────────────────────────────
+         await this._eventRepository.decrementEventTicketStats(
+            booking.event.eventId,
+            booking.quantity,
+            booking.totalAmount,
+         );
+
+
+      } catch (error: unknown) {
+         const msg = error instanceof Error ? error.message : "Unknown error";
+         console.error("Error in BookingService.cancelBookingByUser:", msg);
+         throw error;
+      }
+   }
+
 
 
    private _generateQrToken({

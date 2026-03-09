@@ -56,9 +56,9 @@ const bookingSchema = new Schema<IBookingModel>(
          type: Date,
       },
       payment: {
-         razorpayOrderId  : { type: String, required: true },
-         razorpayPaymentId: { type: String },
-         razorpaySignature: { type: String },
+         orderId  : { type: String, required: true },
+         paymentId: { type: String },
+         signature: { type: String },
          status: {
             type: String,
             enum: Object.values(PAYMENT_STATUS),
@@ -145,7 +145,7 @@ bookingSchema.index({ userRef: 1, eventRef: 1 });                        // Dupl
 bookingSchema.index({ eventRef: 1, bookingStatus: 1 });                  // Host dashboard — filter by status per event
 bookingSchema.index({ qrToken: 1 }, { sparse: true, unique: true });     // QR scan — sparse skips empty-string PENDING rows
 bookingSchema.index({ refundGracePeriodEnd: 1 }, { sparse: true });      // Grace-period queries — sparse skips null rows
-bookingSchema.index({ "payment.razorpayOrderId": 1 }, { unique: true }); // Webhook lookup — must be unique
+bookingSchema.index({ "payment.orderId": 1 }, { unique: true });         // Webhook lookup — must be unique
 
 
 

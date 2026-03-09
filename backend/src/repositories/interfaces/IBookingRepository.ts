@@ -1,6 +1,6 @@
 // backend/src/repositories/interfaces/IBookingRepository.ts
 
-import { BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
 import { GetBookingsFilter, GetBookingsResult } from "@/types/booking.types";
 
 
@@ -12,7 +12,7 @@ export interface IBookingRepository {
 
   getBookingById(bookingId: string): Promise<BookingEntityPopulated | null>;
 
-  getBookingByRazorpayOrderId(orderId: string): Promise<BookingEntity | null>;
+  getBookingByOrderId(orderId: string): Promise<BookingEntity | null>;
 
   getBookingByQrToken(token: string): Promise<BookingEntity | null>;
 
@@ -34,4 +34,6 @@ export interface IBookingRepository {
 
   // Atomically decrement remainingEntries — used during QR scan
   decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null>;
+
+  cancelBooking(bookingId: string, cancellationInput: BookingCancelInput): Promise<BookingEntity | null>;
 }

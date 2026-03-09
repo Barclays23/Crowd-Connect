@@ -18,9 +18,8 @@ export function UserPagination({
 }: UserPaginationProps) {
   if (totalPages <= 1) return null;
 
-  const pages = [];
+  const pages: number[] = [];
   const maxVisiblePages = 5;
-
   let startPage = Math.max(1, currentPage - 2);
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
@@ -34,26 +33,40 @@ export function UserPagination({
 
   return (
     <div className={cn("flex items-center justify-center gap-2 mt-8", className)}>
+      {/* Previous */}
       <Button
-        variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-lg"
+        className={cn(
+          "h-9 w-9 rounded-lg border transition-colors",
+          "border-(--border-default)",
+          "bg-(--bg-tertiary) text-(--brand-primary)",
+          "hover:bg-(--brand-primary) hover:text-(--text-secondary)",
+          "disabled:opacity-50 disabled:pointer-events-none"
+        )}
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
+      {/* Page numbers */}
       {pages.map((page) => (
         <Button
           key={page}
-          variant={page === currentPage ? "default" : "outline"}
           size="icon"
           className={cn(
-            "h-9 w-9 rounded-lg",
+            "h-9 w-9 rounded-lg border font-medium transition-colors",
             page === currentPage
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "hover:bg-muted"
+              ? cn(
+                  "bg-(--brand-primary) text-(--btn-primary-text)",
+                  "hover:bg-(--brand-primary-hover) border-transparent",
+                  "shadow-sm"
+                )
+              : cn(
+                  "bg-transparent text-(--text-secondary)",
+                  "border-(--border-default)",
+                  "hover:bg-(--bg-tertiary) hover:text-(--brand-primary)"
+                )
           )}
           onClick={() => onPageChange(page)}
         >
@@ -61,10 +74,16 @@ export function UserPagination({
         </Button>
       ))}
 
+      {/* Next */}
       <Button
-        variant="outline"
         size="icon"
-        className="h-9 w-9 rounded-lg"
+        className={cn(
+          "h-9 w-9 rounded-lg border transition-colors",
+          "border-(--border-default)",
+          "bg-(--bg-tertiary) text-(--brand-primary)",
+          "hover:bg-(--brand-primary) hover:text-(--text-secondary)",
+          "disabled:opacity-50 disabled:pointer-events-none"
+        )}
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >

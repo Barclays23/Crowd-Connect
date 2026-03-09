@@ -6,7 +6,6 @@ import {
   Globe,
   RefreshCw,
   Plane,
-  AlertOctagon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate6 } from "@/utils/dateAndTimeFormats";
@@ -23,7 +22,6 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
   const isFree = booking.totalAmount === 0;
   const isConfirmed = booking.bookingStatus === BOOKING_STATUS.CONFIRMED;
   const isAttended = booking.bookingStatus === BOOKING_STATUS.ATTENDED;
-  const showQR = isConfirmed || isAttended;
   const isCancelled = booking.bookingStatus === BOOKING_STATUS.CANCELLED;
 
   const ticketNumber = booking.bookingId.slice(-8).toUpperCase();
@@ -36,7 +34,6 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
         border border-(--border-default) 
         shadow-(--shadow-xl) 
         rounded-xl overflow-hidden
-        ${isCancelled ? "opacity-70 grayscale" : ""}
         transition-all duration-200
       `}
     >
@@ -186,38 +183,42 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
           </div>
 
           <div className="p-6 md:p-8 flex flex-col items-center justify-center flex-1">
-            {showQR && booking.qrToken ? (
-              <div className="flex flex-col items-center gap-5 w-full">
-                <div className="p-4 bg-white rounded-xl shadow-sm border border-(--border-default)">
-                  <QRCode value={booking.qrToken} size={160} style={{ display: "block" }} />
+            <div className="flex flex-col items-center gap-5 w-full">
+              <div className="p-4 bg-white rounded-xl shadow-sm border border-(--border-default)">
+                <QRCode value={booking.qrToken} size={160} style={{ display: "block" }} />
+              </div>
+
+              {booking.remainingEntries !== undefined && (
+                <div
+                  className={`
+                    inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
+                    text-xs font-bold uppercase tracking-wide border
+                    ${isCancelled 
+                      ? "bg-(--badge-error-bg) text-(--badge-error-text) border-(--badge-error-border)" 
+                      : "bg-(--badge-primary-bg) text-(--badge-primary-text) border-(--badge-primary-border)"
+                    }
+                  `}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {booking.remainingEntries} Entries Remaining
                 </div>
+              )}
 
-                {booking.remainingEntries !== undefined && (
-                  <div
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full 
-                    text-xs font-bold uppercase tracking-wide 
-                    bg-(--badge-primary-bg) text-(--badge-primary-text) border border-(--badge-primary-border)"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    {booking.remainingEntries} Entries Remaining
-                  </div>
-                )}
+              {isCancelled && (
+                <div className="w-full p-1.5 items-center text-center text-(--badge-error-text)">
+                  <p className="text-xs font-medium">
+                    * This ticket is no more valid.
+                  </p>
+                </div>
+              )}
 
-                <div className="w-full pt-5 border-t border-(--border-muted) space-y-3 text-left">
-                  <div>
-                    <div className="text-xs uppercase text-(--text-tertiary)">Ticket No</div>
-                    <div className="font-mono font-semibold text-(--text-primary)">{ticketNumber}</div>
-                  </div>
+              <div className="w-full pt-5 border-t border-(--border-muted) space-y-3 text-left">
+                <div>
+                  <div className="text-xs uppercase text-(--text-tertiary)">Ticket No</div>
+                  <div className="font-mono font-semibold text-(--text-primary)">{ticketNumber}</div>
                 </div>
               </div>
-            ) : (
-              <div className="w-44 h-44 rounded-xl bg-(--card-bg) border-2 border-dashed border-(--border-muted) flex flex-col items-center justify-center gap-3 text-center">
-                <AlertOctagon className="h-10 w-10 text-(--text-tertiary)" />
-                <span className="text-xs font-bold uppercase tracking-wide text-(--text-tertiary)">
-                  {isCancelled ? "VOID" : "QR\nNot Ready"}
-                </span>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -62,12 +62,12 @@ export interface IBookingModel {
 
   // Payment — embedded (not a separate model).
   payment: {
-    razorpayOrderId:    string;
-    razorpayPaymentId?: string;  // undefined until Razorpay captures the charge
-    razorpaySignature?: string;  // undefined until verified on our backend
-    status:             PAYMENT_STATUS;
-    paidAt?:            Date;
-  };
+    orderId:    string;
+    paymentId?: string;    // undefined until Razorpay captures the charge
+    signature?: string;    // undefined until verified on backend
+    status:  PAYMENT_STATUS;
+    paidAt?: Date;
+  }
 
   // QR / Entry
   // One signed JWT per booking (not per ticket). Payload: { bookingId, eventId, userId }.

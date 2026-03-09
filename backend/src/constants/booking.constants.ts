@@ -10,7 +10,7 @@ export const MIN_TICKETS_PER_BOOKING          = 1;   // Minimum tickets for any 
 export const BOOKING_MESSAGES = {
     BOOKING_INITIATED: "Booking initiated successfully",
     BOOKING_CONFIRMED: "Booking confirmed successfully",
-    BOOKING_CANCELLED: "Booking cancelled successfully",
+    BOOKING_CANCELLED: "Booking has been cancelled.",
 
     // ─── ONLINE EVENT MESSAGES ────────────────────────────
     ONLINE_LIMIT_PER_USER: `You can only book ${ONLINE_MAX_TICKETS_PER_USER} ticket for online events`,
@@ -52,8 +52,10 @@ export const BOOKING_MESSAGES = {
     // ─── CANCELLATION MESSAGES ────────────────────────────────────
     BOOKING_ALREADY_CANCELLED: "This booking is already cancelled",
     EVENT_ALREADY_CANCELLED: "This event is already cancelled",
-    CANCELLATION_WINDOW_CLOSED: "Cancellation window has closed",
+    CANCELLATION_WINDOW_CLOSED: "Cannot cancel booking. Cancellation window has already closed",
     CANCELLATION_NOT_ALLOWED: "This booking cannot be cancelled",
+    UNAUTHORIZED_BOOKING_CANCELLATION: "You are not authorized to cancel this booking",
+    CANNOT_CANCEL_AFTER_ENTRY: "Cannot cancel booking after entry pass has been used",
 
 
 

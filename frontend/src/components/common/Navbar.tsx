@@ -75,14 +75,14 @@ export function Navbar() {
 
 
    // Conditional Navigation Items
-    const navItems = [
-        { to: "/", label: "Home", end: true },
-        { to: "/events", label: "Events" },
-        { to: "/host", label: "Host Event", },
-        { to: "/bookings", label: "My Bookings", requiresAuth: true },
-        { to: "/my-account", label: "My Account", requiresAuth: true },
-        { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
-    ];
+   const navItems = [
+      { to: "/", label: "Home", end: true },
+      { to: "/events", label: "Events" },
+      { to: "/host", label: "Host Event", },
+      { to: "/my-bookings", label: "My Bookings", requiresAuth: true },
+      { to: "/my-account", label: "My Account", requiresAuth: true },
+      { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
+   ];
 
     
    

@@ -19,9 +19,9 @@ export interface BookingEntity {
   eventFormat: EVENT_FORMAT;
 
   payment: {
-    razorpayOrderId:    string;
-    razorpayPaymentId?: string;
-    razorpaySignature?: string;
+    orderId:    string;
+    paymentId?: string;
+    signature?: string;
     status:             PAYMENT_STATUS;
     paidAt?:            Date;
   };
@@ -79,8 +79,8 @@ export interface CreateBookingInput {
   totalAmount: number;
   ticketNo:    string;
   payment: {
-    razorpayOrderId: string;
-    razorpayPaymentId?: string;
+    orderId: string;
+    paymentId?: string;
     status:          PAYMENT_STATUS;
     paidAt:         Date;
   };
@@ -96,4 +96,17 @@ export interface ConfirmBookingInput {
   razorpaySignature: string;
   qrToken:           string;
   paidAt:            Date;
+}
+
+
+export interface BookingCancelInput {
+  bookingStatus: BOOKING_STATUS;
+  paymentStatus: PAYMENT_STATUS;
+  // qrToken:       string;
+  cancellation: {
+    cancelledAt: Date;
+    reason?:     string;
+    refundId?:   string;
+    refundedAt?: Date;
+  };
 }

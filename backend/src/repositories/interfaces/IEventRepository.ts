@@ -18,6 +18,6 @@ export interface IEventRepository {
         sortField: string, sortDirection: 1 | -1
     ): Promise<{ eventEntity: EventEntity[] | null; totalCount: number }>;
 
-    incrementSoldTickets(eventId: string, newBookingQty: number, totalAmount: number): Promise<void>;
-    decrementSoldTickets(eventId: string, cancelledQty: number, totalAmount: number): Promise<void>;
+    incrementEventTicketStats(eventId: string, newBookingQty: number, totalAmount: number): Promise<void>;
+    decrementEventTicketStats(eventId: string, cancelledQty: number, totalAmount: number): Promise<void>;
 }

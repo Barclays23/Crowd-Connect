@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { IBooking } from "@/types/booking.types";
+import type { IBookingState } from "@/types/booking.types";
 import { Check, CheckCircle, Copy } from "lucide-react";
 import { useState } from "react";
 import QRCode from "react-qr-code";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 
 export function BookingConfirmationScreen({ booking, userEmail, onClose}: {
-   booking:   IBooking;
+   booking:   IBookingState;
    userEmail: string;
    onClose:   () => void;
 }) {
@@ -73,13 +73,13 @@ export function BookingConfirmationScreen({ booking, userEmail, onClose}: {
                <span className="font-mono text-(--text-primary) text-xs">{booking.bookingId.slice(-10).toUpperCase()}</span>
             </div>
             <div className="flex justify-between px-4 py-3">
-               <span className="text-(--text-secondary)">Amount paid</span>
+               <span className="text-(--text-secondary)">Amount Paid</span>
                <span className="font-semibold text-(--heading-primary)">
                   {booking.totalAmount === 0 ? "Free" : `₹${booking.totalAmount.toLocaleString("en-IN")}`}
                </span>
             </div>
             <div className="flex justify-between px-4 py-3">
-               <span className="text-(--text-secondary)">Tickets</span>
+               <span className="text-(--text-secondary)">Booked Tickets</span>
                <span className="font-semibold text-(--heading-primary)">{booking.quantity}</span>
             </div>
          </div>

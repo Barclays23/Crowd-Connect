@@ -21,4 +21,7 @@ export interface IBookingService {
   getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;
 
   getBookingById(bookingId: string, requestingUserId: string, role: "user" | "host" | "admin"): Promise<BookingResponseDTO>;
+
+  cancelBookingByUser(bookingId: string, userId: string, cancelReason: string): Promise<void>;
+
 }

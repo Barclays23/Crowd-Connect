@@ -10,8 +10,10 @@ interface EventMap2Props {
 function EventMap2({ locationName, className = "" }: EventMap2Props) {
   if (!locationName) return null;
 
-  const mapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(locationName)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
+  const mapEmbedUrl = locationName 
+    ? `https://maps.google.com/maps?q=${encodeURIComponent(locationName)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+    : "";
+    
   return (
     <div className={`rounded-xl border border-(--border-default) bg-(--card-bg) overflow-hidden shadow-(--shadow-xs) ${className}`}>
       <div className="bg-(--table-header-bg) px-6 py-4 border-b border-(--border-muted) flex items-center gap-2">

@@ -33,7 +33,7 @@ export function mapBookingOrderDtoToInput(
     totalAmount: event.ticketPrice * newBookingQty,
     bookingStatus,
     payment: {
-      razorpayOrderId: paymentOrderId,
+      orderId: paymentOrderId,
       status: paymentStatus,
       paidAt: new Date(),
     },
@@ -62,9 +62,9 @@ export function mapBookingModelToEntity(model: IBookingModel): BookingEntity {
     bookingStatus: model.bookingStatus,
 
     payment: {
-      razorpayOrderId:    model.payment.razorpayOrderId,
-      razorpayPaymentId:  model.payment.razorpayPaymentId,
-      razorpaySignature:  model.payment.razorpaySignature,
+      orderId:    model.payment.orderId,
+      paymentId:  model.payment.paymentId,
+      signature:  model.payment.signature,
       status:             model.payment.status,
       paidAt:             model.payment.paidAt,
     },
@@ -133,7 +133,6 @@ export function mapPopulatedBookingModelToEntity(
 export function mapBookingEntityToResponseDTO(
   entity: BookingEntityPopulated
 ): BookingResponseDTO {
-  console.log('entity ::', entity)
   return {
     bookingId: entity.bookingId,
     event: {
@@ -159,8 +158,9 @@ export function mapBookingEntityToResponseDTO(
     eventFormat:      entity.eventFormat,
     bookingStatus:    entity.bookingStatus,
     payment: {
-      razorpayOrderId:   entity.payment.razorpayOrderId,
-      razorpayPaymentId: entity.payment.razorpayPaymentId,
+      orderId:   entity.payment.orderId,
+      paymentId: entity.payment.paymentId,
+      signature: entity.payment.signature,
       status:            entity.payment.status,
       paidAt:            entity.payment.paidAt?.toISOString(),
     },

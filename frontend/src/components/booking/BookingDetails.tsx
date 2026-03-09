@@ -1,16 +1,14 @@
 // frontend/src/components/user/BookingDetails.tsx
 
-import QRCode from "react-qr-code";
 import {
-  MapPin, Globe, CreditCard, RefreshCw, PlaneTakeoff, Info, AlertOctagon,
-  Barcode,
+  CreditCard, Info, AlertOctagon,
   Plane
 } from "lucide-react";
 import { Badge }        from "@/components/ui/badge";
-import { formatDate1, formatDate2, formatDate5, formatDate6 }  from "@/utils/dateAndTimeFormats";
+import { formatDate5 }  from "@/utils/dateAndTimeFormats";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
 import type { IBookingState }           from "@/types/booking.types";
-import { getBookingStatusIcon, getBookingStatusVariant, getPaymentStatusVariant } from "@/utils/UI.utils";
+import { getPaymentStatusVariant } from "@/utils/UI.utils";
 import EventMap2 from "@/components/common/EventMap2";
 import { EVENT_FORMATS } from "@/types/event.types";
 import BookingTicket from "@/components/booking/BookingTicket";
@@ -28,19 +26,6 @@ function DetailRow({ label, value, mono = false }: { label: string; value: React
   );
 }
 
-// Data field specifically styled for the Boarding Pass
-function BPField({ label, value, highlight = false, mono = false }: { label: string; value: React.ReactNode; highlight?: boolean; mono?: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-[10px] font-bold text-(--text-tertiary) uppercase tracking-widest mb-0.5">
-        {label}
-      </span>
-      <span className={`leading-snug text-(--text-primary) ${highlight ? "text-lg font-bold" : "text-sm font-semibold"} ${mono ? "font-mono" : ""}`}>
-        {value}
-      </span>
-    </div>
-  );
-}
 
 interface BookingDetailsProps {
   booking: IBookingState;
@@ -49,17 +34,7 @@ interface BookingDetailsProps {
 function BookingDetails({ booking }: BookingDetailsProps) {
   const isOnline    = booking.event.format === EVENT_FORMATS.ONLINE;
   const isFree      = booking.totalAmount === 0;
-  const isConfirmed = booking.bookingStatus === BOOKING_STATUS.CONFIRMED;
-  const isAttended  = booking.bookingStatus === BOOKING_STATUS.ATTENDED;
-  const showQR      = isConfirmed || isAttended;
   const isCancelled = booking.bookingStatus === BOOKING_STATUS.CANCELLED;
-
-  const ticketNumber = booking.bookingId.slice(-8).toUpperCase();
-
-  // Generate a basic Google Maps embed URL for offline events
-  const mapEmbedUrl = booking.event.locationName 
-    ? `https://maps.google.com/maps?q=${encodeURIComponent(booking.event.locationName)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
-    : "";
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
@@ -122,13 +97,13 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                   {!isFree && booking.payment.status !== PAYMENT_STATUS.PENDING && (
                      <>
                         <DetailRow
-                        label="Razorpay Order ID"
-                        value={booking.payment.razorpayOrderId || "—"}
+                        label="Order ID"
+                        value={booking.payment.orderId || "—"}
                         mono
                         />
                         <DetailRow
                         label="Payment ID"
-                        value={booking.payment.razorpayPaymentId || "—"}
+                        value={booking.payment.paymentId || "—"}
                         mono
                         />
                      </>
@@ -153,7 +128,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                         {booking.cancellation.refundedAt && (
                            <DetailRow
                               label="Refunded On"
-                              value={formatDate2(booking.cancellation.refundedAt)}
+                              value={formatDate5(booking.cancellation.refundedAt)}
                            />
                         )}
 
@@ -169,7 +144,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                         {booking.refundGracePeriodEnd && (
                            <DetailRow
                               label="Refund Period Ends"
-                              value={formatDate2(booking.refundGracePeriodEnd)}
+                              value={formatDate5(booking.refundGracePeriodEnd)}
                            />
                         )}
                         </div>
@@ -226,7 +201,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                {booking.checkedInAt && (
                   <DetailRow
                      label="Checked In On"
-                     value={formatDate2(booking.checkedInAt)}
+                     value={formatDate5(booking.checkedInAt)}
                   />
                )}
 
@@ -234,7 +209,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                   <>
                      <DetailRow
                      label="Cancelled On"
-                     value={formatDate2(booking.cancellation.cancelledAt)}
+                     value={formatDate5(booking.cancellation.cancelledAt)}
                      />
 
                      <div className="pt-3 border-t border-(--badge-error-border)">

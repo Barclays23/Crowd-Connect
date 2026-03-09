@@ -16,9 +16,9 @@ export interface BookingOrderRequestDTO {
 
 
 export interface VerifyPaymentRequestDTO {
-  razorpayOrderId:   string;
-  razorpayPaymentId: string;
-  razorpaySignature: string;
+  orderId:   string;
+  paymentId: string;
+  signature: string;
 }
 
 
@@ -31,7 +31,7 @@ export interface VerifyPaymentRequestDTO {
 // Returned after a paid event order is created (fed to Razorpay frontend SDK)
 export interface BookingOrderResponseDTO {
   bookingId:       string;   // pending booking _id — stored by frontend for reference
-  razorpayOrderId: string;
+  orderId: string;
   amount:          number;   // in paise (₹ × 100)
   currency:        string;
   keyId:           string;   // Razorpay key_id for frontend SDK
@@ -63,8 +63,9 @@ export interface BookingResponseDTO {
   eventFormat:      EVENT_FORMAT;
   bookingStatus:    BOOKING_STATUS;
   payment: {
-    razorpayOrderId:    string;
-    razorpayPaymentId?: string;
+    orderId:    string;
+    paymentId?: string;
+    signature?: string;
     status:             PAYMENT_STATUS;
     paidAt?:            string;
   };
