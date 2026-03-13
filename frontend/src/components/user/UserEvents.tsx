@@ -26,13 +26,12 @@ import {
 import { eventServices } from "@/services/eventServices";
 import { toast } from "react-toastify";
 import { UserPagination } from "@/components/user/UserPagination";
-import { formatDate2, toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { Modal } from "@/components/ui/modal";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
   EVENT_CATEGORIES,
-  EVENT_FORMATS,
   type EventSortDirection,
   type EventSortField,
   type GetEventsApiResponse,
@@ -41,12 +40,10 @@ import {
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
-import { HostEventForm } from "@/components/host/HostEventForm";
-import { FormProvider, useForm, type Resolver } from "react-hook-form";
 import { type EventFormValues } from "@/schemas/event.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import EditEventForm from "@/components/user/EditEventForm";
 import { capitalize } from "@/utils/namingConventions";
+import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 
 
 
@@ -87,44 +84,7 @@ export default function UserEvents() {
    const handleEditEventSubmit = async (data: EventFormValues) => {
       if (!editEvent) return;
 
-      const startDateTime = new Date(`${data.startDate}T${data.startTime}:00`).toISOString();
-      const endDateTime = new Date(`${data.endDate}T${data.endTime}:00`).toISOString();
-
-      const formData = new FormData();
-
-      formData.append("title", data.title);
-      formData.append("description", data.description);
-      formData.append("category", data.category);
-      formData.append("startDateTime", startDateTime);
-      formData.append("endDateTime", endDateTime);
-      formData.append("format", data.format);
-      formData.append("ticketType", data.ticketType);
-      formData.append("ticketPrice", String(data.ticketPrice));
-      formData.append("capacity", String(data.capacity));
-
-      // Location Logic
-      if (data.format === EVENT_FORMATS.ONLINE) {
-         formData.append("locationName", data.locationName || "");
-         if (data.locationCoordinates) {
-            formData.append(
-               "location",
-               JSON.stringify({
-                  type: "Point",
-                  coordinates: [data.locationCoordinates.lng, data.locationCoordinates.lat],
-               })
-            );
-         }
-      }
-
-      // Image Logic
-      if (data.useAI && data.aiGeneratedImage) {
-         formData.append("aiPosterData", data.aiGeneratedImage); // base64 data URL
-         // formData.append("aiGeneratedImage", data.aiGeneratedImage); // base64 data URL
-      } else if (data.uploadedImage) {
-         formData.append("eventPosterImage", data.uploadedImage); // File
-      }
-
-      console.log("EDIT EVENT FORM DATA:", Object.fromEntries(formData.entries()));
+      const formData: FormData = buildEventFormData(data);
 
       try {
          const response = await eventServices.updateEventByHost({eventId: editEvent.eventId, formData});
@@ -271,7 +231,7 @@ export default function UserEvents() {
 
          {/* Filters */}
          <div className="flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-[240px]">
+            <div className="relative flex-1 min-w-60">
                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                <Input
                   placeholder="Search events..."
@@ -521,7 +481,7 @@ export default function UserEvents() {
                      Reason for Cancellation <span className="text-destructive">*</span>
                   </label>
                   <textarea
-                     className="w-full min-h-[100px] p-3 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                     className="w-full min-h-24 p-3 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                      placeholder="Please provide a reason to notify your attendees..."
                      value={cancelReason}
                      onChange={(e) => setCancelReason(e.target.value)}

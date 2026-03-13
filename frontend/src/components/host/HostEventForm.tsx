@@ -23,11 +23,9 @@ import { EVENT_CATEGORIES, ADMIN_COMMISSION_PERCENT } from "@/types/event.types"
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
 import { FieldError } from "../ui/FieldError";
-// import { useGoogleMaps1 } from "@/contexts/GoogleMapsProvider1";
 import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-place-autocomplete-widget";
 import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoComplete";
 import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
-import { calculateEventDuration } from "@/utils/dateAndTimeFormats";
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
 
 

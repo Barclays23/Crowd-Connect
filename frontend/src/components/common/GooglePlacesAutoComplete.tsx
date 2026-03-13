@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import { CheckCircle2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 // Uses 
 // useMapsLibrary('places') from @vis.gl/react-google-maps and 
@@ -55,6 +56,8 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
 
    const fetchSuggestions = async (input: string) => {
+      if (justSelected) return;
+
       if (!placesLibrary || input.length < 3) {
          setSuggestions([]);
          return;
@@ -120,7 +123,7 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
       return () => clearTimeout(timer);
 
-   }, [inputValue, placesLibrary, justSelected]);
+   }, [inputValue, placesLibrary]);
 
 
 
@@ -132,9 +135,11 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          return;
       }
 
+      
       try {
-
+         
          const placePromise = suggestion.placePrediction.toPlace();
+         console.log('placePromise :', placePromise)
 
          const fetched = await placePromise.fetchFields({
             fields: ['displayName', 'location', 'formattedAddress'],
@@ -173,10 +178,12 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          });
 
          setInputValue(name);
-         setJustSelected(true);
-         setTimeout(() => setJustSelected(false), 500);
-
          setSuggestions([]);
+         setJustSelected(true);
+
+         inputRef.current?.blur();
+
+         setTimeout(() => setJustSelected(false), 500);
 
          if (placesLibrary) {
             sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
@@ -201,15 +208,15 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
    return (
       <div className={`relative ${className}`}>
-         <input
+         <Input
             ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onBlur={handleBlur}
             placeholder={placeholder}
-            className="w-full h-10 px-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            autoComplete="off"
+            className="w-full"
+            autoComplete="on"
          />
 
          {loading && (

@@ -44,6 +44,7 @@ import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
 import EditEventForm from "@/components/user/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
+import { capitalize } from "@/utils/namingConventions";
 
 
 
@@ -388,6 +389,8 @@ export function EventsList() {
                         </TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Format</TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Ticket Type</TableHead>
+                        <TableHead className="text-(--text-secondary) font-semibold">Sold Tickets</TableHead>
+                        <TableHead className="text-(--text-secondary) font-semibold">Ticket Price</TableHead>
                         <TableHead
                         className="text-(--text-secondary) font-semibold cursor-pointer"
                         onClick={() => handleSort("grossTicketRevenue")}
@@ -398,7 +401,7 @@ export function EventsList() {
                         </div>
                         </TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Status</TableHead>
-                        <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
+                        <TableHead className="text-center text-(--text-secondary) font-semibold">Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -437,10 +440,10 @@ export function EventsList() {
                            </TableCell>
                            <TableCell className="font-medium text-(--text-primary)">{event.title}</TableCell>
                            <TableCell>{event.category}</TableCell>
-                           <TableCell className="text-(--text-secondary)">
+                           <TableCell className="text-(--text-secondary) whitespace-nowrap">
                               {formatDate2(event.startDateTime)}
                            </TableCell>
-                           <TableCell className="text-(--text-secondary)">
+                           <TableCell className="text-(--text-secondary) whitespace-nowrap">
                               {formatDate2(event.endDateTime)}
                            </TableCell>
                            <TableCell>
@@ -449,12 +452,18 @@ export function EventsList() {
                               </Badge>
                            </TableCell>
                            <TableCell>
-                              <Badge variant={event.ticketType === "free" ? "success" : "default"}>
-                              {event.ticketType === "free" ? "Free" : `₹${event.ticketPrice?.toLocaleString("en-IN") || 0}`}
+                              <Badge variant={event.ticketType === "free" ? "success" : "gradient"}>
+                                 {capitalize(event.ticketType)}
                               </Badge>
                            </TableCell>
-                           <TableCell className="text-(--text-primary) font-medium">
-                              ₹{(event.grossTicketRevenue || 0).toLocaleString("en-IN")}
+                           <TableCell className={`text-center text-md ${event.soldTickets ? "text-(--text-primary)" : "text-(--text-tertiary)/70"}`}>
+                              {event.soldTickets}
+                           </TableCell>
+                           <TableCell className="text-(--text-primary) text-right font-medium">
+                              {(event.ticketPrice || 0).toFixed(2)}
+                           </TableCell>
+                           <TableCell className="text-(--text-primary) text-right font-medium">
+                              {(event.grossTicketRevenue || 0).toFixed(2)}
                            </TableCell>
                            <TableCell>
                               <Badge 

@@ -53,7 +53,7 @@ export function AdminSidebar() {
       <SidebarHeader className="border-b border-[var(--border-default)]">
         <div className="flex items-center justify-between px-2 py-3">
           {/* Logo */}
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-primary-hover)] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-linear-to-br from-(--brand-primary)/50 to-(--brand-primary-hover) flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-lg">CC</span>
           </div>
 
