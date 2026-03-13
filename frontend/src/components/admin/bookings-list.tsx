@@ -11,7 +11,6 @@ import {
   ArrowUp,
   ArrowDown,
   Hash,
-  Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,16 +47,20 @@ import {
   type GetBookingsApiResponse,
 } from "@/types/booking.types";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
-import { EVENT_FORMATS, EVENT_CATEGORIES } from "@/types/event.types";
+import { EVENT_FORMATS, EVENT_CATEGORIES, type EVENT_FORMAT } from "@/types/event.types";
 import { capitalize } from "@/utils/namingConventions";
 import BookingDetails from "@/components/booking/BookingDetails";
+import { cancelReasonBase } from "@/schemas/booking.schema";
+import { TextArea } from "@/components/ui/text-area";
+import { FieldError } from "@/components/ui/FieldError";
+import { canCancelBooking } from "@/utils/booking.utils";
 
 
 export function BookingsList() {
    // Filters & UI state
    const [searchTerm, setSearchTerm] = useState("");
    const [statusFilter, setStatusFilter] = useState<"all" | BOOKING_STATUS>("all");
-   const [formatFilter, setFormatFilter] = useState<"all" | "online" | "offline">("all");
+   const [formatFilter, setFormatFilter] = useState<"all" | EVENT_FORMAT>("all");
    const [currentPage, setCurrentPage] = useState(1);
    const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
 
@@ -76,6 +79,8 @@ export function BookingsList() {
    const [viewBooking, setViewBooking] = useState<IBookingState | null>(null);
    const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
    const [cancellingId, setCancellingId] = useState<string | null>(null);
+   const [cancelReason, setCancelReason] = useState("");
+   const [cancelError, setCancelError] = useState<string | null>(null);
 
    const itemsPerPage = 10;
 
@@ -147,31 +152,36 @@ export function BookingsList() {
       BOOKING_STATUS.ATTENDED,
    ] as const;
 
-   const nonCancellable = new Set<BOOKING_STATUS>([
-      BOOKING_STATUS.CANCELLED,
-      BOOKING_STATUS.FAILED,
-      BOOKING_STATUS.ATTENDED,
-   ]);
 
    const handleCancelBooking = async () => {
       if (!cancelBookingId) return;
+
+      const validation = cancelReasonBase.safeParse(cancelReason);
+      if (!validation.success) {
+         setCancelError(validation.error.issues[0].message);
+         return;
+      }
+
       try {
          setCancellingId(cancelBookingId);
-         const response = await bookingServices.cancelBookingByAdmin(cancelBookingId);
-         toast.success(response.message || "Booking cancelled successfully");
+         const response = await bookingServices.cancelBookingByAdmin(cancelBookingId, cancelReason);
+         toast.success(response.message);
          setBookings((prev) =>
-         prev.map((b) =>
-            b.bookingId === cancelBookingId
-               ? { ...b, bookingStatus: BOOKING_STATUS.CANCELLED }
-               : b
-         )
+            prev.map((b) =>
+               b.bookingId === cancelBookingId
+                  ? { ...b, bookingStatus: BOOKING_STATUS.CANCELLED }
+                  : b
+            )
          );
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
+
       } finally {
          setCancellingId(null);
          setCancelBookingId(null);
+         setCancelReason("");
+         setCancelError(null);
       }
    };
 
@@ -223,9 +233,9 @@ export function BookingsList() {
 
             <Select
                value={statusFilter}
-               onValueChange={(v) => {
-               setStatusFilter(v as any);
-               setCurrentPage(1);
+               onValueChange={(v: "all" | BOOKING_STATUS) => {
+                  setStatusFilter(v);
+                  setCurrentPage(1);
                }}
             >
                <SelectTrigger className="w-44 h-11 rounded-xl border-(--border-muted)">
@@ -243,9 +253,9 @@ export function BookingsList() {
 
             <Select
                value={formatFilter}
-               onValueChange={(v) => {
-               setFormatFilter(v as any);
-               setCurrentPage(1);
+               onValueChange={(v: "all" | EVENT_FORMAT) => {
+                  setFormatFilter(v);
+                  setCurrentPage(1);
                }}
             >
                <SelectTrigger className="w-40 h-11 rounded-xl border-(--border-muted)">
@@ -358,101 +368,108 @@ export function BookingsList() {
                      </TableRow>
                   ) : (
                      bookings.map((booking, index) => {
-                     const isFree = booking.totalAmount === 0;
-                     const isOnline = booking.event.format === EVENT_FORMATS.ONLINE;
+                        const isFree = booking.totalAmount === 0;
+                        const isOnline = booking.event.format === EVENT_FORMATS.ONLINE;
+                        const canCancel = canCancelBooking(booking);
 
-                     return (
-                        <TableRow key={booking.bookingId}>
-                           <TableCell>
-                           <Checkbox
-                              checked={selectedBookings.includes(booking.bookingId)}
-                              onCheckedChange={() => toggleBookingSelection(booking.bookingId)}
-                           />
-                           </TableCell>
-                           <TableCell className="font-medium text-(--text-primary)">
-                           {(currentPage - 1) * itemsPerPage + index + 1}
-                           </TableCell>
+                        return (
+                           <TableRow key={booking.bookingId}>
+                              <TableCell>
+                              <Checkbox
+                                 checked={selectedBookings.includes(booking.bookingId)}
+                                 onCheckedChange={() => toggleBookingSelection(booking.bookingId)}
+                              />
+                              </TableCell>
+                              <TableCell className="font-medium text-(--text-primary)">
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                              </TableCell>
 
-                           <TableCell>
-                           <div className="space-y-0.5">
-                              <Badge variant="outline" className="font-mono text-xs">
-                                 <Hash className="h-3 w-3 mr-1" />
-                                 {booking.ticketNo}
+                              <TableCell>
+                              <div className="space-y-0.5">
+                                 <Badge variant="outline" className="font-mono text-xs">
+                                    <Hash className="h-3 w-3 mr-1" />
+                                    {booking.ticketNo}
+                                 </Badge>
+                              </div>
+                              </TableCell>
+
+                              <TableCell className="font-medium max-w-[200px] truncate">
+                                 {booking.event.title}
+                              </TableCell>
+
+                              <TableCell className="text-(--text-secondary)">
+                                 {formatDate2(booking.event.startDateTime)}
+                              </TableCell>
+
+                              <TableCell className="text-(--text-secondary)">
+                                 {booking.user?.email}
+                              </TableCell>
+
+                              <TableCell>{booking.event.category ?? "—"}</TableCell>
+
+                              <TableCell>
+                              <Badge variant={isOnline ? "secondary" : "default"}>
+                                 {isOnline ? "Online" : "Offline"}
                               </Badge>
-                           </div>
-                           </TableCell>
+                              </TableCell>
 
-                           <TableCell className="font-medium max-w-[200px] truncate">
-                              {booking.event.title}
-                           </TableCell>
+                              <TableCell className="text-center font-medium">
+                                 {booking.quantity}
+                              </TableCell>
 
-                           <TableCell className="text-(--text-secondary)">
-                              {formatDate2(booking.event.startDateTime)}
-                           </TableCell>
-
-                           <TableCell className="text-(--text-secondary)">
-                              {booking.user?.email}
-                           </TableCell>
-
-                           <TableCell>{booking.event.category ?? "—"}</TableCell>
-
-                           <TableCell>
-                           <Badge variant={isOnline ? "secondary" : "default"}>
-                              {isOnline ? "Online" : "Offline"}
-                           </Badge>
-                           </TableCell>
-
-                           <TableCell className="text-center font-medium">
-                           {booking.quantity}
-                           </TableCell>
-
-                           <TableCell className="font-medium">
-                           {isFree ? (
-                              <Badge variant="success">Free</Badge>
-                           ) : (
-                              `₹${booking.totalAmount.toLocaleString("en-IN")}`
-                           )}
-                           </TableCell>
-
-                           <TableCell>
-                           <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
-                              {capitalize(booking.bookingStatus)}
-                           </Badge>
-                           </TableCell>
-
-                           <TableCell className="text-right">
-                           <div className="flex items-center justify-end gap-1">
-                              <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 onClick={() => setViewBooking(booking)}
-                              >
-                                 <Eye className="h-4 w-4" />
-                              </Button>
-
-                              {!nonCancellable.has(booking.bookingStatus) && (
-                                 <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 className="text-(--status-error)"
-                                 onClick={() => setCancelBookingId(booking.bookingId)}
-                                 disabled={cancellingId === booking.bookingId}
-                                 >
-                                 {cancellingId === booking.bookingId ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                 ) : (
-                                    <Ban className="h-4 w-4" />
-                                 )}
-                                 </Button>
+                              <TableCell className="font-medium">
+                              {isFree ? (
+                                 <Badge variant="success">Free</Badge>
+                              ) : (
+                                 `₹${booking.totalAmount.toLocaleString("en-IN")}`
                               )}
+                              </TableCell>
 
-                              <Button variant="ghost" size="icon" className="text-(--status-error)">
-                                 <Trash2 className="h-4 w-4" />
-                              </Button>
-                           </div>
-                           </TableCell>
-                        </TableRow>
-                     );
+                              <TableCell>
+                              <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
+                                 {capitalize(booking.bookingStatus)}
+                              </Badge>
+                              </TableCell>
+
+                              <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="View"
+                                    onClick={() => setViewBooking(booking)}
+                                 >
+                                    <Eye className="h-4 w-4" />
+                                 </Button>
+
+                                 {canCancel && (
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       title="Cancel Booking"
+                                       className="text-(--status-error)"
+                                       onClick={() => {
+                                          setCancelBookingId(booking.bookingId);
+                                          setCancelReason("");
+                                          setCancelError(null);
+                                       }}
+                                       disabled={cancellingId === booking.bookingId}
+                                    >
+                                    {cancellingId === booking.bookingId ? (
+                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                       <Ban className="h-4 w-4" />
+                                    )}
+                                    </Button>
+                                 )}
+
+                                 <Button variant="ghost" size="icon" title="Delete Booking" className="text-(--status-error)">
+                                    <Trash2 className="h-4 w-4" />
+                                 </Button>
+                              </div>
+                              </TableCell>
+                           </TableRow>
+                        );
                      })
                   )}
                </TableBody>
@@ -482,16 +499,38 @@ export function BookingsList() {
          </Modal>
 
          {/* Cancel Confirmation */}
+         {/* Cancel Confirmation */}
          <ConfirmationModal
             isOpen={!!cancelBookingId}
-            onClose={() => setCancelBookingId(null)}
+            onClose={() => {
+               setCancelBookingId(null);
+               setCancelReason("");
+               setCancelError(null);
+            }}
             onConfirm={handleCancelBooking}
             title="Cancel Booking"
             description="This will cancel the booking and notify the user. Refunds (if applicable) will be processed according to policy."
             confirmText={cancellingId ? "Cancelling..." : "Cancel Booking"}
             variant="danger"
             loading={!!cancellingId}
-         />
+            disableConfirm={!cancelReason.trim()}
+         >
+            <div className="mt-4 space-y-2 text-left">
+               <label htmlFor="admin-cancel-reason" className="text-sm font-medium text-(--text-primary)">
+                  Reason for cancellation <span className="text-(--status-error)">*</span>
+               </label>
+               <TextArea
+                  id="admin-cancel-reason"
+                  placeholder="Provide a reason for cancelling this booking..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  disabled={!!cancellingId}
+                  className="w-full"
+                  autoFocus
+               />
+               {cancelError && <FieldError message={cancelError} />}
+            </div>
+         </ConfirmationModal>
          </CardContent>
       </Card>
    );

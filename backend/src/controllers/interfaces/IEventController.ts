@@ -7,6 +7,7 @@ export interface IEventController {
     createEvent(req: Request, res: Response, next: NextFunction): Promise<void>
     getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void>
     suspendEvent(req: Request, res: Response, next: NextFunction): Promise<void>
+    cancelEvent(req: Request, res: Response, next: NextFunction): Promise<void>
     deleteEvent(req: Request, res: Response, next: NextFunction): Promise<void>
     getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void>
     publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>

@@ -1,6 +1,6 @@
 // src/components/common/GooglePlacesAutoComplete.tsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useMapsLibrary, APIProvider, Map } from '@vis.gl/react-google-maps';
+import React, { useEffect, useRef, useState } from 'react';
+import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import { CheckCircle2 } from 'lucide-react';
 
 // Uses 
@@ -29,7 +29,6 @@ interface PlacesAutocompleteProps {
 }
 
 
-
 export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
    onPlaceSelected,
    placeholder = "Search for a city, venue or address...",
@@ -44,10 +43,16 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
    const [loading, setLoading] = useState(false);
    const [justSelected, setJustSelected] = useState(false);
 
-   const sessionToken = useMemo(
-      () => placesLibrary ? new placesLibrary.AutocompleteSessionToken() : undefined,
-      [placesLibrary]
-   );
+   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+   const requestIdRef = useRef(0);
+
+
+   useEffect(() => {
+      if (placesLibrary && !sessionTokenRef.current) {
+         sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
+      }
+   }, [placesLibrary]);
+
 
    const fetchSuggestions = async (input: string) => {
       if (!placesLibrary || input.length < 3) {
@@ -55,6 +60,7 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          return;
       }
 
+      const requestId = ++requestIdRef.current;
       setLoading(true);
 
       try {
@@ -66,42 +72,49 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          };
 
          const request: google.maps.places.AutocompleteRequest = {
-         input,
-         sessionToken,
-         // locationBias: keralaBiasBounds,
-         // Optional: bias toward Kerala / India
-         // locationBias: {
-         //    center: {
-         //       latitude: 9.98,   // Kanayannur / Thrissur approx
-         //       longitude: 76.27
-         //    },
-         //    radius: 200000,       // 200 km in meters – adjust as needed (max ~50000 for strict restriction, but bias allows larger)
-         // },
-         // Or circle bias around Kanayannur
-         // locationBias: {
-         //   circle: { center: { lat: 9.98, lng: 76.27 }, radius: 150000 },
-         // },
-         // includedPrimaryTypes: ["establishment", "geocode", "locality"],
+            input,
+            sessionToken: sessionTokenRef.current ?? undefined,
+            // locationBias: keralaBiasBounds,
+            // Optional: bias toward Kerala / India
+            // locationBias: {
+            //    center: {
+            //       latitude: 9.98,   // Kanayannur / Thrissur approx
+            //       longitude: 76.27
+            //    },
+            //    radius: 200000,       // 200 km in meters – adjust as needed (max ~50000 for strict restriction, but bias allows larger)
+            // },
+            // Or circle bias around Kanayannur
+            // locationBias: {
+            // circle: { center: { lat: 9.98, lng: 76.27 }, radius: 150000 },
+            // },
+            // includedPrimaryTypes: ["establishment", "geocode", "locality"],
          };
 
          const { suggestions } = await placesLibrary.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+         if (requestId !== requestIdRef.current) return;
          setSuggestions(suggestions || []);
 
-      } catch (err) {
+      } catch (err: unknown) {
          console.error("Autocomplete error:", err);
          setSuggestions([]);
          
       } finally {
-         setLoading(false);
+         if (requestId === requestIdRef.current) {
+            setLoading(false);
+         }
       }
    };
 
    useEffect(() => {
       const timer = setTimeout(() => {
-         if (inputValue && !justSelected) {
-            fetchSuggestions(inputValue.trim());
-         } else if (!inputValue) {
+         const trimmed = inputValue.trim();
+
+         if (trimmed.length < 3) {
             setSuggestions([]);
+            return;
+         }
+         if (!justSelected) {
+            fetchSuggestions(trimmed);
          }
       }, 300);
 
@@ -112,7 +125,9 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
 
 
-   const handleSelect = async (suggestion: any) => {  // temporarily use any to avoid type blocks
+   const handleSelect = async (
+      suggestion: google.maps.places.AutocompleteSuggestion
+   ) => {
       if (!suggestion?.placePrediction) {
          return;
       }
@@ -154,15 +169,21 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
             name,
             lat,
             lng,
-            formattedAddress: place.formattedAddress,
+            formattedAddress: place.formattedAddress ?? undefined,
          });
 
          setInputValue(name);
          setJustSelected(true);
          setTimeout(() => setJustSelected(false), 500);
-         setSuggestions([]);           // close list
+
+         setSuggestions([]);
+
+         if (placesLibrary) {
+            sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
+         }
          inputRef.current?.focus();
-      } catch (err) {
+
+      } catch (err: unknown) {
          console.error("ERROR during location selection:", err);
       }
    };
@@ -192,29 +213,33 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          />
 
          {loading && (
+            // loading spinner
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-               <span className="text-gray-500 animate-pulse">...</span>
+               <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
             </div>
          )}
 
-         {inputValue && suggestions.length === 0 && (
+         {justSelected && !loading && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600">
                <CheckCircle2 className="w-5 h-5" />
             </div>
          )}
 
          {suggestions.length > 0 && (
-            <ul className="absolute z-50 w-full mt-1 bg-gray-900 border rounded-md shadow-lg max-h-60 overflow-auto">
-               {suggestions.map((sug: any, idx: number) => (
+            <ul 
+               role="listbox"
+               className="absolute z-50 w-full mt-1 bg-gray-900 border rounded-md shadow-lg max-h-60 overflow-auto">
+               {suggestions.map((sug, idx) => (
                   <li
-                  key={idx}
-                  className="px-3 py-2 hover:bg-gray-800 cursor-pointer text-sm text-white"
-                  onMouseDown={(e) => e.preventDefault()}  // ← prevents input blur before click
-                  onClick={() => {
-                     handleSelect(sug);
-                  }}
+                     key={sug.placePrediction?.placeId ?? idx}
+                     role="option"
+                     className="px-3 py-2 hover:bg-gray-800 cursor-pointer text-sm text-white"
+                     onMouseDown={(e) => e.preventDefault()}
+                     onClick={() => {
+                        handleSelect(sug);
+                     }}
                   >
-                  {sug.placePrediction?.text?.text || 'Unknown Place'}
+                     {sug.placePrediction?.text?.text || 'Unknown Place'}
                   </li>
                ))}
             </ul>

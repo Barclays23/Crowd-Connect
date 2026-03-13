@@ -1,5 +1,6 @@
 import { BOOKING_CONSTRAINTS } from "@/types/booking.types";
 import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
+import { BOOKING_STATUS } from "@/types/booking.types";
 
 
 // Simple helper for UI max quantity
@@ -13,6 +14,32 @@ export const getMaxBookingQuantity = (
   
   return Math.min(maxPerBooking, ticketsLeft);
 };
+
+
+
+
+
+const cancellableStatuses = new Set<BOOKING_STATUS>([
+  BOOKING_STATUS.CONFIRMED,
+  BOOKING_STATUS.PENDING,
+]);
+
+
+const nonCancellableStatuses = new Set<BOOKING_STATUS>([
+  BOOKING_STATUS.CANCELLED,
+  BOOKING_STATUS.FAILED,
+  BOOKING_STATUS.ATTENDED,
+]);
+
+export function canCancelBooking(booking: {
+  bookingStatus: BOOKING_STATUS;
+  event: { startDateTime: string | Date };
+}): boolean {
+  const eventDate = new Date(booking.event.startDateTime);
+  const now = new Date();
+
+  return cancellableStatuses.has(booking.bookingStatus) && eventDate > now;
+}
 
 
 

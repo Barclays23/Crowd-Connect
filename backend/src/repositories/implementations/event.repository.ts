@@ -110,42 +110,12 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
    async countEvents(query: EventFilterQuery): Promise<number> {
-      // FIX: Removed duplicate declarations and redundant try-catch
       return await this.model.countDocuments(query).exec();
    }
 
 
-   // for listing events in user/admin dashboard
-   // async findEvents(query: EventFilterQuery, skip: number, limit: number, sort: any) {
-   //    const paginatedEvents: IEventModelPopulatedHost[] = await this.model.find(query)
-   //       .select('-onlineLink')  // include the fields that event listing not needed
-   //       .populate("hostRef", "name organizationName")
-   //       .collation({ locale: 'en', strength: 2 })  // for case-insensitive sort
-   //       .sort(sort ? sort : {createdAt: -1})
-   //       .skip(skip)
-   //       .limit(limit)
-   //       .lean<IEventModelPopulatedHost[]>() // faster + easier to map
-
-   //       // console.log('paginatedEvents :', paginatedEvents);
-
-   //    const result: EventEntity[] | null = paginatedEvents ? paginatedEvents.map(event => mapEventModelToEventEntity(event)) : null;
-   //    return result;
-   // }
-
-   // async countEvents(query: EventFilterQuery): Promise<number> {
-   //    const count: number = await this.model.countDocuments(query);
-   //    try {
-   //       const count: number = await this.countDocuments(query);
-   //       return count;
-   //    } catch (error) {
-   //       console.log('error in countEvents :', error);
-   //       throw new Error("Error Counting Events");
-   //    }
-   // }
-
-
    async getEventById(eventId: string): Promise<EventEntity | null> {
-      const eventData: IEventModelPopulatedHost | null = await this.findByPopulateQuery(eventId)
+      const eventData: IEventModelPopulatedHost | null = await this.findByIdQuery(eventId)
          .populate('hostRef')
          .lean<IEventModelPopulatedHost>()
          .exec();

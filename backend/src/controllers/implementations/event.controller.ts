@@ -125,12 +125,7 @@ export class EventController implements IEventController {
             res.status(HttpStatus.OK).json({
                 success: true,
                 eventsData: result.events,
-                pagination: {
-                    page: result.page,
-                    limit: result.limit,
-                    totalCount: result.totalCount,
-                    totalPages: result.totalPages,
-                },
+                pagination: result.pagination
             });
 
         } catch (error: unknown) {
@@ -139,6 +134,32 @@ export class EventController implements IEventController {
             next(error);
         };
     }
+
+
+    async cancelEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { eventId } = req.params;
+            const { cancelReason } = req.body;
+            const userId = req.user.userId; 
+
+            const updatedStatus = await this._eventServices.cancelEvent({
+                eventId,
+                userId,
+                cancelReason
+            });
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: "Event cancelled successfully.",
+                data: { status: updatedStatus }
+            });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.cancelEvent:', msg);
+            next(error);
+        };
+    };
 
 
     async suspendEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -250,12 +271,7 @@ export class EventController implements IEventController {
             res.status(HttpStatus.OK).json({
                 success: true,
                 eventsData: result.events,
-                pagination: {
-                    page: result.page,
-                    limit: result.limit,
-                    totalCount: result.totalCount,
-                    totalPages: result.totalPages,
-                },
+                pagination: result.pagination
             });
 
         } catch (error: unknown) {
@@ -270,8 +286,11 @@ export class EventController implements IEventController {
     async getDiscoveryEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const filters: GetPublicEventsFilter = mapEventDiscoveryQueryToFilters(req);
+            console.log('filters for PUBLIC EVENTS:', filters)
             
             const {eventsData, pagination}: GetDiscoveryEventsResult = await this._eventServices.getEventsForDiscovery(filters);
+
+            console.log('PUBLIC EVENTS pagination:', pagination)
             
             res.status(HttpStatus.OK).json({
                 eventsData,

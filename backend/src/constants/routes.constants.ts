@@ -43,6 +43,7 @@ export const EVENT_ROUTES = {
     CREATE_EVENT: '/create-event',
     UPDATE_EVENT: '/:eventId/update',
     PUBLISH_EVENT: '/:eventId/publish',
+    CANCEL_EVENT: '/:eventId/cancel',
     MY_EVENTS: '/my-events',
     PUBLIC_EVENTS: '/public-events',
     EVENT_DETAILS: '/events/:eventId',
@@ -82,5 +83,6 @@ export const ADMIN_ROUTES = {
     
     // Booking Mangement
     GET_BOOKINGS: '/bookings',
+    CANCEL_BOOKING: '/bookings/:bookingId/cancel'
 
 } as const;

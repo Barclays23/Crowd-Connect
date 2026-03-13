@@ -20,12 +20,13 @@ export interface IEventManagementServices {
     publishEvent(eventId: string, userId: string): Promise<void>;
 
     getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult>;
+
+    cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | undefined>
     
     suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EVENT_STATUS | undefined>;
     
     deleteEvent(eventId: string): Promise<void>;
 
-    
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     
     getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult>;

@@ -1,6 +1,7 @@
 // backend/src/types/event.types.ts
 
 import { EventResponseDTO } from "@/dtos/event.dto";
+import { IPagination } from "@/types/common.types";
 import { DateQueryOperator } from "@/utils/eventStatus.utils";
 import { Types } from "mongoose";
 
@@ -204,8 +205,5 @@ export type SortQuery = Record<string, 1 | -1>;
 // result when events listing (for admin side and user side)
 export interface GetAllEventsResult {
   events: EventResponseDTO[] | null;
-  page: number;
-  limit: number;
-  totalCount: number;
-  totalPages: number;
+  pagination: IPagination;
 }

@@ -1,4 +1,4 @@
-import type { IEventState } from "@/types/event.types";
+import { EVENT_FORMATS, TICKET_TYPES, type IEventState } from "@/types/event.types";
 import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -33,9 +33,11 @@ function formatDate(dateStr: string) {
 }
 
 function EventCard({ event }: { event: IEventState }) {
+    if (!event) return null;
+
     const navigate = useNavigate();
-    const isFree = event.ticketType === "free";
-    const isOnline = event.format === "online";
+    const isFree = event.ticketType === TICKET_TYPES.FREE;
+    const isOnline = event.format === EVENT_FORMATS.ONLINE;
     const status = getStatusBadge(event);
     const seats = getSeatsInfo(event);
     const isEnded = status.label === "Ended" || status.label === "Cancelled" || status.label === "Suspended";
@@ -122,6 +124,10 @@ function EventCard({ event }: { event: IEventState }) {
                     <div className="flex items-center gap-2">
                         <MapPin size={14} className="text-(--brand-primary) shrink-0" />
                         <span className="truncate">{isOnline ? "Virtual Event" : event.locationName || "Location TBA"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Users size={14} className="text-(--brand-primary) shrink-0" />
+                        <span className="truncate"> {event.soldTickets} attending </span>
                     </div>
                 </div>
 

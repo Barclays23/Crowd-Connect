@@ -4,9 +4,9 @@ import { PipelineStage, Types } from "mongoose";
 import Booking from "@/models/implementations/booking.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
 import { mapBookingModelToEntity, mapPopulatedBookingModelToEntity } from "@/mappers/booking.mapper";
-import { BOOKING_STATUS, BookingFilterQuery, GetBookingsFilter, GetBookingsResult, IBookingModel, IBookingPopulatedUserAndEvent } from "@/types/booking.types";
+import { BOOKING_STATUS, BookingFilterQuery, GetBookingsFilter, GetBookingsResult, IBookingModel, IBookingPopulatedUserAndEvent, MajorEventChange } from "@/types/booking.types";
 import { PAYMENT_STATUS } from "@/types/booking.types";
 
 const EVENT_POPULATE_SELECT =
@@ -231,11 +231,11 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       return {
         bookings,
         pagination: {
-          page,
-          limit,
-          totalCount,
-          totalPages: Math.ceil(totalCount / limit),
-        },
+          totalCount: totalCount,
+          limit: limit,
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / limit)
+        }
       };
 
     } catch (error: unknown) {
@@ -313,6 +313,57 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       console.error("Error in BookingRepository.cancelBooking:", msg);
       throw error;
     }
+  }
+
+
+
+  async setGracePeriodForEvent(eventId: string, data: { gracePeriodEnd: Date; majorEventChange: MajorEventChange }): Promise<void> {
+    await this.updateMany(
+      { eventRef: new Types.ObjectId(eventId), bookingStatus: BOOKING_STATUS.CONFIRMED },
+      {
+        $set: {
+          majorEventChange:     data.majorEventChange,
+          refundGracePeriodEnd: data.gracePeriodEnd,
+        },
+      }
+    );
+  }
+
+
+  async findConfirmedBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]> {
+    const bookings = await this.model
+      .find({ 
+        eventRef:      new Types.ObjectId(eventId), 
+        bookingStatus: { $in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ATTENDED] }
+      })
+      .populate("eventRef", EVENT_POPULATE_SELECT)
+      .lean<IBookingPopulatedUserAndEvent[]>();
+
+    return bookings.map(mapPopulatedBookingModelToEntity);
+  }
+
+
+
+  async findPendingBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]> {
+    const bookings = await this.model
+      .find({ 
+          eventRef:      new Types.ObjectId(eventId), 
+          bookingStatus: BOOKING_STATUS.PENDING 
+      })
+      .populate("eventRef", EVENT_POPULATE_SELECT)
+      .lean<IBookingPopulatedUserAndEvent[]>();
+
+    return bookings.map(mapPopulatedBookingModelToEntity);
+  }
+
+  async bulkCancelBookings(
+    bookingIds: string[],
+    updateInput: BulkCancelBookingsInput
+  ): Promise<void> {
+    await this.model.updateMany(
+      { _id: { $in: bookingIds.map(id => new Types.ObjectId(id)) } },
+      { $set: updateInput }
+    );
   }
 
 

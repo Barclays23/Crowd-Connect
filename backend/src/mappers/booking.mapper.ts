@@ -45,79 +45,157 @@ export function mapBookingOrderDtoToInput(
 
 
 // ─── Model → Entity ───────────────────────────────────────────────────────────
-// Used in repository layer — converts raw Mongoose document to clean entity.
-
-export function mapBookingModelToEntity(model: IBookingModel): BookingEntity {
+function mapBookingBase(model: {
+  _id: Types.ObjectId
+  userRef: Types.ObjectId
+  eventRef: Types.ObjectId
+  ticketNo: string
+  quantity: number
+  ticketRate: number
+  totalAmount: number
+  eventFormat: EVENT_FORMAT
+  bookingStatus: BOOKING_STATUS
+  payment: IBookingModel["payment"]
+  qrToken: string
+  remainingEntries: number
+  checkedInAt?: Date
+  cancellation?: IBookingModel["cancellation"]
+  majorEventChange?: IBookingModel["majorEventChange"]
+  refundGracePeriodEnd?: Date | null
+  createdAt: Date
+  updatedAt: Date
+}): BookingEntity {
   return {
-    bookingId:    model._id.toString(),
-    userRef:      model.userRef.toString(),
-    eventRef:     model.eventRef.toString(),
-
-    ticketNo:    model.ticketNo,
-    quantity:    model.quantity,
-    ticketRate:  model.ticketRate,
+    bookingId: model._id.toString(),
+    userRef: model.userRef.toString(),
+    eventRef: model.eventRef.toString(),
+    ticketNo: model.ticketNo,
+    quantity: model.quantity,
+    ticketRate: model.ticketRate,
     totalAmount: model.totalAmount,
-
-    eventFormat:   model.eventFormat,
+    eventFormat: model.eventFormat,
     bookingStatus: model.bookingStatus,
-
-    payment: {
-      orderId:    model.payment.orderId,
-      paymentId:  model.payment.paymentId,
-      signature:  model.payment.signature,
-      status:             model.payment.status,
-      paidAt:             model.payment.paidAt,
-    },
-
-    qrToken:          model.qrToken,
+    payment: model.payment,
+    qrToken: model.qrToken,
     remainingEntries: model.remainingEntries,
-    checkedInAt:      model.checkedInAt,
-
-    cancellation: model.cancellation
-      ? {
-          reason:      model.cancellation.reason,
-          cancelledAt: model.cancellation.cancelledAt,
-          refundId:    model.cancellation.refundId,
-          refundedAt:  model.cancellation.refundedAt,
-        }
-      : undefined,
-
-    majorEventChange: model.majorEventChange
-      ? {
-          changedAt:  model.majorEventChange.changedAt,
-          changeType: model.majorEventChange.changeType,
-          summary:    model.majorEventChange.summary,
-        }
-      : undefined,
-
+    checkedInAt: model.checkedInAt,
+    cancellation: model.cancellation,
+    majorEventChange: model.majorEventChange,
     refundGracePeriodEnd: model.refundGracePeriodEnd,
-
     createdAt: model.createdAt,
     updatedAt: model.updatedAt,
   };
 }
 
-// ─── Populated Model → Populated Entity ──────────────────────────────────────
-// Used when eventRef is populated — converts to BookingEntityPopulated.
+// export function mapBookingModelToEntity(model: IBookingModel): BookingEntity {
+//   return {
+//     bookingId:    model._id.toString(),
+//     userRef:      model.userRef.toString(),
+//     eventRef:     model.eventRef.toString(),
 
+//     ticketNo:    model.ticketNo,
+//     quantity:    model.quantity,
+//     ticketRate:  model.ticketRate,
+//     totalAmount: model.totalAmount,
+
+//     eventFormat:   model.eventFormat,
+//     bookingStatus: model.bookingStatus,
+
+//     payment: {
+//       orderId:    model.payment.orderId,
+//       paymentId:  model.payment.paymentId,
+//       signature:  model.payment.signature,
+//       status:             model.payment.status,
+//       paidAt:             model.payment.paidAt,
+//     },
+
+//     qrToken:          model.qrToken,
+//     remainingEntries: model.remainingEntries,
+//     checkedInAt:      model.checkedInAt,
+
+//     cancellation: model.cancellation
+//       ? {
+//           reason:      model.cancellation.reason,
+//           cancelledAt: model.cancellation.cancelledAt,
+//           refundId:    model.cancellation.refundId,
+//           refundedAt:  model.cancellation.refundedAt,
+//         }
+//       : undefined,
+
+//     majorEventChange: model.majorEventChange
+//       ? {
+//           changedAt:  model.majorEventChange.changedAt,
+//           changeType: model.majorEventChange.changeType,
+//           summary:    model.majorEventChange.summary,
+//         }
+//       : undefined,
+
+//     refundGracePeriodEnd: model.refundGracePeriodEnd,
+
+//     createdAt: model.createdAt,
+//     updatedAt: model.updatedAt,
+//   };
+// }
+
+export function mapBookingModelToEntity(
+  model: IBookingModel
+): BookingEntity {
+  return mapBookingBase(model);
+}
+
+
+// ─── Populated Model → Populated Entity ──────────────────────────────────────
+// export function mapPopulatedBookingModelToEntity(
+//   model: IBookingPopulatedUserAndEvent
+// ): BookingEntityPopulated {
+//   // const base = mapBookingModelToEntity(model as unknown as IBookingModel);
+//   const base = mapBookingModelToEntity(model);
+//   const { eventRef: _, ...rest } = base;
+
+//   return {
+//     ...rest,
+//     event: {
+//       eventId:       model.eventRef._id.toString(),
+//       title:         model.eventRef.title,
+//       category:      model.eventRef.category,
+//       posterUrl:     model.eventRef.posterUrl,
+//       startDateTime: model.eventRef.startDateTime,
+//       endDateTime:   model.eventRef.endDateTime,
+//       format:        model.eventRef.format,
+//       locationName:  model.eventRef.locationName,
+//       onlineLink:    model.eventRef.onlineLink,
+//     },
+//     user: {
+//       userId: model.userRef._id.toString(),
+//       name: model.userRef.name,
+//       email: model.userRef.email,
+//     }
+//   };
+// }
 export function mapPopulatedBookingModelToEntity(
   model: IBookingPopulatedUserAndEvent
 ): BookingEntityPopulated {
-  const base = mapBookingModelToEntity(model as unknown as IBookingModel);
-  const { eventRef: _, ...rest } = base;
+
+  const base = mapBookingBase({
+    ...model,
+    userRef: model.userRef._id,
+    eventRef: model.eventRef._id,
+  });
+
+  const { eventRef, userRef, ...rest } = base;
 
   return {
     ...rest,
     event: {
-      eventId:       model.eventRef._id.toString(),
-      title:         model.eventRef.title,
-      category:      model.eventRef.category,
-      posterUrl:     model.eventRef.posterUrl,
+      eventId: model.eventRef._id.toString(),
+      title: model.eventRef.title,
+      category: model.eventRef.category,
+      posterUrl: model.eventRef.posterUrl,
       startDateTime: model.eventRef.startDateTime,
-      endDateTime:   model.eventRef.endDateTime,
-      format:        model.eventRef.format,
-      locationName:  model.eventRef.locationName,
-      onlineLink:    model.eventRef.onlineLink,
+      endDateTime: model.eventRef.endDateTime,
+      format: model.eventRef.format,
+      locationName: model.eventRef.locationName,
+      onlineLink: model.eventRef.onlineLink,
     },
     user: {
       userId: model.userRef._id.toString(),

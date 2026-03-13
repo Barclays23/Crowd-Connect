@@ -53,6 +53,7 @@ export const getS3PresignedUrl = async (fileKey: string): Promise<string> => {
 
         const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
         return url;
+        
     } catch (error) {
         console.error("Error generating presigned URL:", error);
         return "";

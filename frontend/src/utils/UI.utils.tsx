@@ -128,9 +128,9 @@ export function getBookingStatusVariant(
 ): BadgeVariant {
   switch (status) {
     case BOOKING_STATUS.CONFIRMED: return "success";    // green — booking is active
-    case BOOKING_STATUS.ATTENDED:  return "info";       // blue — past but positive
+    case BOOKING_STATUS.ATTENDED:  return "brand";       // blue — past but positive
     case BOOKING_STATUS.PENDING:   return "warning";    // amber — waiting/uncertain
-    case BOOKING_STATUS.CANCELLED: return "neutral";    // gray — inactive, not an error
+    case BOOKING_STATUS.CANCELLED: return "info";    // gray — inactive, not an error
     case BOOKING_STATUS.FAILED:    return "destructive"; // red — something went wrong
     default:                       return "muted";
   }

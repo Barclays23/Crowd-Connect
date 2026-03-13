@@ -4,6 +4,7 @@ import { bookingServices } from "@/services/bookingServices";
 // import { loadRazorpayScript } from "@/utils/razorpay";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { IBookingState, InitiateBookingResponse } from "@/types/booking.types";
+import type { RazorpayPaymentFailedResponse, RazorpayPaymentSuccessResponse } from "@/types/razorpay.types";
 
 
 interface UseBookingOptions {
@@ -24,19 +25,23 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
     const [isLoading, setIsLoading]               = useState(false);
     const [confirmedBooking, setConfirmedBooking] = useState<IBookingState | null>(null);
 
-    const bookEvent = async ({
-        eventId,
-        eventTitle,
-        selectedQuantity,
-        userName,
-        userEmail,
-        userPhone,
-    }: BookParams) => {
+    const bookEvent = async (params: BookParams) => {
+        if (isLoading) return;
+
+        const {
+            eventId,
+            eventTitle,
+            selectedQuantity,
+            userName,
+            userEmail,
+            userPhone
+        } = params;
+
         setIsLoading(true);
 
         try {
             // Step 1 — call /bookings/initiate
-            const response:InitiateBookingResponse = await bookingServices.initiateBooking(eventId, selectedQuantity);
+            const response: InitiateBookingResponse = await bookingServices.initiateBooking(eventId, selectedQuantity);
 
             if (response.isFree) {
                 setConfirmedBooking(response.populatedBooking);
@@ -53,7 +58,7 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                 const { order } = response;
 
                 await new Promise<void>((resolve, reject) => {
-                    const rzp = new (window as any).Razorpay({
+                    const rzp = new window.Razorpay({
                         key:         order.keyId,
                         amount:      order.amount,
                         currency:    order.currency,
@@ -67,11 +72,7 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                         },
                         theme: { color: "var(--brand-primary, #6C63FF)" },
     
-                        handler: async (response: {
-                            razorpay_order_id:   string;
-                            razorpay_payment_id: string;
-                            razorpay_signature:  string;
-                        }) => {
+                        handler: async (response: RazorpayPaymentSuccessResponse) => {
                             try {
                             // Step 2 — verify payment
                             const booking: IBookingState = await bookingServices.verifyPayment({
@@ -93,7 +94,7 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                     },
                     });
     
-                        rzp.on("payment.failed", (res: any) => {
+                        rzp.on("payment.failed", (res: RazorpayPaymentFailedResponse) => {
                         reject(new Error(res.error?.description ?? "Payment failed"));
                     });
     

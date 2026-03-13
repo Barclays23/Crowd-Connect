@@ -200,11 +200,6 @@ export class HostManagementServices implements IHostManagementServices {
         documentFile: Express.Multer.File | undefined;
     }): Promise<UserProfileResponseDto> {
         try {
-            console.log("✅✅✅✅✅ received data in HostManagementServices.updateHostByAdmin ----");
-            console.log("userId:", hostId);
-            console.log("upgradeDto:", updateDto);
-            console.log("fileName:", documentFile?.originalname);
-
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
             if (!existingUser) {
@@ -217,7 +212,7 @@ export class HostManagementServices implements IHostManagementServices {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_A_HOST);
             }
 
-            // may check any validations
+            // may check the validations
             // const allowedToEdit = isHost || (
             //     existingUser.hostStatus === HostStatus.REJECTED || 
             //     existingUser.hostStatus === HostStatus.BLOCKED ||

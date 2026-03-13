@@ -43,6 +43,13 @@ export const eventServices = {
       return response.data;
    },
 
+   // cancel by organizer
+   cancelEvent: async (eventId: string, cancelReason: string) => {
+      const response = await axiosInstance.patch(`/api/event/${eventId}/cancel`, { cancelReason });
+      return response.data;
+   },
+
+
    // suspend by admin
    suspendEvent: async (eventId: string, reason: string) => {
       const res = await axiosInstance.patch(`/api/admin/events/${eventId}/suspend`, { reason });
@@ -56,6 +63,7 @@ export const eventServices = {
       return res.data;
    },
 
+   
    // for events listing in admin dashboard
    getAllEvents: async (queryString: string = "") => {
       try {

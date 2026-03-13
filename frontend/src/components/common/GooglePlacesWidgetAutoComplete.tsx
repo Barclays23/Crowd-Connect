@@ -1,7 +1,7 @@
 // src/components/common/GooglePlacesWidgetAutoComplete.tsx
 import React, { useEffect, useRef } from 'react';
 import { setupGooglePlaceAutocompleteWidget } from '@/utils/google-place-autocomplete-widget';
-import { MapPin, CheckCircle2 } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useGoogleMaps2 } from '@/contexts/GoogleMapsProvider2'; // or whichever provider you're using
 
 // Uses 
@@ -48,7 +48,7 @@ export const GooglePlacesWidgetAutoComplete: React.FC<GooglePlacesWidgetAutoComp
       onPlaceSelected,
       {
         placeholder,
-        // Add any other options you want
+        // Add other options if you want
         includedRegionCodes: ['in'],
         // locationBias: { ... } if needed later
         // Optional: add bias toward Kerala if needed

@@ -1,6 +1,6 @@
 // backend/src/entities/booking.entity.ts
 
-import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
+import { BOOKING_STATUS, MajorEventChange, PAYMENT_STATUS } from "@/types/booking.types";
 import { EVENT_FORMAT } from "@/types/event.types";
 import { Types } from "mongoose";
 
@@ -37,11 +37,7 @@ export interface BookingEntity {
     refundedAt?: Date;
   };
 
-  majorEventChange?: {
-    changedAt:  Date;
-    changeType: "DATE" | "VENUE" | "PRICE" | "CAPACITY" | "OTHER";
-    summary:    string;
-  };
+  majorEventChange?: MajorEventChange;
 
   refundGracePeriodEnd?: Date | null;
 
@@ -108,5 +104,14 @@ export interface BookingCancelInput {
     reason?:     string;
     refundId?:   string;
     refundedAt?: Date;
+  };
+}
+
+
+export interface BulkCancelBookingsInput {
+  bookingStatus: BOOKING_STATUS;
+  cancellation: {
+    cancelledAt:  Date;
+    cancelReason: string;
   };
 }

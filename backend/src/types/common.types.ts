@@ -3,8 +3,8 @@
 
 
 export interface IPagination {
-    page: number;
-    limit: number;
     totalCount: number;
+    limit: number;
+    currentPage: number;
     totalPages: number;
 }

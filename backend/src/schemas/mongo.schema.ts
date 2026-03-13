@@ -27,3 +27,7 @@ export const EventIdParamSchema = z.object({
   eventId: MongoIdBase
 });
 
+export const BookingIdParamSchema = z.object({
+  bookingId: MongoIdBase
+});
+

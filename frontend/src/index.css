@@ -31,6 +31,9 @@ body {
 }
 
 
+
+
+
 /* ===== LIGHT MODE THEME ===== */
 :root {
   /* Brand Colors */
@@ -259,7 +262,7 @@ body {
 
   /* Background Colors */
   --bg-primary: #111827;              /* Dark Gray */
-  --bg-secondary: #1f2937;            /* Slightly Lighter Gray */
+  --bg-secondary: #141d38;            /* Slightly Lighter Gray */
   --bg-tertiary: #374151;             /* Medium Gray */
   --bg-accent: #060e24;               /* Dark Indigo */
   --bg-neutral: #ffffff30;
@@ -316,7 +319,7 @@ body {
 
 
   /* Cards */
-  --card-bg: #1f2937;
+  --card-bg: var(--bg-secondary);
   --card-primary: var(--bg-primary);
   --card-secondary: #232c3d;
   --card-border: #374151;

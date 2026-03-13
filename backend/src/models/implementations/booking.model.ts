@@ -1,5 +1,8 @@
 
 import { BOOKING_STATUS, IBookingModel, IBookingVirtuals, PAYMENT_STATUS } from '@/types/booking.types';
+import { IEventModel } from '@/types/event.types';
+import { ABOVE_H48_REFUND_PERCENT, BELOW_H24_REFUND_PERCENT, BELOW_H48_REFUND_PERCENT } from '@/types/payment.types';
+import { getRefundPercentage } from '@/utils/refundCalculator';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
 
@@ -117,21 +120,26 @@ bookingSchema.virtual("isGraceRefundActive").get(function (this: IBookingModel) 
 // NOTE: for USER refund calculation only.
 // Host payout is NOT affected — hosts earn all CONFIRMED + ATTENDED bookings.
 
-bookingSchema.virtual("currentRefundPercentage").get(function (this: IBookingModel & IBookingVirtuals) {
+function isPopulatedEvent(event: unknown): event is IEventModel {
+   return typeof event === "object" && event !== null && "startDateTime" in event;
+}
+
+
+bookingSchema.virtual("currentRefundPercentage").get(function (
+   this: IBookingModel & IBookingVirtuals
+) {
    if (this.bookingStatus !== BOOKING_STATUS.CONFIRMED) return 0;
 
-   // FIX: grace check FIRST — before any date math that could crash
-   if (this.isGraceRefundActive) return 100;
+   if (!isPopulatedEvent(this.eventRef)) return 0;
 
-   // FIX: guard before accessing startDateTime — eventRef may not be populated
-   const eventRef = this.eventRef as any;
-   if (!eventRef?.startDateTime) return 0;
-
-   const hoursToStart = (new Date(eventRef.startDateTime).getTime() - Date.now()) / (1000 * 60 * 60);
-
-   if (hoursToStart > 48) return 100;
-   if (hoursToStart > 0)  return 50;
-   return 0;
+   return getRefundPercentage({
+      ticketRate: this.ticketRate,
+      totalAmount: this.totalAmount,
+      refundGracePeriodEnd: this.refundGracePeriodEnd,
+      event: {
+         startDateTime: this.eventRef.startDateTime
+      }
+   });
 });
 
 

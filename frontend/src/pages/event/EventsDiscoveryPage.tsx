@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Search, SlidersHorizontal, LayoutGrid, LayoutList, X, Loader2, CalendarX, MapPin } from "lucide-react";
-import { EVENT_CATEGORIES, type IEventState } from "@/types/event.types";
+import { EVENT_CATEGORIES, EVENT_FORMATS, type IEventState } from "@/types/event.types";
 import EventCard from "@/components/event/EventCard";
 import EventCardList from "@/components/event/EventCardList";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { toast } from "react-toastify";
 import { eventServices } from "@/services/eventServices";
+import { UserPagination } from "@/components/user/UserPagination";
 
 
 const FORMAT_OPTIONS = [
@@ -41,9 +42,14 @@ function EventsDiscoveryPage() {
    const [ticketType, setTicketType] = useState("");
    const [sort, setSort] = useState("upcoming");
 
-   const activeFilterCount = [category, format, ticketType].filter(Boolean).length;
+   const itemsPerPage = 2;
+   const [currentPage, setCurrentPage] = useState(1);
+   const [totalEvents, setTotalEvents] = useState(0);
+   const [totalPages, setTotalPages] = useState(1);
 
-   const fetchEvents = useCallback(async (searchVal = search) => {
+   const activeFilterCount = [category, format, ticketType, search].filter(Boolean).length;
+
+   const fetchEvents = useCallback(async (page = 1, searchVal = search) => {
       setLoading(true);
       try {
          const params = new URLSearchParams();
@@ -52,28 +58,38 @@ function EventsDiscoveryPage() {
          if (format) params.append("format", format);
          if (ticketType) params.append("ticketType", ticketType);
          if (sort) params.append("sort", sort);
+         params.append("limit", itemsPerPage.toString());
+         params.append("page", page.toString());
 
          const response = await eventServices.getPublicEvents(params.toString());
+         console.log('response.pagination: ', response);
+         
          setEvents(response.eventsData ?? []);
+         setTotalEvents(response.pagination.totalCount ?? 0);
+         setTotalPages(
+            response.pagination.totalPages ?? Math.ceil((response.pagination.totalCount ?? 0) / itemsPerPage)
+         );
+
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
       } finally {
          setLoading(false);
       }
-   }, [category, format, ticketType, sort]);
+   }, [category, format, ticketType, sort, search]);
 
 
 
    // Re-fetch when filters/sort change (not on every search keystroke)
    useEffect(() => {
-      fetchEvents();
+      setCurrentPage(1);
+      fetchEvents(1);
    }, [category, format, ticketType, sort]);
 
 
    const handleSearch = (e: React.FormEvent) => {
       e.preventDefault();
-      fetchEvents(search);
+      fetchEvents(1, search);
    };
 
 
@@ -82,6 +98,13 @@ function EventsDiscoveryPage() {
       setFormat("");
       setTicketType("");
       setSort("upcoming");
+      setCurrentPage(1);
+      fetchEvents(1, search);
+   };
+
+   const handlePageChange = (page: number) => {
+      setCurrentPage(page);
+      fetchEvents(page, search);
    };
 
 
@@ -116,7 +139,7 @@ function EventsDiscoveryPage() {
                            {search && (
                               <button
                                  type="button"
-                                 onClick={() => { setSearch(""); fetchEvents(""); }}
+                                 onClick={() => { setSearch(""); fetchEvents(1, ""); }}
                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
                               >
                                  <X size={16} />
@@ -268,7 +291,7 @@ function EventsDiscoveryPage() {
                   )}
                   {format && (
                      <span className="flex items-center gap-1.5 px-3 py-1 bg-(--badge-info-bg) text-(--badge-info-text) border border-(--badge-info-border) rounded-full text-xs font-medium">
-                           {format === "online" ? "Online" : "In-Person"}
+                           {format === EVENT_FORMATS.ONLINE ? "Online" : "In-Person"}
                            <button onClick={() => setFormat("")}><X size={12} /></button>
                      </span>
                   )}
@@ -285,15 +308,16 @@ function EventsDiscoveryPage() {
          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
                {/* Result count */}
-               {!loading && (
+               {!loading && events.length > 0 && (
                   <p className="text-sm text-(--text-tertiary) mb-6">
-                     {events.length === 0 ? "No events found" : `${events.length} event${events.length !== 1 ? "s" : ""} found`}
+                     Showing {events.length} of {totalEvents} event{totalEvents !== 1 ? "s" : ""}
                   </p>
                )}
 
                {loading ? (
                   <div className="flex flex-col items-center justify-center h-72 gap-3 text-(--text-tertiary)">
                      <Loader2 size={32} className="animate-spin text-(--brand-primary)" />
+                     {/* loading spinner */}
                      <span className="text-sm">Loading events...</span>
                   </div>
                ) : events.length === 0 ? (
@@ -328,6 +352,16 @@ function EventsDiscoveryPage() {
                            <EventCardList key={event.eventId} event={event} />
                      ))}
                   </div>
+               )}
+
+               {/* Pagination */}
+               {!loading && totalPages > 1 && (
+                  <UserPagination
+                     currentPage={currentPage}
+                     totalPages={totalPages}
+                     onPageChange={handlePageChange}
+                     className="mt-8"
+                  />
                )}
          </section>
       </div>

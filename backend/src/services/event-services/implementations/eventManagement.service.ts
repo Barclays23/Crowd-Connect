@@ -4,15 +4,32 @@ import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
-import { mapCreateEventRequestDtoToInput, mapEventEntityToEventResponseDto, mapToEventStatusUpdateInput, mapToEventStatusUpdateResponseDto, mapUpdateEventRequestDtoToInput } from "@/mappers/event.mapper";
+import { 
+    mapCreateEventRequestDtoToInput, 
+    mapEventEntityToEventResponseDto, 
+    mapToEventStatusUpdateInput, 
+    mapToEventStatusUpdateResponseDto, 
+    mapUpdateEventRequestDtoToInput 
+} from "@/mappers/event.mapper";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
+import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
-import { EVENT_FORMAT, EVENT_STATUS, EventFilterQuery, GetEventsFilter, GetAllEventsResult, TICKET_TYPE, GetPublicEventsFilter } from "@/types/event.types";
-import { buildChangeSummary, detectMajorEventChanges } from "@/utils/event-change-detector";
-import { validateEventUpdate } from "@/utils/event-update-validations";
+import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
+import { 
+    EVENT_FORMAT, 
+    EVENT_STATUS, 
+    EventFilterQuery, 
+    GetEventsFilter, 
+    GetAllEventsResult, 
+    TICKET_TYPE, 
+    GetPublicEventsFilter 
+} from "@/types/event.types";
+import { buildChangeSummary, DetectedChange, detectMajorEventChanges } from "@/utils/event-change-detector";
+import { validateEventCancel, validateEventCreate, validateEventDelete, validateEventPublish, validateEventSuspend, validateEventUpdate } from "@/utils/validations/eventValidations";
 import { applyEventStatusFilter, getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
+import { IPagination } from "@/types/common.types";
 
 
 
@@ -21,6 +38,9 @@ import { Types } from "mongoose";
 export class EventManagementServices implements IEventManagementServices {
     constructor(
         private _eventRepository: IEventRepository,
+        private _bookingService: IBookingService,
+        // private _paymentService:    IPaymentService,
+        // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
         // private _storageService: IFileStorageService,
     ) {}
@@ -31,31 +51,12 @@ export class EventManagementServices implements IEventManagementServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
-            if (createDto.startDateTime >= createDto.endDateTime) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Event end time must be after start time");
-            }
 
-            if (createDto.format === EVENT_FORMAT.OFFLINE && !createDto.location) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Offline events must have a location" );
-            }
-
-            // if (createDto.format === EVENT_FORMAT.ONLINE && !createDto.onlineLink) {
-            //     throw createHttpError(HttpStatus.BAD_REQUEST, "Online events must have an online link");
-            // }
-
-            if (createDto.ticketType === TICKET_TYPE.FREE && createDto.ticketPrice > 0) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Free events cannot have a ticket price.");
-            }
-            if (createDto.ticketType === TICKET_TYPE.PAID && createDto.ticketPrice <= 0) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Paid events must have a ticket price.");
-            }
-
-            if (!imageFile && !createDto.aiGeneratedImage) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Event poster is required");
-            }
+            validateEventCreate(createDto, imageFile);
 
             let eventPosterUrl!: string;
 
+            // separate storage-service needed ??
             // if (imageFile) {
             //     eventPosterUrl = await this._storageService.uploadFile(imageFile.buffer, 'event-posters');
             // }
@@ -104,30 +105,7 @@ export class EventManagementServices implements IEventManagementServices {
         try {
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
-            console.log('existingEvent.location :', existingEvent?.location)
-            console.log('updateEventDto.location :', updateEventDto.location)
-
-            if (!existingEvent) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-            }
-
-            if (existingEvent.organizer.hostId.toString() !== currentUserId) {
-                throw createHttpError(
-                    HttpStatus.FORBIDDEN,
-                    "Only the event host can update this event"
-                );
-            }
-
-            // ── All update input validation ─────────────────────────────────
-            validateEventUpdate(existingEvent, updateEventDto);
-
-
-            if (!existingEvent.posterUrl && !imageFile && !updateEventDto.aiGeneratedImage) {
-                throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
-                    "Event poster is required"
-                );
-            }
+            validateEventUpdate(existingEvent, updateEventDto, currentUserId, imageFile);
 
             let updatedPosterUrl: string | undefined = undefined;
 
@@ -176,7 +154,7 @@ export class EventManagementServices implements IEventManagementServices {
             }
 
 
-            // if no any changes made while updating event
+            // if no changes made while updating event
             if (Object.keys(updateEventInput).length === 0) {
                 // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
             }
@@ -190,7 +168,7 @@ export class EventManagementServices implements IEventManagementServices {
             // ── Major change detection → grace period implememtation ────────────────────────────
             const hasStarted = existingEvent.startDateTime <= new Date();
             if (!hasStarted) {
-                const majorChanges = detectMajorEventChanges(existingEvent, updateEventDto);
+                const majorChanges: DetectedChange[] = detectMajorEventChanges(existingEvent, updateEventDto);
 
                 if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
 
@@ -200,25 +178,16 @@ export class EventManagementServices implements IEventManagementServices {
                             Date.now() + 48 * 60 * 60 * 1000
                         )
                     );
-    
-                    // await Booking.updateMany(
-                    //     { eventRef: eventId, bookingStatus: "CONFIRMED" },
-                    //     {
-                    //         $set: {
-                    //             majorEventChange: {
-                    //                 changedAt: new Date(),
-                    //                 changes:   majorChanges,
-                    //                 summary:   buildChangeSummary(majorChanges),
-                    //             },
-                    //             refundGracePeriodEnd: gracePeriodEnd,
-                    //         },
-                    //     }
-                    // );
+
+                    await this._bookingService.setGracePeriodForEvent(eventId, {
+                        gracePeriodEnd,
+                        summary: buildChangeSummary(majorChanges),
+                        changes:  majorChanges,
+                    });
     
                     // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
                 }
             }
-
 
             const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
             return mappedEvent;
@@ -262,8 +231,10 @@ export class EventManagementServices implements IEventManagementServices {
             if (ticketType) query.ticketType = ticketType;
 
             const skip = (page - 1) * limit;
-            const sort: any = {};
-            sort[sortBy!] = sortOrder === "asc" ? 1 : -1;
+            const sort: Record<string, 1 | -1> = {};
+            if (sortBy) {
+                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+            }
 
             console.log('Final query in EventManagementServices.getAllEvents:', query);
             console.log("Sort applied:", sort);
@@ -277,10 +248,12 @@ export class EventManagementServices implements IEventManagementServices {
 
             return {
                 events: mappedEvents,
-                page,
-                limit,
-                totalCount,
-                totalPages: Math.ceil(totalCount / limit),
+                pagination: {
+                    totalCount: totalCount,
+                    limit: limit,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCount / limit)
+                }
             };
 
         } catch (error: unknown) {
@@ -316,7 +289,7 @@ export class EventManagementServices implements IEventManagementServices {
                 ];
             }
 
-            if (status) query.eventStatus = status;
+            // if (status) query.eventStatus = status;
             applyEventStatusFilter(query, status);
 
             if (category) query.category = category;
@@ -324,8 +297,10 @@ export class EventManagementServices implements IEventManagementServices {
             if (ticketType) query.ticketType = ticketType;
 
             const skip = (page - 1) * limit;
-            const sort: any = {};
-            sort[sortBy!] = sortOrder === "asc" ? 1 : -1;
+            const sort: Record<string, 1 | -1> = {};
+            if (sortBy) {
+                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+            }
 
             console.log('Final query in EventManagementServices.getUserEvents:', query);
             console.log("Sort applied:", sort);
@@ -339,10 +314,12 @@ export class EventManagementServices implements IEventManagementServices {
 
             return {
                 events: mappedEvents,
-                page,
-                limit,
-                totalCount,
-                totalPages: Math.ceil(totalCount / limit),
+                pagination: {
+                    totalCount: totalCount,
+                    limit: limit,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCount / limit)
+                }
             };
 
         } catch (error: unknown) {
@@ -353,30 +330,23 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
+    // cancel /suspend by admin
     async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EVENT_STATUS | undefined> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
-            if (!eventEntity) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-            }
 
-            const allowedToSuspend = 
-                eventEntity.eventStatus === EVENT_STATUS.PUBLISHED &&
-                eventEntity.endDateTime > new Date();
+            validateEventSuspend(eventEntity);
 
-            if (!allowedToSuspend) {
-                const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
-                throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
-                    `Cannot suspend an event with status "${displayStatus}"`
-                );
-            }
+            // Cancel event + refund all confirmed bookings before changing event status
+            await this._bookingService.cancelAllBookingsForEvent(
+                eventId,
+                `Event suspended by admin: ${suspendReason}`
+            );
 
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
                 newStatus: EVENT_STATUS.SUSPENDED,
                 reason: suspendReason,
             });
-
 
             const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
@@ -406,36 +376,58 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
+    // cancel by host
+    async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | undefined> {
+        try {
+            const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+            validateEventCancel(eventEntity, userId);
+
+            // Cancel event + refund all confirmed bookings before changing event status
+            await this._bookingService.cancelAllBookingsForEvent(
+                eventId,
+                `Event cancelled by host: ${cancelReason}`
+            );
+
+            const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
+                newStatus: EVENT_STATUS.CANCELLED,
+                reason: cancelReason,
+            });
+
+            const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+
+            // Send notification to host and attendees (later)
+            // if (updatedStatus === EVENT_STATUS.CANCELLED) {
+            //     await Promise.all([
+            //         this._notificationServices.sendEventSuspendedToHost(
+            //             // eventEntity.hostRef,
+            //             eventEntity,
+            //             cancelReason
+            //         ),
+            //         this._notificationServices.sendEventSuspendedToAttendees(
+            //             // eventId,
+            //             eventEntity,
+            //             cancelReason
+            //         )
+            //     ]);
+            // }
+
+            return updatedStatus;
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.cancelEvent:", msg);
+            throw error;
+        }
+    }
+
+
+
     async publishEvent(eventId: string, userId: string): Promise<void> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
-            if (!eventEntity) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-            }
-
-            if (eventEntity.organizer.hostId.toString() !== userId) {
-                throw createHttpError(
-                    HttpStatus.FORBIDDEN,
-                    "Only the event host can publish this event"
-                );
-            }
-
-            if (eventEntity.eventStatus !== EVENT_STATUS.DRAFT) {
-                throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
-                    "Only draft events can be published"
-                );
-            }
-
-            const now = new Date();
-
-            if (eventEntity.startDateTime <= now) {
-                throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
-                    "This event's scheduled time has already passed. Please update the event date to publish."
-                );
-            }
+            validateEventPublish(eventEntity, userId);
 
             const eventStatusUpdateInput: EventStatusUpdateInput = {eventStatus: EVENT_STATUS.PUBLISHED};
 
@@ -459,9 +451,7 @@ export class EventManagementServices implements IEventManagementServices {
         try {
             const event = await this._eventRepository.getEventById(eventId);
 
-            if (!event){
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-            }
+            validateEventDelete(event);
 
             if (event.posterUrl && event.posterUrl.trim() !== '') {
                 try {
@@ -527,10 +517,10 @@ export class EventManagementServices implements IEventManagementServices {
         return {
             eventsData,
             pagination: {
+                totalCount: totalCount,
+                limit: limit,
                 currentPage: page,
-                totalPages: Math.ceil(totalCount / limit),
-                totalItems: totalCount,
-                itemsPerPage: limit
+                totalPages: Math.ceil(totalCount / limit)
             }
         };
     }

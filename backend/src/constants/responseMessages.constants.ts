@@ -17,7 +17,7 @@ export enum HttpResponse {
     LOGIN_FAILED = "Login attempt failed.",
     LOGIN_AGAIN = "Please log in again to continue.",
     NO_PAYLOAD = "Payload not found",
-    NO_CHANGE_MADE = "It looks like you haven't made any changes yet. Make at least one change to save an update.",
+    NO_CHANGE_MADE = "It looks like you haven't changed anything. Make at least one change to save an update.",
     OTP_INCORRECT = "Incorrect OTP, please enter the correct code.",
     OTP_RESENT = "A new OTP has been sent to your email.",
     OTP_SENT = "We've sent an OTP to your email.",

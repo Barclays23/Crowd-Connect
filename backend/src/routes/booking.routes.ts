@@ -10,14 +10,16 @@ import { authorize }         from "@/middlewares/auth.middleware";
 import { UserRole }          from "@/constants/roles-and-statuses";
 import { validateBody, validateRequest }      from "@/middlewares/validate.middleware";
 import {
+  cancelBookingSchema,
   initiateBookingSchema,
   verifyPaymentSchema,
 } from "@/schemas/booking.schema";
-import { EventIdParamSchema } from "@/schemas/mongo.schema";
+import { BookingIdParamSchema, EventIdParamSchema } from "@/schemas/mongo.schema";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
+import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 
 
 
@@ -29,10 +31,11 @@ const userRepo          = new UserRepository();
 
 
 const razorpayProvider = new RazorpayProvider();
+
+
 const paymentService   = new PaymentService(razorpayProvider);
-
-
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService);
+const ticketService = new TicketService();
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService);
 
 
 const bookingController = new BookingController(bookingService);
@@ -58,7 +61,7 @@ bookingRouter.get(
   bookingController.getBookingById.bind(bookingController)
 );
 bookingRouter.put(
-  BOOKING_ROUTES.CANCEL_BOOKING,
+  BOOKING_ROUTES.CANCEL_BOOKING, validateRequest({ body: cancelBookingSchema, params: BookingIdParamSchema }),
   bookingController.cancelBookingByUser.bind(bookingController)
 );
 

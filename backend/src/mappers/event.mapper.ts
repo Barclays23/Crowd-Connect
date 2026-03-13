@@ -352,7 +352,7 @@ export const mapToEventStatusUpdateInput = (
             eventStatus: EVENT_STATUS.CANCELLED,
             cancellation: {
                reason: `CANCELLED: ${reason}`,
-               cancelledBy: "ADMIN",
+               cancelledBy: "HOST",
                cancelledAt: new Date(),
             },
          };

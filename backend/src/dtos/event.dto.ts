@@ -1,4 +1,5 @@
 // backend/src/dtos/event.dto.ts
+import { IPagination } from "@/types/common.types";
 import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, ILocation, TICKET_TYPE } from "@/types/event.types";
 
 
@@ -104,12 +105,7 @@ export interface EventResponseDTO {
 
 export interface GetDiscoveryEventsResult {
   eventsData: EventResponseDTO[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
+  pagination: IPagination;
 }
 
 

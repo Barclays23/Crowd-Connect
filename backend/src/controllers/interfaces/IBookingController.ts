@@ -9,4 +9,5 @@ export interface IBookingController {
     getAdminBookings(req: Request, res: Response, next: NextFunction): Promise<void>
     getBookingById(req: Request, res: Response, next: NextFunction): Promise<void>
     cancelBookingByUser(req: Request, res: Response, next: NextFunction): Promise<void>
+    cancelBookingByAdmin(req: Request, res: Response, next: NextFunction): Promise<void>
 }

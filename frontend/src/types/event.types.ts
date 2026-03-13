@@ -85,7 +85,7 @@ export interface IEventState {
     type: "Point";
     coordinates: [number, number]; // [longitude, latitude]
   };
-  onlineLink: string;
+  onlineLink?: string;
 
   ticketType: TICKET_TYPE;
   ticketPrice: number;
@@ -99,11 +99,11 @@ export interface IEventState {
     cancelledAt: string;
   };
 
-  views: number;           // Needed for the Trending/Popular filter [cite: 459, 640]
+  views?: number;           // Needed for the Trending/Popular filter [cite: 459, 640]
   checkedInCount: number;  // Useful if you ever need to show "filling up fast!" logic [cite: 646, 647]
 
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 

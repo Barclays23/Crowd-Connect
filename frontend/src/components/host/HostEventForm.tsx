@@ -1,14 +1,12 @@
 // src/components/host/HostEventForm.tsx
 
 import React, { useMemo, useRef, useState } from "react";
-import { useForm, useFormContext, type Resolver } from "react-hook-form"; // ← important!
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useFormContext } from "react-hook-form";
 import { toast } from "react-toastify";
 import {
   Calendar, Clock, MapPin, Users, Upload, Globe, Building2,
-  FileText, Tag, Sparkles, PlusCircle, Bot, CheckCircle2,
+  FileText, Tag, Sparkles, Bot, CheckCircle2,
   Loader2, IndianRupee,
-  Timer,
 } from "lucide-react";
 
 
@@ -22,9 +20,8 @@ import { TextArea } from "@/components/ui/text-area";
 import { ButtonLoader } from "@/components/common/ButtonLoader";
 import { type EventFormValues } from "@/schemas/event.schema";
 import { EVENT_CATEGORIES, ADMIN_COMMISSION_PERCENT } from "@/types/event.types";
-import { getApiErrorMessage, setServerZodErrors } from "@/utils/errorMessages.utils";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
-import { eventServices } from "@/services/eventServices";
 import { FieldError } from "../ui/FieldError";
 // import { useGoogleMaps1 } from "@/contexts/GoogleMapsProvider1";
 import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-place-autocomplete-widget";

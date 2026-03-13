@@ -168,4 +168,24 @@ export class BookingController implements IBookingController{
   }
 
 
+  async cancelBookingByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { bookingId } = req.params;
+      const { cancelReason } = req.body;
+      
+      await this._bookingService.cancelBookingByAdmin(bookingId, cancelReason);
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
+      });
+
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error in BookingController.cancelBookingByAdmin:", msg);
+      next(error);
+    }
+  }
+
+
 }

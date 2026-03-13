@@ -13,6 +13,9 @@ import { CreateEventFormSchema, UpdateEventFormSchema } from "@/schemas/event.sc
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { BookingService } from "@/services/booking-services/implementations/booking.service";
 import { EventManagementServices } from "@/services/event-services/implementations/eventManagement.service";
+import { PaymentService } from "@/services/payment-services/implementations/payment.service";
+import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
+import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { Router } from "express";
 
 
@@ -21,9 +24,17 @@ const eventRepo = new EventRepository();
 const bookingRepo = new BookingRepository();
 const userRepo = new UserRepository();
 
+
+// PROVIDERS
+const razorPayProvider = new RazorpayProvider();
+
+
 // SERVICES
-const eventService = new EventManagementServices(eventRepo);
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo);
+const ticketService = new TicketService();
+const paymentService   = new PaymentService(razorPayProvider);
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService);
+const eventService = new EventManagementServices(eventRepo, bookingService);
+
 
 // CONTROLLER
 const eventController = new EventController(eventService);
@@ -49,7 +60,13 @@ eventRouter.patch(EVENT_ROUTES.UPDATE_EVENT,
 );
 
 eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(UserRole.HOST), 
+    validateParams(EventIdParamSchema), 
     eventController.publishEvent.bind(eventController)
+);
+
+eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(UserRole.HOST), 
+    validateParams(EventIdParamSchema), 
+    eventController.cancelEvent.bind(eventController)
 );
 
 eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), 

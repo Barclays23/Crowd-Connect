@@ -4,7 +4,7 @@
 
 export interface IPagination {
   totalCount: number;
-  totalPages: number;
-  page: number;
   limit: number;
+  currentPage: number;
+  totalPages: number;
 }

@@ -13,7 +13,7 @@ export const titleBase = z
       (value) => !/^[^A-Za-z0-9]/.test(value), "Event title cannot start with special characters",
    )
    .min(5, "Title must be at least 5 characters")
-   .max(30, "Title cannot exceed 30 characters")
+   .max(50, "Title cannot exceed 50 characters")
    .regex(
       /^[A-Za-z0-9\s&.,'\-()]+$/,
       "Event title can contain only letters, numbers, spaces, and basic punctuation (&.,'-)"

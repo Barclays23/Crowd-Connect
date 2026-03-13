@@ -134,7 +134,7 @@ export default PayoutRequest;
 // prevent multiple clicks / requests
 // Backend: 
 // Always query first: PayoutRequest.findOne({ event: eventId, host: req.user.id })
-// Check if any document exists with status not in a terminal state (e.g., not processed, failed, rejected permanently).
+// Check if anyof documents exists with status not in a terminal state (e.g., not processed, failed, rejected permanently).
 // Rules you can enforce:
         // If exists and status === 'requested' || 'approved' → return 409 Conflict / "Payout request already in progress"
         // If exists and status === 'processed' → return 403 / "Payout already completed for this event"
@@ -169,7 +169,7 @@ export default PayoutRequest;
 //    key_secret: process.env.RAZORPAY_KEY_SECRET,
 // });
 
-// async function executePayout(payoutRequest: any) {
+// async function executePayout(payoutRequest: abcd) {
 //    try {
 //       const transfer = await razorpay.transfers.create({
 //          account: payoutRequest.hostRazorpayAccountId,  // you need to store host's linked account or contact id
@@ -187,7 +187,7 @@ export default PayoutRequest;
 //       payoutRequest.payoutStatus = PAYOUT_STATUS.PROCESSED;
 //       await payoutRequest.save();
 
-//    } catch (err: any) {
+//    } catch (err: abcd) {
 //       payoutRequest.payoutStatus = PAYOUT_STATUS.FAILED;
 //       payoutRequest.failureReason = err.description || err.message;
 //       payoutRequest.failedAt = new Date();

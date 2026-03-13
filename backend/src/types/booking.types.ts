@@ -40,6 +40,20 @@ export enum PAYMENT_STATUS {
 //                  └── payment.status = PAID      (cancelled past window — no refund)
 
 
+
+
+export interface MajorEventChange {
+  changedAt:  Date;
+  // changeType: "DATE" | "VENUE" | "PRICE" | "CAPACITY" | "OTHER" | "FORMAT";
+  changeType: "STARTDATETIME" | "ENDDATETIME" | "VENUE" | "LOCATION" | "TICKETPRICE" | "MULTIPLE";
+  // need FORMAT ?? (I think cannot change event format once anyone booked the event)
+  // CAPACITY is included because an admin can force-reduce capacity for compliance
+  // reasons (e.g. fire safety limits a 500-seat venue to 150). Confirmed ticket
+  // holders are affected through no fault of their own — they deserve a grace refund
+  // window. Hosts cannot reduce capacity below soldTickets, but admins can override.
+  summary: string;  // e.g. "Date changed from 15 Mar to 20 Apr 2026"
+}
+
 // ─── Core Model Interface ─────────────────────────────────────────────────────
 
 export interface IBookingModel {
@@ -87,15 +101,7 @@ export interface IBookingModel {
   // Major event change (host changes date/venue/price etc. after tickets are sold)
   // Stored on booking (not event) because each booking may have a different grace
   // window depending on when it was created relative to the change.
-  majorEventChange?: {
-    changedAt:  Date;
-    changeType: "DATE" | "VENUE" | "PRICE" | "CAPACITY" | "OTHER";
-    // CAPACITY is included because an admin can force-reduce capacity for compliance
-    // reasons (e.g. fire safety limits a 500-seat venue to 150). Confirmed ticket
-    // holders are affected through no fault of their own — they deserve a grace refund
-    // window. Hosts cannot reduce capacity below soldTickets, but admins can override.
-    summary: string;  // e.g. "Date changed from 15 Mar to 20 Apr 2026"
-  };
+  majorEventChange?: MajorEventChange;
 
   // Full refund allowed until this deadline regardless of normal cancellation policy.
   // Null = no active grace period.

@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Eye,
-  XCircle,
   Loader2,
   ArrowUpDown,
   ArrowUp,
@@ -44,6 +42,7 @@ import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/ui/FieldError";
 import { cancelReasonBase } from "@/schemas/booking.schema";
+import { canCancelBooking } from "@/utils/booking.utils";
 
 
 
@@ -172,6 +171,12 @@ function UserBookings() {
   };
 
   const hasActiveFilters = statusFilter !== "all" || formatFilter !== "all" || !!debouncedSearch;
+
+  const nonCancellable = new Set<BOOKING_STATUS>([
+    BOOKING_STATUS.CANCELLED,
+    BOOKING_STATUS.FAILED,
+    BOOKING_STATUS.ATTENDED,
+  ]);
 
 
   return (
@@ -324,8 +329,7 @@ function UserBookings() {
               bookings.map((booking, idx) => {
                 const isOnline  = booking.event.format === EVENT_FORMATS.ONLINE;
                 const isFree    = booking.totalAmount === 0;
-                const canCancel = booking.bookingStatus === BOOKING_STATUS.CONFIRMED
-                               || booking.bookingStatus === BOOKING_STATUS.PENDING;
+                const canCancel = canCancelBooking(booking);
 
                 return (
                   <TableRow key={booking.bookingId}>

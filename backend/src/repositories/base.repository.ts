@@ -37,7 +37,7 @@ export abstract class BaseRepository<T> {
     }
     
     // Query builders for complex operations (populations)
-    findByPopulateQuery(id: string) { // findByIdQuery
+    findByIdQuery(id: string) { // findByIdQuery
         return this.model.findById(id);  // Returns a Query object, not a Promise
     }
 
@@ -67,9 +67,21 @@ export abstract class BaseRepository<T> {
     }
 
 
-    async findMany(): Promise<T[]>{
-        const findDocuments = await this.model.find();
-        return findDocuments as unknown as T[];
+    async findMany(query: QueryFilter<T> = {}, options?: {
+        skip?: number;
+        limit?: number;
+        sort?: Record<string, 1 | -1>;
+    }): Promise<T[]> {
+        return await this.model
+            .find(query)
+            .skip(options?.skip ?? 0)
+            .limit(options?.limit ?? 0)
+            .sort(options?.sort ?? {}) as unknown as T[];
+    }
+    
+
+    async updateMany(query: QueryFilter<T>, updateData: UpdateQuery<T>): Promise<void> {
+        await this.model.updateMany(query, updateData);
     }
  
 

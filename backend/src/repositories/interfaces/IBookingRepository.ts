@@ -1,7 +1,7 @@
 // backend/src/repositories/interfaces/IBookingRepository.ts
 
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
-import { GetBookingsFilter, GetBookingsResult } from "@/types/booking.types";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { BOOKING_STATUS, GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
 
 
 
@@ -36,4 +36,10 @@ export interface IBookingRepository {
   decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null>;
 
   cancelBooking(bookingId: string, cancellationInput: BookingCancelInput): Promise<BookingEntity | null>;
+
+  setGracePeriodForEvent(eventId: string, data: { gracePeriodEnd: Date; majorEventChange: MajorEventChange }): Promise<void>;
+
+  findConfirmedBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]>;
+  findPendingBookingsForEvent(eventId: string):   Promise<BookingEntityPopulated[]>;
+  bulkCancelBookings(bookingIds: string[], updateInput: BulkCancelBookingsInput): Promise<void>;
 }

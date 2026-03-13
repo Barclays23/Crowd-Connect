@@ -31,7 +31,7 @@ import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
 
 
 // User Pages
-import Home from "@/pages/user/Home";
+import HomePage from "@/pages/user/HomePage";
 import NotFound from "@/pages/user/NotFound";
 import UserAccountTabs from "./pages/user/UserAccountTabs";
 import EventsDiscoveryPage from "@/pages/event/EventsDiscoveryPage";
@@ -70,7 +70,7 @@ function App() {
                         <Routes>
                            <Route element={<UserLayout />}>
                               {/* ----------- Public Routes ---------- */}
-                              <Route path="/" element={<Home />} />
+                              <Route path="/" element={<HomePage />} />
                               <Route path="/events" element={<EventsDiscoveryPage />} />
                               <Route path="/events/:eventId" element={<EventDetailsPage />} />
                               <Route path="/host" element={<HostPage />} />

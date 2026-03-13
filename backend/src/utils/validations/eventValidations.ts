@@ -1,15 +1,55 @@
-// backend/src/utils/event-update-validations.ts
-
+// backend/src/utils/validations/eventValidations.ts
+import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { UpdateEventRequestDTO } from "@/dtos/event.dto";
+import { CreateEventRequestDTO, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { EventEntity } from "@/entities/event.entity";
 import { EVENT_FORMAT, EVENT_STATUS, TICKET_TYPE } from "@/types/event.types";
+import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 
-export const validateEventUpdate = (
-    existingEvent: EventEntity,
-    updateEventDto: UpdateEventRequestDTO
-): void => {
+
+
+export function validateEventCreate (createDto: CreateEventRequestDTO, imageFile: Express.Multer.File | undefined): void {
+    if (createDto.startDateTime >= createDto.endDateTime) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Event end time must be after start time");
+    }
+
+    if (createDto.format === EVENT_FORMAT.OFFLINE && !createDto.location) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Offline events must have a location" );
+    }
+
+    // if (createDto.format === EVENT_FORMAT.ONLINE && !createDto.onlineLink) {
+    //     throw createHttpError(HttpStatus.BAD_REQUEST, "Online events must have an online link");
+    // }
+
+    if (createDto.ticketType === TICKET_TYPE.FREE && createDto.ticketPrice > 0) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Free events cannot have a ticket price.");
+    }
+    if (createDto.ticketType === TICKET_TYPE.PAID && createDto.ticketPrice <= 0) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Paid events must have a ticket price.");
+    }
+
+    if (!imageFile && !createDto.aiGeneratedImage) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Event poster is required");
+    }
+}
+
+
+
+export function validateEventUpdate(
+    existingEvent: EventEntity | null,
+    updateEventDto: UpdateEventRequestDTO,
+    currentUserId: string,
+    imageFile: Express.Multer.File | undefined
+): asserts existingEvent is EventEntity {
+
+    if (!existingEvent) {
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+    }
+
+    if (existingEvent.organizer.hostId !== currentUserId) {
+        throw createHttpError(HttpStatus.FORBIDDEN, "Only the event host can update this event");
+    }
 
     const now        = new Date();
     const isDraft    = existingEvent.eventStatus === EVENT_STATUS.DRAFT;
@@ -187,6 +227,15 @@ export const validateEventUpdate = (
     }
 
 
+    // ── POSTER VALIDATION ──────────────────────────────────────────────────────
+    if (!existingEvent.posterUrl && !imageFile && !updateEventDto.aiGeneratedImage) {
+        throw createHttpError(
+            HttpStatus.BAD_REQUEST,
+            "Event poster is required"
+        );
+    }
+
+
     // ── FORMAT LOCK (case 2: not started, tickets sold) ──────────────────────
     if (formatChanged && existingEvent.soldTickets > 0) {
         throw createHttpError(
@@ -237,3 +286,88 @@ export const validateEventUpdate = (
         );
     }
 };
+
+
+export function validateEventDelete(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
+    if (!eventEntity){
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+    }
+
+    const eventStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+
+    if (eventStatus !== EVENT_STATUS.DRAFT) {
+        throw createHttpError(HttpStatus.BAD_REQUEST, `Cannot delete a ${eventStatus.toLowerCase()} event.`);
+    }
+}
+
+
+export function validateEventPublish(eventEntity: EventEntity | null, userId: string): asserts eventEntity is EventEntity {
+    if (!eventEntity) {
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+    }
+
+    if (eventEntity.organizer.hostId !== userId) {
+        throw createHttpError(
+            HttpStatus.FORBIDDEN,
+            "Only the event host can publish this event"
+        );
+    }
+
+    if (eventEntity.eventStatus !== EVENT_STATUS.DRAFT) {
+        throw createHttpError(
+            HttpStatus.BAD_REQUEST,
+            "Only draft events can be published"
+        );
+    }
+
+    if (eventEntity.startDateTime <= new Date()) {
+        throw createHttpError(
+            HttpStatus.BAD_REQUEST,
+            "This event's scheduled time has already passed. Please update the event date to publish."
+        );
+    }
+}
+
+
+export function validateEventSuspend(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
+    if (!eventEntity) {
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+    }
+
+    // even draft event cannot suspend. but it can delete. (or can suspend it?? what is good ??)
+    const allowedToSuspend = 
+        eventEntity.eventStatus === EVENT_STATUS.PUBLISHED &&
+        eventEntity.endDateTime > new Date();
+
+    if (!allowedToSuspend) {
+        const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+        throw createHttpError(
+            HttpStatus.BAD_REQUEST,
+            `Cannot suspend an event with status "${displayStatus}"`
+        );
+    }
+}
+
+
+export function validateEventCancel(eventEntity: EventEntity | null, userId: string): asserts eventEntity is EventEntity {
+    if (!eventEntity) {
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+    }
+
+    if (eventEntity.organizer.hostId !== userId){
+        throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.UNAUTHORIZED_ACCESS);
+    }
+
+    // even draft event cannot cancel. but it can delete. (or can cancel draft events)
+    const allowedToCancel = 
+        eventEntity.eventStatus === EVENT_STATUS.PUBLISHED && 
+        eventEntity.endDateTime > new Date();
+        
+    if (!allowedToCancel) {
+        const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+        throw createHttpError(
+            HttpStatus.BAD_REQUEST,
+            `Cannot cancel an event with status "${displayStatus}"`
+        );
+    }
+}

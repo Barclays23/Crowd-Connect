@@ -9,6 +9,7 @@ import {
   ArrowUp,
   ArrowDown,
   Rocket,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,14 +54,11 @@ export default function UserEvents() {
    const [searchTerm, setSearchTerm] = useState("");
    const [statusFilter, setStatusFilter] = useState("all");
    const [categoryFilter, setCategoryFilter] = useState("all");
-   const [currentPage, setCurrentPage] = useState(1);
 
    const [sortBy, setSortBy] = useState<EventSortField>("createdAt");
    const [sortOrder, setSortOrder] = useState<EventSortDirection>("desc");
 
    const [events, setEvents] = useState<IEventState[]>([]);
-   const [totalEvents, setTotalEvents] = useState(0);
-   const [totalPages, setTotalPages] = useState(1);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +70,15 @@ export default function UserEvents() {
    const [eventToPublish, setEventToPublish] = useState<string | null>(null);
    const [isPublishing, setIsPublishing] = useState(false);
 
+   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+   const [eventToCancel, setEventToCancel] = useState<string | null>(null);
+   const [cancelReason, setCancelReason] = useState("");
+   const [isCancelling, setIsCancelling] = useState(false);
+
    const itemsPerPage = 10;
+   const [currentPage, setCurrentPage] = useState(1);
+   const [totalEvents, setTotalEvents] = useState(0);
+   const [totalPages, setTotalPages] = useState(1);
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -221,6 +227,35 @@ export default function UserEvents() {
    };
 
 
+   const requestCancel = (eventId: string) => {
+      setEventToCancel(eventId);
+      setCancelReason("");
+      setCancelModalOpen(true);
+   };
+
+
+   const confirmCancel = async () => {
+      if (!eventToCancel || !cancelReason.trim()) return;
+
+      try {
+         setIsCancelling(true);
+         const response = await eventServices.cancelEvent(eventToCancel, cancelReason);
+         toast.success(response.message);
+         
+         fetchMyEvents();
+
+      } catch (error: unknown) {
+         const errorMessage = getApiErrorMessage(error);
+         if (errorMessage) toast.error(errorMessage);
+
+      } finally {
+         setCancelModalOpen(false);
+         setEventToCancel(null);
+         setIsCancelling(false);
+      }
+   };
+
+
    return (
       <div className="space-y-6">
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -362,6 +397,7 @@ export default function UserEvents() {
                               <Button
                                  variant="ghost"
                                  size="icon"
+                                 title="View Event"
                                  onClick={() => setViewEvent(event)}
                               >
                                  <Eye className="h-4 w-4" />
@@ -372,6 +408,7 @@ export default function UserEvents() {
                                  <Button
                                     variant="ghost"
                                     size="icon"
+                                    title="Edit Event"
                                     onClick={() => {
                                        setEditEvent(event);
                                        setEditModalOpen(true);
@@ -384,9 +421,20 @@ export default function UserEvents() {
                                  <Button
                                     variant="ghost"
                                     size="icon"
+                                    title="Publish Event"
                                     onClick={() => requestPublish(event.eventId)}
                                  >
                                     <Rocket className="h-4 w-4 text-green-600" />
+                                 </Button>
+                              )}
+                              {!(["completed", "cancelled", "suspended"].includes(event.eventStatus)) && (
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Cancel Event"
+                                    onClick={() => requestCancel(event.eventId)}
+                                 >
+                                    <Ban className="h-4 w-4 text-destructive" />
                                  </Button>
                               )}
                            </div>
@@ -448,6 +496,58 @@ export default function UserEvents() {
             variant="default"
             loading={isPublishing}
          />
+
+         {/* Cancel Event Modal */}
+         <Modal
+            isOpen={cancelModalOpen}
+            onClose={() => {
+               if (!isCancelling) {
+                  setCancelModalOpen(false);
+                  setEventToCancel(null);
+               }
+            }}
+            title="Cancel Event"
+            size="md"
+         >
+            <div className="space-y-4">
+               <p className="text-sm text-muted-foreground">
+                  Are you sure you want to cancel this event? This action cannot be undone, and all confirmed bookings will be refunded automatically.
+               </p>
+               
+               <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                     Reason for Cancellation <span className="text-destructive">*</span>
+                  </label>
+                  <textarea
+                     className="w-full min-h-[100px] p-3 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                     placeholder="Please provide a reason to notify your attendees..."
+                     value={cancelReason}
+                     onChange={(e) => setCancelReason(e.target.value)}
+                     disabled={isCancelling}
+                  />
+               </div>
+
+               <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                     variant="outline"
+                     onClick={() => setCancelModalOpen(false)}
+                     disabled={isCancelling}
+                  >
+                     Keep Event
+                  </Button>
+                  <Button
+                     variant="destructive"
+                     onClick={confirmCancel}
+                     disabled={isCancelling || cancelReason.trim() === ""}
+                  >
+                     {isCancelling ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                     ) : null}
+                     Confirm Cancellation
+                  </Button>
+               </div>
+            </div>
+         </Modal>
       </div>
    );
 }

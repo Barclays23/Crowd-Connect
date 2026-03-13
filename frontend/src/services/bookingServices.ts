@@ -99,9 +99,9 @@ export const bookingServices = {
    },
 
 
-   cancelBookingByAdmin: async (queryString: string) => {
+   cancelBookingByAdmin: async (bookingId: string, cancelReason: string) => {
       try {
-         const res = await axiosInstance.get(`/api/admin/bookings?${queryString}`, {
+         const res = await axiosInstance.put(`/api/admin/bookings/${bookingId}/cancel`, {cancelReason}, {
             withCredentials: true,
          });
          return res.data;
