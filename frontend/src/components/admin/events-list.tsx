@@ -42,6 +42,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { suspendEventSchema, type SuspendEventFormValues } from "@/schemas/event.schema";
 import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
+import EditEventForm from "@/components/user/EditEventForm";
 
 
 
@@ -499,9 +500,23 @@ export function EventsList() {
             </Modal>
 
             {/* Edit Event Modal */}
-            <Modal isOpen={!!editEvent} onClose={() => setEditEvent(null)} title="Edit Event" size="lg">
+            <Modal
+               isOpen={editModalOpen}
+               onClose={() => {
+                  setEditEvent(null);
+               }}
+               title={`Edit Event : ${editEvent?.title}`}
+               size="lg"
+            >
                {editEvent && (
-                  <div>Edit form goes here (create EditEventForm similar to UserManageForm)</div>
+                  <EditEventForm
+                     key={editEvent.eventId}
+                     editEvent={editEvent}
+                     onSubmit={handleEditEventSubmit}
+                     onCancel={() => {
+                        setEditEvent(null);
+                     }}
+                  />
                )}
             </Modal>
 
