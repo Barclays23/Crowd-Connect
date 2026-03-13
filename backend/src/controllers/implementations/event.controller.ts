@@ -47,7 +47,7 @@ export class EventController implements IEventController {
     }
 
     
-    async updateEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async updateEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const body = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -60,8 +60,39 @@ export class EventController implements IEventController {
 
             const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req);
 
-            const updatedEvent: EventResponseDTO = await this._eventServices.updateEvent({
+            const updatedEvent: EventResponseDTO = await this._eventServices.updateEventByHost({
                 currentUserId,
+                eventId,
+                updateEventDto,
+                imageFile
+            });
+
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.SUCCESS_UPDATE_EVENT,
+                updatedEvent,
+            });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.updateEvent:', msg);
+            next(error);
+        };
+    }
+
+
+    async updateEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const body = req.body;
+            const imageFile: Express.Multer.File | undefined = req.file;
+            const eventId: string = req.params.eventId;
+            console.log('body :', body);
+            console.log('imageFile :', imageFile);
+            console.log('eventId :', eventId);
+
+            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req);
+
+            const updatedEvent: EventResponseDTO = await this._eventServices.updateEventByAdmin({
                 eventId,
                 updateEventDto,
                 imageFile

@@ -56,7 +56,7 @@ eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(UserRole.USE
 eventRouter.patch(EVENT_ROUTES.UPDATE_EVENT,
    authenticate, authorize(UserRole.USER, UserRole.HOST),
    uploadEventPoster.single("eventPosterImage"), validateRequest({ body: UpdateEventFormSchema }),
-   eventController.updateEvent.bind(eventController)
+   eventController.updateEventByHost.bind(eventController)
 );
 
 eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(UserRole.HOST), 

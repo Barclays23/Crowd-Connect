@@ -1,6 +1,13 @@
 // frontend/src/utils/dateAndTimeFormats.ts
 
 
+// combine date and time
+export const combineDateAndTime = (date: string, time: string) => {  
+   const combined = new Date(`${date}T${time}:00`).toISOString();
+   return combined;
+}
+
+
 // Format date as "Month Day, Year" (e.g., "January 1, 2023")
 export function formatDate1(date: string | Date, locale: string = "en-US"): string {
    if (!date) return "—"; // Fallback if date is missing

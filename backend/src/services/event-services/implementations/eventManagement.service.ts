@@ -25,7 +25,7 @@ import {
     GetPublicEventsFilter 
 } from "@/types/event.types";
 import { buildChangeSummary, DetectedChange, detectMajorEventChanges } from "@/utils/event-change-detector";
-import { validateEventCancel, validateEventCreate, validateEventDelete, validateEventPublish, validateEventSuspend, validateEventUpdate } from "@/utils/validations/eventValidations";
+import { validateEventCancel, validateEventCreate, validateEventDelete, validateEventPublish, validateEventSuspend, validateEventUpdateByAdmin, validateEventUpdateByHost } from "@/utils/validations/eventValidations";
 import { applyEventStatusFilter, getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
@@ -96,7 +96,7 @@ export class EventManagementServices implements IEventManagementServices {
     }
 
 
-    async updateEvent({ currentUserId, eventId, updateEventDto, imageFile}: {
+    async updateEventByHost({ currentUserId, eventId, updateEventDto, imageFile}: {
         currentUserId: string;
         eventId: string;
         updateEventDto: UpdateEventRequestDTO;
@@ -105,7 +105,110 @@ export class EventManagementServices implements IEventManagementServices {
         try {
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
-            validateEventUpdate(existingEvent, updateEventDto, currentUserId, imageFile);
+            validateEventUpdateByHost(existingEvent, updateEventDto, currentUserId, imageFile);
+
+            let updatedPosterUrl: string | undefined = undefined;
+
+            if (imageFile) {
+                updatedPosterUrl = await uploadToCloudinary({
+                    fileBuffer: imageFile.buffer,
+                    folderPath: "event-posters",
+                    fileType:   "image",
+                });
+            } else if (updateEventDto.aiGeneratedImage) {
+                // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
+                updatedPosterUrl = await uploadBase64ToCloudinary({
+                    base64Data: updateEventDto.aiGeneratedImage,
+                    folderPath: "event-posters",
+                });
+            }
+
+            const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
+                existingEvent,
+                updateEventDto,
+                updatedPosterUrl,
+            });
+
+            const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
+            const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
+
+            if (formatChanged) {
+                if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
+                    // Switching to offline: clear the online link, ensure location is present
+                    updateEventInput.onlineLink    = null;
+                    updateEventInput.locationName  = updateEventDto.locationName;
+                    updateEventInput.location      = updateEventDto.location;
+                }
+
+                if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
+                    // Switching to online: clear location fields
+                    updateEventInput.locationName = undefined;
+                    updateEventInput.location     = null;
+
+                    // If event is already published, generate the online link immediately.
+                    // If still draft, the link will be generated at publish time.
+                    if (isPublished) {
+                        // updateEventInput.onlineLink = generateMeetingLink(existingEvent);
+                    }
+                }
+            }
+
+
+            // if no changes made while updating event
+            if (Object.keys(updateEventInput).length === 0) {
+                // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
+            }
+
+            const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(eventId, updateEventInput);
+
+            if (!updatedEvent) {
+                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
+            }
+
+            // ── Major change detection → grace period implememtation ────────────────────────────
+            const hasStarted = existingEvent.startDateTime <= new Date();
+            if (!hasStarted) {
+                const majorChanges: DetectedChange[] = detectMajorEventChanges(existingEvent, updateEventDto);
+
+                if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
+
+                    const gracePeriodEnd = new Date(
+                        Math.min(
+                            existingEvent.startDateTime.getTime(),
+                            Date.now() + 48 * 60 * 60 * 1000
+                        )
+                    );
+
+                    await this._bookingService.setGracePeriodForEvent(eventId, {
+                        gracePeriodEnd,
+                        summary: buildChangeSummary(majorChanges),
+                        changes:  majorChanges,
+                    });
+    
+                    // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
+                }
+            }
+
+            const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
+            return mappedEvent;
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            console.error("Error in EventManagementServices.updateEvent:", msg);
+            throw error;
+        }
+    }
+
+
+    async updateEventByAdmin({ eventId, updateEventDto, imageFile}: {
+        eventId: string;
+        updateEventDto: UpdateEventRequestDTO;
+        imageFile?: Express.Multer.File;
+    }): Promise<EventResponseDTO> {
+        try {
+            const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+            validateEventUpdateByAdmin(existingEvent, updateEventDto, imageFile);
 
             let updatedPosterUrl: string | undefined = undefined;
 

@@ -78,6 +78,7 @@ export const ADMIN_ROUTES = {
     // Event Mangement
     GET_EVENTS: '/events',
     SUSPEND_EVENT: '/events/:eventId/suspend',
+    UPDATE_EVENT: '/events/:eventId/update',
     DELETE_EVENT: '/events/:eventId',
     
     

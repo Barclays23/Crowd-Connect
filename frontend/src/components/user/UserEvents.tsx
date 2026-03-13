@@ -32,6 +32,7 @@ import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
   EVENT_CATEGORIES,
+  EVENT_FORMATS,
   type EventSortDirection,
   type EventSortField,
   type GetEventsApiResponse,
@@ -90,6 +91,7 @@ export default function UserEvents() {
       const endDateTime = new Date(`${data.endDate}T${data.endTime}:00`).toISOString();
 
       const formData = new FormData();
+
       formData.append("title", data.title);
       formData.append("description", data.description);
       formData.append("category", data.category);
@@ -101,7 +103,7 @@ export default function UserEvents() {
       formData.append("capacity", String(data.capacity));
 
       // Location Logic
-      if (data.format === "offline") {
+      if (data.format === EVENT_FORMATS.ONLINE) {
          formData.append("locationName", data.locationName || "");
          if (data.locationCoordinates) {
             formData.append(
@@ -125,7 +127,7 @@ export default function UserEvents() {
       console.log("EDIT EVENT FORM DATA:", Object.fromEntries(formData.entries()));
 
       try {
-         const response = await eventServices.updateEvent({eventId: editEvent.eventId, formData});
+         const response = await eventServices.updateEventByHost({eventId: editEvent.eventId, formData});
          toast.success(response.message);
          setEditModalOpen(false);
          setEditEvent(null);

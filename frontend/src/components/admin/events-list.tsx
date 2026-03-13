@@ -39,10 +39,11 @@ import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { suspendEventSchema, type SuspendEventFormValues } from "@/schemas/event.schema";
+import { suspendEventSchema, type EventFormValues, type SuspendEventFormValues } from "@/schemas/event.schema";
 import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
 import EditEventForm from "@/components/user/EditEventForm";
+import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 
 
 
@@ -158,6 +159,32 @@ export function EventsList() {
          ? []
          : events.map((ev) => ev.eventId)
       );
+   };
+
+
+   const handleEditEvent = async (data: EventFormValues) => {
+      if (!editEvent) return;
+
+      try {
+         const formData: FormData = buildEventFormData(data);
+
+         const response = await eventServices.updateEventByAdmin({ eventId: editEvent.eventId, formData });
+
+         toast.success(response.message);
+
+         setEvents((prev) =>
+            prev.map((event) =>
+            event.eventId === editEvent.eventId
+               ? { ...event, ...response.updatedEvent }
+               : event
+            )
+         );
+
+         setEditEvent(null);
+      } catch (error) {
+         const errorMessage = getApiErrorMessage(error);
+         if (errorMessage) toast.error(errorMessage);
+      }
    };
 
    const handleSuspendEvent = async (data: SuspendEventFormValues) => {
@@ -501,7 +528,7 @@ export function EventsList() {
 
             {/* Edit Event Modal */}
             <Modal
-               isOpen={editModalOpen}
+               isOpen={!!editEvent}
                onClose={() => {
                   setEditEvent(null);
                }}
@@ -512,7 +539,7 @@ export function EventsList() {
                   <EditEventForm
                      key={editEvent.eventId}
                      editEvent={editEvent}
-                     onSubmit={handleEditEventSubmit}
+                     onSubmit={handleEditEvent}
                      onCancel={() => {
                         setEditEvent(null);
                      }}

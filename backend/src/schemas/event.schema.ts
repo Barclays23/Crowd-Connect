@@ -128,11 +128,17 @@ export const capacityBase = z.coerce
 
 
 
-export const locationNameBase = z
-   .string()
+export const locationNameBase = z.preprocess(
+   (val) => {
+      if (Array.isArray(val)) return val[0];
+      return val;
+   },
+   z.
+   string()
    .trim()
    .min(1)
-   .optional();
+   .optional()
+);
 
 
 
