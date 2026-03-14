@@ -15,7 +15,7 @@ export interface IEventRepository {
     getPublicEvents(
         filters: EventFilterQuery, 
         skip: number, limit: number, 
-        sortField: string, sortDirection: 1 | -1
+        sortField: string, sortOrder: 1 | -1
     ): Promise<{ eventEntity: EventEntity[] | null; totalCount: number }>;
 
     incrementEventTicketStats(eventId: string, newBookingQty: number, totalAmount: number): Promise<void>;

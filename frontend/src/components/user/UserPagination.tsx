@@ -16,12 +16,14 @@ export function UserPagination({
   onPageChange,
   className,
 }: UserPaginationProps) {
-  if (totalPages <= 1) return null;
+  // if (totalPages <= 1) return null;
+
+  const safeTotalPages = Math.max(1, totalPages);
 
   const pages: number[] = [];
   const maxVisiblePages = 5;
   let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  let endPage = Math.min(safeTotalPages, startPage + maxVisiblePages - 1);
 
   if (endPage - startPage + 1 < maxVisiblePages) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -44,7 +46,7 @@ export function UserPagination({
           "disabled:opacity-50 disabled:pointer-events-none"
         )}
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
+        disabled={currentPage <= 1}
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -85,7 +87,7 @@ export function UserPagination({
           "disabled:opacity-50 disabled:pointer-events-none"
         )}
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
+        disabled={currentPage >= safeTotalPages}
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

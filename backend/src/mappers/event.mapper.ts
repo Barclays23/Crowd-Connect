@@ -1,12 +1,10 @@
 import { CreateEventRequestDTO, EventResponseDTO, EventStatusUpdateRequestDto, EventStatusUpdateResponseDto, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
-import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetPublicEventsFilter, IEventModel, IEventModelPopulatedHost, IHostPopulatedFromEvent, TICKET_TYPE } from "@/types/event.types";
+import { DEFAULT_RADIUS_KM, EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetPublicEventsFilter, IEventModel, IEventModelPopulatedHost, IHostPopulatedFromEvent, TICKET_TYPE } from "@/types/event.types";
 import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { capitalize, toTitleCase } from "@/utils/string.utils";
 import { Request } from "express";
 import { Types } from "mongoose";
-import pkg from "lodash";
-const { isEqual } = pkg;
 
 
 /* ────────────────────────────────── HTTP REQUEST → DTO / FILTER ────────────────────────────────── */
@@ -54,7 +52,8 @@ export const mapEventDiscoveryQueryToFilters = (req: Request): GetPublicEventsFi
       ticketType: (req.query.ticketType as string)?.trim() as TICKET_TYPE,
       lat: req.query.lat ? parseFloat(req.query.lat as string) : undefined,
       lng: req.query.lng ? parseFloat(req.query.lng as string) : undefined,
-      radiusKm: req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : 25,
+      radiusKm: req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : DEFAULT_RADIUS_KM,
+      sortBy: (req.query.sort as GetPublicEventsFilter["sortBy"]) || "upcoming",
    };
 };
 

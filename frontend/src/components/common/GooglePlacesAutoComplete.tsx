@@ -17,13 +17,16 @@ import { Input } from '@/components/ui/input';
 // You're responsible for UX edge cases (keyboard nav, blur timing, etc.)
 // sessionToken is recreated on every render (bug in your current code — it should be in a useRef or useMemo)
 
+export interface SelectedLocation {
+  name: string;
+  lat: number;
+  lng: number;
+  formattedAddress?: string;
+}
+
+
 interface PlacesAutocompleteProps {
-   onPlaceSelected: (place: {
-      name: string;
-      lat: number;
-      lng: number;
-      formattedAddress?: string;
-   }) => void;
+   onPlaceSelected: (place: SelectedLocation) => void;
    placeholder?: string;
    defaultValue?: string;
    className?: string;
@@ -215,7 +218,7 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onBlur={handleBlur}
             placeholder={placeholder}
-            className="w-full"
+            className="w-full pl-9"
             autoComplete="on"
          />
 
