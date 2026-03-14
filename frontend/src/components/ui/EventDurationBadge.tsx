@@ -1,5 +1,5 @@
 // frontend/src/components/ui/EventDurationBadge.tsx
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateEventDuration } from "@/utils/dateAndTimeFormats";

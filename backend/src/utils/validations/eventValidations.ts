@@ -36,7 +36,7 @@ export function validateEventCreate (createDto: CreateEventRequestDTO, imageFile
 
 
 
-export function validateEventUpdate(
+export function validateEventUpdateByHost(
     existingEvent: EventEntity | null,
     updateEventDto: UpdateEventRequestDTO,
     currentUserId: string,
@@ -48,14 +48,40 @@ export function validateEventUpdate(
     }
 
     if (existingEvent.organizer.hostId !== currentUserId) {
-        throw createHttpError(HttpStatus.FORBIDDEN, "Only the event host can update this event");
+        throw createHttpError(
+            HttpStatus.FORBIDDEN,
+            "Only the event host can update this event"
+        );
+    }
+
+    validateEventCoreUpdation(existingEvent, updateEventDto, imageFile);
+}
+
+
+export function validateEventUpdateByAdmin(
+    existingEvent: EventEntity | null,
+    updateEventDto: UpdateEventRequestDTO,
+    imageFile: Express.Multer.File | undefined
+): asserts existingEvent is EventEntity {
+    validateEventCoreUpdation(existingEvent, updateEventDto, imageFile);
+};
+
+
+export function validateEventCoreUpdation(
+    existingEvent: EventEntity | null,
+    updateEventDto: UpdateEventRequestDTO,
+    imageFile: Express.Multer.File | undefined
+): asserts existingEvent is EventEntity {
+
+    if (!existingEvent) {
+        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
     }
 
     const now        = new Date();
     const isDraft    = existingEvent.eventStatus === EVENT_STATUS.DRAFT;
     const isPublished= existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
     const hasStarted = existingEvent.startDateTime <= now;
-    const hasFinished= existingEvent.endDateTime   <= now;
+    const hasFinished= existingEvent.endDateTime   <= now || existingEvent.eventStatus === EVENT_STATUS.COMPLETED;
 
     const effectiveStart = updateEventDto.startDateTime
         ? new Date(updateEventDto.startDateTime)
@@ -97,12 +123,6 @@ export function validateEventUpdate(
         );
     }
 
-    if (existingEvent.eventStatus === EVENT_STATUS.COMPLETED) {
-        throw createHttpError(
-            HttpStatus.BAD_REQUEST,
-            "This event has already completed and can no longer be edited."
-        );
-    }
 
     if (isPublished && hasFinished) {
         throw createHttpError(
@@ -119,7 +139,7 @@ export function validateEventUpdate(
     if (isPublished && hasStarted) {
 
         // 🔒 title — locked
-        if (updateEventDto.title && updateEventDto.title.trim() !== existingEvent.title) {
+        if (updateEventDto.title !== undefined && updateEventDto.title.trim() !== existingEvent.title) {
             throw createHttpError(
                 HttpStatus.BAD_REQUEST,
                 "Event title cannot be changed after the event has started."
@@ -150,7 +170,7 @@ export function validateEventUpdate(
             );
         }
 
-        if (updateEventDto.location) {
+        if (updateEventDto.location && existingEvent.location) {
             const isCoordsChanged = 
                 updateEventDto.location.coordinates[0] !== existingEvent.location?.coordinates[0] ||
                 updateEventDto.location.coordinates[1] !== existingEvent.location?.coordinates[1];
@@ -228,7 +248,10 @@ export function validateEventUpdate(
 
 
     // ── POSTER VALIDATION ──────────────────────────────────────────────────────
-    if (!existingEvent.posterUrl && !imageFile && !updateEventDto.aiGeneratedImage) {
+    const hasExistingPoster = !!existingEvent.posterUrl;
+    const hasNewPoster = !!imageFile || !!updateEventDto.aiGeneratedImage;
+
+    if (!hasExistingPoster && !hasNewPoster) {
         throw createHttpError(
             HttpStatus.BAD_REQUEST,
             "Event poster is required"

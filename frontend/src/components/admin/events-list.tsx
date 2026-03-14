@@ -39,9 +39,12 @@ import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { suspendEventSchema, type SuspendEventFormValues } from "@/schemas/event.schema";
+import { suspendEventSchema, type EventFormValues, type SuspendEventFormValues } from "@/schemas/event.schema";
 import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
+import EditEventForm from "@/components/user/EditEventForm";
+import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
+import { capitalize } from "@/utils/namingConventions";
 
 
 
@@ -159,6 +162,32 @@ export function EventsList() {
       );
    };
 
+
+   const handleEditEvent = async (data: EventFormValues) => {
+      if (!editEvent) return;
+
+      try {
+         const formData: FormData = buildEventFormData(data);
+
+         const response = await eventServices.updateEventByAdmin({ eventId: editEvent.eventId, formData });
+
+         toast.success(response.message);
+
+         setEvents((prev) =>
+            prev.map((event) =>
+            event.eventId === editEvent.eventId
+               ? { ...event, ...response.updatedEvent }
+               : event
+            )
+         );
+
+         setEditEvent(null);
+      } catch (error) {
+         const errorMessage = getApiErrorMessage(error);
+         if (errorMessage) toast.error(errorMessage);
+      }
+   };
+
    const handleSuspendEvent = async (data: SuspendEventFormValues) => {
       if (!suspendEvent) return;
 
@@ -240,11 +269,10 @@ export function EventsList() {
             </div>
          </CardHeader>
 
-         <CardContent className="p-6 bg-(--card-bg)">
+         <CardContent className="p-6 bg-(--card-secondary)">
             {/* Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6 flex-wrap">
-               <div className="relative flex-1 min-w-[250px]">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-(--text-tertiary)" />
+               <div className="relative flex-1 min-w-62.5">
                   <Input
                   placeholder="Search by title, description..."
                   value={searchTerm}
@@ -269,7 +297,7 @@ export function EventsList() {
                </Select>
 
                <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-48 h-11 rounded-xl border-(--border-muted)">
+                  <SelectTrigger className="w-48 h-11 rounded-xl ">
                   <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -360,6 +388,8 @@ export function EventsList() {
                         </TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Format</TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Ticket Type</TableHead>
+                        <TableHead className="text-(--text-secondary) font-semibold">Sold Tickets</TableHead>
+                        <TableHead className="text-(--text-secondary) font-semibold">Ticket Price</TableHead>
                         <TableHead
                         className="text-(--text-secondary) font-semibold cursor-pointer"
                         onClick={() => handleSort("grossTicketRevenue")}
@@ -370,7 +400,7 @@ export function EventsList() {
                         </div>
                         </TableHead>
                         <TableHead className="text-(--text-secondary) font-semibold">Status</TableHead>
-                        <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
+                        <TableHead className="text-center text-(--text-secondary) font-semibold">Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -409,10 +439,10 @@ export function EventsList() {
                            </TableCell>
                            <TableCell className="font-medium text-(--text-primary)">{event.title}</TableCell>
                            <TableCell>{event.category}</TableCell>
-                           <TableCell className="text-(--text-secondary)">
+                           <TableCell className="text-(--text-secondary) whitespace-nowrap">
                               {formatDate2(event.startDateTime)}
                            </TableCell>
-                           <TableCell className="text-(--text-secondary)">
+                           <TableCell className="text-(--text-secondary) whitespace-nowrap">
                               {formatDate2(event.endDateTime)}
                            </TableCell>
                            <TableCell>
@@ -421,12 +451,18 @@ export function EventsList() {
                               </Badge>
                            </TableCell>
                            <TableCell>
-                              <Badge variant={event.ticketType === "free" ? "success" : "default"}>
-                              {event.ticketType === "free" ? "Free" : `₹${event.ticketPrice?.toLocaleString("en-IN") || 0}`}
+                              <Badge variant={event.ticketType === "free" ? "success" : "gradient"}>
+                                 {capitalize(event.ticketType)}
                               </Badge>
                            </TableCell>
-                           <TableCell className="text-(--text-primary) font-medium">
-                              ₹{(event.grossTicketRevenue || 0).toLocaleString("en-IN")}
+                           <TableCell className={`text-center text-md ${event.soldTickets ? "text-(--text-primary)" : "text-(--text-tertiary)/70"}`}>
+                              {event.soldTickets}
+                           </TableCell>
+                           <TableCell className="text-(--text-primary) text-right font-medium">
+                              {(event.ticketPrice || 0).toFixed(2)}
+                           </TableCell>
+                           <TableCell className="text-(--text-primary) text-right font-medium">
+                              {(event.grossTicketRevenue || 0).toFixed(2)}
                            </TableCell>
                            <TableCell>
                               <Badge 
@@ -499,9 +535,23 @@ export function EventsList() {
             </Modal>
 
             {/* Edit Event Modal */}
-            <Modal isOpen={!!editEvent} onClose={() => setEditEvent(null)} title="Edit Event" size="lg">
+            <Modal
+               isOpen={!!editEvent}
+               onClose={() => {
+                  setEditEvent(null);
+               }}
+               title={`Edit Event : ${editEvent?.title}`}
+               size="lg"
+            >
                {editEvent && (
-                  <div>Edit form goes here (create EditEventForm similar to UserManageForm)</div>
+                  <EditEventForm
+                     key={editEvent.eventId}
+                     editEvent={editEvent}
+                     onSubmit={handleEditEvent}
+                     onCancel={() => {
+                        setEditEvent(null);
+                     }}
+                  />
                )}
             </Modal>
 

@@ -22,7 +22,7 @@ export const eventServices = {
    },
 
 
-   updateEvent: async ({eventId, formData}: {eventId: string, formData: FormData}) => {
+   updateEventByHost: async ({eventId, formData}: {eventId: string, formData: FormData}) => {
       try {
          const response = await axiosInstance.patch(`/api/event/${eventId}/update`, formData, {
             withCredentials: true,
@@ -37,8 +37,23 @@ export const eventServices = {
       }
    },
 
+   updateEventByAdmin: async ({eventId, formData}: {eventId: string, formData: FormData}) => {
+      try {
+         const response = await axiosInstance.patch(`/api/admin/events/${eventId}/update`, formData, {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+         });
+         return response.data;
+      } catch (error: unknown) {
+         const err = error as AxiosError<{ error: string }>;
+         throw err;
+      }
+   },
 
-   async publishEvent(eventId: string) {
+
+   publishEvent: async (eventId: string)=> {
       const response = await axiosInstance.patch(`/api/event/${eventId}/publish`);
       return response.data;
    },

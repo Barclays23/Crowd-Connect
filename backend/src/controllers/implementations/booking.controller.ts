@@ -50,6 +50,8 @@ export class BookingController implements IBookingController{
       const search      = (req.query.search      as string)?.trim() || "";
       const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
 
+      const eventId = (req.query.eventId as string)        || undefined;
+
       const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
         ? (req.query.sortBy as BookingSortField)
         : "createdAt";
@@ -57,6 +59,7 @@ export class BookingController implements IBookingController{
       const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
 
       const filters: GetBookingsFilter = {
+        eventId,
         page,
         limit,
         status: status ? (status as BOOKING_STATUS) : undefined,
@@ -88,10 +91,12 @@ export class BookingController implements IBookingController{
     try {
       const page    = parseInt(req.query.page  as string) || 1;
       const limit   = parseInt(req.query.limit as string) || 10;
+
       const status  = (req.query.status  as BOOKING_STATUS) || undefined;
-      const eventId = (req.query.eventId as string)        || undefined;
       const search      = (req.query.search      as string)?.trim() || "";
       const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
+
+      const eventId = (req.query.eventId as string)        || undefined;
 
       const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
         ? (req.query.sortBy as BookingSortField)
@@ -100,6 +105,7 @@ export class BookingController implements IBookingController{
       const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
 
       const filters: GetBookingsFilter = {
+        eventId,
         page,
         limit,
         status:      status      ? (status as BOOKING_STATUS) : undefined,
@@ -173,7 +179,7 @@ export class BookingController implements IBookingController{
       const { bookingId } = req.params;
       const { cancelReason } = req.body;
       
-      await this._bookingService.cancelBookingByAdmin(bookingId, cancelReason);
+      await this._bookingService.cancelBookingByAuthority(bookingId, cancelReason);
 
       res.status(HttpStatus.OK).json({
         success: true,

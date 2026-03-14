@@ -3,7 +3,7 @@
 import { Router } from 'express';
 
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
-import { uploadDocument, uploadImage } from '@/middlewares/file-upload.middleware';
+import { uploadDocument, uploadEventPoster, uploadImage } from '@/middlewares/file-upload.middleware';
 
 import { UserRepository } from '@/repositories/implementations/user.repository';
 
@@ -23,7 +23,7 @@ import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/eventManagement.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
-import { suspendEventSchema } from '@/schemas/event.schema';
+import { suspendEventSchema, UpdateEventFormSchema } from '@/schemas/event.schema';
 import { BookingController } from '@/controllers/implementations/booking.controller';
 import { BookingService } from '@/services/booking-services/implementations/booking.service';
 import { BookingRepository } from '@/repositories/implementations/booking.repository';
@@ -114,7 +114,8 @@ adminRouter.put(ADMIN_ROUTES.UPDATE_HOST,
 adminRouter.get(ADMIN_ROUTES.GET_EVENTS, eventController.getAllEvents.bind(eventController));
 adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, validateRequest({body: suspendEventSchema, params: EventIdParamSchema}), eventController.suspendEvent.bind(eventController));
 adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, validateRequest({params: EventIdParamSchema}), eventController.deleteEvent.bind(eventController));
-
+adminRouter.patch(ADMIN_ROUTES.UPDATE_EVENT, uploadEventPoster.single("eventPosterImage"), validateRequest({ body: UpdateEventFormSchema, params: EventIdParamSchema }), eventController.updateEventByAdmin.bind(eventController)
+);
 
 
 // booking management

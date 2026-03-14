@@ -71,7 +71,7 @@ const badgeVariants = cva(
 
         // Gradient - coral gradient
         gradient:
-          "bg-[var(--badge-gradient-bg)] text-[var(--badge-gradient-text)] border-[var(--badge-gradient-border)] hover:opacity-90 shadow-sm",
+          "bg-linear-to-br from-(--brand-primary) to-(--brand-primary-hover) text-[var(--badge-gradient-text)] border-[var(--badge-gradient-border)] hover:opacity-90 shadow-sm",
       },
 
       size: {

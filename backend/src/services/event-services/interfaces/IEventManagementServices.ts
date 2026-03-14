@@ -10,8 +10,14 @@ export interface IEventManagementServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO>;
 
-    updateEvent({currentUserId, eventId, updateEventDto, imageFile }: { 
+    updateEventByHost({currentUserId, eventId, updateEventDto, imageFile }: { 
         currentUserId: string;
+        eventId: string;
+        updateEventDto: UpdateEventRequestDTO; 
+        imageFile?: Express.Multer.File;
+    }): Promise<EventResponseDTO>;
+
+    updateEventByAdmin({eventId, updateEventDto, imageFile }: { 
         eventId: string;
         updateEventDto: UpdateEventRequestDTO; 
         imageFile?: Express.Multer.File;

@@ -236,7 +236,7 @@ body {
 
   /* Modal */
   --modal-bg: #f3f3f3;
-  --modal-content-bg: #e8e8e8;
+  --modal-content-bg: #f6f6f6;
   --modal-border: var(--border-muted);
   --modal-shadow: var(--shadow-lg);
 
@@ -457,7 +457,8 @@ body {
 
   /* Modal */
   --modal-bg: #1b222d;
-  --modal-content-bg: #222b39;
+  /* --modal-content-bg: #222b39; */
+  --modal-content-bg: #222b3976;  /* slightly transparent for layered depth */
   --modal-border: var(--border-muted);
   --modal-shadow: var(--shadow-lg);
 

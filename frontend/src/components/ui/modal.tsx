@@ -35,31 +35,31 @@ export function Modal({
     >
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-[var(--modal-overlay)] backdrop-blur-sm"
+        className="absolute inset-0 bg-(--modal-overlay) backdrop-blur-sm"
         aria-hidden="true"
       />
 
       {/* Modal Panel */}
       <div
         className={cn(
-          "relative w-full rounded-2xl border border-[var(--modal-border)] bg-[var(--modal-content-bg)] shadow-[var(--modal-shadow)] overflow-hidden",
+          "relative w-full rounded-2xl border border-(--modal-border) bg-(--modal-content-bg) shadow-(--modal-shadow) overflow-hidden",
           sizeClasses[size],
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--border-muted)] bg-[var(--modal-bg)] px-6 py-4">
-          <h2 className="text-xl font-bold text-[var(--heading-primary)]">
+        <div className="flex items-center justify-between border-b border-(--border-muted) bg-(--modal-bg) px-6 py-4">
+          <h2 className="text-xl font-bold text-(--heading-primary)">
             {title}
           </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-9 w-9 rounded-lg hover:bg-[var(--btn-neutral-hover)]"
+            className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral-hover)"
           >
-            <X className="h-5 w-5 text-[var(--text-secondary)]" />
+            <X className="h-5 w-5 text-(--text-secondary)" />
           </Button>
         </div>
 
