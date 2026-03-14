@@ -269,11 +269,10 @@ export function EventsList() {
             </div>
          </CardHeader>
 
-         <CardContent className="p-6 bg-(--card-bg)">
+         <CardContent className="p-6 bg-(--card-secondary)">
             {/* Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6 flex-wrap">
-               <div className="relative flex-1 min-w-[250px]">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-(--text-tertiary)" />
+               <div className="relative flex-1 min-w-62.5">
                   <Input
                   placeholder="Search by title, description..."
                   value={searchTerm}
@@ -298,7 +297,7 @@ export function EventsList() {
                </Select>
 
                <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-48 h-11 rounded-xl border-(--border-muted)">
+                  <SelectTrigger className="w-48 h-11 rounded-xl ">
                   <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>

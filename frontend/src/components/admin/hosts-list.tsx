@@ -237,7 +237,7 @@ export function HostsList() {
         </div>
       </CardHeader>
 
-      <CardContent className="p-6 bg-(--card-bg)">
+      <CardContent className="p-6 bg-(--card-secondary)">
         {/* Filters */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="relative flex-1">

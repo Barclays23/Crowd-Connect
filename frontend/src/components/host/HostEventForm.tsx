@@ -761,16 +761,16 @@ export const HostEventForm = ({
 
 
          {/* Submit / Cancel buttons */}
-         <div className="flex justify-end gap-4 pt-6 border-t">
+         <div className="flex justify-end gap-4 pt-6">
             {onCancel && (
                <Button type="button" variant="outline" onClick={onCancel}>
                   Cancel
                </Button>
             )}
             <Button
-               type="submit"
+               // type="submit"
+               variant="default"
                disabled={isSubmitting || isGeneratingAI}
-               className="bg-gradient-primary text-(--text-inverse)"
             >
                <ButtonLoader loading={isSubmitting || isGeneratingAI} 
                   loadingText={isEditMode ? "Saving..." : "Creating..."}>

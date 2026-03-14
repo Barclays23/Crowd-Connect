@@ -64,7 +64,7 @@ function EventCard({ event }: { event: IEventState }) {
                 )}
 
                 {/* Gradient overlay for text readability */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-black/90 via-transparent to-transparent" />
 
                 {/* Top-left: price badge */}
                 <div className="absolute top-3 left-3">

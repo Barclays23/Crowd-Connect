@@ -22,7 +22,7 @@ const SelectTrigger = React.forwardRef<
       "flex h-11 w-full items-center justify-between rounded-xl border px-4 py-2 text-sm font-medium transition-all",
       "bg-[var(--bg-primary)] border-[var(--border-muted)]",
       "text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]",
-      "focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary-light)] focus:border-[var(--brand-primary)]",
+      "focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary-light)] focus:border-[var(--brand-primary)]",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "data-[placeholder]:text-[var(--text-tertiary)]",
       "[&>span]:line-clamp-1",
