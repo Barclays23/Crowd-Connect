@@ -26,10 +26,10 @@ import {
 } from "@/types/event.types";
 import { buildChangeSummary, DetectedChange, detectMajorEventChanges } from "@/utils/event-change-detector";
 import { validateEventCancel, validateEventCreate, validateEventDelete, validateEventPublish, validateEventSuspend, validateEventUpdateByAdmin, validateEventUpdateByHost } from "@/utils/validations/eventValidations";
-import { applyEventStatusFilter, getEventDisplayStatus } from "@/utils/eventStatus.utils";
+import { applyEventStatusFilter } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
-import { IPagination } from "@/types/common.types";
+import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
 
 
 
@@ -577,7 +577,7 @@ export class EventManagementServices implements IEventManagementServices {
 
 
     async getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult> {
-        const { page, limit, search, category, format, ticketType, lat, lng, radiusKm } = filters;
+        const { page, limit, search, category, format, ticketType, lat, lng, radiusKm, sortBy } = filters;
         const skip = (page - 1) * limit;
         
         const dbQuery: EventFilterQuery = { 
@@ -585,32 +585,46 @@ export class EventManagementServices implements IEventManagementServices {
             endDateTime: { $gt: new Date() } // Only show events that haven't ended
         };
 
+        // search with exact match.
+        // if (search) {
+        //     dbQuery.$text = { $search: search };
+        // }
+
         if (search) {
-            dbQuery.$text = { $search: search }; // Relies on your text index [cite: 458]
+            const searchRegex = new RegExp(search.trim(), 'i');
+            dbQuery.$or = [
+                { title: searchRegex },
+                { locationName: searchRegex },
+            ];
         }
 
         if (category) dbQuery.category = category;
         if (format) dbQuery.format = format;
         if (ticketType) dbQuery.ticketType = ticketType;
 
+        console.log('lat :', lat, ', lng:', lng, ', radiusKm:', radiusKm);
+
         if (lat && lng && radiusKm) {
             dbQuery.location = {
-                $near: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [lng, lat] // [Longitude, Latitude] [cite: 596]
-                    },
-                    $maxDistance: radiusKm * 1000 // meters
+                $geoWithin: {
+                $centerSphere: [
+                    [lng, lat],               // IMPORTANT: [longitude, latitude] order
+                    radiusKm / 6378.1         // Earth radius in km ≈ 6378.1 → convert km to radians
+                ]
                 }
             };
         }
+
+        const { sortField, sortOrder }: SortConfig = getPublicEventSortQuery(sortBy)
+        console.log('Selected Sort Option :', sortBy)
+        console.log('sortField :', sortField, 'sortOrder :', sortOrder)
 
         const { eventEntity, totalCount } = await this._eventRepository.getPublicEvents(
             dbQuery, 
             skip, 
             limit, 
-            "startDateTime", 
-            1
+            sortField, 
+            sortOrder
         );
 
         // 3. Map Mongoose documents to secure public DTOs

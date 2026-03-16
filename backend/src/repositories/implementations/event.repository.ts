@@ -6,6 +6,7 @@ import Event from "@/models/implementations/event.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { EVENT_STATUS, EventFilterQuery, IEventModel, IEventModelPopulatedHost, SortQuery } from "@/types/event.types";
+import { isGeoNearQuery } from "@/utils/general.utils";
 
 
 
@@ -80,8 +81,9 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
          .select('-onlineLink') // don't fetch link for public users
          .populate("hostRef", "name organizationName");
 
-      // Only apply standard sorting if we aren't doing a geospatial $near query
-      if (!filters.location) {
+      const isGeospatial = filters.location && isGeoNearQuery(filters.location);
+
+      if (!isGeospatial) {
          query.sort({ [sortField]: sortDirection });
       }
 

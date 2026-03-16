@@ -50,10 +50,10 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
 
             } else {
                 // ── PAID EVENT — open Razorpay SDK ───────────────────────────────────
-                // const scriptLoaded = await loadRazorpayScript();
-                // if (!scriptLoaded) {
-                //     throw new Error("Failed to load payment gateway. Check your internet connection.");
-                // }
+                const scriptLoaded = await loadRazorpayScript();
+                if (!scriptLoaded) {
+                    throw new Error("Failed to load payment gateway. Check your internet connection.");
+                }
 
                 const { order } = response;
 

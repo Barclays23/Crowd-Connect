@@ -51,6 +51,7 @@ export interface ILocation {
    coordinates: [number, number]; // [longitude, latitude]
 }
 
+export const DEFAULT_RADIUS_KM = 25
 
 
 export enum EVENT_STATUS {
@@ -143,6 +144,20 @@ export interface GeoNearQueryOperator {
   };
 }
 
+export interface GeoWithinQueryOperator {
+  $geoWithin: {
+    $centerSphere?: [
+      [number, number],     // [lng, lat]
+      number                // radius in radians
+    ];
+    $geometry?: {
+      type: string;
+      coordinates: any;
+    };
+    // Add other shapes if needed later: $box, $polygon, $center, etc.
+  };
+}
+
 
 // Strictly types the MongoDB $text search operator
 export interface TextSearchOperator {
@@ -160,7 +175,7 @@ export interface TextSearchOperator {
 export type EventFilterQuery = Partial<Omit<IEventModel, 'startDateTime' | 'endDateTime' | 'location'>> & {
   startDateTime?: DateQueryOperator;
   endDateTime?: DateQueryOperator;
-  location?: ILocation | GeoNearQueryOperator;
+  location?: ILocation | GeoNearQueryOperator | GeoWithinQueryOperator | Record<string, unknown>;
 
   $text?: TextSearchOperator;
   $or?: Array<Record<string, unknown>>;
@@ -193,9 +208,31 @@ export interface GetPublicEventsFilter extends IBaseEventFilter {
   lng?: number;
   // location: string;  // need this ??
   radiusKm?: number;
+  sortBy?: PublicEventsSortOption
 }
 
 
+export type PublicEventsSortOption = 
+  "upcoming"   |     // startDateTime (ascending)
+  "newest"     |     // createdAt (newly created events)
+  "popular"    |     // views (most views first)
+  "price_asc"  |     // ticketPrice (low to high)
+  "price_desc";      // ticketPrice (high to low)
+
+
+export const allowedEventSortFields = [
+  "createdAt",
+  "startDateTime",
+  "endDateTime",
+  "title",
+  "ticketPrice",
+  "grossTicketRevenue",
+  "capacity",
+  "soldTickets",
+  "views"
+];
+
+// rename to SortOrder
 export type SortQuery = Record<string, 1 | -1>;
 
 

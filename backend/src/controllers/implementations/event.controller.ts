@@ -7,7 +7,8 @@ import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, Upda
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { mapCreateEventRequestToDto, mapEventDiscoveryQueryToFilters } from "@/mappers/event.mapper";
-import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, GetPublicEventsFilter, TICKET_TYPE } from "@/types/event.types";
+import { allowedEventSortFields, EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, GetPublicEventsFilter, TICKET_TYPE } from "@/types/event.types";
+import { SortOrder } from "mongoose";
 
 
 
@@ -122,17 +123,7 @@ export class EventController implements IEventController {
             const ticketType = (req.query.ticketType as string)?.trim() || "";
             const search = (req.query.search as string)?.trim() || "";
 
-            const allowedSortFields = [
-                "createdAt",
-                "startDateTime",
-                "endDateTime",
-                "title",
-                "ticketPrice",
-                "grossTicketRevenue",
-                "capacity",
-                "soldTickets",
-            ];
-            const sortBy = allowedSortFields.includes(req.query.sortBy as string)
+            const sortBy = allowedEventSortFields.includes(req.query.sortBy as string)
                 ? (req.query.sortBy as string)
                 : "createdAt";
 
@@ -268,21 +259,11 @@ export class EventController implements IEventController {
             const ticketType = (req.query.ticketType as string)?.trim() || "";
             const search = (req.query.search as string)?.trim() || "";
 
-            const allowedSortFields = [
-                "createdAt",
-                "startDateTime",
-                "endDateTime",
-                "title",
-                "ticketPrice",
-                "grossTicketRevenue",
-                "capacity",
-                "soldTickets",
-            ];
-            const sortBy = allowedSortFields.includes(req.query.sortBy as string)
+            const sortBy = allowedEventSortFields.includes(req.query.sortBy as string)
                 ? (req.query.sortBy as string)
                 : "createdAt";
 
-            const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+            const sortOrder: SortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
 
             const filters: GetEventsFilter = { 
                 page, 
