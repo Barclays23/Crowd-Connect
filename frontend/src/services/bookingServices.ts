@@ -21,19 +21,21 @@ export const bookingServices = {
    },
 
 
-   // Step 2 — only for paid events, called after Razorpay SDK returns
-   verifyPayment: async (payload: {
-      orderId:   string;
+   verifyBookingPayment: async (payload: {
+      bookingId: string;
+      paymentOrderId:   string;
       paymentId: string;
       signature: string;
    }): Promise<IBookingState> => {
       try {
          const response = await axiosInstance.post(
-         "/bookings/verify-payment",
-         payload,
-         { withCredentials: true }
+            `api/booking/${payload.bookingId}/verify-payment`,
+            payload,
+            { withCredentials: true }
          );
+
          return response.data.data;
+
       } catch (error: unknown) {
          throw error as AxiosError<{ error: string }>;
       }

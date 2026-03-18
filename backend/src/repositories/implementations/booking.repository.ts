@@ -20,8 +20,9 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
   async createBooking(createBookingInput: CreateBookingInput): Promise<BookingEntity> {
     try {
-      const bookingData = await this.createOne(createBookingInput);
+      const bookingData: IBookingModel = await this.model.create(createBookingInput);
       return mapBookingModelToEntity(bookingData);
+
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       console.error("Error in BookingRepository.createBooking:", msg);
@@ -83,12 +84,12 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
           bookingId,
           {
             $set: {
-              bookingStatus:              BOOKING_STATUS.CONFIRMED,
-              qrToken:                    input.qrToken,
-              "payment.razorpayPaymentId": input.razorpayPaymentId,
-              "payment.razorpaySignature": input.razorpaySignature,
-              "payment.status":            PAYMENT_STATUS.PAID,
-              "payment.paidAt":            input.paidAt,
+              bookingStatus:       input.bookingStatus,
+              qrToken:             input.qrToken,
+              "payment.paymentId": input.payment.paymentId,
+              "payment.signature": input.payment.signature,
+              "payment.status":    input.payment.status,
+              "payment.paidAt":    input.payment.paidAt,
             },
           },
           { new: true }
@@ -253,7 +254,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
           $match: {
             userRef:       new Types.ObjectId(userId),
             eventRef:      new Types.ObjectId(eventId),
-            bookingStatus: BOOKING_STATUS.CONFIRMED,
+            bookingStatus: BOOKING_STATUS.CONFIRMED,  // and should also include BOOKING_STATUS.ATTENDED ??
           },
         },
         {

@@ -56,6 +56,7 @@ export const BOOKING_ROUTES = {
     CANCEL_BOOKING: '/:bookingId/cancel',
     MY_BOOKINGS: '/my-bookings',
     BOOKING_DETAILS: '/:bookingId',
+    VERIFY_PAYMENT: '/:bookingId/verify-payment'
 } as const;
 
 

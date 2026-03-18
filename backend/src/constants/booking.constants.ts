@@ -18,9 +18,15 @@ export const BOOKING_MESSAGES = {
 
     // ─── OFFLINE EVENT MESSAGES ────────────────────────────
     PER_BOOKING_LIMIT_EXCEEDED: `You cannot book more than ${OFFLINE_MAX_TICKETS_PER_BOOKING} tickets at a time.`,
-    PER_USER_LIMIT_EXCEEDED: (bookedQty: number) => 
-        `You already booked ${bookedQty} tickets for this event.
-        You cannot book more than ${OFFLINE_MAX_TICKETS_PER_USER} tickets in total for this event`,
+    PER_USER_LIMIT_EXCEEDED: (bookedQty: number) => {
+        const remaining = OFFLINE_MAX_TICKETS_PER_USER - bookedQty;
+
+        return bookedQty < OFFLINE_MAX_TICKETS_PER_USER
+            ? `You’ve already booked ${bookedQty} of ${OFFLINE_MAX_TICKETS_PER_USER} tickets for this event. 
+                ${remaining} more ticket${remaining > 1 ? 's' : ''} allowed.`
+            : `You’ve already booked ${bookedQty} of ${OFFLINE_MAX_TICKETS_PER_USER} tickets for this event. 
+                No more tickets allowed.`;
+    },
 
     // ─── AVAILABILITY MESSAGES ─────────────────────────────
     EVENT_NOT_BOOKABLE: "This event is not available for booking",

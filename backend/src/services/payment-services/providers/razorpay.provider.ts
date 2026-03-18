@@ -3,6 +3,10 @@
 import Razorpay from "razorpay";
 import crypto   from "crypto";
 import { CreateOrderResult, IPaymentProvider, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { createHttpError } from "@/utils/httpError.utils";
+import { HttpStatus } from "@/constants/statusCodes.constants";
+import { PaymentMessages } from "@/constants/responseMessages.constants";
+
 
 export class RazorpayProvider implements IPaymentProvider {
 
@@ -15,22 +19,60 @@ export class RazorpayProvider implements IPaymentProvider {
         });
     }
 
-    async createOrder(amount: number, currency: string, receipt: string): Promise<CreateOrderResult> {
-        const order = await this._client.orders.create({ amount, currency, receipt });
-        return { orderId: order.id, amount: order.amount as number, currency: order.currency };
+    async createOrder(purpose: string, totalAmount: number, currency: string, userId: string): Promise<CreateOrderResult> {
+        try {
+            const shortPurpose = purpose.slice(0, 8); 
+            const timestamp = Date.now().toString().slice(-6);
+
+            const receiptId = `${shortPurpose}_${userId}_${timestamp}`.slice(0, 40);  // max 40 chars allowed
+
+            const amountInPaise = Math.round(totalAmount * 100);
+    
+            const order = await this._client.orders.create({ 
+                amount: amountInPaise, 
+                currency, 
+                receipt: receiptId 
+            });
+    
+            return { 
+                orderId: order.id, 
+                amount: order.amount as number, 
+                currency: order.currency 
+            };
+
+        } catch (error: unknown) {
+            let errorMessage = "Payment gateway failed to initialize.";
+
+            if (typeof error === "object" && error !== null && "error" in error) {
+                const rzpError = error as any;
+                errorMessage = rzpError.error?.description || errorMessage;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            console.error(`[CRITICAL] Razorpay Create Order Error: ${errorMessage}`);
+            
+            throw createHttpError(HttpStatus.BAD_GATEWAY, PaymentMessages.PAYMENT_SETUP_FAILED);
+        }
     }
 
     verifySignature(orderId: string, paymentId: string, signature: string): boolean {
         const body    = `${orderId}|${paymentId}`;
-        const expected = crypto
+
+        // Verify Razorpay HMAC signature
+        const generatedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
             .update(body)
             .digest("hex");
-        return expected === signature;
+
+        return generatedSignature === signature;
     }
 
     async initiateRefund(paymentId: string, amount: number): Promise<RefundResult> {
-        const refund = await this._client.payments.refund(paymentId, { amount });
+        const amountInPaise = Math.round(amount * 100);
+
+        const refund = await this._client.payments.refund(paymentId, { amount: amountInPaise });
+
         return {
             refundId: refund.id,
             amount:   refund.amount as number,

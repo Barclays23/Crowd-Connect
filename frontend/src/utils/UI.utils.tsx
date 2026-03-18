@@ -156,7 +156,7 @@ export function getPaymentStatusVariant(
   status: PAYMENT_STATUS
 ): "default" | "secondary" | "destructive" | "outline" | "success" {
   switch (status) {
-    case PAYMENT_STATUS.PAID:     return "success";
+    case PAYMENT_STATUS.COMPLETED:     return "success";
     case PAYMENT_STATUS.REFUNDED: return "secondary";
     case PAYMENT_STATUS.PENDING:  return "outline";
     case PAYMENT_STATUS.FAILED:   return "destructive";

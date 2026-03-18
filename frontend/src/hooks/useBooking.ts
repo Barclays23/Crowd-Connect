@@ -1,14 +1,22 @@
 // frontend/src/hooks/useBooking.ts
 import { useState } from "react";
 import { bookingServices } from "@/services/bookingServices";
-// import { loadRazorpayScript } from "@/utils/razorpay";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { IBookingState, InitiateBookingResponse } from "@/types/booking.types";
 import type { RazorpayPaymentFailedResponse, RazorpayPaymentSuccessResponse } from "@/types/razorpay.types";
+import { loadRazorpayScript } from "@/utils/razorpay.utils";
+import { toast } from "react-toastify";
+
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 
 interface UseBookingOptions {
-    onSuccess?: (populatedBooking: IBookingState) => void;  // also add response message
+    onSuccess?: (populatedBooking: IBookingState) => void;  // also add response message addition to populatedBooking
     onError?:   (message: string) => void;
 }
 
@@ -20,6 +28,8 @@ interface BookParams {
     userEmail:  string;
     userPhone?: string;
 }
+
+
 
 export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
     const [isLoading, setIsLoading]               = useState(false);
@@ -37,11 +47,14 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
             userPhone
         } = params;
 
+        console.log('bookEvent Params :', params);
+
         setIsLoading(true);
 
         try {
             // Step 1 — call /bookings/initiate
             const response: InitiateBookingResponse = await bookingServices.initiateBooking(eventId, selectedQuantity);
+            console.log('response from initiateBooking :', response)
 
             if (response.isFree) {
                 setConfirmedBooking(response.populatedBooking);
@@ -51,6 +64,8 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
             } else {
                 // ── PAID EVENT — open Razorpay SDK ───────────────────────────────────
                 const scriptLoaded = await loadRazorpayScript();
+                console.log('loadRazorpayScript scriptLoaded :', scriptLoaded);
+
                 if (!scriptLoaded) {
                     throw new Error("Failed to load payment gateway. Check your internet connection.");
                 }
@@ -68,33 +83,33 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                         prefill: {
                             name:    userName,
                             email:   userEmail,
-                            contact: userPhone ?? "",
+                            ...(userPhone && { contact: userPhone })
                         },
                         theme: { color: "var(--brand-primary, #6C63FF)" },
     
                         handler: async (response: RazorpayPaymentSuccessResponse) => {
                             try {
-                            // Step 2 — verify payment
-                            const booking: IBookingState = await bookingServices.verifyPayment({
-                                orderId:   response.razorpay_order_id,
-                                paymentId: response.razorpay_payment_id,
-                                signature: response.razorpay_signature,
-                            });
+                                const booking: IBookingState = await bookingServices.verifyBookingPayment({
+                                    bookingId: order.bookingId,
+                                    paymentOrderId:   response.razorpay_order_id,
+                                    paymentId: response.razorpay_payment_id,
+                                    signature: response.razorpay_signature,
+                                });
     
-                            setConfirmedBooking(booking);
-                            onSuccess?.(booking);
-                            resolve();
-                        } catch (err) {
-                            reject(new Error(getApiErrorMessage(err) ?? "Payment verification failed"));
-                        }
-                    },
+                                setConfirmedBooking(booking);
+                                onSuccess?.(booking);
+                                resolve();
+                            } catch (err) {
+                                reject(new Error(getApiErrorMessage(err) ?? "Payment verification failed"));
+                            }
+                        },
     
-                    modal: {
-                        ondismiss: () => reject(new Error("Payment was cancelled")),
-                    },
+                        modal: {
+                            ondismiss: () => reject(new Error("CANCELLED_BY_USER")),
+                        },
                     });
     
-                        rzp.on("payment.failed", (res: RazorpayPaymentFailedResponse) => {
+                    rzp.on("payment.failed", (res: RazorpayPaymentFailedResponse) => {
                         reject(new Error(res.error?.description ?? "Payment failed"));
                     });
     
@@ -104,7 +119,12 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
 
         } catch (error: unknown) {
             const errorMessage = getApiErrorMessage(error);
-            if (errorMessage) onError?.(errorMessage);
+            // If the user just closed the modal, do nothing. Otherwise, show the error toast.
+            if (errorMessage === "CANCELLED_BY_USER") {
+                console.log("User closed the payment gateway.");
+            } else {
+                if (errorMessage) onError?.(errorMessage);
+            }
 
         } finally {
             setIsLoading(false);

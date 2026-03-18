@@ -30,7 +30,7 @@ const razorPayProvider = new RazorpayProvider();
 
 
 // SERVICES
-const ticketService = new TicketService();
+const ticketService    = new TicketService(bookingRepo, eventRepo);
 const paymentService   = new PaymentService(razorPayProvider);
 const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService);
 const eventService = new EventManagementServices(eventRepo, bookingService);
@@ -83,7 +83,7 @@ eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
 
 eventRouter.post(
   EVENT_ROUTES.INITIATE_BOOKING, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), 
-  validateParams(EventIdParamSchema), 
+  validateRequest({body: initiateBookingSchema, params: EventIdParamSchema}), 
   bookingController.initiateBooking.bind(bookingController)
 );
 

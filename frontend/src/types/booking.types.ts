@@ -17,7 +17,7 @@ export type BOOKING_STATUS = typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
 
 export const PAYMENT_STATUS = {
   PENDING:  "pending",
-  PAID:     "paid",
+  COMPLETED: "completed",
   FAILED:   "failed",
   REFUNDED: "refunded",
 } as const;
@@ -48,13 +48,12 @@ export const BOOKING_CONSTRAINTS = {
 // ─── Booking Responses ────────────────────────────────────────────────────────
 
 // Returned for paid events from POST /bookings/initiate
-// Feed directly to Razorpay frontend SDK
-export interface BookingPaymentOrderResponse {  // same interface BookingOrderResponseDTO why that separate??
-  bookingId:       string;   // pending booking _id — stored by frontend for reference
-  orderId: string;
-  amount:          number;   // in paise (₹ × 100)
-  currency:        string;
-  keyId:           string;   // Razorpay key_id for frontend SDK
+export interface BookingPaymentOrder {
+  bookingId: string;   // pending booking _id — stored by frontend for reference
+  orderId:  string;
+  amount:   number;   // in paise (₹ × 100)
+  currency: string;
+  keyId:    string;   // Razorpay key_id for frontend SDK
 }
 
 
@@ -109,7 +108,7 @@ export interface IBookingState {
 //   isFree = false → open Razorpay SDK with order, then call /verify-payment
 export type InitiateBookingResponse =  // is it booking confirmation response ???
   | { isFree: true;  populatedBooking: IBookingState }
-  | { isFree: false; order:   BookingPaymentOrderResponse };
+  | { isFree: false; order:   BookingPaymentOrder };
 
 
 

@@ -16,7 +16,7 @@ export interface RefundResult {
 
 
 export interface IPaymentProvider {
-  createOrder(amount: number, currency: string, receipt: string): Promise<CreateOrderResult>;
+  createOrder(purpose: string, amount: number, currency: string, userId: string): Promise<CreateOrderResult>;
   verifySignature(orderId: string, paymentId: string, signature: string): boolean;
   initiateRefund(paymentId: string, amount: number): Promise<RefundResult>;
 }

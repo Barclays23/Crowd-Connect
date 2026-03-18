@@ -86,7 +86,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                   />
 
                   {/* Paid At – only show if payment actually happened */}
-                  {booking.payment.status === PAYMENT_STATUS.PAID && booking.payment && (
+                  {booking.payment.status === PAYMENT_STATUS.COMPLETED && booking.payment && (
                      <DetailRow
                         label="Paid On"
                         value={formatDate5(booking.payment.paidAt)}

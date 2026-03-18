@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { HttpError } from '@/utils/httpError.utils';
-
+import winstonLogger from '@/config/logger';
 
 
 function hasErrorCode(err: unknown): err is { code: number } {
@@ -40,13 +40,21 @@ const isDatabaseError = (err: unknown): boolean => {
 
 
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
-   console.error('❌❌❌ errorHandler error --------------------------:', err);
+   // console.error('❌❌❌ errorHandler error --------------------------:', err);
+
+   winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware :', {
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      path: req.originalUrl, //  Log WHICH route failed!
+      method: req.method,    //  Log IF it was GET, POST, etc.
+   });
 
    // Very important safety
    if (res.headersSent) {
       // Narrowing here so we can safely log the message
       const msg = err instanceof Error ? err.message : 'Unknown Error';
-      console.warn('Response already sent — cannot send error. Original error:', msg);
+      // console.warn('Response already sent — cannot send error. Original error:', msg);
+      winstonLogger.warn('Response already sent — cannot send error. Original error:', { originalError: msg });
       return next(err);  // just in case some other strange middleware
    }
 
@@ -68,12 +76,14 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
 
    // Handle all other JavaScript errors (like SyntaxError or ReferenceError)
    } else if (err instanceof Error) {
-      message = process.env.NODE_ENV != 'development'
+      // message = process.env.NODE_ENV != 'development'
+      message = process.env.NODE_ENV === 'development'
          ? err.message
          : 'Internal Server Error';
    }
 
-   console.log('🔥 Final errorHandler error message to send frontend: ', message);
+   // console.log('🔥 Final errorHandler error message to send frontend: ', message);
+   winstonLogger.debug('🔥 Final error message sent to frontend', { message, status });
 
    res.status(status).json({
       success: false,

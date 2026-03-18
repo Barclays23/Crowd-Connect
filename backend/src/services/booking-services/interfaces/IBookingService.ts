@@ -19,6 +19,9 @@ export interface IBookingService {
 
   initiateBooking(bookingReqDto: BookingOrderRequestDTO): Promise<InitiateBookingResponseDTO>;
 
+  // can I use this same for booking payment and host role upgrade payment? or need separate?
+  verifyAndConfirmPayment(userId: string, dto: VerifyPaymentRequestDTO): Promise<BookingResponseDTO>;
+
   getMyBookings(userId: string, filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;
 
   getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;

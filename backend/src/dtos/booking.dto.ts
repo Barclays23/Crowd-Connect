@@ -2,7 +2,7 @@
 
 import { IPagination } from "@/types/common.types";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
-import { EVENT_FORMAT } from "@/types/event.types";
+import { EVENT_CATEGORY, EVENT_FORMAT } from "@/types/event.types";
 
 
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
@@ -16,7 +16,8 @@ export interface BookingOrderRequestDTO {
 
 
 export interface VerifyPaymentRequestDTO {
-  orderId:   string;
+  bookingId: string;
+  paymentOrderId: string;
   paymentId: string;
   signature: string;
 }
@@ -43,11 +44,11 @@ export interface BookingResponseDTO {
   event: {
     eventId:       string;
     title:         string;
-    category:      string;
+    category:      EVENT_CATEGORY;
     posterUrl:     string;
     startDateTime: string;
     endDateTime:   string;
-    format:        string;
+    format:        EVENT_FORMAT;
     locationName?: string;
     onlineLink?:   string;
   };
@@ -60,7 +61,6 @@ export interface BookingResponseDTO {
   ticketRate:       number;
   totalAmount:      number;
   ticketNo:         string;
-  eventFormat:      EVENT_FORMAT;
   bookingStatus:    BOOKING_STATUS;
   payment: {
     orderId:    string;

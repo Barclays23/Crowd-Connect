@@ -51,7 +51,7 @@ const razorPayProvider = new RazorpayProvider();
 
 
 // ──  SERVICES
-const ticketService = new TicketService();
+const ticketService    = new TicketService(bookingRepo, eventRepo);
 const paymentServices = new PaymentService(razorPayProvider);
 const userManagementServices = new UserManagementService(userRepo);
 const userProfileServices = new UserProfileService(userRepo);

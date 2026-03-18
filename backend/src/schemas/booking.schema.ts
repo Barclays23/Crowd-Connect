@@ -11,16 +11,8 @@ export const initiateBookingSchema = z.object({
     .min(1, "You must choose at least 1 ticket.")
     .max(10, "Booking quantity cannot exceed 10"),
   // Online events only allow quantity 1 — enforced at service layer, not here.
-  // Schema validates the shape; business rules validate the logic.
 });
 
-
-// ─── Payment Verification (paid events only) ─────────────────────────────────
-export const verifyPaymentSchema = z.object({
-  orderId:   z.string().min(1, "OrderId is required"),
-  paymentId: z.string().min(1, "PaymentId is required"),
-  signature: z.string().min(1, "Signature is required"),
-});
 
 
 // ─── Booking Cancellation ─────────────────────────────────────────────────────────────

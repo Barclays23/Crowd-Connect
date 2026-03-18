@@ -22,6 +22,10 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-error.log
 
+
+
+
+
 # -------------------------------------------------------------------
 # 2. SUB-PROJECT BUILD & GENERATED ARTIFACTS (Explicit Targeting)
 # -------------------------------------------------------------------
@@ -36,3 +40,12 @@ yarn-error.log
 /frontend/build/
 /frontend/coverage/
 
+
+
+
+# -------------------------------------------------------------------
+# 3. APPLICATION LOGS
+# -------------------------------------------------------------------
+backend/logs/
+*.log
+*-audit.json
