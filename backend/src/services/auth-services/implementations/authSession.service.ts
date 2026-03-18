@@ -13,7 +13,7 @@ import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/utils/jwt.utils";
 import { redisClient } from "@/config/redis.config";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
-import winstonLogger from "@/config/logger";
+
 
 
 
@@ -52,8 +52,8 @@ export class AuthSessionService implements IAuthSessionService {
             };
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            winstonLogger.error("Error in AuthSessionService.signIn", { error: msg });
+            // const msg = error instanceof Error ? error.message : 'Unknown error';
+            // winstonLogger.error("Error in AuthSessionService.signIn", { error: msg });
             throw error;
         }
     }
