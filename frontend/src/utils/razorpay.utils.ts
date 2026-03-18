@@ -14,6 +14,7 @@ export function loadRazorpayScript(): Promise<boolean> {
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.id = RAZORPAY_SCRIPT_ID;
       script.async = true;
+      
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
 

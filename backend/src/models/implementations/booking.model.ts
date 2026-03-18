@@ -1,7 +1,6 @@
 
 import { BOOKING_STATUS, IBookingModel, IBookingVirtuals, PAYMENT_STATUS } from '@/types/booking.types';
 import { IEventModel } from '@/types/event.types';
-import { ABOVE_H48_REFUND_PERCENT, BELOW_H24_REFUND_PERCENT, BELOW_H48_REFUND_PERCENT } from '@/types/payment.types';
 import { getRefundPercentage } from '@/utils/refundCalculator';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
@@ -33,6 +32,11 @@ const bookingSchema = new Schema<IBookingModel>(
          required: true,
          min: 0,
       },
+      ticketNo: {
+         type: String,
+         required: true,
+         unique: true
+      },
       totalAmount: {
          type: Number,
          required: true,
@@ -48,7 +52,7 @@ const bookingSchema = new Schema<IBookingModel>(
       // ── QR / Entry ─────────────────────────────────────────────────────────────
       qrToken: {
          type: String,
-         default: "",
+         default: undefined
       },
       remainingEntries: {
          type: Number,
@@ -151,7 +155,10 @@ bookingSchema.virtual("currentRefundPercentage").get(function (
 bookingSchema.index({ userRef: 1, createdAt: -1 });                      // "My bookings" — newest first
 bookingSchema.index({ userRef: 1, eventRef: 1 });                        // Duplicate-booking check + ticket-cap enforcement
 bookingSchema.index({ eventRef: 1, bookingStatus: 1 });                  // Host dashboard — filter by status per event
-bookingSchema.index({ qrToken: 1 }, { sparse: true, unique: true });     // QR scan — sparse skips empty-string PENDING rows
+bookingSchema.index(
+   { qrToken: 1 },
+   { unique: true, partialFilterExpression: { qrToken: { $exists: true } }}
+);     // QR scan — sparse skips empty-string PENDING rows
 bookingSchema.index({ refundGracePeriodEnd: 1 }, { sparse: true });      // Grace-period queries — sparse skips null rows
 bookingSchema.index({ "payment.orderId": 1 }, { unique: true });         // Webhook lookup — must be unique
 

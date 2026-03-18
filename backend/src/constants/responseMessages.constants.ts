@@ -117,3 +117,148 @@ export enum HttpResponse {
 
 
 
+
+
+// ─── AUTHENTICATION & SECURITY ──────────────────────────────────────────────
+export enum AuthMessages {
+    EMAIL_EXIST = "An account with this email already exists",
+    MOBILE_EXIST = "An account with this mobile number already exists",
+    GOOGLE_LOGIN_SUCCESS = "Logged in with Google successfully",
+    INVALID_CREDENTIALS = "Invalid credentials",
+    LOGOUT_SUCCESS = "Logged out successfully.",
+    LOGIN_SUCCESS = "Logged in successfully.",
+    LOGIN_FAILED = "Login attempt failed.",
+    LOGIN_AGAIN = "Please log in again to continue.",
+    
+    // OTP & Verification
+    OTP_INCORRECT = "Incorrect OTP, please enter the correct code.",
+    OTP_RESENT = "A new OTP has been sent to your email.",
+    OTP_SENT = "We've sent an OTP to your email.",
+    OTP_SEND_FAILED = "Failed to send OTP. Please try again.",
+    OTP_EXPIRED = "Your verification code has expired. Please request a new OTP.",
+    OTP_VERIFICATION_SUCCESS = "OTP verified successfully.",
+    VERIFY_ACCOUNT = "Please verify to activate your account.",
+    EMAIL_VERIFICATION_SENT = "Verification code sent. Check your email to verify.",
+    EMAIL_ALREADY_VERIFIED = "Your email address is already verified.",
+    EMAIL_VERIFIED = "Success! Your email is now verified and updated.",
+    
+    // Password Reset
+    PASSWORD_RESET_EMAIL_SENT = "Done! We've sent a reset link to your email.",
+    PASSWORD_RESET_SUCCESS = "Password has been reset successfully",
+    PASSWORD_RESET_FAILED = "Failed to reset password. Please try again.",
+    RESET_LINK_INVALID_OR_EXPIRED = "This password reset link is invalid or has expired. Please request a new one.",
+    PASSWORD_CHANGE_SUCCESS = "Password changed successfully",
+    PASSWORD_INCORRECT = "Incorrect password, try again",
+    RESET_PASS_LINK = "Password reset link has been sent to your email",
+    
+    // Tokens & Sessions
+    SESSION_ENDED = "Your session has ended.",
+    SESSION_EXPIRED = "Your session has expired.",
+    TOKEN_INVALID_OR_EXPIRED = "Your token is invalid or expired. Please log in again.",
+    TOKEN_MISSING = "Access Denied: Missing authentication token.",
+    TOKEN_REVOKED = "Your token has been revoked. Please log in again.",
+    ACCESS_TOKEN_REFRESHED = "Access token refreshed successfully.",
+    UNAUTHORIZED_ACCESS = "Unauthorized access",
+}
+
+// ─── GENERAL SYSTEM MESSAGES ───────────────────────────────────────────────
+export enum SystemMessages {
+    INTERNAL_SERVER_ERROR = "Internal server error.",
+    INSUFFICIENT_PERMISSION = "You have no permission to perform this action.",
+    INVALID_ID = "Invalid ID format",
+    INVALID_EMAIL = "Invalid email address",
+    NO_PAYLOAD = "Payload not found",
+    NO_CHANGE_MADE = "It looks like you haven't changed anything. Make at least one change to save an update.",
+    PAGE_NOT_FOUND = "Route not found",
+    TOO_MANY_REQUESTS = "Too many requests, please try again later",
+    TRY_AGAIN = "Please try again.",
+    TRY_AGAIN_LATER = "Please try again later.",
+    UNEXPECTED_KEY_FOUND = "Unexpected key found",
+}
+
+// ─── USER MANAGEMENT ────────────────────────────────────────────────────────
+export enum UserMessages {
+    INVALID_USER_ID = "Invalid user ID format",
+    USER_CREATION_FAILED = "We were unable to create your account.",
+    USER_VERIFICATION_PENDING = "Your account is ready. Check your email to verify OTP and activate your account.",
+    USER_CREATION_SUCCESS = "Your account is now active.",
+    USER_EXIST = "User already exists",
+    USER_NOT_FOUND = "We couldn't find a user with these credentials.",
+    USER_ACCOUNT_NOT_EXIST = "Your account is removed or no longer available. Please contact support.",
+    USER_ACCOUNT_BLOCKED = "Your account has been blocked. Please contact support.",
+    PROFILE_PICTURE_CHANGED = "Profile picture changed successfully",
+    SUCCESS_BLOCK_USER = "User has been blocked.",
+    SUCCESS_GET_USERS = "Users fetched successfully.",
+    SUCCESS_CREATE_USER = "User account created.",
+    SUCCESS_UPDATE_USER = "User details updated.",
+    SUCCESS_UPDATE_PROFILE = "Profile updated successfully.",
+    SUCCESS_DELETE_USER = "User has been deleted.",
+    SUCCESS_UNBLOCK_USER = "User has been unblocked.",
+    FAILED_GET_USERS = "Failed to fetch users.",
+    FAILED_CREATE_USER = "Failed to create user.",
+    FAILED_UPDATE_PROFILE = "Failed to update profile.",
+    FAILED_UPDATE_USER = "Failed to update user.",
+    FAILED_UPDATE_USER_STATUS = "Failed to update user status.",
+    FAILED_DELETE_USER = "Failed to delete user.",
+    CANNOT_CHANGE_VERIFIED_EMAIL = "Verified email address cannot be changed.",
+}
+
+// ─── HOST MANAGEMENT ────────────────────────────────────────────────────────
+export enum HostMessages {
+    HOST_NOT_FOUND = "Couldn't find this host user.",
+    USER_NOT_A_HOST = "The user is not a host right now.",
+    HOST_ALREADY_APPROVED = "Hosting application is already approved.",
+    HOST_ALREADY_REJECTED = "Hosting application is already rejected.",
+    HOST_ALREADY_BLOCKED = "Host user is already blocked.",
+    HOST_APPLICATION_PENDING = "Your hosting application is already pending.",
+    HOST_APPLY_SUCCESS = "Host upgrade application submitted successfully.",
+    HOST_APPLY_FAILED = "Failed to submit host upgrade application.",
+    HOST_APPROVE_SUCCESS = "Host application approved.",
+    HOST_UPDATE_SUCCESS = "Host details has been updated.",
+    HOST_UPDATE_FAILED = "Failed to update host details.",
+    HOST_REJECT_SUCCESS = "Host application rejected.",
+    HOST_BLOCKED = "Your hosting permissions are blocked by admin.",
+    HOST_BLOCK_SUCCESS = "Host has been blocked.",
+    HOST_UNBLOCK_SUCCESS = "Host has been unblocked.",
+    SUCCESS_GET_HOSTS = "Hosts fetched successfully.",
+    FAILED_GET_HOSTS = "Failed to fetch hosts.",
+    CANNOT_CHANGE_HOST_ROLE = "Role modification is restricted for Host accounts.",
+    CANNOT_CHANGE_HOST_DIRECTLY = "Direct role changes to Host are not permitted. Please use the Role Upgrade Portal.",
+}
+
+// ─── EVENT MANAGEMENT ───────────────────────────────────────────────────────
+export enum EventMessages {
+    EVENT_NOT_FOUND = "Coundn't find this event.",
+    SUCCESS_CREATE_EVENT = "Event created successfully. Publish to make it live.",
+    SUCCESS_UPDATE_EVENT = "Event has been updated.",
+    SUCCESS_DELETE_EVENT = "Event has been deleted",
+    SUCCESS_SUSPEND_EVENT = "Event has been suspended.",
+    SUCCESS_PUBLISH_EVENT = "Event has been published.",
+    FAILED_CREATE_EVENT = "Oops! We couldn’t create your event.",
+    FAILED_UPDATE_EVENT = "Oops! We couldn’t update your event.",
+}
+
+// ─── ADMIN & ROLE MANAGEMENT ────────────────────────────────────────────────
+export enum AdminMessages {
+    INVALID_USER_ROLE_CREATION = "Invalid role provided. User role should be either user or admin.",
+    INVALID_USER_STATUS_CREATION = "Invalid status. User status should only be pending for new users.",
+    CANNOT_CHANGE_SUPER_ADMIN_ROLE = "Super Admin role cannot be changed.",
+    ADMIN_CANNOT_CREATE_ADMIN = "Only Super Admin can create another Admin",
+    ADMIN_CANNOT_EDIT_SELF = "You cannot edit your own account",
+    ADMIN_CANNOT_EDIT_ADMIN = "Only Super Admin can edit another Admin",
+    ADMIN_CANNOT_EDIT_SUPER_ADMIN = "Super Admin cannot be edited",
+    ADMIN_CANNOT_BLOCK_SELF = "You cannot block your own account",
+    ADMIN_CANNOT_BLOCK_ADMIN = "Only Super Admin can block another Admin",
+    ADMIN_CANNOT_BLOCK_SUPER_ADMIN = "Super Admin cannot be blocked",
+    ADMIN_CANNOT_DELETE_SELF = "You cannot delete your own account",
+    ADMIN_CANNOT_DELETE_ADMIN = "Only Super Admin can delete another Admin",
+    ADMIN_CANNOT_DELETE_SUPER_ADMIN = "Super Admin cannot be deleted",
+}
+
+// ─── PAYMENTS & BOOKINGS ────────────────────────────────────────────────────
+export enum PaymentMessages {
+    // Payment system temporarily unavailable.
+    // PAYMENT_SETUP_FAILED = "Couldn't load payment gateway. Try again later or contact support.",
+    PAYMENT_SETUP_FAILED = "Unable to start payment. Try again later or contact support.",
+    PAYMENT_VERIFICATION_FAILED = "Payment verification failed. If money was deducted, it will be refunded automatically.",
+}

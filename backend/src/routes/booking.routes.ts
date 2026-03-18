@@ -8,18 +8,17 @@ import { EventRepository }   from "@/repositories/implementations/event.reposito
 import { authenticate }      from "@/middlewares/auth.middleware";
 import { authorize }         from "@/middlewares/auth.middleware";
 import { UserRole }          from "@/constants/roles-and-statuses";
-import { validateBody, validateRequest }      from "@/middlewares/validate.middleware";
+import { validateRequest }      from "@/middlewares/validate.middleware";
 import {
   cancelBookingSchema,
-  initiateBookingSchema,
-  verifyPaymentSchema,
 } from "@/schemas/booking.schema";
-import { BookingIdParamSchema, EventIdParamSchema } from "@/schemas/mongo.schema";
+import { BookingIdParamSchema } from "@/schemas/mongo.schema";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
+import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
 
 
 
@@ -34,7 +33,7 @@ const razorpayProvider = new RazorpayProvider();
 
 
 const paymentService   = new PaymentService(razorpayProvider);
-const ticketService = new TicketService();
+const ticketService    = new TicketService(bookingRepo, eventRepo);
 const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService);
 
 
@@ -63,6 +62,13 @@ bookingRouter.get(
 bookingRouter.put(
   BOOKING_ROUTES.CANCEL_BOOKING, validateRequest({ body: cancelBookingSchema, params: BookingIdParamSchema }),
   bookingController.cancelBookingByUser.bind(bookingController)
+);
+
+
+bookingRouter.post(
+  BOOKING_ROUTES.VERIFY_PAYMENT, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), 
+  validateRequest({params: BookingIdParamSchema, body: verifyRazorPayPaymentSchema}),
+  bookingController.verifyAndConfirmPayment.bind(bookingController)
 );
 
 

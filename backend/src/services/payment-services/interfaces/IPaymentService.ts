@@ -1,6 +1,6 @@
 // src/services/payment-services/interfaces/IPaymentService.ts
 
-import { RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { CreateOrderResult, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
 
 export interface InitiateRefundInput {
    paymentId: string;   // razorpayPaymentId from booking.payment
@@ -13,7 +13,7 @@ export interface InitiateRefundInput {
 
 export interface IPaymentService {
     // Creates a Razorpay order for a paid booking. Called during initiateBooking for paid events.
-    createBookingOrder(amount: number, bookingId: string): Promise<{ orderId: string }>;
+    createBookingOrder(amount: number, userId: string): Promise<CreateOrderResult>;
 
     // Verifies Razorpay webhook signature after payment capture. Called in verifyPayment flow.
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;

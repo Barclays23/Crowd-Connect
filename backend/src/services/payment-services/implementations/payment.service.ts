@@ -1,6 +1,7 @@
 // src/services/payment-services/implementations/payment.service.ts
 
-import { IPaymentProvider, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { PaymentPurpose } from "@/constants/payment.constants";
+import { CreateOrderResult, IPaymentProvider, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
 import { InitiateRefundInput, IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 
 
@@ -12,9 +13,10 @@ export class PaymentService implements IPaymentService {
         private readonly _provider: IPaymentProvider,  // RazorpayProvider | StripeProvider
     ) {}
 
-    async createBookingOrder(amount: number, bookingId: string): Promise<{ orderId: string }> {
-        const result = await this._provider.createOrder(amount, "INR", bookingId);
-        return { orderId: result.orderId };
+    async createBookingOrder(totalAmount: number, userId: string): Promise<CreateOrderResult> {
+        const purpose = PaymentPurpose.BOOKING;
+        const result: CreateOrderResult = await this._provider.createOrder(purpose, totalAmount, "INR", userId);
+        return result;
     }
 
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean {

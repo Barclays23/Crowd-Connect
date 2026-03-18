@@ -8,16 +8,17 @@ import {
    BookingResponseDTO,
    GetBookingsResponseDTO,
    InitiateBookingResponseDTO,
+   VerifyPaymentRequestDTO,
 } from "@/dtos/booking.dto";
-import { mapBookingEntityToResponseDTO, mapBookingOrderDtoToInput } from "@/mappers/booking.mapper";
+import { mapBookingEntityToResponseDTO, mapBookingOrderDtoToInput, mapConfirmBookingInput } from "@/mappers/booking.mapper";
 
 import { BOOKING_STATUS, GetBookingsFilter, GetBookingsResult, PAYMENT_STATUS } from "@/types/booking.types";
-import { EVENT_FORMAT, EVENT_STATUS } from "@/types/event.types";
+import { EVENT_FORMAT, EVENT_STATUS, TICKET_TYPE } from "@/types/event.types";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { BOOKING_MESSAGES, MIN_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_USER, ONLINE_MAX_TICKETS_PER_USER } from "@/constants/booking.constants";
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { ITicketService } from "@/services/ticket-services/interfaces/ITicketService";
@@ -26,6 +27,7 @@ import { calculateRefundAmount, RefundContext } from "@/utils/refundCalculator";
 import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
+import { Types } from "mongoose";
 
 
 
@@ -104,7 +106,7 @@ export class BookingService implements IBookingService {
 
             if (existingTicketCount + newBookingQty > OFFLINE_MAX_TICKETS_PER_USER) {
                throw createHttpError(
-                  HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_USER_LIMIT_EXCEEDED(existingTicketCount + newBookingQty)
+                  HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_USER_LIMIT_EXCEEDED(existingTicketCount)
                );
             }
          }
@@ -115,26 +117,28 @@ export class BookingService implements IBookingService {
 
          const totalAmount: number = event.ticketPrice * newBookingQty; // ₹0 for free events
          const ticketNo: string =  this._ticketService.generateTicketNo();
-         const eventFormat: EVENT_FORMAT = event.format;
-         
-         // if (event.ticketType === TICKET_TYPE.FREE) {
-            const qrToken = this._ticketService.generateQrToken({ userId, eventId, newBookingQty });
+         console.log('ticketNo :', ticketNo)
+
+         // ── FREE EVENT ──────────────────────────────────────────────────────────
+         if (event.ticketType === TICKET_TYPE.FREE) {
+            const newBookingId = new Types.ObjectId().toHexString();   // Pre-generate the Booking ID so the QR token and DB record match perfectly
+
+            const qrToken = this._ticketService.generateQrToken({ userId, eventId, bookingId: newBookingId });
 
             // const freeBookingInput = mapFreeBookingOrderDtoToInput(...);
             // const paidBookingInput = mapPaidBookingOrderDtoToInput(...);
-            const createBookingInput: CreateBookingInput = mapBookingOrderDtoToInput(
+            const createBookingInput: CreateBookingInput = mapBookingOrderDtoToInput({
                userId,
                event,
                newBookingQty,
                ticketNo,
-               eventFormat,
                qrToken,
-               `free_${userId}_${Date.now()}`,
-               PAYMENT_STATUS.PAID,
-               BOOKING_STATUS.CONFIRMED
-            )
+            })
 
-            const bookingEntity: BookingEntity = await this._bookingRepository.createBooking(createBookingInput);
+            const bookingEntity: BookingEntity = await this._bookingRepository.createBooking({
+               _id: newBookingId,
+               ...createBookingInput,
+            });
 
             await this._eventRepository.incrementEventTicketStats(eventId, newBookingQty, totalAmount);
 
@@ -149,11 +153,32 @@ export class BookingService implements IBookingService {
                isFree: true,
                populatedBooking
             };
-         // }
+         }
 
          // ── PAID EVENT ──────────────────────────────────────────────────────────
-         // paid booking flow will be implemented in the next task, but we need to return the bookingId and totalAmount here for payment initiation in the controller
-         // so we will create the booking with PENDING status and update it to CONFIRMED after successful payment verification in the next task
+         const paymentOrder = await this._paymentService.createBookingOrder(totalAmount, userId);
+
+         const createBookingInput: CreateBookingInput = mapBookingOrderDtoToInput({
+            userId,
+            event,
+            newBookingQty,
+            ticketNo,
+            paymentOrderId: paymentOrder.orderId,
+         });
+
+         const pendingBooking: BookingEntity = await this._bookingRepository.createBooking(createBookingInput);
+         console.log('pendingBooking :', pendingBooking )
+
+         return {
+            isFree: false,
+            order: {
+               bookingId: pendingBooking.bookingId,
+               orderId: paymentOrder.orderId,
+               amount: paymentOrder.amount,
+               currency: paymentOrder.currency,
+               keyId: process.env.RAZORPAY_KEY_ID!,
+            },
+         };
 
 
       } catch (error: unknown) {
@@ -162,6 +187,60 @@ export class BookingService implements IBookingService {
          throw error;
       }
    }
+
+
+
+   async verifyAndConfirmPayment(userId: string, dto: VerifyPaymentRequestDTO): Promise<BookingResponseDTO> {
+      try {
+         const { paymentOrderId, paymentId, signature } = dto;
+
+         const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(paymentOrderId);
+         if (!booking) {
+            throw createHttpError(HttpStatus.NOT_FOUND, "Booking not found for this order");
+         }
+         if (booking.userRef !== userId) {
+            throw createHttpError(HttpStatus.FORBIDDEN, "Unauthorized");
+         }
+         if (booking.bookingStatus !== BOOKING_STATUS.PENDING) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, "This booking has already been processed");
+         }
+
+         const isValidSignature = this._paymentService.verifyPaymentSignature(paymentOrderId, paymentId, signature);
+
+         if (!isValidSignature) {
+            throw createHttpError(HttpStatus.BAD_REQUEST, "Payment verification failed — invalid signature 2");
+         }
+
+         const qrToken = this._ticketService.generateQrToken({
+            userId,
+            eventId: booking.eventRef.toString(),
+            bookingId: booking.bookingId.toString(), 
+         });
+
+         const confirmBookingInput: ConfirmBookingInput = mapConfirmBookingInput(paymentId, signature, qrToken);
+
+         await this._bookingRepository.confirmBooking(booking.bookingId, confirmBookingInput);
+
+         await this._eventRepository.incrementEventTicketStats(
+            booking.eventRef.toString(),
+            booking.quantity,
+            booking.totalAmount
+         );
+
+         const confirmedBooking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(booking.bookingId);
+         if (!confirmedBooking) {
+            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Could not retrieve confirmed booking");
+         }
+
+         return mapBookingEntityToResponseDTO(confirmedBooking);
+
+      } catch (error: unknown) {
+         const msg = error instanceof Error ? error.message : "Unknown error";
+         console.error("Error in BookingService.verifyAndConfirmPayment:", msg);
+         throw error;
+      }
+   }
+
 
 
    async getMyBookings(
@@ -345,7 +424,7 @@ export class BookingService implements IBookingService {
       // ── Cancel Booking ────────────────────────────────────────────
       const cancellationInput: BookingCancelInput = {
          bookingStatus:  BOOKING_STATUS.CANCELLED,
-         paymentStatus:  refundAmount > 0 ? PAYMENT_STATUS.REFUNDED : PAYMENT_STATUS.PAID,
+         paymentStatus:  refundAmount > 0 ? PAYMENT_STATUS.REFUNDED : PAYMENT_STATUS.COMPLETED,
          cancellation: {
             cancelledAt: new Date(),
             reason: cancelReason,

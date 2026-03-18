@@ -1,8 +1,9 @@
 // backend/src/types/booking.types.ts
 
 import { BookingEntityPopulated } from "@/entities/booking.entity";
+import { EventEntity } from "@/entities/event.entity";
 import { IPagination } from "@/types/common.types";
-import { EVENT_FORMAT } from "@/types/event.types";
+import { EVENT_CATEGORY, EVENT_FORMAT } from "@/types/event.types";
 import { Types } from "mongoose";
 
 
@@ -23,10 +24,10 @@ export enum BOOKING_STATUS {
 // PAYMENT_STATUS = Razorpay transaction state (payment-provider-facing).
 // They move independently — booking can be CANCELLED while refund is still in transit.
 export enum PAYMENT_STATUS {
-  PENDING  = "pending",
-  PAID     = "paid",
-  FAILED   = "failed",
-  REFUNDED = "refunded",
+  PENDING   = "pending",
+  COMPLETED = "completed",
+  FAILED    = "failed",
+  REFUNDED  = "refunded",
 }
 
 // ─── Booking Flow ─────────────────────────────────────────────────────────────
@@ -132,7 +133,7 @@ export interface IBookingPopulatedUserAndEvent extends Omit<IBookingModel, "even
   eventRef: {
     _id:           Types.ObjectId;
     title:         string;
-    category:      string;
+    category:      EVENT_CATEGORY;
     posterUrl:     string; 
     startDateTime: Date;
     endDateTime:   Date;
@@ -184,4 +185,14 @@ export interface BookingFilterQuery {
 export interface GetBookingsResult {
   bookings:   BookingEntityPopulated[];
   pagination: IPagination;
+}
+
+
+export interface MapBookingParams {
+  userId: string;
+  event: EventEntity;
+  newBookingQty: number;
+  ticketNo: string;
+  qrToken?: string;        // Only passed for free events
+  paymentOrderId?: string; // Only passed for paid events
 }

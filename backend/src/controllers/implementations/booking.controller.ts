@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
-import { BookingOrderRequestDTO, GetBookingsResponseDTO, InitiateBookingResponseDTO, VerifyPaymentRequestDTO } from "@/dtos/booking.dto";
+import { BookingOrderRequestDTO, BookingResponseDTO, GetBookingsResponseDTO, InitiateBookingResponseDTO, VerifyPaymentRequestDTO } from "@/dtos/booking.dto";
 import { BOOKING_STATUS, GetBookingsFilter, BookingSortField, ALLOWED_BOOKING_SORT_FIELDS } from "@/types/booking.types";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { IBookingController } from "@/controllers/interfaces/IBookingController";
@@ -37,6 +37,28 @@ export class BookingController implements IBookingController{
       next(error);
     }
   }
+
+  
+  async verifyAndConfirmPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user.userId;
+      const dto: VerifyPaymentRequestDTO = req.body;
+
+      const populatedBooking: BookingResponseDTO = await this._bookingService.verifyAndConfirmPayment(userId, dto);
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: "Payment verified. Booking confirmed!",
+        data: populatedBooking,
+      });
+
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      console.error("Error in BookingController.verifyAndConfirmPayment:", msg);
+      next(error);
+    }
+  }
+
 
 
   async getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -1,44 +1,54 @@
 // backend/src/mappers/booking.mapper.ts
 
-import { BookingEntity, BookingEntityPopulated, CreateBookingInput } from "@/entities/booking.entity";
+import { BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
 import { BookingResponseDTO } from "@/dtos/booking.dto";
-import { BOOKING_STATUS, IBookingModel, IBookingPopulatedUserAndEvent, PAYMENT_STATUS } from "@/types/booking.types";
-import { EventEntity } from "@/entities/event.entity";
+import { BOOKING_STATUS, IBookingModel, IBookingPopulatedUserAndEvent, MapBookingParams, PAYMENT_STATUS } from "@/types/booking.types";
 import { Types } from "mongoose";
-import { EVENT_FORMAT } from "@/types/event.types";
+import { EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
 
 
 
 
 // ─── DTO → Input ───────────────────────────────────────────────────────────
-export function mapBookingOrderDtoToInput(
-  userId: string,
-  event: EventEntity,
-  newBookingQty: number,
-  ticketNo: string,
-  eventFormat: EVENT_FORMAT,
-  qrToken: string,
-  paymentOrderId: string = `free_${userId}_${Date.now()}`,
-  paymentStatus: PAYMENT_STATUS = PAYMENT_STATUS.PAID,
-  bookingStatus: BOOKING_STATUS = BOOKING_STATUS.CONFIRMED
-): CreateBookingInput {
+export function mapBookingOrderDtoToInput(params: MapBookingParams): CreateBookingInput {
+
+  const { userId, event, newBookingQty, ticketNo, qrToken, paymentOrderId } = params;
+  const isFree = event.ticketType === TICKET_TYPE.FREE;
 
   return {
     userRef: new Types.ObjectId(userId),
     eventRef: new Types.ObjectId(event.id),
     quantity: newBookingQty,
     ticketNo: ticketNo,
-    eventFormat: eventFormat,
+    eventFormat: event.format,
     ticketRate: event.ticketPrice,
     totalAmount: event.ticketPrice * newBookingQty,
-    bookingStatus,
+    bookingStatus: isFree ? BOOKING_STATUS.CONFIRMED : BOOKING_STATUS.PENDING,
+    qrToken: isFree && qrToken ? qrToken : "",  // No QR token for paid events, generated after payment success
+    remainingEntries: newBookingQty,
     payment: {
-      orderId: paymentOrderId,
-      status: paymentStatus,
+      orderId: isFree ? `free_${userId}_${Date.now()}` : paymentOrderId!,
+      status: isFree ? PAYMENT_STATUS.COMPLETED : PAYMENT_STATUS.PENDING,
+      ...(isFree && { paidAt: new Date() }),
+    },
+  };
+}
+
+// for paid event booking confirmation
+export function mapConfirmBookingInput(
+  paymentId: string,
+  signature: string,
+  qrToken: string
+): ConfirmBookingInput {
+  return {
+    payment: {
+      paymentId,
+      signature,
+      status: PAYMENT_STATUS.COMPLETED,
       paidAt: new Date(),
     },
     qrToken,
-    remainingEntries: newBookingQty,
+    bookingStatus: BOOKING_STATUS.CONFIRMED,
   };
 }
 
@@ -53,7 +63,6 @@ function mapBookingBase(model: {
   quantity: number
   ticketRate: number
   totalAmount: number
-  eventFormat: EVENT_FORMAT
   bookingStatus: BOOKING_STATUS
   payment: IBookingModel["payment"]
   qrToken: string
@@ -73,7 +82,6 @@ function mapBookingBase(model: {
     quantity: model.quantity,
     ticketRate: model.ticketRate,
     totalAmount: model.totalAmount,
-    eventFormat: model.eventFormat,
     bookingStatus: model.bookingStatus,
     payment: model.payment,
     qrToken: model.qrToken,
@@ -87,55 +95,6 @@ function mapBookingBase(model: {
   };
 }
 
-// export function mapBookingModelToEntity(model: IBookingModel): BookingEntity {
-//   return {
-//     bookingId:    model._id.toString(),
-//     userRef:      model.userRef.toString(),
-//     eventRef:     model.eventRef.toString(),
-
-//     ticketNo:    model.ticketNo,
-//     quantity:    model.quantity,
-//     ticketRate:  model.ticketRate,
-//     totalAmount: model.totalAmount,
-
-//     eventFormat:   model.eventFormat,
-//     bookingStatus: model.bookingStatus,
-
-//     payment: {
-//       orderId:    model.payment.orderId,
-//       paymentId:  model.payment.paymentId,
-//       signature:  model.payment.signature,
-//       status:             model.payment.status,
-//       paidAt:             model.payment.paidAt,
-//     },
-
-//     qrToken:          model.qrToken,
-//     remainingEntries: model.remainingEntries,
-//     checkedInAt:      model.checkedInAt,
-
-//     cancellation: model.cancellation
-//       ? {
-//           reason:      model.cancellation.reason,
-//           cancelledAt: model.cancellation.cancelledAt,
-//           refundId:    model.cancellation.refundId,
-//           refundedAt:  model.cancellation.refundedAt,
-//         }
-//       : undefined,
-
-//     majorEventChange: model.majorEventChange
-//       ? {
-//           changedAt:  model.majorEventChange.changedAt,
-//           changeType: model.majorEventChange.changeType,
-//           summary:    model.majorEventChange.summary,
-//         }
-//       : undefined,
-
-//     refundGracePeriodEnd: model.refundGracePeriodEnd,
-
-//     createdAt: model.createdAt,
-//     updatedAt: model.updatedAt,
-//   };
-// }
 
 export function mapBookingModelToEntity(
   model: IBookingModel
@@ -145,33 +104,6 @@ export function mapBookingModelToEntity(
 
 
 // ─── Populated Model → Populated Entity ──────────────────────────────────────
-// export function mapPopulatedBookingModelToEntity(
-//   model: IBookingPopulatedUserAndEvent
-// ): BookingEntityPopulated {
-//   // const base = mapBookingModelToEntity(model as unknown as IBookingModel);
-//   const base = mapBookingModelToEntity(model);
-//   const { eventRef: _, ...rest } = base;
-
-//   return {
-//     ...rest,
-//     event: {
-//       eventId:       model.eventRef._id.toString(),
-//       title:         model.eventRef.title,
-//       category:      model.eventRef.category,
-//       posterUrl:     model.eventRef.posterUrl,
-//       startDateTime: model.eventRef.startDateTime,
-//       endDateTime:   model.eventRef.endDateTime,
-//       format:        model.eventRef.format,
-//       locationName:  model.eventRef.locationName,
-//       onlineLink:    model.eventRef.onlineLink,
-//     },
-//     user: {
-//       userId: model.userRef._id.toString(),
-//       name: model.userRef.name,
-//       email: model.userRef.email,
-//     }
-//   };
-// }
 export function mapPopulatedBookingModelToEntity(
   model: IBookingPopulatedUserAndEvent
 ): BookingEntityPopulated {
@@ -233,7 +165,6 @@ export function mapBookingEntityToResponseDTO(
     quantity:         entity.quantity,
     ticketRate:       entity.ticketRate,
     totalAmount:      entity.totalAmount,
-    eventFormat:      entity.eventFormat,
     bookingStatus:    entity.bookingStatus,
     payment: {
       orderId:   entity.payment.orderId,

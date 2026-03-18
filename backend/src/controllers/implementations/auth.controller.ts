@@ -32,14 +32,12 @@ export class AuthController implements IAuthController {
     
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // console.log('email and password in authController.signIn:', req.body);
             const signInDto: SignInRequestDto = req.body;
             winstonLogger.info("Auth sign-in request received", {
                 email: signInDto.email,
             });
 
             const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
-            // console.log('user in authController.signIn:', safeUser);
             winstonLogger.info("User signed in successfully", {
                 userId: safeUser.userId,
                 role: safeUser.role,
@@ -60,6 +58,7 @@ export class AuthController implements IAuthController {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
             winstonLogger.error("Error in AuthController.signIn", {
                 error: msg,
+                stack: err instanceof Error ? err.stack : undefined 
             });
             next(err);
         };
@@ -69,7 +68,6 @@ export class AuthController implements IAuthController {
     async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userEmail = await this._registrationService.signUp(req.body);
-            // console.log('temporary user email in authController.signUp:', userEmail);
 
             res.status(HttpStatus.OK).json({
                 message: `${HttpResponse.OTP_SENT} ${HttpResponse.VERIFY_ACCOUNT}`,
@@ -78,7 +76,10 @@ export class AuthController implements IAuthController {
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in AuthController.signUp:', msg);
+            winstonLogger.error("Error in AuthController.signUp", { 
+                error: msg,
+                stack: err instanceof Error ? err.stack : undefined 
+            });
             next(err);
         };
 
@@ -88,7 +89,6 @@ export class AuthController implements IAuthController {
     async requestPasswordReset(req: Request, res: Response, next: NextFunction): Promise<void>{
         try {
             const email: string = req.body.email;
-            console.log('email in authController.requestPasswordReset:', email);
             const userEmail: string = await this._recoveryService.requestPasswordReset(email);
 
             res.status(HttpStatus.OK).json({
@@ -108,7 +108,6 @@ export class AuthController implements IAuthController {
     async validateResetLink(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const token: string = req.params.token;
-            console.log('token in authController.validateResetLink:', token);
 
             const isValid: boolean = await this._recoveryService.validateResetLink(token);
 
@@ -126,11 +125,9 @@ export class AuthController implements IAuthController {
 
     async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { token, newPassword } = req.body;
-            const resetPasswordDto: ResetPasswordDto = req.body;
+            const { token, newPassword }: ResetPasswordDto = req.body;
             
-            console.log('token and newPassword in authController.resetPassword:', req.body);
-            await this._recoveryService.resetPassword(resetPasswordDto);
+            await this._recoveryService.resetPassword({ token, newPassword });
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.PASSWORD_RESET_SUCCESS,
@@ -195,7 +192,6 @@ export class AuthController implements IAuthController {
     async verifyAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { email, otpCode } = req.body;
-            console.log('email and otp in authController.verifyAccount:', req.body);
 
             if (!email || !otpCode) {
                 res.status(HttpStatus.BAD_REQUEST).json({
@@ -275,17 +271,13 @@ export class AuthController implements IAuthController {
         try {            
             const refreshToken = req.cookies.refreshToken;
 
-            // if refresh token present, best-effort - revoke it (ignore errors)
             if (refreshToken) {
                 await this._sessionService.revokeRefreshToken(refreshToken).catch(() => {});
             }
 
-            // Always clear the cookie, regardless of token state
             clearRefreshTokenCookie(res);
             
-            // Respond logout with success
             res.status(HttpStatus.OK).json({message: HttpResponse.LOGOUT_SUCCESS});
-
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
@@ -299,7 +291,6 @@ export class AuthController implements IAuthController {
     async getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?.userId;
-            console.log('userId in authController.getAuthUser:', userId);
 
             if (!userId) {
                 console.log('Missing userId in authController.getAuthUser');
