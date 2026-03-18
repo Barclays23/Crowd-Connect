@@ -42,7 +42,7 @@ const isDatabaseError = (err: unknown): boolean => {
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
    // console.error('❌❌❌ errorHandler error --------------------------:', err);
 
-   winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware :', {
+   winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware ❌❌:', {
       error: err instanceof Error ? err.message : String(err),
       stack: err instanceof Error ? err.stack : undefined,
       path: req.originalUrl, //  Log WHICH route failed!

@@ -55,11 +55,11 @@ export class AuthController implements IAuthController {
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            winstonLogger.error("Error in AuthController.signIn", {
-                error: msg,
-                stack: err instanceof Error ? err.stack : undefined 
-            });
+            // const msg = err instanceof Error ? err.message : 'Unknown Error';
+            // winstonLogger.error("Error in AuthController.signIn", {
+            //     error: msg,
+            //     stack: err instanceof Error ? err.stack : undefined 
+            // });
             next(err);
         };
     }
@@ -75,11 +75,11 @@ export class AuthController implements IAuthController {
             });
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            winstonLogger.error("Error in AuthController.signUp", { 
-                error: msg,
-                stack: err instanceof Error ? err.stack : undefined 
-            });
+            // const msg = err instanceof Error ? err.message : 'Unknown Error';
+            // winstonLogger.error("Error in AuthController.signUp", { 
+            //     error: msg,
+            //     stack: err instanceof Error ? err.stack : undefined 
+            // });
             next(err);
         };
 
