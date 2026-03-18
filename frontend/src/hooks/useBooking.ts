@@ -6,6 +6,7 @@ import type { IBookingState, InitiateBookingResponse } from "@/types/booking.typ
 import type { RazorpayPaymentFailedResponse, RazorpayPaymentSuccessResponse } from "@/types/razorpay.types";
 import { loadRazorpayScript } from "@/utils/razorpay.utils";
 import { toast } from "react-toastify";
+import { logger } from "@/utils/logger";
 
 
 declare global {
@@ -54,7 +55,8 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
         try {
             // Step 1 — call /bookings/initiate
             const response: InitiateBookingResponse = await bookingServices.initiateBooking(eventId, selectedQuantity);
-            console.log('response from initiateBooking :', response)
+            // console.log('response from initiateBooking :', response);
+            logger.info("response from initiateBooking :", response);
 
             if (response.isFree) {
                 setConfirmedBooking(response.populatedBooking);

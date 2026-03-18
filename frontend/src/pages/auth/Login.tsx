@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { LoginPayload } from '@/types/auth.types';
+import { logger } from '@/utils/logger';
 
 
 
@@ -48,6 +49,7 @@ function Login() {
         setIsLoading(true);
         const response = await login(formData);
         // console.log('response in handleLogin: ', response);
+        logger.info("response from handleLogin :", response);
 
         toast.success(response.message);
 
@@ -60,7 +62,7 @@ function Login() {
         );  // Redirect to original path or home after successful login
 
       } catch (err: unknown) {
-        console.error('Error in handleLogin:', err);
+        logger.error('Error in handleLogin:', err);
         const errorMessage = getApiErrorMessage(err);
         if (errorMessage) toast.error(errorMessage);
 

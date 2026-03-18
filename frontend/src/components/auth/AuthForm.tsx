@@ -84,7 +84,7 @@ export function AuthForm(props: AuthFormProps) {
 
   // ---- form submit -------------------------------------------------
   const onLoginValid: SubmitHandler<LoginPayload> = async (data) => {
-    console.log('Login Form Submitted : ', data)
+    // console.log('Login Form Submitted : ', data)
 
     if (!onSubmit || mode !== "login") return;
 
