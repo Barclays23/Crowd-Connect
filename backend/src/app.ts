@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
-// import morgan from 'morgan';
+
 
 import { errorHandler } from '@/middlewares/error.middleware';
 
@@ -12,6 +12,7 @@ import userRouter from '@/routes/user.routes';
 import hostRouter from '@/routes/host.routes';
 import eventRouter from '@/routes/event.routes';
 import bookingRouter from '@/routes/booking.routes';
+import morganMiddleware from '@/config/morgan.config';
 
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morganMiddleware);
 // app.use(helmet());
 // app.use(morgan('dev'));
 

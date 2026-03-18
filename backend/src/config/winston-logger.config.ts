@@ -1,4 +1,4 @@
-// backend/src/config/logger.ts
+// backend/src/config/winston-logger.config.ts
 
 import winston from "winston";
 import "winston-daily-rotate-file";

@@ -15,7 +15,7 @@ import {
 import { IAuthRegistrationService } from "@/services/auth-services/interfaces/IAuthRegistration";
 import { IAuthSessionService } from "@/services/auth-services/interfaces/IAuthSession";
 import { IAuthRecoveryService } from "@/services/auth-services/interfaces/IAuthRecovery";
-import winstonLogger from "@/config/logger";
+import winstonLogger from "@/config/winston-logger.config";
 
 
 
@@ -33,9 +33,9 @@ export class AuthController implements IAuthController {
     async signIn(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const signInDto: SignInRequestDto = req.body;
-            winstonLogger.info("Auth sign-in request received", {
-                email: signInDto.email,
-            });
+            // winstonLogger.info("Auth sign-in request received", {
+            //     email: signInDto.email,
+            // });
 
             const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
             winstonLogger.info("User signed in successfully", {

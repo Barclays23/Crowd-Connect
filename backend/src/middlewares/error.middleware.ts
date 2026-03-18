@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { HttpError } from '@/utils/httpError.utils';
-import winstonLogger from '@/config/logger';
+import winstonLogger from '@/config/winston-logger.config';
 
 
 function hasErrorCode(err: unknown): err is { code: number } {
@@ -42,7 +42,7 @@ const isDatabaseError = (err: unknown): boolean => {
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
    // console.error('❌❌❌ errorHandler error --------------------------:', err);
 
-   winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware ❌❌:', {
+   winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware: ', {
       error: err instanceof Error ? err.message : String(err),
       stack: err instanceof Error ? err.stack : undefined,
       path: req.originalUrl, //  Log WHICH route failed!
@@ -82,8 +82,8 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
          : 'Internal Server Error';
    }
 
-   // console.log('🔥 Final errorHandler error message to send frontend: ', message);
-   winstonLogger.debug('🔥 Final error message sent to frontend', { message, status });
+   console.log('🔥 Final errorHandler error message to send frontend: ', message);
+   // winstonLogger.debug('🔥 Final error message sent to frontend', { message, status });
 
    res.status(status).json({
       success: false,
