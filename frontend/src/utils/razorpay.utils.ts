@@ -1,6 +1,6 @@
 // frontend/src/utils/razorpay.ts
 
-export const RAZORPAY_SCRIPT_ID = "rzp-sdk-script";
+export const RAZORPAY_SCRIPT_ID = "razorpay-checkout-sdk-script";
 
 export function loadRazorpayScript(): Promise<boolean> {
    return new Promise((resolve) => {

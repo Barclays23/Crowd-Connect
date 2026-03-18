@@ -107,7 +107,7 @@ export class AuthController implements IAuthController {
 
     async validateResetLink(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const token: string = req.params.token;
+            const token = req.params.token as string;
 
             const isValid: boolean = await this._recoveryService.validateResetLink(token);
 
