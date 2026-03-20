@@ -102,11 +102,8 @@ export class HostController implements IHostController {
 
     async manageHostStatus (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
-            const hostId = req.params?.hostId;
+            const hostId = req.params?.hostId as string;
             const {action, reason} = req.body;
-
-            console.log('manageHostStatus body: ', req.body);
-            console.log("hostId:", hostId);
 
             const updatedHost: HostStatusUpdateResponseDto = await this._hostService.manageHostStatus({hostId, action, reason});
             
@@ -132,7 +129,7 @@ export class HostController implements IHostController {
 
     async updateHostByAdmin (req: Request, res: Response, next: NextFunction): Promise<void>{
         try {
-            const hostId: string = req.params?.hostId;
+            const hostId = req.params?.hostId as string;
             const updateDto: HostUpdateRequestDto = req.body;
             const documentFile: Express.Multer.File | undefined = req.file;
 

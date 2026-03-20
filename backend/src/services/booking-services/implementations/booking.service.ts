@@ -28,6 +28,7 @@ import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
 import { Types } from "mongoose";
+import { UserRole } from "@/constants/roles-and-statuses";
 
 
 
@@ -287,7 +288,7 @@ export class BookingService implements IBookingService {
    async getBookingById(
       bookingId:        string,
       requestingUserId: string,
-      role:             "user" | "host" | "admin"
+      role:             UserRole
    ): Promise<BookingResponseDTO> {
       try {
          const booking = await this._bookingRepository.getBookingById(bookingId);

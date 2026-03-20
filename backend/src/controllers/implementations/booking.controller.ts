@@ -8,6 +8,7 @@ import { HttpStatus } from "@/constants/statusCodes.constants";
 import { IBookingController } from "@/controllers/interfaces/IBookingController";
 import { EVENT_FORMAT } from "@/types/event.types";
 import { BOOKING_MESSAGES } from "@/constants/booking.constants";
+import { UserRole } from "@/constants/roles-and-statuses";
 
 
 
@@ -158,8 +159,8 @@ export class BookingController implements IBookingController{
   async getBookingById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const requestingUserId = req.user.userId;
-      const role             = req.user.role as "user" | "host" | "admin";
-      const { bookingId }    = req.params;
+      const role             = req.user.role as UserRole;
+      const bookingId        = req.params.bookingId as string;
 
       const booking = await this._bookingService.getBookingById(bookingId, requestingUserId, role);
 
@@ -177,8 +178,8 @@ export class BookingController implements IBookingController{
 
   async cancelBookingByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId    = req.user.userId;
-      const { bookingId } = req.params;
+      const userId    = req.user.userId as string;
+      const bookingId = req.params.bookingId as string;
       const { cancelReason } = req.body;
       
       await this._bookingService.cancelBookingByUser(bookingId, userId, cancelReason);
@@ -198,7 +199,7 @@ export class BookingController implements IBookingController{
 
   async cancelBookingByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { bookingId } = req.params;
+      const bookingId = req.params.bookingId as string;
       const { cancelReason } = req.body;
       
       await this._bookingService.cancelBookingByAuthority(bookingId, cancelReason);

@@ -1,5 +1,6 @@
 // backend/src/services/booking-services/interfaces/IBookingService.ts
 
+import { UserRole } from "@/constants/roles-and-statuses";
 import {
   BookingResponseDTO,
   BookingOrderRequestDTO,
@@ -26,7 +27,7 @@ export interface IBookingService {
 
   getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;
 
-  getBookingById(bookingId: string, requestingUserId: string, role: "user" | "host" | "admin"): Promise<BookingResponseDTO>;
+  getBookingById(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO>;
 
   cancelBookingByUser(bookingId: string, userId: string, cancelReason: string): Promise<void>;
 

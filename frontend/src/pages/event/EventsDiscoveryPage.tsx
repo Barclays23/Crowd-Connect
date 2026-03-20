@@ -102,7 +102,7 @@ function EventsDiscoveryPage() {
   const [sort, setSort] = useState("upcoming");
 
   // Pagination
-  const itemsPerPage = 12;
+  const itemsPerPage = 1;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalEvents, setTotalEvents] = useState(0);
   const [totalPages, setTotalPages] = useState(1);

@@ -53,7 +53,7 @@ export class EventController implements IEventController {
             const body = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentUserId: string = req.user.userId;
-            const eventId: string = req.params.eventId;
+            const eventId = req.params.eventId as string;
             console.log('body :', body);
             console.log('imageFile :', imageFile);
             console.log('currentUserId :', currentUserId);
@@ -86,7 +86,7 @@ export class EventController implements IEventController {
         try {
             const body = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
-            const eventId: string = req.params.eventId;
+            const eventId = req.params.eventId as string;
             console.log('body :', body);
             console.log('imageFile :', imageFile);
             console.log('eventId :', eventId);
@@ -160,9 +160,9 @@ export class EventController implements IEventController {
 
     async cancelEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const { eventId } = req.params;
             const { cancelReason } = req.body;
-            const userId = req.user.userId; 
+            const eventId = req.params.eventId as string; 
+            const userId = req.user.userId as string; 
 
             const updatedStatus = await this._eventServices.cancelEvent({
                 eventId,
@@ -186,7 +186,7 @@ export class EventController implements IEventController {
 
     async suspendEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const eventId: string = req.params.eventId;
+            const eventId = req.params.eventId as string;
             const suspendReason: string = req.body.reason;
             console.log('eventId :', eventId);
             console.log('suspendReason :', suspendReason);
@@ -209,7 +209,7 @@ export class EventController implements IEventController {
 
     async publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>{
         try {            
-            const { eventId } = req.params;
+            const eventId = req.params.eventId as string;
             const userId = req.user.userId;
     
             await this._eventServices.publishEvent(eventId, userId);
@@ -229,7 +229,7 @@ export class EventController implements IEventController {
 
     async deleteEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const eventId = req.params.eventId;
+            const eventId = req.params.eventId as string;
 
             await this._eventServices.deleteEvent(eventId);
 
@@ -320,7 +320,7 @@ export class EventController implements IEventController {
 
     async getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const eventId: string = req.params.eventId;
+            const eventId = req.params.eventId as string;
 
             const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
 

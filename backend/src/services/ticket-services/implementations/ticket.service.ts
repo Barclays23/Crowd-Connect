@@ -106,14 +106,14 @@ export class TicketService implements ITicketService {
             // Mark as 'ATTENDED' if all tickets are used [cite: 316]
             const newBookingStatus = newRemainingEntries === 0 ? BOOKING_STATUS.ATTENDED : booking.bookingStatus;
 
-            await this._bookingRepository.updateBookingEntry(booking.bookingId, {
-                remainingEntries: newRemainingEntries,
-                bookingStatus: newBookingStatus,
-                ...(isFirstScan && { checkedInAt: new Date() }) // Stamp first entry time [cite: 316]
-            });
+            // await this._bookingRepository.updateBookingEntry(booking.bookingId, {
+            //     remainingEntries: newRemainingEntries,
+            //     bookingStatus: newBookingStatus,
+            //     ...(isFirstScan && { checkedInAt: new Date() }) // Stamp first entry time [cite: 316]
+            // });
 
             // Increment event total check-ins [cite: 142, 399]
-            await this._eventRepository.incrementCheckedInCount(event.id.toString(), scanQuantity);
+            // await this._eventRepository.incrementCheckedInCount(event.id.toString(), scanQuantity);
 
             // 7. Return Result
             return {

@@ -174,7 +174,7 @@ export class UserController implements IUserController {
             // console.log('✅ body received in userController.editUserByAdmin:', req.body);
             // console.log('✅ file received in userController.editUserByAdmin:', req.file);
 
-            const targetUserId: string = req.params.id;
+            const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
             const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -205,7 +205,7 @@ export class UserController implements IUserController {
 
     async toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const targetUserId: string = req.params.id;
+            const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
 
             const updatedStatus: UserStatus = await this._userManagementServices.toggleUserBlock({ targetUserId, currentAdminId });
@@ -233,7 +233,7 @@ export class UserController implements IUserController {
 
     async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const targetUserId: string = req.params.id;
+            const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
 
             await this._userManagementServices.deleteUser({ targetUserId, currentAdminId });
