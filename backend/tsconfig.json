@@ -3,8 +3,9 @@
   "compilerOptions": {
     // "composite": true,
     "target": "ES2020",
-    // "module": "CommonJS",   (commented for render deployment)    // Compiles imports to 'require'  // Changed from NodeNext
+    "module": "CommonJS",       // Compiles imports to 'require'  // Changed from NodeNext
     "moduleResolution": "Node", // Allow imports without .js      // Changed from NodeNext
+    // deleted "type": "module" from backend package.json file for render deployment
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
