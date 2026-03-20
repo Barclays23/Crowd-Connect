@@ -32,12 +32,11 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
    const handleUpdateHostDetails = async () => {
       try {
          setIsUpdatingHostDetails(true);
-         const updateData = {
-            organizationName: editFormData.organizationName.trim() || null,
-            registrationNumber: editFormData.registrationNumber.trim() || null,
-            businessAddress: editFormData.businessAddress.trim() || null,
-         };
-         // await hostServices.updateHostDetails(updateData);  // or 
+         const updateData = new FormData();
+         updateData.append('organizationName', editFormData.organizationName.trim() || '');
+         updateData.append('registrationNumber', editFormData.registrationNumber.trim() || '');
+         updateData.append('businessAddress', editFormData.businessAddress.trim() || '');
+
          await hostServices.updateHostDetailsByHost(updateData);
          setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
          setEditingField(null);

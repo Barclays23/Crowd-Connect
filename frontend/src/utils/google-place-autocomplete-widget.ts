@@ -40,15 +40,17 @@ export function setupGooglePlaceAutocompleteWidget(
             await google.maps.importLibrary("places");
 
             const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
-                includedRegionCodes: options.includedRegionCodes ?? ["in"],
+                componentRestrictions: { country: options.includedRegionCodes ?? ["in"] },
                 // Comment out or customize types based on needs
                 // includedPrimaryTypes: options.includedPrimaryTypes ?? ["geocode"],
                 // includedPrimaryTypes: ["geocode", "(cities)"],
                 // includedPrimaryTypes: ["(cities)"],
                 // includedPrimaryTypes: ["geocode"],
-                placeholder: options.placeholder ?? "Search for a city or venue...",
+                // placeholder: options.placeholder ?? "Search for a city or venue...",
                 locationBias: options.locationBias,
             });
+
+            autocompleteElement.setAttribute("placeholder", options.placeholder ?? "Search for a city or venue...");
 
             const container = containerRef.current;
             if (!container) {
