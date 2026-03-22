@@ -1,7 +1,7 @@
 // frontend/src/components/user/UserPersonalProfile.tsx
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { Camera, CheckCircle, Edit, Loader2 } from 'lucide-react';
+import { Camera, CheckCircle, Edit, KeyRound, Loader2 } from 'lucide-react';
 import { userServices, type UserBasicInfo } from '@/services/userServices';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { UserState } from '@/types/user.types';
@@ -15,6 +15,7 @@ import { ACCEPTED_IMAGE_TYPES, emailBase, MAX_IMAGE_SIZE, profilePicUploadSchema
 import { FieldError } from '@/components/ui/FieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import ChangePassword from '@/components/auth/ChangePassword';
 
 
 
@@ -35,6 +36,8 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
    const [isEditingEmail, setIsEditingEmail] = useState(false);
    const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+
+   const [showChangePassword, setShowChangePassword] = useState(false);
 
    const [emailError, setEmailError] = useState<string | undefined>();
    const [basicInfoErrors, setBasicInfoErrors] = useState<{
@@ -499,6 +502,38 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                   </div>
                </div>
             </div>
+
+            {/* ── Change Password ──────────────────────────────────────── */}
+            {!showChangePassword ? (
+               <div className="flex items-center justify-between
+                  bg-(--bg-tertiary) rounded-2xl
+                  border border-(--card-border)
+                  px-7 py-5 shadow-sm"
+               >
+                  <div className="flex items-center gap-3">
+                     <div className="w-9 h-9 rounded-xl flex items-center justify-center
+                        bg-(--brand-primary)/10 text-(--brand-primary)"
+                     >
+                        <KeyRound size={18} />
+                     </div>
+                     <div>
+                        <p className="font-medium text-(--text-primary)">Password</p>
+                        <p className="text-sm text-(--text-secondary)">
+                           Update your account password
+                        </p>
+                     </div>
+                  </div>
+ 
+                  <Button
+                     variant="outline"
+                     onClick={() => setShowChangePassword(true)}
+                  >
+                     Change Password
+                  </Button>
+               </div>
+            ) : (
+               <ChangePassword onCancel={() => setShowChangePassword(false)} />
+            )}
          </div>
       </>
    );

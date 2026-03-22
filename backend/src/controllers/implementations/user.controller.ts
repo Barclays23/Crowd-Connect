@@ -3,12 +3,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { IUserController } from '../interfaces/IUserController';
 import { HttpStatus } from '@/constants/statusCodes.constants';
-import { HttpResponse } from '@/constants/responseMessages.constants';
+import { AuthMessages, HttpResponse } from '@/constants/responseMessages.constants';
 import { GetUsersFilter, GetUsersResult } from '@/types/user.types';
 import { CreateUserRequestDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '@/dtos/user.dto';
 import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
 import { IUserProfileService } from '@/services/user-services/interfaces/IUserProfileService';
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
+import { IPasswordService } from '@/services/password-services/interfaces/IPasswordService';
 
 
 
@@ -16,7 +17,8 @@ import { IUserManagementService } from '@/services/user-services/interfaces/IUse
 export class UserController implements IUserController {
     constructor(
         private _userProfileServices: IUserProfileService,
-        private _userManagementServices: IUserManagementService
+        private _userManagementServices: IUserManagementService,
+        private _passwordService: IPasswordService,
     ) {}
 
 
@@ -44,8 +46,6 @@ export class UserController implements IUserController {
             const basicInfoDto: UserBasicInfoUpdateDTO = req.body;
             const userId: string = req.user.userId;
 
-            console.log('editUserBasicInfo body: ', req.body)
-
             const updatedUser: UserProfileResponseDto = await this._userProfileServices.editUserBasicInfo(userId, basicInfoDto);
 
             const updatedUserBasicInfo = {
@@ -63,6 +63,30 @@ export class UserController implements IUserController {
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
             console.error('Error in UserController.editUserBasicInfo:', msg);
+            next(err);
+        };
+    }
+
+
+
+    async changeUserPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const {currentPassword, newPassword} = req.body;
+            const userEmail: string = req.user.email;
+
+            console.log('changeUserPassword body: ', req.body)
+
+            await this._passwordService.changeUserPassword(userEmail, {currentPassword, newPassword});
+            
+            res.status(HttpStatus.OK).json({
+                success: true,
+                message: AuthMessages.PASSWORD_CHANGE_SUCCESS
+            });
+
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in UserController.changeUserPassword:', msg);
             next(err);
         };
     }

@@ -148,7 +148,9 @@ export enum AuthMessages {
     PASSWORD_RESET_FAILED = "Failed to reset password. Please try again.",
     RESET_LINK_INVALID_OR_EXPIRED = "This password reset link is invalid or has expired. Please request a new one.",
     PASSWORD_CHANGE_SUCCESS = "Password changed successfully",
+    PASSWORD_CHANGE_FAILED = "Failed to update password",
     PASSWORD_INCORRECT = "Incorrect password, try again",
+    PASSWORD_CURRENT_INCORRECT = "Current password is incorrect",
     RESET_PASS_LINK = "Password reset link has been sent to your email",
     
     // Tokens & Sessions

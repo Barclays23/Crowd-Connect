@@ -10,6 +10,9 @@ import type { UserState } from '@/types/user.types';
 import UserPersonalProfile from './UserPersonalProfile';
 import UserHostProfile from './UserHostProfile';
 
+
+
+
 const UserProfile = () => {
   const { user: authUser, setUser, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<UserState | null>(null);

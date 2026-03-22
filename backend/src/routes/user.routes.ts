@@ -7,6 +7,9 @@ import { UserProfileService } from "@/services/user-services/implementations/use
 import { UserManagementService } from "@/services/user-services/implementations/userManagement.service";
 import { USER_ROUTES } from "@/constants/routes.constants";
 import { UserRole } from "@/constants/roles-and-statuses";
+import { PasswordService } from "@/services/password-services/implementations/password.service";
+import { validateBody } from "@/middlewares/validate.middleware";
+import { changePasswordSchema } from "@/schemas/user.schema";
 
 
 
@@ -18,12 +21,14 @@ const userRepo = new UserRepository();
 // SERVICES
 const userProfileServices = new UserProfileService(userRepo);
 const userManagementServices = new UserManagementService(userRepo);
+const passwordService = new PasswordService(userRepo);
 
 
 // CONTROLLER
 const userController = new UserController(
     userProfileServices,
-    userManagementServices
+    userManagementServices,
+    passwordService
 );
 
 
@@ -38,6 +43,7 @@ userRouter.use(authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN));
 
 userRouter.get(USER_ROUTES.GET_PROFILE, userController.getUserProfile.bind(userController));
 userRouter.patch(USER_ROUTES.EDIT_BASIC_INFO, userController.editUserBasicInfo.bind(userController));
+userRouter.patch(USER_ROUTES.CHANGE_PASSWORD, validateBody(changePasswordSchema), userController.changeUserPassword.bind(userController));
 userRouter.put(USER_ROUTES.UPDATE_PROFILE_PIC, uploadImage.single("profileImage"), userController.updateProfilePicture.bind(userController));
 
 
