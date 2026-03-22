@@ -93,7 +93,7 @@ axiosInstance.interceptors.response.use(
    async (error: AxiosError) => {
       const originalRequest = error.config;
 
-      console.error(`❌ error in axiosInstance.interceptors.response:)`, error.response?.data || error.message);
+      console.error(`❌ error in axiosInstance.interceptors.response:`, error.response?.data || error.message);
       
       // Define endpoints that should NOT trigger token refresh
       // const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh-token'];
@@ -213,9 +213,9 @@ axiosInstance.interceptors.response.use(
 
 
       // If the error is not 401 or is from excluded endpoints, just log and reject.
-      if (error.response?.status !== 401) {
-         console.error("Axios API Error:", error.response?.data || error.message);
-      }
+      // if (error.response?.status !== 401) {
+      //    console.error("Axios API Error :", error.response?.data || error.message);
+      // }
 
       // For all other non-token related errors (403, 500, etc.), reject normally
       return Promise.reject(error);

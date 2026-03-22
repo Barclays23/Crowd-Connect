@@ -14,6 +14,7 @@ import { MAX_FILE_SIZE } from '@/schemas/host.schema';
 import { ACCEPTED_IMAGE_TYPES, emailBase, MAX_IMAGE_SIZE, profilePicUploadSchema, updateBasicInfoSchema } from '@/schemas/user.schema';
 import { FieldError } from '@/components/ui/FieldError';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 
 
@@ -370,7 +371,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                      <div className="space-y-1">
                         <label className="text-sm text-(--text-secondary)">Name</label>
                         {isEditingBasicInfo ? (
-                           <input
+                           <Input
                               type="text"
                               name="name"
                               value={editFormData.name}
@@ -389,7 +390,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                      <div className="space-y-1">
                         <label className="text-sm text-(--text-secondary)">Mobile</label>
                         {isEditingBasicInfo ? (
-                           <input
+                           <Input
                               type="tel"
                               name="mobile"
                               value={editFormData.mobile}
@@ -457,7 +458,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                      {isEditingEmail ? (
                         <div className="space-y-2">
-                           <input
+                           <Input
                               type="email"
                               name="email"
                               value={editFormData.email}
