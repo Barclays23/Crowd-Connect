@@ -26,6 +26,7 @@ export const USER_ROUTES = {
     GET_PROFILE: '/profile',
     EDIT_BASIC_INFO: '/edit-basic-info',
     UPDATE_PROFILE_PIC: '/profile-pic',
+    CHANGE_PASSWORD: '/change-password',
 } as const;
 
 

@@ -1,4 +1,5 @@
 // backend/src/schemas/user.schema.ts
+import { passwordBase } from "@/schemas/auth.schema";
 import { z } from "zod";
 
 
@@ -106,3 +107,18 @@ export const userFormSchema = z.object({
 //     path: ["confirmPassword"],
 //     message: "Passwords do not match.",
 //   })
+
+
+
+
+  /* ---------- Change Password Schema ---------- */
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordBase,
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    path: ["newPassword"],
+    message: "New password must be different from your current password",
+  });
+ 

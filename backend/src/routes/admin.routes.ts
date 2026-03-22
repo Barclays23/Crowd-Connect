@@ -31,6 +31,7 @@ import { cancelBookingSchema } from '@/schemas/booking.schema';
 import { RazorpayProvider } from '@/services/payment-services/providers/razorpay.provider';
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
+import { PasswordService } from '@/services/password-services/implementations/password.service';
 
 
 
@@ -58,12 +59,12 @@ const userProfileServices = new UserProfileService(userRepo);
 const hostManagementServices = new HostManagementServices(userRepo);
 const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService);
 const eventManagementServices = new EventManagementServices(eventRepo, bookingServices);
-
+const passwordService = new PasswordService(userRepo);
 
 
 
 // ──  CONTROLLERS ──
-const userController = new UserController(userProfileServices, userManagementServices);
+const userController = new UserController(userProfileServices, userManagementServices, passwordService);
 const hostController = new HostController(hostManagementServices);
 const eventController = new EventController(eventManagementServices);
 const bookingController = new BookingController(bookingServices);

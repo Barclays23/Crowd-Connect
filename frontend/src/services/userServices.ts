@@ -84,6 +84,18 @@ export const userServices = {
     },
 
 
+    changePassword: async (data: { currentPassword: string; newPassword: string }) => {
+        try {
+            const response = await axiosInstance.patch("/api/user/change-password", data, { withCredentials: true });
+            return response.data;
+
+        } catch (error: unknown) {
+            const err = error as AxiosError<{ error: string }>;
+            throw err;
+        }
+    },
+
+
 
     getAllUsers: async (queryString: string = "") => {
         try {

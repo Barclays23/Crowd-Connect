@@ -7,7 +7,6 @@ import { ResetPasswordDto } from "@/dtos/auth.dto";
 export interface IAuthRecoveryService {
     requestPasswordReset(email: string):Promise<string>
     validateResetLink(token: string): Promise<boolean>
-    resetPassword({token, newPassword}: ResetPasswordDto):Promise<string>
 
     // also used for changing email & verifying email if not already verified
     requestAuthenticateEmail({currentUserEmail, requestedEmail}: {

@@ -90,35 +90,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
     }
 
 
-    async resetPassword({ token, newPassword }: ResetPasswordDto): Promise<string> {
-        try {
-            const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
-            const raw = await redisClient.get(redisKey);
-            if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.RESET_LINK_INVALID_OR_EXPIRED}`);
-            }
-            const tokenData = JSON.parse(raw);
-
-            const hashedPassword = await hashPassword(newPassword);
-
-            const updatedUser: UserEntity | null = await this._userRepository.updateUserPassword(tokenData.email, hashedPassword);
-
-            if (!updatedUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_ACCOUNT_NOT_EXIST);
-            }
-
-            await redisClient.del(redisKey);
-
-            return updatedUser.email;
-
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRecoveryService.resetPassword:", msg);
-            throw error;
-        }
-    }
-
-
     // also used for changing email & verifying email if not already verified
     async requestAuthenticateEmail({currentUserEmail, requestedEmail}: {
         currentUserEmail: string,
