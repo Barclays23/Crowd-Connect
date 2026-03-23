@@ -16,6 +16,7 @@ import { FieldError } from '../ui/FieldError'
 import { SuccessCheckIcon } from '../ui/success-check-icon'
 import { getApiErrorMessage } from '@/utils/errorMessages.utils'
 import { LoadingSpinner1 } from '../common/LoadingSpinner1'
+import { EMAIL_PROVIDERS } from '@/utils/UI.utils'
 
 
 const ForgotPasswordSchema = z.object({
@@ -68,26 +69,81 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
   }
 
   // ── Success state ───────────────────────────────────────────────────────────
+  // if (submitState === 'success') {
+  //   return (
+  //     <div className="py-6 px-3 text-center space-y-6">
+  //       <SuccessCheckIcon size="md" />
+
+  //       <div className="space-y-3">
+  //         <h3 className="text-2xl font-semibold text-(--heading-primary)">
+  //           Reset link sent!
+  //         </h3>
+  //         <p className="text-(--text-secondary) leading-relaxed">
+  //           If an account with this email exists, you will receive a password reset link shortly.
+  //         </p>
+  //         <p className="text-xs text-(--text-tertiary) mt-2">
+  //           Please check your inbox, spam and junk folders.
+  //         </p>
+  //       </div>
+
+  //       <Button
+  //         onClick={onClose}
+  //         className="bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text) min-w-[150px]"
+  //       >
+  //         Back to login
+  //       </Button>
+  //     </div>
+  //   )
+  // }
+
   if (submitState === 'success') {
     return (
       <div className="py-6 px-3 text-center space-y-6">
         <SuccessCheckIcon size="md" />
 
         <div className="space-y-3">
-          <h3 className="text-2xl font-semibold text-[var(--heading-primary)]">
+          <h3 className="text-2xl font-semibold text-(--heading-primary)">
             Reset link sent!
           </h3>
-          <p className="text-[var(--text-secondary)] leading-relaxed">
-            If an account with this email exists, you will receive a password reset link shortly.
+          <p className="text-(--text-secondary) leading-relaxed">
+            If an account with this email exists, you will receive a password
+            reset link shortly.
           </p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-2">
+          <p className="text-xs text-(--text-tertiary) mt-2">
             Please check your inbox, spam and junk folders.
           </p>
         </div>
 
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-(--text-secondary)">
+            Open your inbox
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {EMAIL_PROVIDERS.map(({ name, url, bg, border, icon }) => (
+              <a
+                key={name}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`
+                  inline-flex items-center gap-2 px-3 py-2 rounded-lg border
+                  border-(--border-default) text-sm text-(--text-secondary) bg-(--bg-secondary)
+                  hover:bg-(--bg-accent)
+                  
+                  transition-all duration-150 cursor-pointer
+                `}
+              >
+                {icon}
+                <span>{name}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
         <Button
           onClick={onClose}
-          className="bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] min-w-[150px]"
+          variant="default"
+          className="min-w-36"
         >
           Back to login
         </Button>
@@ -101,7 +157,7 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {isLoading && (
-        <div className="absolute inset-0 z-10 !m-0 !p-0 flex items-center justify-center bg-[var(--bg-overlay)] backdrop-blur-[2px] rounded-lg">
+        <div className="absolute inset-0 z-10 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[2px] rounded-lg">
           <LoadingSpinner1
             size="md"
             message="Sending reset link..."
@@ -115,7 +171,7 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
         <Input
           id="email"
           type="email"
-          placeholder="name@example.com"
+          placeholder="youremail@example.com"
           autoComplete="email"
           disabled={isLoading}
           {...register('email')}

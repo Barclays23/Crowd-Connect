@@ -21,6 +21,7 @@ import { AuthRecoveryService } from '@/services/auth-services/implementations/au
 import { AuthController } from '@/controllers/implementations/auth.controller';
 
 import { AUTH_ROUTES } from '@/constants/routes.constants';
+import { PasswordService } from '@/services/password-services/implementations/password.service';
 
 
 
@@ -33,13 +34,14 @@ const userRepository = new UserRepository()
 const registrationService = new AuthRegistrationService(userRepository);
 const sessionService = new AuthSessionService(userRepository);
 const recoveryService = new AuthRecoveryService(userRepository);
-
+const passwordService = new PasswordService(userRepository)
 
 // CONTROLLER
 const authController = new AuthController(
     registrationService, 
     sessionService, 
-    recoveryService
+    recoveryService,
+    passwordService
 );
 
 

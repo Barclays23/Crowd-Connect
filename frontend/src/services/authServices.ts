@@ -63,7 +63,6 @@ export const authService = {
 
     resetPasswordService: async ({ token, newPassword, confirmPassword }: { token: string; newPassword: string; confirmPassword: string })=> {
         try {
-            console.log('email received in resetPasswordService :', token, newPassword, confirmPassword);
             const response = await axiosInstance.post("/api/auth/reset-password", { token, newPassword, confirmPassword }, { withCredentials: true });
             return response.data;
         } catch (error: unknown) {

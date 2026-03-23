@@ -59,8 +59,10 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
       toast.success(response.message)
       reset()
       onSuccess?.()
-    } catch (error) {
-      const errorMessage = getApiErrorMessage(error) || 'Unable to reset password.'
+    } catch (error: unknown) {
+      console.log('error from resetPasswordService:', error);
+      
+      const errorMessage = getApiErrorMessage(error)
       if (errorMessage) toast.error(errorMessage);
     } finally {
       setIsSubmitting(false)

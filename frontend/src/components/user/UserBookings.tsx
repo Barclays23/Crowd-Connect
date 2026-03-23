@@ -1,6 +1,6 @@
 // frontend/src/components/user/UserBookings.tsx
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Loader2,
   ArrowUpDown,
@@ -71,6 +71,8 @@ function UserBookings() {
 
   const itemsPerPage = 10;
 
+  
+
 
   // debounce search
   useEffect(() => {
@@ -85,7 +87,10 @@ function UserBookings() {
   const fetchMyBookings = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
+      toast.info('user bookings fetching...')
+
       const response: GetMyBookingsResponse = await bookingServices.getMyBookings({
         page:      currentPage,
         limit:     itemsPerPage,
@@ -111,7 +116,14 @@ function UserBookings() {
     }
   }, [currentPage, statusFilter, formatFilter, debouncedSearch, sortBy, sortOrder]);
 
+
+
+  const hasFetched = useRef(false);
+
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     fetchMyBookings();
   }, [fetchMyBookings]);
 

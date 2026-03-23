@@ -16,6 +16,7 @@ import { IAuthRegistrationService } from "@/services/auth-services/interfaces/IA
 import { IAuthSessionService } from "@/services/auth-services/interfaces/IAuthSession";
 import { IAuthRecoveryService } from "@/services/auth-services/interfaces/IAuthRecovery";
 import winstonLogger from "@/config/winston-logger.config";
+import { IPasswordService } from "@/services/password-services/interfaces/IPasswordService";
 
 
 
@@ -26,7 +27,8 @@ export class AuthController implements IAuthController {
     constructor(
         private _registrationService: IAuthRegistrationService,
         private _sessionService: IAuthSessionService,
-        private _recoveryService: IAuthRecoveryService
+        private _recoveryService: IAuthRecoveryService,
+        private _passwordService: IPasswordService,
     ) {}
 
     
@@ -124,7 +126,7 @@ export class AuthController implements IAuthController {
         try {
             const { token, newPassword }: ResetPasswordDto = req.body;
             
-            await this._recoveryService.resetPassword({ token, newPassword });
+            await this._passwordService.resetPassword({ token, newPassword });
 
             res.status(HttpStatus.OK).json({
                 message: HttpResponse.PASSWORD_RESET_SUCCESS,

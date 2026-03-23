@@ -26,12 +26,15 @@ const UserProfile = () => {
 
     const fetchUserProfile = async () => {
       if (!authUser) return;
+      
       try {
         setIsLoading(true);
         setError(null);
+
         const response = await userServices.getUserProfile();
         setProfile(response.userProfile);
         setUser(response.userProfile);
+
       } catch (err: unknown) {
         const errorMessage = getApiErrorMessage(err);
         if (errorMessage) toast.error(errorMessage);

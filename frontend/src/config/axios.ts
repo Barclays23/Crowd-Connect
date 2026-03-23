@@ -3,6 +3,7 @@ import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { authService } from "@/services/authServices";
 import { toast } from 'react-toastify';
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
 
 
@@ -52,7 +53,7 @@ axiosInstance.interceptors.request.use(
 
 // DYNAMIC RESPONSE INTERCEPTOR (Handles 401 Unauthorized & Token Refresh)
 let isRefreshingToken = false;
-
+let isLoggingOut = false;
 
 let failedRequestsQueue: Array<{
   resolve: (token: string) => void;
@@ -91,33 +92,57 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 axiosInstance.interceptors.response.use(
    (response: AxiosResponse) => response,
    async (error: AxiosError) => {
-      const originalRequest = error.config;
-
       console.error(`❌ error in axiosInstance.interceptors.response:`, error.response?.data || error.message);
-      
-      // Define endpoints that should NOT trigger token refresh
-      // const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh-token'];
-      // const isExcludedEndpoint = excludedEndpoints.some(endpoint => 
-      //    originalRequest?.url?.includes(endpoint)
-      // );
+
+      const originalRequest = error.config;
+      const status = error.response?.status;
+      const data =
+         typeof error.response?.data === "object" && error.response?.data !== null
+            ? (error.response?.data as { code?: string; message?: string })
+            : {};
+
+      // HANDLE BLOCKED USER
+      if (status === 403 && data.code === "USER_ACCOUNT_BLOCKED") {  // from auth middleware
+
+         if (isLoggingOut) return Promise.reject(error);
+         isLoggingOut = true;
+
+         try {
+            const logoutFunction = onTokenRefreshFailure;
+
+            if (logoutFunction) {
+               logoutFunction();
+            }
+         } finally {
+            isLoggingOut = false;
+         }
+
+         return Promise.reject(error);
+      }
+
 
       // Define endpoints that should NOT trigger token refresh
-      const isExcluded = [
+      const url = originalRequest?.url || "";
+
+      const excludedEndpoints = [
          '/api/auth/login',
          '/api/auth/register',
          '/api/auth/refresh-token'
       ].some(endpoint => 
-         originalRequest?.url?.startsWith(endpoint) || originalRequest?.url?.includes(endpoint)
+         // originalRequest?.url?.startsWith(endpoint) || originalRequest?.url?.includes(endpoint)
+         // url.includes(endpoint)  || url.startsWith(endpoint)
+         url.endsWith(endpoint) || url.includes(endpoint)
       );
 
       // Check for 401, a defined config, and that it hasn't been retried yet
       // AND it's not a login/register request
       if (
-         error.response?.status === 401 && 
+         status === 401 && 
+         data.code !== "USER_ACCOUNT_BLOCKED" &&
          originalRequest && 
          !originalRequest.__isRetry &&
          // !isExcludedEndpoint
-         !isExcluded
+         !excludedEndpoints
       ) {
 
          originalRequest.__isRetry = true; // Mark as retried to prevent infinite loop
@@ -183,23 +208,22 @@ axiosInstance.interceptors.response.use(
                ? ((refreshError as AxiosError).response?.data as { message?: string }).message
                : undefined;
             const defaultMessage = (refreshError as Error).message; // e.g., "Request failed with status code 401"
-
-            // const refreshErrorMessage = (refreshError as AxiosError).response?.data || (refreshError as Error).message;
             const refreshErrorMessage = serverMessage || defaultMessage;
-            console.error('refreshErrorMessage in interceptor:', refreshErrorMessage);
 
+            console.error('refreshErrorMessage in interceptor:', refreshErrorMessage);
 
             if (onTokenRefreshFailure) {
                // Show toast first, it will persist because navigation is stateful (React Router)
-               toast.info(refreshErrorMessage);
+               if (refreshErrorMessage) toast.info(refreshErrorMessage);
                // Call the injected function which handles state clearing and navigation
                await onTokenRefreshFailure();
+               
             } else {
                // Fallback for safety (though AuthContext should always inject this)
                console.warn("Logout callback not initialized. Manual local storage clear and forced reload.");
                localStorage.removeItem("accessToken");
-               localStorage.removeItem("user");   
-               window.location.href = '/login';
+               localStorage.removeItem("user");
+               // window.location.href = '/login';
             }
             
 
@@ -213,7 +237,7 @@ axiosInstance.interceptors.response.use(
 
 
       // If the error is not 401 or is from excluded endpoints, just log and reject.
-      // if (error.response?.status !== 401) {
+      // if (status !== 401) {
       //    console.error("Axios API Error :", error.response?.data || error.message);
       // }
 
@@ -221,15 +245,6 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
    }
 );
-
-
-
-
-                  
-
-
-
-
 
 
       
