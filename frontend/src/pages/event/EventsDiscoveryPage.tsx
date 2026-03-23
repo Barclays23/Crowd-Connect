@@ -31,6 +31,11 @@ import { UserPagination } from "@/components/user/UserPagination";
 import { GooglePlacesAutoComplete, type SelectedLocation } from "@/components/common/GooglePlacesAutoComplete";
 import { PillToggle } from "@/components/ui/PillToggle";
 
+import heroBg_Day from "@/assets/images/hero-images/event-hero-bg1-day.png"
+import heroBg_Night from "@/assets/images/hero-images/event-hero-bg1-night.png"
+
+import { useTheme } from "@/contexts/ThemeContext";
+
 
 const FORMAT_OPTIONS = [
   { value: "", label: "Any Format" },
@@ -82,6 +87,9 @@ function FilterChip({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function EventsDiscoveryPage() {
+  const { theme } = useTheme();
+  const heroBg = theme === "dark" ? heroBg_Night : heroBg_Day;
+
   const eventsSectionRef = useRef<HTMLElement>(null);
 
   const [events, setEvents] = useState<IEventState[]>([]);
@@ -201,12 +209,29 @@ function EventsDiscoveryPage() {
       {/* ════════════════════════════════════════
           HERO SECTION
       ════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-linear-to-br from-(--bg-primary) to-(--bg-secondary) border-b border-(--border-muted)">
+      <section
+        className="relative overflow-hidden border-b border-(--border-muted)"
+        style={{
+          backgroundImage: `url(${heroBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Gradient overlay — existing colour variables with transparency */}
+        <div
+          aria-hidden
+          className="absolute inset-0 z-0 opacity-50"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)",
+          }}
+        />
 
         {/* Decorative radial glow */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden"
+          className="pointer-events-none absolute inset-0 overflow-hidden z-[1]"
         >
           <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-(--brand-primary) opacity-[0.06] blur-3xl" />
         </div>
@@ -230,8 +255,8 @@ function EventsDiscoveryPage() {
 
          {/* ── Search Card ── */}
          <form
-         onSubmit={handleHeroSearch}
-         className="bg-(--card-bg) border border-(--card-border) rounded-2xl shadow-xl my-2 p-4 sm:p-4 text-left"
+          onSubmit={handleHeroSearch}
+          className="bg-(--card-bg)/50 border border-(--card-border) rounded-2xl shadow-xl my-2 p-4 sm:p-4 text-left"
          >
          <div className="flex flex-col lg:flex-row lg:items-stretch gap-3 lg:gap-0">
 

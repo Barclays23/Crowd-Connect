@@ -3,7 +3,6 @@ import { AuthMessages, HttpResponse } from "@/constants/responseMessages.constan
 import { UserStatus } from "@/constants/roles-and-statuses";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { ResetPasswordDto } from "@/dtos/auth.dto";
-import { UserProfileResponseDto } from "@/dtos/user.dto";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IPasswordService } from "@/services/password-services/interfaces/IPasswordService";

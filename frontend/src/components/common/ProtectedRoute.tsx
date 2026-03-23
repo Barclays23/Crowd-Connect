@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 
 interface ProtectedRouteProps {
-//   children: ReactNode;
+  // children: ReactNode;
   requireAdmin?: boolean; // Optional: if true → only admins
 }
 

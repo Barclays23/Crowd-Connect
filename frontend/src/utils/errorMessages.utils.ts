@@ -10,9 +10,12 @@ export function getApiErrorMessage(error: unknown): string {
    // if (isUnauthorizedError(error)) {
    //    return ""; 
    // }
-   if (isSessionExpiredError(error)) {
-      return "";
-   }
+
+   // if (isSessionExpiredError(error)) {
+   //    return "";
+   // }
+
+   if (shouldSkipToast(error)) return "";
 
 
    // const defaultMessage = "Something went wrong. Please try again.";
@@ -37,9 +40,16 @@ export function getApiErrorMessage(error: unknown): string {
             : "Cannot reach the server right now.";
       }
 
-      // 3️⃣ Backend JSON error (need an updation in this block.
+      // 3️⃣ Backend JSON error (need an updation in this block)
       else if (error.response?.data?.message) {
-         userMessage = error.response.data.message;
+         // userMessage = error.response.data.message;
+         if (status && status >= 500) {
+            userMessage = isDevMode 
+               ? `Internal Server Error (dev mode): ${error.response.data.message}` 
+               : defaultMessage;
+         } else {
+            userMessage = error.response.data.message;
+         }
       }
       else if (error.response?.data?.error) {
          userMessage = error.response.data.error;
@@ -71,13 +81,24 @@ export function getApiErrorMessage(error: unknown): string {
 // }
 
 
-export function isSessionExpiredError(error: unknown): boolean {
-   return (
-      error instanceof AxiosError &&
-      error.response?.data?.code === "SESSION_EXPIRED"
-   );
-}
+// export function isSessionExpiredError(error: unknown): boolean {
+//    return (
+//       error instanceof AxiosError &&
+//       error.response?.data?.code === "SESSION_EXPIRED"
+//    );
+// }
 
+
+
+export function shouldSkipToast(error: unknown): boolean {
+   if (!(error instanceof AxiosError)) return false;
+
+   const code = (error.response?.data as { code?: string })?.code;
+
+   return [
+      "SESSION_EXPIRED",
+   ].includes(code || "");
+}
 
 
 

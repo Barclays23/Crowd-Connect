@@ -12,6 +12,7 @@ import type {
     LogoutResponse
 } from '@/types/auth.types';
 import { setAuthInterceptors } from '@/config/axios';
+import { toast } from 'react-toastify';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
 // import { toast } from 'react-toastify';

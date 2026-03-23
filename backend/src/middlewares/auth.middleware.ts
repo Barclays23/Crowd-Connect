@@ -60,7 +60,11 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
    }
 
    if (user.status === UserStatus.BLOCKED) {
-      throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+      throw createHttpError(
+         HttpStatus.FORBIDDEN,
+         HttpResponse.USER_ACCOUNT_BLOCKED,
+         "USER_ACCOUNT_BLOCKED"  // for axios intercepter
+      );
    }
 
    req.user = {

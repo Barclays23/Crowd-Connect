@@ -1,5 +1,5 @@
 // frontend/src/components/user/UserEvents.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Search,
   Eye,
@@ -138,10 +138,18 @@ export default function UserEvents() {
       }
    }, [currentPage, debouncedSearchTerm, statusFilter, categoryFilter, sortBy, sortOrder]);
 
+   
+   const hasFetched = useRef(false);
+
    useEffect(() => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
+
       fetchMyEvents();
    }, [fetchMyEvents]);
 
+
+   
    const handleSort = (field: EventSortField) => {
       if (sortBy === field) {
          setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));

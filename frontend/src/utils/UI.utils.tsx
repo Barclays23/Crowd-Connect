@@ -3,6 +3,9 @@
 import type { EVENT_STATUS, IEventState } from "@/types/event.types";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
 import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { SiZoho, SiIcloud } from 'react-icons/si'
+
+
 
 
 export type BadgeVariant = 
@@ -163,3 +166,46 @@ export function getPaymentStatusVariant(
     default:                      return "outline";
   }
 }
+
+
+
+
+// ── Email providers ─────────────────────────────────────────────────────────
+export const EMAIL_PROVIDERS = [
+  {
+    name: 'Gmail',
+    url: 'https://mail.google.com',
+    bg: 'hover:bg-red-50 dark:hover:bg-red-950/30',
+    border: 'hover:border-red-200 dark:hover:border-red-800',
+    icon: <img src="/icons/gmail.png" className="w-5 h-5 shrink-0" alt="Gmail" />,
+  },
+  {
+    name: 'Outlook',
+    url: 'https://outlook.live.com',
+    bg: 'hover:bg-blue-50 dark:hover:bg-blue-950/30',
+    border: 'hover:border-blue-200 dark:hover:border-blue-800',
+    icon: <img src="/icons/outlook2.png" className="w-5 h-5 shrink-0" alt="Outlook" />,
+  },
+  {
+    name: 'Yahoo',
+    url: 'https://mail.yahoo.com',
+    bg: 'hover:bg-purple-50 dark:hover:bg-purple-950/30',
+    border: 'hover:border-purple-200 dark:hover:border-purple-800',
+    icon: <img src="/icons/yahoo2.png" className="w-5 h-5 shrink-0" alt="Yahoo" />,
+  },
+  {
+    name: 'Zoho',
+    url: 'https://mail.zoho.com',
+    bg: 'hover:bg-orange-50 dark:hover:bg-orange-950/30',
+    border: 'hover:border-orange-200 dark:hover:border-orange-800',
+    // icon: <SiZoho className="w-5 h-5 shrink-0 text-[#E42527]" />,
+    icon: <img src="/icons/zoho.png" className="w-5 h-5 shrink-0" alt="Zoho" />,
+  },
+  {
+    name: 'iCloud',
+    url: 'https://www.icloud.com/mail',
+    bg: 'hover:bg-sky-50 dark:hover:bg-sky-950/30',
+    border: 'hover:border-sky-200 dark:hover:border-sky-800',
+    icon: <SiIcloud className="w-5 h-5 shrink-0 text-[#3898FF]" />,
+  },
+]
