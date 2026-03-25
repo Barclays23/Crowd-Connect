@@ -167,6 +167,7 @@ function EventsDiscoveryPage() {
   useEffect(() => {
     setCurrentPage(1);
     fetchEvents(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, format, ticketType, sort, startDate, endDate, selectedLocation]);
 
   // ─── Handlers ───────────────────────────────────────────────────────────────

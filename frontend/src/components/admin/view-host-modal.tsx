@@ -3,33 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { HostStatus, UserState, UserStatus } from "@/types/user.types";
 import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
-import { capitalize, getInitials } from "@/utils/namingConventions";
+import { getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
 import { Button } from "../ui/button";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
 
 interface ViewHostModalProps {
-  // host: {
-  //   userId: string;
-  //   name: string;
-  //   email: string;
-  //   mobile?: string;
-  //   profilePic?: string;
-  //   status: UserStatus; // account status
-  //   isEmailVerified: boolean;
-
-  //   organizationName?: string;
-  //   registrationNumber?: string;
-  //   businessAddress?: string;
-  //   certificateUrl?: string;
-  //   hostStatus: HostStatus;
-  //   hostAppliedAt?: string;
-  //   hostReviewedAt?: string;
-  //   hostRejectionReason?: string;
-  //   createdAt: string;
-  // };
-
   host: UserState
 }
 

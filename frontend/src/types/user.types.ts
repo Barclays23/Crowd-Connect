@@ -1,5 +1,7 @@
 // frontend/src/types/user.types.ts
 
+import type { IPagination } from "@/types/common.types";
+
 export type UserRole = "user" | "host" | "admin";
 export type UserStatus = "active" | "blocked" | "pending";
 export type HostStatus = "pending" | "approved" | "rejected" | "blocked";
@@ -31,6 +33,13 @@ export interface UserState {
   createdAt: string;
 }
 
+
+
+export interface GetUsersApiResponse {
+  usersData: UserState[];
+  message: string;
+  pagination: IPagination;
+}
 
 
 export interface UserUpsertResult {

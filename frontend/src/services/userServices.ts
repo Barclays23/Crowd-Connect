@@ -1,5 +1,5 @@
 import axiosInstance from "@/config/axios";
-import type { AxiosError } from "axios";
+import type { GetUsersApiResponse } from "@/types/user.types";
 
 
 // to update user basic info (name & mobile) by user himself
@@ -43,133 +43,84 @@ export interface UserBasicInfo {
 export const userServices = {
 
     getUserProfile: async () => {
-        try {
-            const response = await axiosInstance.get('/api/user/profile', { withCredentials: true });
-            return response.data;
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.get('/api/user/profile', { withCredentials: true });
+        return response.data;
     },
 
 
 
     // edit basic profile details by user (name & mobile)
     editUserBasicInfo: async (data: UserBasicInfo) => {
-        try {
-            const response = await axiosInstance.patch("/api/user/edit-basic-info", data, { withCredentials: true });
-            return response.data;
-
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.patch("/api/user/edit-basic-info", data, { withCredentials: true });
+        return response.data;
     },
 
 
     updateProfilePicture: async (formData: FormData) => {
-        try {
-            const response = await axiosInstance.put("/api/user/profile-pic", formData, { 
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            return response.data;
-
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.put("/api/user/profile-pic", formData, { 
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     },
 
 
     changePassword: async (data: { currentPassword: string; newPassword: string }) => {
-        try {
-            const response = await axiosInstance.patch("/api/user/change-password", data, { withCredentials: true });
-            return response.data;
-
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.patch("/api/user/change-password", data, { withCredentials: true });
+        return response.data;
     },
 
 
 
-    getAllUsers: async (queryString: string = "") => {
-        try {
-            const response = await axiosInstance.get(`/api/admin/users${queryString ? `?${queryString}` : ""}`, {
-                withCredentials: true
-            });
-            return response.data;
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+    getAllUsers: async (queryString: string = ""): Promise<GetUsersApiResponse> => {
+        const response = await axiosInstance.get(`/api/admin/users${queryString ? `?${queryString}` : ""}`, {
+            withCredentials: true
+        });
+        return response.data;
     },
 
 
 
     // edit user by admin
     editUserService: async (userId: string, formData: FormData) => {
-        try {
-            const response = await axiosInstance.put(`/api/admin/users/${userId}`, formData, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            return response.data;
-
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.put(`/api/admin/users/${userId}`, formData, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     },
 
 
     // create user by admin
     createUserService: async (formData: FormData) => {
-        try {
-            console.log('formData received in createUserService :', formData);
-            const response = await axiosInstance.post(`/api/admin/users`, formData, {
-                withCredentials: true,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            return response.data;
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        console.log('formData received in createUserService :', formData);
+        const response = await axiosInstance.post(`/api/admin/users`, formData, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     },
 
 
 
     toggleUserBlock: async (userId: string) => {
-        try {
-            const response = await axiosInstance.patch(`/api/admin/users/${userId}/toggle-block`, {
-                withCredentials: true,
-            });
-            return response.data;
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.patch(`/api/admin/users/${userId}/toggle-block`, {
+            withCredentials: true,
+        });
+        return response.data;
     },
 
 
     deleteUser: async (userId: string) => {
-        try {
-            const response = await axiosInstance.delete(`/api/admin/users/${userId}`, {
-                withCredentials: true,
-            });
-            return response.data;
-        } catch (error: unknown) {
-            const err = error as AxiosError<{ error: string }>;
-            throw err;
-        }
+        const response = await axiosInstance.delete(`/api/admin/users/${userId}`, {
+            withCredentials: true,
+        });
+        return response.data;
     },
 }

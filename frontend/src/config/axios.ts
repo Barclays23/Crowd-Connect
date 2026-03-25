@@ -3,7 +3,6 @@ import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { authService } from "@/services/authServices";
 import { toast } from 'react-toastify';
-import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
 
 

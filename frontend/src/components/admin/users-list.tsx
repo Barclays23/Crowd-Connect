@@ -24,7 +24,7 @@ import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
-import type { UserState, UserUpsertResult } from "@/types/user.types";
+import type { GetUsersApiResponse, UserState, UserUpsertResult } from "@/types/user.types";
 import { HostManageForm } from "./host-manage-form";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { ConfirmationModal } from "./confirmation-modal";
@@ -32,16 +32,6 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 
-
-
-
-interface ApiResponse {
-  usersData: UserState[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
 
 
 export function UsersList() {
@@ -103,14 +93,11 @@ export function UsersList() {
         ...(statusFilter !== "all" && { status: statusFilter }),
       });
 
-      const response = await userServices.getAllUsers(params.toString());
-      console.log('response in fetchUsers: ', response);
-
-      const responseData: ApiResponse = response.data || response;
+      const response: GetUsersApiResponse = await userServices.getAllUsers(params.toString());
 
       setUsers(response.usersData);
-      setTotalUsers(response.pagination.total);
-      setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.total / itemsPerPage));
+      setTotalUsers(response.pagination.totalCount);
+      setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.totalCount / itemsPerPage));
 
     } catch (err: unknown) {
       console.error("Failed to fetch users:", err);

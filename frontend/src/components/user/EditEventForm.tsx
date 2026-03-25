@@ -1,5 +1,5 @@
 import { HostEventForm } from "@/components/host/HostEventForm";
-import { createEventFormSchema, editEventFormSchema, eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
+import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import type { EVENT_STATUS, IEventState } from "@/types/event.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { zodResolver } from "@hookform/resolvers/zod";

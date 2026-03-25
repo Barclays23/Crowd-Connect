@@ -119,17 +119,16 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
             Open your inbox
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {EMAIL_PROVIDERS.map(({ name, url, bg, border, icon }) => (
+            {EMAIL_PROVIDERS.map(({ name, url, icon }) => (
               <a
                 key={name}
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`
-                  inline-flex items-center gap-2 px-3 py-2 rounded-lg border
-                  border-(--border-default) text-sm text-(--text-secondary) bg-(--bg-secondary)
-                  hover:bg-(--bg-accent)
-                  
+                  inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg
+                  border border-(--border-default)
+                  text-(--text-secondary) bg-(--bg-secondary) hover:bg-(--bg-accent)
                   transition-all duration-150 cursor-pointer
                 `}
               >

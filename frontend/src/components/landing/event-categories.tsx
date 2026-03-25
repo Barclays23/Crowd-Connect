@@ -4,7 +4,7 @@ import {
   UtensilsCrossed, Shirt, Palette, Coffee, Heart,
   Trophy, Dumbbell, Circle, Zap,
   Home, Church, DollarSign, Building,
-  Calendar, Award, Code, Rocket
+  Award, Code, Rocket
 } from "lucide-react"
 
 
