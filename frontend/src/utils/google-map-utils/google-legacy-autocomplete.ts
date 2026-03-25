@@ -1,4 +1,4 @@
-// frontent/src/utils/google-legacy-autocomplete.ts
+// frontend/src/utils/google-map-utils/google-legacy-autocomplete.ts
 
 // import { toast } from "react-toastify";
 

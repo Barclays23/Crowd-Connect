@@ -1,6 +1,6 @@
 // src/components/common/GooglePlacesWidgetAutoComplete.tsx
 import React, { useEffect, useRef } from 'react';
-import { setupGooglePlaceAutocompleteWidget } from '@/utils/google-place-autocomplete-widget';
+import { setupGooglePlaceAutocompleteWidget } from '@/utils/google-map-utils/google-place-autocomplete-widget';
 import { MapPin } from 'lucide-react';
 import { useGoogleMaps2 } from '@/contexts/GoogleMapsProvider2'; // or whichever provider you're using
 

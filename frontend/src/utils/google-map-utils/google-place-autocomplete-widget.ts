@@ -1,4 +1,4 @@
-// src/utils/google-place-autocomplete-widget.ts
+// frontend/src/utils/google-map-utils/google-place-autocomplete-widget.ts
 import { toast } from "react-toastify";
 
 /**

@@ -23,7 +23,7 @@ import { EVENT_CATEGORIES, ADMIN_COMMISSION_PERCENT } from "@/types/event.types"
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
 import { FieldError } from "../ui/FieldError";
-import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-place-autocomplete-widget";
+import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-map-utils/google-place-autocomplete-widget";
 import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoComplete";
 import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";

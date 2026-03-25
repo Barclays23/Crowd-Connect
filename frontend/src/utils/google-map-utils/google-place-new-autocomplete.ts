@@ -1,4 +1,4 @@
-// frontend/src/utils/google-place-new-autocomplete.ts
+// frontend/src/utils/google-map-utils/google-place-new-autocomplete.ts
 // new method for google places New API for autocomplete
 // GooglePlacesAutoComplete component already does internally
 
