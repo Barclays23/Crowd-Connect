@@ -42,7 +42,7 @@ function EventDetailsPage() {
         (async () => {
             try {
                 setLoading(true);
-                const response = await eventServices.getEventById(eventId);
+                const response = await eventServices.getEventDetails(eventId);
                 setEvent(response.eventDetails ?? response);
             } catch (error: unknown) {
                 const errorMessage = getApiErrorMessage(error);

@@ -111,6 +111,67 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       return eventEntity;
    }
 
+
+   async getTrendingEvents(limit: number): Promise<EventEntity[]> {
+      const now = new Date();
+      const results = await this.model.aggregate([
+         {
+            $match: {
+               eventStatus: EVENT_STATUS.PUBLISHED,
+               endDateTime: { $gt: now },
+            }
+         },
+         {
+            $addFields: {
+               trendingScore: {
+               $add: [
+                  // 50% weight: sell-through rate (soldTickets / capacity)
+                  { $multiply: [
+                        { $divide: ["$soldTickets", { $max: ["$capacity", 1] }] },
+                        0.5
+                  ]},
+                  // 30% weight: views (normalized — views / (views + 100) keeps it 0–1)
+                  { $multiply: [
+                        { $divide: ["$views", { $add: ["$views", 100] }] },
+                        0.3
+                  ]},
+                  // 20% weight: recency boost (closer start date = higher score)
+                  { $multiply: [
+                        { $min: [
+                           { $divide: [
+                           1,
+                           { $max: [
+                              { $divide: [{ $subtract: ["$startDateTime", now] }, 86400000] }, // days until start
+                              1
+                           ]}
+                           ]},
+                           1
+                        ]},
+                        0.2
+                  ]}
+               ]
+               }
+            }
+         },
+         { $sort: { trendingScore: -1 } },
+         { $limit: limit },
+         {
+            $lookup: {
+               from: "users",
+               localField: "hostRef",
+               foreignField: "_id",
+               as: "hostRef"
+            }
+         },
+         { $unwind: "$hostRef" },
+         { $project: { onlineLink: 0, trendingScore: 0 } } // strip computed field before returning
+      ]);
+
+      return results.map(event => mapEventModelToEventEntity(event));
+   }
+
+
+
    async countEvents(query: EventFilterQuery): Promise<number> {
       return await this.model.countDocuments(query).exec();
    }
@@ -124,6 +185,11 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
       const result: EventEntity | null = eventData ? mapEventModelToEventEntity(eventData) : null;
       return result;
+   }
+
+
+   async incrementEventViews(eventId: string): Promise<void> {
+      await this.model.findByIdAndUpdate(eventId, { $inc: { views: 1 } });
    }
 
 

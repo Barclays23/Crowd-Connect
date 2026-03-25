@@ -116,7 +116,19 @@ export const eventServices = {
    },
 
 
-   getEventById: async (eventId: string = "") => {
+
+   trendingEvents: async () => {
+      try {
+         const response = await axiosInstance.get("/api/event/trending-events", {withCredentials: true});
+         return response.data;
+         
+      } catch (error) {
+         throw error;
+      }
+   },
+
+
+   getEventDetails: async (eventId: string = "") => {
       try {
          const response = await axiosInstance.get(`/api/event/events/${eventId}`);
          return response.data;

@@ -1,10 +1,6 @@
 // import { EventCard } from "./event-card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import concertImage from "@/assets/concert-event.jpg"
-import cookingImage from "@/assets/cooking-workshop.jpg"
-import sportsImage from "@/assets/sports-event.jpg"
-import techImage from "@/assets/tech-conference.jpg"
 import EventCard from "@/components/event/EventCard"
 import type { IEventState } from "@/types/event.types"
 import { useEffect, useRef } from "react"
@@ -276,7 +272,7 @@ export function FeaturedEvents() {
 
         <div
           ref={scrollRef}
-          className="flex overflow-x-hidden"
+          className="flex overflow-x-hidden py-6 px-0"
           style={{ gap: `${GAP}px` }}
         >
           {cards.map((event, index) => (

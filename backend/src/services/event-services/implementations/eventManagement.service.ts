@@ -30,6 +30,7 @@ import { applyEventStatusFilter } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
+import { redisClient } from "@/config/redis.config";
 
 
 
@@ -540,6 +541,7 @@ export class EventManagementServices implements IEventManagementServices {
             // }
 
             await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+            await redisClient.del("trending_events");
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -650,11 +652,37 @@ export class EventManagementServices implements IEventManagementServices {
         if (!eventEntity){
             throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
         }
+
+        this._eventRepository.incrementEventViews(eventId).catch(err =>
+            console.warn('Failed to increment views:', err)
+        );
         
         const eventDetails: EventResponseDTO = mapEventEntityToEventResponseDto(eventEntity);
 
         return eventDetails;
     }
+
+
+
+    async getTrendingEvents(limit: number): Promise<EventResponseDTO[]> {
+        console.count('hello')
+        const CACHE_KEY = "trending_events";
+        const TTL = 60 * 20; // 20 minutes
+
+        const cached = await redisClient.get(CACHE_KEY);
+        if (cached) {
+            const cachedTredingEvents: EventResponseDTO[] = JSON.parse(cached) as EventResponseDTO[];
+            return cachedTredingEvents;
+        }
+
+        const events: EventEntity[] = await this._eventRepository.getTrendingEvents(limit);
+        const trendingEvents: EventResponseDTO[] = events.map(mapEventEntityToEventResponseDto);
+
+        await redisClient.setEx(CACHE_KEY, TTL, JSON.stringify(trendingEvents));
+
+        return trendingEvents;
+    }
+
 
 
 }

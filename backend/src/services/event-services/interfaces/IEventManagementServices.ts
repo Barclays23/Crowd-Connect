@@ -36,6 +36,8 @@ export interface IEventManagementServices {
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     
     getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult>;
+
+    getTrendingEvents(limit: number): Promise<EventResponseDTO[]>;
     
     getEventDetails(eventId: string): Promise<EventResponseDTO>;
 }
