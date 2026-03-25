@@ -56,10 +56,14 @@ export const TICKET_TYPES = {
   PAID: "paid"
 } as const;
 
+
+
 export type EVENT_FORMAT = typeof EVENT_FORMATS[keyof typeof EVENT_FORMATS];
 export type TICKET_TYPE = typeof TICKET_TYPES[keyof typeof TICKET_TYPES];
 export type EVENT_STATUS = typeof EVENT_STATUSES[keyof typeof EVENT_STATUSES];
 
+
+export const DEFAULT_RADIUS_KM = 25
 
 export interface IEventState {
   eventId: string;

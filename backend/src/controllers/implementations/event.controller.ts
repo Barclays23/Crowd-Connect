@@ -317,6 +317,22 @@ export class EventController implements IEventController {
     };
 
 
+    async getTrendingEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const limit = parseInt(req.query.limit as string) || 6;
+
+            const trendingEvents = await this._eventServices.getTrendingEvents(limit);
+
+            res.status(HttpStatus.OK).json({ success: true, trendingEvents });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.getTrendingEvents:', msg);
+            next(error);
+        };
+    }
+
+
 
     async getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {

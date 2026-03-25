@@ -77,6 +77,10 @@ eventRouter.get(EVENT_ROUTES.PUBLIC_EVENTS,
     eventController.getDiscoveryEvents.bind(eventController)
 );
 
+eventRouter.get(EVENT_ROUTES.TRENDING_EVENTS,
+    eventController.getTrendingEvents.bind(eventController)
+);
+
 eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
     eventController.getEventDetails.bind(eventController)
 );

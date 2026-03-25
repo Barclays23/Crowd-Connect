@@ -29,6 +29,7 @@ import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
 import { Types } from "mongoose";
 import { UserRole } from "@/constants/roles-and-statuses";
+import { redisClient } from "@/config/redis.config";
 
 
 
@@ -142,6 +143,8 @@ export class BookingService implements IBookingService {
             });
 
             await this._eventRepository.incrementEventTicketStats(eventId, newBookingQty, totalAmount);
+            
+            await redisClient.del("trending_events");
 
             const populated = await this._bookingRepository.getBookingById(bookingEntity.bookingId);
             if (!populated) {
@@ -227,6 +230,8 @@ export class BookingService implements IBookingService {
             booking.quantity,
             booking.totalAmount
          );
+
+         await redisClient.del("trending_events");
 
          const confirmedBooking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(booking.bookingId);
          if (!confirmedBooking) {

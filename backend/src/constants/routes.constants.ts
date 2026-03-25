@@ -47,6 +47,7 @@ export const EVENT_ROUTES = {
     CANCEL_EVENT: '/:eventId/cancel',
     MY_EVENTS: '/my-events',
     PUBLIC_EVENTS: '/public-events',
+    TRENDING_EVENTS: '/trending-events',
     EVENT_DETAILS: '/events/:eventId',
     INITIATE_BOOKING: '/:eventId/initiate-booking',
 } as const;
