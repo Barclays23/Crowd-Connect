@@ -125,9 +125,7 @@ export function EventsList() {
 
          const response: GetEventsApiResponse = await eventServices.getAllEvents(params.toString());
 
-         let fetchedEvents = response.eventsData;
-
-         setEvents(fetchedEvents);
+         setEvents(response.eventsData);
          setTotalEvents(response.pagination.totalCount);
          setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.totalCount / itemsPerPage));
 
@@ -273,6 +271,7 @@ export function EventsList() {
             {/* Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6 flex-wrap">
                <div className="relative flex-1 min-w-62.5">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-(--text-tertiary)" />
                   <Input
                   placeholder="Search by title, description..."
                   value={searchTerm}

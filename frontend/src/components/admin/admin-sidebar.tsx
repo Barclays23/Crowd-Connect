@@ -5,7 +5,6 @@ import {
   Users,
   Calendar,
   FolderOpen,
-  Layers3,
   CreditCard,
   LayoutDashboard,
   DollarSign,
@@ -48,9 +47,9 @@ export function AdminSidebar() {
   const isCollapsed = state === "collapsed"
 
   return (
-    <Sidebar collapsible="icon" className="z-50 border-r border-[var(--border-default)]">
+    <Sidebar collapsible="icon" className="z-50 border-r border-(--border-default)">
       {/* Header */}
-      <SidebarHeader className="border-b border-[var(--border-default)]">
+      <SidebarHeader className="border-b border-(--border-default)">
         <div className="flex items-center justify-between px-2 py-3">
           {/* Logo */}
           <div className="w-10 h-10 rounded-lg bg-linear-to-br from-(--brand-primary)/50 to-(--brand-primary-hover) flex items-center justify-center shrink-0">
@@ -73,12 +72,12 @@ export function AdminSidebar() {
           onClick={toggleSidebar}
           className={`
             absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 cursor-pointer
-            p-1.5 rounded-full border shadow-[var(--shadow-sm)]
+            p-1.5 rounded-full border shadow-(--shadow-sm)
             transition-all duration-200 z-10
-            bg-[var(--bg-primary)] border-[var(--border-muted)] 
-            text-[var(--text-secondary)]
-            hover:bg-[var(--bg-accent)] hover:text-[var(--text-brand)] hover:border-[var(--border-brand)]
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]
+            bg-(--bg-primary) border-(--border-muted) 
+            text-(--text-secondary)
+            hover:bg-(--bg-accent) hover:text-(--text-brand) hover:border-(--border-brand)
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--ring)
             group-data-[collapsible=icon]:flex
           `}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -129,7 +128,7 @@ export function AdminSidebar() {
                       }}
                     >
                       <NavLink to={item.url}>
-                        <Icon className="h-5 w-5 flex-shrink-0" />
+                        <Icon className="h-5 w-5 shrink-0" />
                         <span className="font-medium ml-3 group-data-[collapsible=icon]:hidden">
                           {item.title}
                         </span>

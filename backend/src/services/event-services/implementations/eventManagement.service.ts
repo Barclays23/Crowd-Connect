@@ -665,7 +665,6 @@ export class EventManagementServices implements IEventManagementServices {
 
 
     async getTrendingEvents(limit: number): Promise<EventResponseDTO[]> {
-        console.count('hello')
         const CACHE_KEY = "trending_events";
         const TTL = 60 * 20; // 20 minutes
 

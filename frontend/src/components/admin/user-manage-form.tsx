@@ -23,9 +23,6 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils"
 
 
 
-
-
-
 interface UserManageFormProps {
   user?: UserState | null;
   onSuccess?: (user?: UserUpsertResult) => void;
@@ -62,6 +59,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
     }
   })
 
+
   useEffect(() => {
     if (user) {
       form.reset({
@@ -74,97 +72,95 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
       });
       setPreviewImage(user.profilePic || "");
       setProfileFile(null);
-      setImageError(""); // Clear previous image error
+      setImageError("");
     }
   }, [user, form]);
 
 
 
 
-const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  setImageError("");
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setImageError("");
 
-  if (!file) return;
+    if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    setImageError("Please select a valid image file");
-    return;
-  }
+    if (!file.type.startsWith("image/")) {
+      setImageError("Please select a valid image file");
+      return;
+    }
 
-  if (file.size > 2 * 1024 * 1024) {
-    setImageError("Image size should be less than 2MB");
-    return;
-  }
+    if (file.size > 2 * 1024 * 1024) {
+      setImageError("Image size should be less than 2MB");
+      return;
+    }
 
-  // ✅ Store file locally (NOT in RHF)
-  setProfileFile(file);
+    setProfileFile(file);
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    setPreviewImage(reader.result as string);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
-};
 
 
 
 
+  const removeImage = () => {
+    setPreviewImage("");
+    setImageError("");
+    setProfileFile(null);
 
-   const removeImage = () => {
-      setPreviewImage("");
-      setImageError("");
-      setProfileFile(null);
-
-      if (fileInputRef.current) {
-         fileInputRef.current.value = "";
-      }
-   };
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  };
 
 
 
 
   const onSubmit = async (values: z.infer<typeof userFormSchema>) => {
-      console.log("user form values:", values);
-      console.log("file:", profileFile, "form values:", values);
-      console.log('userId: ', user?.userId);
+    console.log("user form values:", values);
+    console.log("file:", profileFile, "form values:", values);
+    console.log('userId: ', user?.userId);
 
-      const formData = new FormData();
+    const formData = new FormData();
 
-      formData.append("name", values.name || "");
-      formData.append("email", values.email || "");
-      formData.append("role", values.role);
-      formData.append("status", values.status);
-      formData.append("mobile", values.mobile ?? ""); // changed from undefined
-      if (profileFile) {
-         formData.append("profileImage", profileFile);
-      }
-
-      console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
-    try {
-      setIsSubmitting(true);
-      onSubmitting?.(true);
-
-      let response;
-
-      if (isEditMode && user) {
-        response = await userServices.editUserService(user.userId, formData);
-        toast.success(response.message);
-
-      } else {
-         response = await userServices.createUserService(formData);
-        toast.success(response.message);
-      }
-      
-      onSuccess?.(response?.userData);
-
-    } catch (error: unknown) {
-      const errorMessage = getApiErrorMessage(error);
-      if (errorMessage) toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-      onSubmitting?.(false);
+    formData.append("name", values.name || "");
+    formData.append("email", values.email || "");
+    formData.append("role", values.role);
+    formData.append("status", values.status);
+    formData.append("mobile", values.mobile ?? ""); // changed from undefined
+    if (profileFile) {
+        formData.append("profileImage", profileFile);
     }
+
+    console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
+  try {
+    setIsSubmitting(true);
+    onSubmitting?.(true);
+
+    let response;
+
+    if (isEditMode && user) {
+      response = await userServices.editUserService(user.userId, formData);
+      toast.success(response.message);
+
+    } else {
+        response = await userServices.createUserService(formData);
+      toast.success(response.message);
+    }
+    
+    onSuccess?.(response?.userData);
+
+  } catch (error: unknown) {
+    const errorMessage = getApiErrorMessage(error);
+    if (errorMessage) toast.error(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+    onSubmitting?.(false);
+  }
   }
 
 
@@ -218,20 +214,20 @@ const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         )}
 
                         <Button
-                        type="button"
-                        size="icon"
-                        className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-(--brand-primary) hover:bg-(--brand-primary-hover) shadow-lg"
-                        onClick={() => fileInputRef.current?.click()}
+                          type="button"
+                          size="icon"
+                          className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-(--brand-primary) hover:bg-(--brand-primary-hover) shadow-lg"
+                          onClick={() => fileInputRef.current?.click()}
                         >
                         <Camera className="h-5 w-5 text-white" />
                         </Button>
 
                         <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageChange}
                         />
                       </div>
 

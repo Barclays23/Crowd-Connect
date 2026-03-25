@@ -20,8 +20,16 @@ const app = express();
 
 // Middlewares
 // app.use(cors({ origin: true, credentials: true }));
+const rawFrontendUrls = process.env.FRONTEND_URL || "";
+const allowedOrigins = rawFrontendUrls
+  .split(',')
+  .map(url => url.trim())
+  .filter(url => url.length > 0);
+
+allowedOrigins.push("http://localhost:5173");
+
 app.use(cors({
-    origin: [process.env.FRONTEND_URL as string, "http://localhost:5173"],
+    origin: allowedOrigins,
     credentials: true
 }));
 app.use(express.json());

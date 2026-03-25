@@ -1,6 +1,6 @@
 // frontend/src/components/admin/admin-navbar.tsx
 
-import { Search, Bell, User, Settings, LogOut, Menu } from "lucide-react";
+import { Search, Bell, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { HamburgerTrigger, SidebarTrigger } from "@/components/ui/sidebar";
+import { HamburgerTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitials } from "@/utils/namingConventions";

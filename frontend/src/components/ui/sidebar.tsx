@@ -111,7 +111,7 @@ const SidebarProvider = React.forwardRef<
           className={cn(
             "group/sidebar-wrapper flex min-h-svh w-full",
             // Custom background for inset variant
-            "has-[[data-variant=inset]]:bg-[var(--bg-secondary)]",
+            "has-data-[variant=inset]:bg-(--bg-secondary)",
             className
           )}
           ref={ref}
@@ -145,7 +145,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className={cn(
           "flex h-full w-[--sidebar-width] flex-col",
-          "bg-[var(--card-secondary)] border-r border-[var(--border-default)] text-[var(--text-primary)]",
+          "bg-(--card-secondary) border-r border-(--border-default) text-(--text-primary)",
           className
         )}
         {...props}
@@ -160,7 +160,7 @@ const Sidebar = React.forwardRef<
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           side={side}
-          className="w-[--sidebar-width] p-0 bg-[var(--card-secondary)] text-[var(--text-primary)] border-none [&>button]:hidden"
+          className="w-[--sidebar-width] p-0 bg-(--card-secondary) text-(--text-primary) border-none [&>button]:hidden"
           style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
         >
           <div className="flex h-full w-full flex-col">{children}</div>
@@ -172,7 +172,7 @@ const Sidebar = React.forwardRef<
   return (
     <div
       ref={ref}
-      className="group peer hidden text-[var(--text-primary)] md:block"
+      className="group peer hidden text-(--text-primary) md:block"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -189,10 +189,10 @@ const Sidebar = React.forwardRef<
       {/* Actual sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] flex flex-col bg-[var(--card-secondary)] transition-[left,right,width] duration-200 ease-linear md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] flex flex-col bg-(--card-secondary) transition-[left,right,width] duration-200 ease-linear md:flex",
           side === "left"
-            ? "left-0 group-data-[collapsible=offcanvas]:-left-[var(--sidebar-width)]"
-            : "right-0 group-data-[collapsible=offcanvas]:-right-[var(--sidebar-width)]",
+            ? "left-0 group-data-[collapsible=offcanvas]:-left-(--sidebar-width)"
+            : "right-0 group-data-[collapsible=offcanvas]:-right-(--sidebar-width)",
           variant === "floating" || variant === "inset" ? "p-2" : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
           className
         )}
@@ -200,9 +200,9 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "flex h-full w-full flex-col rounded-lg bg-[var(--card-secondary)]  shadow-[var(--shadow-md)]",
-            "border border-[var(--border-default)]",
-            "group-data-[variant=floating]:shadow-[var(--shadow-lg)]"
+            "flex h-full w-full flex-col rounded-lg bg-(--card-secondary)  shadow-(--shadow-md)",
+            "border border-(--border-default)",
+            "group-data-[variant=floating]:shadow-(--shadow-lg)"
           )}
         >
           {children}
@@ -270,9 +270,9 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default:
-          "hover:bg-[var(--bg-secondary)] data-[active=true]:bg-[var(--bg-tertiary)] data-[active=true]:font-medium text-[var(--text-primary)] hover:text-[var(--text-primary)]",
+          "hover:bg-(--bg-secondary) data-[active=true]:bg-(--bg-tertiary) data-[active=true]:font-medium text-(--text-primary) hover:text-(--text-primary)",
         outline:
-          "bg-[var(--card-bg)] shadow-[0_0_0_1px_var(--border-strong)] hover:bg-[var(--bg-secondary)] hover:shadow-[0_0_0_1px_var(--brand-primary-light)]",
+          "bg-(--card-bg) shadow-[0_0_0_1px_var(--border-strong) hover:bg-(--bg-secondary) hover:shadow-[0_0_0_1px_var(--brand-primary-light)",
       },
       size: {
         default: "h-8 text-sm",
@@ -327,7 +327,7 @@ const SidebarInput = React.forwardRef<React.ElementRef<typeof Input>, React.Comp
   ({ className, ...props }, ref) => (
     <Input
       ref={ref}
-      className={cn("h-8 bg-[var(--form-input-bg)] border-[var(--form-input-border)] text-[var(--form-input-text)] shadow-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary-light)]", className)}
+      className={cn("h-8 bg-(--form-input-bg) border-(--form-input-border) text-(--form-input-text) shadow-none focus-visible:ring-2 focus-visible:ring-(--brand-primary-light)", className)}
       {...props}
     />
   )
@@ -336,19 +336,19 @@ SidebarInput.displayName = "SidebarInput";
 
 const SidebarSeparator = React.forwardRef<React.ElementRef<typeof Separator>, React.ComponentProps<typeof Separator>>(
   ({ className, ...props }, ref) => (
-    <Separator ref={ref} className={cn("mx-2 bg-[var(--border-muted)]", className)} {...props} />
+    <Separator ref={ref} className={cn("mx-2 bg-(--border-muted)", className)} {...props} />
   )
 );
 SidebarSeparator.displayName = "SidebarSeparator";
 
 // Header / Footer / Content – simple wrappers with your text color
 const SidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-2 p-2 text-[var(--text-primary)]", className)} {...props} />
+  <div ref={ref} className={cn("flex flex-col gap-2 p-2 text-(--text-primary)", className)} {...props} />
 ));
 SidebarHeader.displayName = "SidebarHeader";
 
 const SidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-2 p-2 text-[var(--text-primary)]", className)} {...props} />
+  <div ref={ref} className={cn("flex flex-col gap-2 p-2 text-(--text-primary)", className)} {...props} />
 ));
 SidebarFooter.displayName = "SidebarFooter";
 
@@ -378,7 +378,7 @@ const SidebarGroupContent = React.forwardRef<HTMLDivElement, React.ComponentProp
 SidebarGroupContent.displayName = "SidebarGroupContent";
 
 const SidebarGroupLabel = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("font-semibold text-xs uppercase px-2 py-1 text-[var(--text-secondary)]", className)} {...props} />
+  <div ref={ref} className={cn("font-semibold text-xs uppercase px-2 py-1 text-(--text-secondary)", className)} {...props} />
 ));
 SidebarGroupLabel.displayName = "SidebarGroupLabel";
 
@@ -398,7 +398,7 @@ const SidebarMenuAction = React.forwardRef<HTMLDivElement, React.ComponentProps<
 SidebarMenuAction.displayName = "SidebarMenuAction";
 
 const SidebarMenuBadge = React.forwardRef<HTMLSpanElement, React.ComponentProps<"span">>(({ className, ...props }, ref) => (
-  <span ref={ref} className={cn("ml-auto rounded-full bg-[var(--brand-primary-light)] px-2 py-0.5 text-xs text-white", className)} {...props} />
+  <span ref={ref} className={cn("ml-auto rounded-full bg-(--brand-primary-light) px-2 py-0.5 text-xs text-white", className)} {...props} />
 ));
 SidebarMenuBadge.displayName = "SidebarMenuBadge";
 

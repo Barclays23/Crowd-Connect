@@ -1,7 +1,8 @@
 // import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ToastContainer, Slide, Zoom, Flip, Bounce } from 'react-toastify';
+import { ToastContainer, Bounce } from 'react-toastify';
+// import { Slide, Flip, Bounce, Zoom } from 'react-toastify';
 
 
 
@@ -65,7 +66,7 @@ function App() {
          {/* <GoogleMapsProvider> */}
          <GoogleMapsProvider2>
          <Router>
-            <ToastContainer position="top-center" theme="colored" transition={Zoom}/>
+            <ToastContainer position="top-center" theme="colored" transition={Bounce}/>
                {/* <div className="app-container"> */}
                   {/* <Navbar /> */}
                      {/* <main className="main-content"> */}

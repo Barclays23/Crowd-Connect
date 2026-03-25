@@ -47,7 +47,7 @@ import {
   type GetBookingsApiResponse,
 } from "@/types/booking.types";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
-import { EVENT_FORMATS, EVENT_CATEGORIES, type EVENT_FORMAT } from "@/types/event.types";
+import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
 import { capitalize } from "@/utils/namingConventions";
 import BookingDetails from "@/components/booking/BookingDetails";
 import { cancelReasonBase } from "@/schemas/booking.schema";
@@ -224,10 +224,10 @@ export function BookingsList() {
             <div className="relative flex-1 min-w-62.5">
                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-(--text-tertiary)" />
                <Input
-               placeholder="Search by ticket number, event, user..."
-               value={searchTerm}
-               onChange={(e) => setSearchTerm(e.target.value)}
-               className="pl-11 h-11 border-(--border-muted) rounded-xl focus-visible:ring-2 focus-visible:ring-(--brand-primary-light)"
+                  placeholder="Search by ticket number, event, user..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-11 h-11 border-(--border-muted) rounded-xl focus-visible:ring-2 focus-visible:ring-(--brand-primary-light)"
                />
             </div>
 
