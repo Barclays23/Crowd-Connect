@@ -1,4 +1,5 @@
 import axiosInstance from "@/config/axios";
+import type { GetEventsApiResponse } from "@/types/event.types";
 
 
 
@@ -82,7 +83,8 @@ export const eventServices = {
 
 
    // for events listing in public events page
-   getPublicEvents: async (queryString: string = "") => {
+   getPublicEvents: async (queryString: string = ""): Promise<GetEventsApiResponse> => {
+      console.log('getPublicEvents queryString :', queryString)
       const response = await axiosInstance.get(`/api/event/public-events${queryString ? `?${queryString}` : ""}`);
       return response.data;
    },

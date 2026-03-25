@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EVENT_CATEGORIES, EVENT_FORMATS, type IEventState } from "@/types/event.types";
+import { EVENT_CATEGORIES, EVENT_FORMATS, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
 import EventCard from "@/components/event/EventCard";
 import EventCardList from "@/components/event/EventCardList";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -97,20 +97,18 @@ function EventsDiscoveryPage() {
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Hero search fields
   const [search, setSearch] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Toolbar filters
   const [category, setCategory] = useState("");
   const [format, setFormat] = useState("");
   const [ticketType, setTicketType] = useState("");
   const [sort, setSort] = useState("upcoming");
 
   // Pagination
-  const itemsPerPage = 1;
+  const itemsPerPage = 4;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalEvents, setTotalEvents] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -125,7 +123,6 @@ function EventsDiscoveryPage() {
     endDate,
   ].filter(Boolean).length;
 
-  // ─── Fetch ──────────────────────────────────────────────────────────────────
 
   const fetchEvents = useCallback(
     async (page = 1, overrideSearch = search) => {
@@ -147,7 +144,7 @@ function EventsDiscoveryPage() {
         params.append("limit", itemsPerPage.toString());
         params.append("page", page.toString());
 
-        const response = await eventServices.getPublicEvents(params.toString());
+        const response: GetEventsApiResponse = await eventServices.getPublicEvents(params.toString());
 
         setEvents(response.eventsData ?? []);
         setTotalEvents(response.pagination.totalCount ?? 0);
@@ -170,7 +167,7 @@ function EventsDiscoveryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, format, ticketType, sort, startDate, endDate, selectedLocation]);
 
-  // ─── Handlers ───────────────────────────────────────────────────────────────
+
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();

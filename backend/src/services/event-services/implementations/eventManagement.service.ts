@@ -579,13 +579,27 @@ export class EventManagementServices implements IEventManagementServices {
 
 
     async getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult> {
-        const { page, limit, search, category, format, ticketType, lat, lng, radiusKm, sortBy } = filters;
+        const { page, limit, search, startDate, endDate, category, format, ticketType, lat, lng, radiusKm, sortBy } = filters;
         const skip = (page - 1) * limit;
         
         const dbQuery: EventFilterQuery = { 
             eventStatus: EVENT_STATUS.PUBLISHED,
             endDateTime: { $gt: new Date() } // Only show events that haven't ended
         };
+
+        if (startDate || endDate) {
+            dbQuery.startDateTime = {}; 
+
+            if (startDate) {
+                dbQuery.startDateTime.$gte = new Date(startDate);
+            }
+
+            if (endDate) {
+                const endOfDay = new Date(endDate);
+                endOfDay.setUTCHours(23, 59, 59, 999);
+                dbQuery.startDateTime.$lte = endOfDay;
+            }
+        }
 
         // search with exact match.
         // if (search) {

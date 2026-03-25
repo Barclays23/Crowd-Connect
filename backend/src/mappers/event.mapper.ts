@@ -47,6 +47,8 @@ export const mapEventDiscoveryQueryToFilters = (req: Request): GetPublicEventsFi
       page: parseInt(req.query.page as string) || 1,
       limit: parseInt(req.query.limit as string) || 12,
       search: (req.query.search as string)?.trim(),
+      startDate: req.query.startDate as string,
+      endDate: req.query.endDate as string,
       category: (req.query.category as string)?.trim() as EVENT_CATEGORY,
       format: (req.query.format as string)?.trim() as EVENT_FORMAT,
       ticketType: (req.query.ticketType as string)?.trim() as TICKET_TYPE,

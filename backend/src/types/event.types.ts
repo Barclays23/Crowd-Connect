@@ -208,6 +208,8 @@ export interface GetPublicEventsFilter extends IBaseEventFilter {
   lng?: number;
   // location: string;  // need this ??
   radiusKm?: number;
+  startDate?: string;
+  endDate?: string;
   sortBy?: PublicEventsSortOption
 }
 

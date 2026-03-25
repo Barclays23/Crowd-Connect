@@ -298,7 +298,7 @@ export class EventController implements IEventController {
     async getDiscoveryEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const filters: GetPublicEventsFilter = mapEventDiscoveryQueryToFilters(req);
-            console.log('filters for PUBLIC EVENTS:', filters)
+            console.log('filters for PUBLIC EVENTS:', req.query)
             
             const {eventsData, pagination}: GetDiscoveryEventsResult = await this._eventServices.getEventsForDiscovery(filters);
 
