@@ -20,13 +20,21 @@ export function calculateRefundAmount(
     booking: BookingEntityPopulated,
     context: RefundContext
 ): number {
+    console.log('booking.ticketRate :', booking.ticketRate)
+    console.log('booking.quantity :', booking.quantity)
+    console.log('booking.totalAmount :', booking.totalAmount)
+    console.log('cancel context :', context)
+    
     const isFree = booking.ticketRate === 0;
     if (isFree) return 0;
 
     if (context === "event_cancelled") return booking.totalAmount; // always 100%, no commission
 
     const refundPercentage = getRefundPercentage(booking);
+    console.log('refundPercentage :', refundPercentage)
+    console.log('ADMIN_COMMISSION_PERCENT :', ADMIN_COMMISSION_PERCENT)
     const refundAmount: number =  Math.round(booking.totalAmount * (1 - ADMIN_COMMISSION_PERCENT / 100) * (refundPercentage / 100));
+    console.log('refundAmount :', refundAmount)
 
     return refundAmount;
 }

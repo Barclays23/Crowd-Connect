@@ -68,15 +68,70 @@ export class RazorpayProvider implements IPaymentProvider {
         return generatedSignature === signature;
     }
 
-    async initiateRefund(paymentId: string, amount: number): Promise<RefundResult> {
-        const amountInPaise = Math.round(amount * 100);
 
-        const refund = await this._client.payments.refund(paymentId, { amount: amountInPaise });
 
-        return {
-            refundId: refund.id,
-            amount:   refund.amount as number,
-            status:   refund.status as RefundResult["status"],
+    async initiateRefund(paymentId: string, amountInRupees: number): Promise<RefundResult> {
+        try {
+            const amountInPaise = Math.round(amountInRupees * 100);
+            console.log('Initiating Razorpay refund :', { paymentId, amountInRupees, amountInPaise});
+
+            const refund = await this._client.payments.refund(paymentId, { amount: amountInPaise });
+
+            console.log('Razorpay refund successful:', refund);
+
+            return {
+                refundId: refund.id,
+                amount: refund.amount as number,
+                status: refund.status as RefundResult["status"],
+            };
+        } catch (error: unknown) {
+            const description = this.extractRazorpayErrorDescription(error);
+            console.error("Razorpay Refund Failed Error :", description);
+            throw createHttpError(HttpStatus.BAD_REQUEST, description);
+        }
+    }
+
+
+
+
+    private extractRazorpayErrorDescription(error: unknown): string {
+        if (typeof error === "string") {
+            return error;
+        }
+
+        if (!error || typeof error !== "object") {
+            return "Failed to initiate refund";
+        }
+
+        // Safe type narrowing
+        const errObj = error as {
+            error?: unknown;
+            description?: unknown;
+            message?: unknown;
         };
+
+        // Razorpay most common structure: { error: { description: "..." } }
+        if (errObj.error && typeof errObj.error === "object") {
+            const innerError = errObj.error as { description?: unknown };
+            if (typeof innerError.description === "string") {
+            return innerError.description;
+            }
+        }
+
+        // Direct description
+        if (typeof errObj.description === "string") {
+            return errObj.description;
+        }
+
+        // Direct message
+        if (typeof errObj.message === "string") {
+            return errObj.message;
+        }
+
+        return "Failed to initiate refund";
     }
 }
+
+
+
+

@@ -10,8 +10,11 @@ import { authService } from '@/services/authServices';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
 import { LoadingSpinner1 } from '../common/LoadingSpinner1';
 import { cn } from '@/lib/utils';
-import { MAX_FILE_SIZE } from '@/schemas/host.schema';
-import { ACCEPTED_IMAGE_TYPES, emailBase, MAX_IMAGE_SIZE, profilePicUploadSchema, updateBasicInfoSchema } from '@/schemas/user.schema';
+import { 
+   emailBase, 
+   profilePicUploadSchema, 
+   updateBasicInfoSchema 
+} from '@/schemas/user.schema';
 import { FieldError } from '@/components/ui/FieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -196,82 +199,82 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                      {/* Avatar with Upload */}
                      <div className="relative">
-                     <div
-                        className={cn(
-                           "relative group",
-                           isUpdatingProfilePic && "pointer-events-none"
-                        )}
-                     >
-                        {/* Avatar */}
-                        {profile.profilePic ? (
-                           <img
-                              src={profile.profilePic}
-                              alt={profile.name || "User"}
-                              className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
-                                          object-cover border-4 border-(--bg-primary)
-                                          shadow-xl"
-                           />
-                        ) : (
-                           <div
-                              className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
-                                          bg-(--bg-neutral)
-                                          flex items-center justify-center
-                                          text-(--brand-primary) text-5xl font-bold
-                                          border-4 border-(--bg-primary)
-                                          shadow-xl"
-                              >
-                              {profile.name?.charAt(0)?.toUpperCase() || "?"}
-                           </div>
-                        )}
-
-                        {/* Avatar Loading Overlay */}
-                        {isUpdatingProfilePic && (
-                           <div
-                              className="absolute inset-0 z-10 rounded-2xl
-                                          bg-(--bg-overlay2)
-                                          flex items-center justify-center"
-                              >
-                              <LoadingSpinner1 size="md" />
-                           </div>
-                        )}
-
-                        {/* Hover Overlay */}
                         <div
-                           className="absolute inset-0 rounded-2xl
-                                    bg-(--bg-overlay)/80
-                                    opacity-0 group-hover:opacity-100
-                                    transition-opacity
-                                    flex items-center justify-center"
+                           className={cn(
+                              "relative group",
+                              isUpdatingProfilePic && "pointer-events-none"
+                           )}
                         >
-                           {/* Camera Upload Button */}
-                           <label className="absolute -bottom-2 -right-2 cursor-pointer">
-                           <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleProfilePicUpload}
-                              disabled={isUpdatingProfilePic}
-                           />
+                           {/* Avatar */}
+                           {profile.profilePic ? (
+                              <img
+                                 src={profile.profilePic}
+                                 alt={profile.name || "User"}
+                                 className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
+                                    object-cover border-4 border-(--bg-primary)
+                                    shadow-xl"
+                              />
+                           ) : (
+                              <div
+                                 className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
+                                    bg-(--bg-neutral)
+                                    flex items-center justify-center
+                                    text-(--brand-primary) text-5xl font-bold
+                                    border-4 border-(--bg-primary)
+                                    shadow-xl"
+                                 >
+                                 {profile.name?.charAt(0)?.toUpperCase() || "?"}
+                              </div>
+                           )}
 
+                           {/* Avatar Loading Overlay */}
+                           {isUpdatingProfilePic && (
+                              <div
+                                 className="absolute inset-0 z-10 rounded-2xl
+                                    bg-(--bg-overlay2)
+                                    flex items-center justify-center"
+                                 >
+                                 <LoadingSpinner1 size="md" />
+                              </div>
+                           )}
+
+                           {/* Hover Overlay */}
                            <div
-                              className="w-10 h-10 rounded-full flex items-center justify-center
-                                          bg-(--brand-primary)
-                                          text-(--text-inverse)
-                                          hover:bg-(--brand-primary)/90
-                                          shadow-lg border-2 border-(--bg-primary)
-                                          transition"
+                              className="absolute inset-0 rounded-2xl
+                                 bg-(--bg-overlay)/80
+                                 opacity-0 group-hover:opacity-100
+                                 transition-opacity
+                                 flex items-center justify-center"
                            >
-                              {isUpdatingProfilePic ? (
-                                 <Loader2
-                                 className="h-4 w-4 animate-spin text-(--text-inverse)"
-                                 />
-                              ) : (
-                                 <Camera size={18} />
-                              )}
+                              {/* Camera Upload Button */}
+                              <label className="absolute -bottom-2 -right-2 cursor-pointer">
+                              <input
+                                 type="file"
+                                 accept="image/*"
+                                 className="hidden"
+                                 onChange={handleProfilePicUpload}
+                                 disabled={isUpdatingProfilePic}
+                              />
+
+                              <div
+                                 className="w-10 h-10 rounded-full flex items-center justify-center
+                                    bg-(--brand-primary)
+                                    text-(--text-inverse)
+                                    hover:bg-(--brand-primary)/90
+                                    shadow-lg border-2 border-(--bg-primary)
+                                    transition"
+                              >
+                                 {isUpdatingProfilePic ? (
+                                    <Loader2
+                                    className="h-4 w-4 animate-spin text-(--text-inverse)"
+                                    />
+                                 ) : (
+                                    <Camera size={18} />
+                                 )}
+                              </div>
+                              </label>
                            </div>
-                           </label>
                         </div>
-                     </div>
                      </div>
 
                      {/* Hero Profile Information */}
@@ -399,7 +402,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               value={editFormData.mobile}
                               onChange={handleInputChange}
                               className="w-full px-4 py-2 border border-(--form-input-border)
-                                          rounded-lg bg-(--form-input-bg)"
+                                 rounded-lg bg-(--form-input-bg)"
                            />
                         ) : (
                            <div className="flex items-center gap-2">

@@ -141,7 +141,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                   )}
                   </div>
                   <h1 className="text-3xl font-bold mb-3 text-(--heading-primary)">
-                  {isReapply ? "Re-Apply to Become a Host" : "Become a Host"}
+                     {isReapply ? "Re-Apply to Become a Host" : "Become a Host"}
                   </h1>
                   <p className="max-w-md mx-auto text-(--text-secondary)">
                   {isReapply
@@ -210,7 +210,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                               {...register("businessAddress")}
                               placeholder="Enter your full business address"
                               rows={3}
-                              className="pl-12 min-h-[76px]"
+                              className="pl-12 min-h-20"
                            />
                         </div>
                         <FieldError message={errors.businessAddress?.message} />

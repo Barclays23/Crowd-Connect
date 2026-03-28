@@ -20,7 +20,7 @@ export const UserIdParamSchema = z.object({
 });
 
 export const HostIdParamSchema = z.object({
-  userId: MongoIdBase
+  hostId: MongoIdBase
 });
 
 export const EventIdParamSchema = z.object({

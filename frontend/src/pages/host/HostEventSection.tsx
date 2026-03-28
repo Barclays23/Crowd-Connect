@@ -10,10 +10,8 @@ import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
-// import { GoogleMapsProvider1 } from '@/contexts/GoogleMapsProvider1';
 import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
 import HostYourEvent from '@/components/host/HostYourEvent';
-// import GoogleMapsProvider from '@/contexts/GoogleMapsProvider';
 
 
 
@@ -33,7 +31,8 @@ const HostEventSection = () => {
    if (!user.isEmailVerified) return <EmailVerification />;
    if (user.status === 'blocked') return <BlockedAccountMessage />;
    if (user.role === 'admin') return <AdminMessage />;
-   if (user.role === 'user' ||
+   if (user.role === 'user') return <HostUpgradeForm isReapply={false} />
+   if (user.role === 'host' &&
       user.hostStatus === 'rejected' && isReapplyMode) {
       return <HostUpgradeForm isReapply={true} />
    }
@@ -51,12 +50,15 @@ const HostEventSection = () => {
             );
          case 'blocked':
             return <HostBlockedState />;
-            
-         default: // case "approved" :
+         case 'approved':
             return (
                // <GoogleMapsProvider2>
-                  <HostYourEvent />
+               <HostYourEvent />
                // </GoogleMapsProvider2>
+            )
+         default:
+            return (
+               <LoadingSpinner1 />
             );
       }
    }

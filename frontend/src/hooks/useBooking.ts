@@ -5,7 +5,6 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { IBookingState, InitiateBookingResponse } from "@/types/booking.types";
 import type { RazorpayPaymentFailedResponse, RazorpayPaymentSuccessResponse } from "@/types/razorpay.types";
 import { loadRazorpayScript } from "@/utils/razorpay.utils";
-import { toast } from "react-toastify";
 import { logger } from "@/utils/logger";
 
 

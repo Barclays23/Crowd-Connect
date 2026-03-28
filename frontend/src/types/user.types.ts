@@ -7,6 +7,8 @@ export type UserStatus = "active" | "blocked" | "pending";
 export type HostStatus = "pending" | "approved" | "rejected" | "blocked";
 
 
+export const MAX_PROFILE_PIC_SIZE = 2 * 1024 * 1024; // 2MB
+export const ACCEPTED_PROFILE_PIC_TYPES = ['image/jpg', "image/jpeg", "image/png", 'image/gif', "image/webp"];
 
 
 export interface UserState {

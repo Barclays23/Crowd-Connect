@@ -28,7 +28,7 @@ export const hostServices = {
     action: "approve" | "reject",
     reason?: string
   }) => {
-    console.log('hostId: ', hostId, '- action: ', action, '- reason: ', reason);
+    console.log('hostId:', hostId, ' - action:', action, ' - reason:', reason);
     try {
         const url = `/api/admin/hosts/${hostId}/manage-host-request`;
         const response = await axiosInstance.patch(

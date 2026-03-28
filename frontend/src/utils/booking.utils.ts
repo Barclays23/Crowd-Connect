@@ -1,4 +1,4 @@
-import { BOOKING_CONSTRAINTS } from "@/types/booking.types";
+import { BOOKING_CONSTRAINTS, cancellableStatuses } from "@/types/booking.types";
 import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
 import { BOOKING_STATUS } from "@/types/booking.types";
 
@@ -19,17 +19,6 @@ export const getMaxBookingQuantity = (
 
 
 
-const cancellableStatuses = new Set<BOOKING_STATUS>([
-  BOOKING_STATUS.CONFIRMED,
-  BOOKING_STATUS.PENDING,
-]);
-
-
-const nonCancellableStatuses = new Set<BOOKING_STATUS>([
-  BOOKING_STATUS.CANCELLED,
-  BOOKING_STATUS.FAILED,
-  BOOKING_STATUS.ATTENDED,
-]);
 
 export function canCancelBooking(booking: {
   bookingStatus: BOOKING_STATUS;

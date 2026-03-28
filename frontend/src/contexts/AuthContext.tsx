@@ -57,9 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const storedUser = localStorage.getItem("user");
 
                 if (storedToken && storedUser) {
-                    const user = JSON.parse(storedUser);
                     setAccessToken(storedToken);
-                    setUser(user);
+                    setUser(JSON.parse(storedUser));
+                    return;
                 }
             } catch (error) {
                 console.error("Failed to restore auth state", error);

@@ -24,6 +24,7 @@ export class PaymentService implements IPaymentService {
     }
 
     async initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult> {
+        
         return this._provider.initiateRefund(input.paymentId, input.amount);
         // bookingId used for logging/notes — attach here if your provider supports it
     }

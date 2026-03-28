@@ -1,5 +1,6 @@
 // frontend/src/schemas/user.schema.ts
 import { passwordBase } from "@/schemas/auth.schema";
+import { ACCEPTED_PROFILE_PIC_TYPES, MAX_PROFILE_PIC_SIZE } from "@/types/user.types";
 import { z } from "zod";
 
 
@@ -77,18 +78,14 @@ export const statusBase = z.enum(["active", "blocked", "pending"], {
 });
 
 
-export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-export const ACCEPTED_IMAGE_TYPES = ['image/jpg', "image/jpeg", "image/png", 'image/gif', "image/webp"];
-
-
 
 
   export const profilePicBase = z
   .instanceof(File, { message: "Invalid file" })
-  .refine((file) => file.size <= MAX_IMAGE_SIZE, {
-    message: `Profile image must be less than ${MAX_IMAGE_SIZE / (1024 * 1024)}MB`,
+  .refine((file) => file.size <= MAX_PROFILE_PIC_SIZE, {
+    message: `Profile image must be less than ${MAX_PROFILE_PIC_SIZE / (1024 * 1024)}MB`,
   })
-  .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
+  .refine((file) => ACCEPTED_PROFILE_PIC_TYPES.includes(file.type), {
     message: "Only JPG, JPEG, PNG, GIF and WEBP images are allowed",
   })
   .optional();

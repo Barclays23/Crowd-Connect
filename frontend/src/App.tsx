@@ -15,7 +15,6 @@ import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 // Providers
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-// import { GoogleMapsProvider1 } from "@/contexts/GoogleMapsProvider1";
 import { GoogleMapsProvider2 } from "@/contexts/GoogleMapsProvider2";
 
 
@@ -63,7 +62,6 @@ function App() {
    return (
       <ThemeProvider>
          <AuthProvider>
-         {/* <GoogleMapsProvider> */}
          <GoogleMapsProvider2>
          <Router>
             <ToastContainer position="top-center" theme="colored" transition={Bounce}/>
@@ -118,7 +116,6 @@ function App() {
                {/* </div> */}
          </Router>
          </GoogleMapsProvider2>
-         {/* </GoogleMapsProvider> */}
          </AuthProvider>
       </ThemeProvider>
    );

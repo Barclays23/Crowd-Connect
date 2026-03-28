@@ -113,6 +113,9 @@ function EventsDiscoveryPage() {
   const [totalEvents, setTotalEvents] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
+
+  const todayStr = new Date().toLocaleDateString('en-CA');
+
   const activeFilterCount = [
     category,
     format,
@@ -229,9 +232,9 @@ function EventsDiscoveryPage() {
         {/* Decorative radial glow */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden z-[1]"
+          className="pointer-events-none absolute inset-0 overflow-hidden z-1"
         >
-          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-(--brand-primary) opacity-[0.06] blur-3xl" />
+          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-175 h-175 rounded-full bg-(--brand-primary) opacity-[0.16] blur-3xl" />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-12 sm:pt-24 sm:pb-16 text-center">
@@ -256,35 +259,35 @@ function EventsDiscoveryPage() {
           onSubmit={handleHeroSearch}
           className="bg-(--card-bg)/50 border border-(--card-border) rounded-2xl shadow-xl my-2 p-4 sm:p-4 text-left"
          >
-         <div className="flex flex-col lg:flex-row lg:items-stretch gap-3 lg:gap-0">
+          <div className="flex flex-col lg:flex-row lg:items-stretch gap-3 lg:gap-0">
 
             {/* Keyword search */}
             <div className="flex-1 min-w-0 lg:px-3 lg:py-1">
-               <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
-               What
-               </label>
-               <div className="relative">
-               <Search
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
+              What
+              </label>
+              <div className="relative">
+              <Search
                   size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-tertiary) pointer-events-none"
-               />
-               <Input
+              />
+              <Input
                   type="text"
                   placeholder="Event name, keyword..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 pr-8 bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) placeholder:text-(--form-placeholder)"
-               />
-               {search && (
+              />
+              {search && (
                   <button
-                     type="button"
-                     onClick={() => setSearch("")}
-                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors"
                   >
-                     <X size={13} />
+                    <X size={13} />
                   </button>
-               )}
-               </div>
+              )}
+              </div>
             </div>
 
             {/* Divider */}
@@ -292,30 +295,30 @@ function EventsDiscoveryPage() {
 
             {/* Location search */}
             <div className="flex-1 min-w-0 lg:px-3 lg:py-1">
-               <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
                   Where
-               </label>
-               <div className="relative">
+              </label>
+              <div className="relative">
                   <MapPin
-                     size={15}
-                     className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-tertiary) pointer-events-none z-10"
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-tertiary) pointer-events-none z-10"
                   />
                   <GooglePlacesAutoComplete
-                     placeholder="City, venue or address..."
-                     defaultValue={selectedLocation?.name ?? ""}
-                     onPlaceSelected={(place) => setSelectedLocation(place)}
-                     className="w-full"
+                    placeholder="City, venue or address..."
+                    defaultValue={selectedLocation?.name ?? ""}
+                    onPlaceSelected={(place) => setSelectedLocation(place)}
+                    className="w-full"
                   />
                   {selectedLocation && (
-                     <button
+                    <button
                         type="button"
                         onClick={() => setSelectedLocation(null)}
                         className="absolute right-2.5 top-1/2 -translate-y-1/2 text-(--text-tertiary) hover:text-(--text-primary) transition-colors z-10"
-                     >
+                    >
                         <X size={13} />
-                     </button>
+                    </button>
                   )}
-               </div>
+              </div>
             </div>
 
             {/* Divider */}
@@ -323,48 +326,49 @@ function EventsDiscoveryPage() {
 
             {/* Date range */}
             <div className="flex-[1.4] min-w-0 lg:px-3 lg:py-1">
-               <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
-               When
-               </label>
-               <div className="flex gap-1.5">
-               <div className="relative flex-1">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-(--text-tertiary) mb-1.5 ml-1">
+              When
+              </label>
+              <div className="flex gap-1.5">
+              <div className="relative flex-1">
                   <CalendarDays
-                     size={14}
-                     className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--text-tertiary) pointer-events-none"
+                    size={14}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--text-tertiary) pointer-events-none"
                   />
                   <Input
-                     type="date"
-                     value={startDate}
-                     onChange={(e) => setStartDate(e.target.value)}
-                     title="Start date"
-                     className="pl-8 bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) text-sm"
+                    type="date"
+                    value={startDate}
+                    min={todayStr}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    title="Start date"
+                    className="pl-8 bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) text-sm"
                   />
-               </div>
-               <div className="relative flex-1">
+              </div>
+              <div className="relative flex-1">
                   <Input
-                     type="date"
-                     value={endDate}
-                     min={startDate}
-                     onChange={(e) => setEndDate(e.target.value)}
-                     title="End date"
-                     className="bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) text-sm"
+                    type="date"
+                    value={endDate}
+                    min={startDate || todayStr}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    title="End date"
+                    className="bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) text-sm"
                   />
-               </div>
-               </div>
+              </div>
+              </div>
             </div>
 
             {/* Search button */}
             <div className="lg:pl-3 lg:py-1 flex items-end shrink-0">
-               <Button
-               type="submit"
-               className="w-full lg:w-auto h-10 px-6 bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text) font-semibold rounded-lg transition-colors whitespace-nowrap"
-               >
-               <Search size={15} className="mr-2" />
-               Search Events
-               </Button>
+              <Button
+              type="submit"
+              className="w-full lg:w-auto h-10 px-6 bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text) font-semibold rounded-lg transition-colors whitespace-nowrap"
+              >
+              <Search size={15} className="mr-2" />
+              Search Events
+              </Button>
             </div>
 
-         </div>
+          </div>
          </form>
 
         </div>
@@ -390,7 +394,7 @@ function EventsDiscoveryPage() {
               <SlidersHorizontal size={14} />
               Filters
               {activeFilterCount > 0 && (
-                <span className="ml-0.5 bg-white/20 text-current text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                <span className="ml-0.5 bg-white/20 text-current text-[10px] font-bold rounded-full min-w-4.5 h-4.5 flex items-center justify-center px-1">
                   {activeFilterCount}
                 </span>
               )}

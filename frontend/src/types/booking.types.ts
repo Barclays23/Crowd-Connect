@@ -44,6 +44,13 @@ export const BOOKING_CONSTRAINTS = {
 } as const;
 
 
+// cancellable booking statuses
+export const cancellableStatuses = new Set<BOOKING_STATUS>([
+  BOOKING_STATUS.CONFIRMED,
+  BOOKING_STATUS.PENDING,
+]);
+
+
 
 // ─── Booking Responses ────────────────────────────────────────────────────────
 

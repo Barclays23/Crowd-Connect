@@ -35,7 +35,6 @@ const bookingSchema = new Schema<IBookingModel>(
       ticketNo: {
          type: String,
          required: true,
-         unique: true
       },
       totalAmount: {
          type: Number,
@@ -155,9 +154,11 @@ bookingSchema.virtual("currentRefundPercentage").get(function (
 bookingSchema.index({ userRef: 1, createdAt: -1 });                      // "My bookings" — newest first
 bookingSchema.index({ userRef: 1, eventRef: 1 });                        // Duplicate-booking check + ticket-cap enforcement
 bookingSchema.index({ eventRef: 1, bookingStatus: 1 });                  // Host dashboard — filter by status per event
+bookingSchema.index({ ticketNo: 1 }, { unique: true });
 bookingSchema.index(
    { qrToken: 1 },
-   { unique: true, partialFilterExpression: { qrToken: { $exists: true } }}
+   // { unique: true, partialFilterExpression: { qrToken: { $exists: true } }}
+   { unique: true, partialFilterExpression: { qrToken: { $type: "string", $ne: "" } }}
 );     // QR scan — sparse skips empty-string PENDING rows
 bookingSchema.index({ refundGracePeriodEnd: 1 }, { sparse: true });      // Grace-period queries — sparse skips null rows
 bookingSchema.index({ "payment.orderId": 1 }, { unique: true });         // Webhook lookup — must be unique

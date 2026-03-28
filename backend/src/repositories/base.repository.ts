@@ -45,7 +45,8 @@ export abstract class BaseRepository<T> {
         const updatedDocument = await this.model.findByIdAndUpdate(
             updateId,
             { $set: updateData },
-            { new: true, runValidators: true }
+            // { new: true, runValidators: true }  // depricated
+            { returnDocument: 'after', runValidators: true }
         );
         return updatedDocument as unknown as T;
     }
@@ -61,7 +62,8 @@ export abstract class BaseRepository<T> {
         const updatedDocument = await this.model.findOneAndUpdate(
             query,
             { $set: updateData },
-            { new: true, runValidators: true }
+            // { new: true, runValidators: true }  // depricated
+            { returnDocument: 'after', runValidators: true }
         );
         return updatedDocument as unknown as T;
     }

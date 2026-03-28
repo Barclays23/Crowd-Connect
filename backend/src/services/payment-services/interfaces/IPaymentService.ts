@@ -5,7 +5,7 @@ import { CreateOrderResult, RefundResult } from "@/services/payment-services/int
 export interface InitiateRefundInput {
    paymentId: string;   // razorpayPaymentId from booking.payment
    bookingId: string;   // attached as receipt/note on Razorpay dashboard
-   amount:    number;   // In paise (multiply rupees × 100 before passing)
+   amount:    number;   // in Rupees
 }
 
 
@@ -18,8 +18,6 @@ export interface IPaymentService {
     // Verifies Razorpay webhook signature after payment capture. Called in verifyPayment flow.
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
 
-    // Initiates a refund via Razorpay.
-    // Amount must be in paise.
-    // Returns Razorpay refund object — store refund.id in booking.cancellation.refundId.
+    // Initiates a refund via Razorpay or Stripe.
     initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult>;
 }

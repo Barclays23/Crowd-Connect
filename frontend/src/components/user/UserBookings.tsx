@@ -89,8 +89,6 @@ function UserBookings() {
     setError(null);
 
     try {
-      toast.info('user bookings fetching...')
-
       const response: GetMyBookingsResponse = await bookingServices.getMyBookings({
         page:      currentPage,
         limit:     itemsPerPage,
@@ -184,12 +182,6 @@ function UserBookings() {
 
   const hasActiveFilters = statusFilter !== "all" || formatFilter !== "all" || !!debouncedSearch;
 
-  const nonCancellable = new Set<BOOKING_STATUS>([
-    BOOKING_STATUS.CANCELLED,
-    BOOKING_STATUS.FAILED,
-    BOOKING_STATUS.ATTENDED,
-  ]);
-
 
   return (
     <div className="space-y-6">
@@ -199,18 +191,15 @@ function UserBookings() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <Ticket className="h-6 w-6" />
-            My Bookings
+            My Bookings ({totalBookings})
           </h2>
-          <p className="text-muted-foreground mt-1">
-            Your event tickets and registrations • {totalBookings} total
-          </p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
 
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-50">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search ticket number..."
@@ -352,19 +341,14 @@ function UserBookings() {
 
                     {/* Booking ID + ticket number */}
                     <TableCell>
-                      <div className="space-y-0.5">
-                        <p className="font-mono text-xs text-muted-foreground">
-                          {booking.bookingId.slice(-12).toUpperCase()}
-                        </p>
-                        <Badge variant="outline" className="font-mono text-xs">
-                          <Hash className="h-2.5 w-2.5 mr-1" />
-                          {booking.ticketNo}
-                        </Badge>
-                      </div>
+                      <Badge variant="outline" className="font-mono text-xs whitespace-nowrap">
+                        <Hash className="h-2.5 w-2.5 mr-1" />
+                        {booking.ticketNo}
+                      </Badge>
                     </TableCell>
 
                     {/* Event name */}
-                    <TableCell className="font-medium max-w-[180px]">
+                    <TableCell className="font-medium max-w-45">
                       <p className="truncate">{booking.event.title}</p>
                     </TableCell>
 
@@ -379,7 +363,7 @@ function UserBookings() {
                     </TableCell>
 
                     {/* Venue */}
-                    <TableCell className="text-muted-foreground max-w-[140px]">
+                    <TableCell className="text-muted-foreground max-w-55">
                       {isOnline
                         ? <Badge variant="secondary">Online</Badge>
                         : <span className="truncate block">{booking.event.locationName ?? "TBA"}</span>

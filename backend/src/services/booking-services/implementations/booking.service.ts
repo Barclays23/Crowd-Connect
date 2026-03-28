@@ -321,7 +321,7 @@ export class BookingService implements IBookingService {
 
          validateBookingCancelByUser(booking, userId);
 
-         await this._processRefundAndCancel(booking, cancelReason, context);
+         await this._processRefundAndCancel(booking!, cancelReason, context);
 
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
@@ -419,10 +419,11 @@ export class BookingService implements IBookingService {
          if (!booking.payment.paymentId) {
             throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Payment ID missing — cannot initiate refund");
          }
+         
          const refund = await this._paymentService.initiateBookingRefund({
             paymentId: booking.payment.paymentId,
             bookingId: booking.bookingId,
-            amount:    refundAmount * 100,  // paise
+            amount:    refundAmount
          });
          refundId = refund.refundId;
       }

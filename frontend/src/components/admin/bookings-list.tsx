@@ -146,11 +146,6 @@ export function BookingsList() {
       );
    };
 
-   const nonCancellableStatuses = [
-      BOOKING_STATUS.CANCELLED,
-      BOOKING_STATUS.FAILED,
-      BOOKING_STATUS.ATTENDED,
-   ] as const;
 
 
    const handleCancelBooking = async () => {
@@ -204,6 +199,9 @@ export function BookingsList() {
       );
    };
    
+
+
+
 
    return (
       <Card className="shadow-(--shadow-sm) border border-(--border-default) rounded-2xl overflow-hidden">

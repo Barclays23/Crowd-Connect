@@ -159,7 +159,9 @@ export function HostsList() {
 
       toast.success(response.message || `Host ${action === "approve" ? "approved" : "rejected"} successfully`);
 
-      // Optimistic update
+      if (action === "approve") setApproveHostId(null);
+      if (action === "reject") setRejectHostId(null);
+
       setHosts((prev) =>
         prev.map((hst) =>
           hst.userId === hostId
@@ -171,7 +173,7 @@ export function HostsList() {
         )
       );
 
-      fetchHosts(); // refresh anyway
+      fetchHosts();
       
     } catch (err: unknown) {
       const errorMessage = getApiErrorMessage(err);
@@ -427,31 +429,31 @@ export function HostsList() {
 
                             {/* Secondary icon actions */}
                             <div className="flex items-center gap-1">
-                            <Button
+                              <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setViewHost(host)}
                                 className="h-9 w-9"
-                            >
+                              >
                                 <Eye className="h-4 w-4 text-(--text-secondary)" />
-                            </Button>
+                              </Button>
 
-                            <Button
+                              <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setEditHost(host)}
                                 className="h-9 w-9 text-(--text-secondary)"
-                            >
+                              >
                                 <Edit className="h-4 w-4" />
-                            </Button>
+                              </Button>
 
-                            <Button
+                              <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-9 w-9 text-(--status-error)"
-                            >
+                              >
                                 <Ban className="h-4 w-4" />
-                            </Button>
+                              </Button>
                             </div>
 
                         </div>
