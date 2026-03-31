@@ -1,4 +1,4 @@
-// backend/src/services/user/interfaces/IUserProfileService.ts
+// backend/src/services/user-services/interfaces/IUserProfileService.ts
 
 import { 
     UserBasicInfoUpdateDTO,

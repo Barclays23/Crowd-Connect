@@ -20,7 +20,7 @@ import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
 import { ADMIN_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
-import { EventManagementServices } from '@/services/event-services/implementations/eventManagement.service';
+import { EventManagementServices } from '@/services/event-services/implementations/event.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
 import { suspendEventSchema, UpdateEventFormSchema } from '@/schemas/event.schema';
@@ -32,6 +32,8 @@ import { RazorpayProvider } from '@/services/payment-services/providers/razorpay
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
+import { WalletService } from '@/services/wallet-services/implementations/wallet.services';
+import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
 
 
 
@@ -42,7 +44,7 @@ import { PasswordService } from '@/services/password-services/implementations/pa
 const userRepo = new UserRepository();
 const eventRepo = new EventRepository();
 const bookingRepo = new BookingRepository();
-
+const transactionRepo     = new TransactionRepository();
 
 
 // ──  PROVIDERS
@@ -57,7 +59,9 @@ const paymentServices = new PaymentService(razorPayProvider);
 const userManagementServices = new UserManagementService(userRepo);
 const userProfileServices = new UserProfileService(userRepo);
 const hostManagementServices = new HostManagementServices(userRepo);
-const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService);
+const walletService = new WalletService(userRepo, transactionRepo);
+
+const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService);
 const eventManagementServices = new EventManagementServices(eventRepo, bookingServices);
 const passwordService = new PasswordService(userRepo);
 

@@ -227,7 +227,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       const rawBookings = result[0]?.paginatedResults || [];
       const totalCount = result[0]?.totalCountQuery[0]?.total || 0;
 
-      const bookings = rawBookings.map(mapPopulatedBookingModelToEntity);
+      const bookings: BookingEntityPopulated[] = rawBookings.map(mapPopulatedBookingModelToEntity);
 
       return {
         bookings,

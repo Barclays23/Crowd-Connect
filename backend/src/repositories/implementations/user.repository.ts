@@ -341,6 +341,19 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         }
     }
 
+
+
+
+    async incrementWalletBalance(userId: string, creditAmount: number): Promise<number> {
+        // findOneAndUpdate or findByIdAndUpdate
+    }
+
+
+
+    async decrementWalletBalance(userId: string, debitAmount: number): Promise<number> {
+        // findOneAndUpdate or findByIdAndUpdate
+    }
+
     
 
     

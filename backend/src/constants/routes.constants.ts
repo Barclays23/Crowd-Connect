@@ -63,6 +63,13 @@ export const BOOKING_ROUTES = {
 
 
 
+export const WALLET_ROUTES = {
+    MY_WALLET: '/my-wallet',
+    WALLET_TRANSACTIONS: '/transactions'
+} as const;
+
+
+
 
 export const ADMIN_ROUTES = {
     // User Management

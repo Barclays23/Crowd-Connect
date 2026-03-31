@@ -195,3 +195,27 @@ export default PayoutRequest;
 //       throw err;
 //    }
 // }
+
+
+
+
+
+// models/PayoutRequest.ts
+const payoutRequestSchema = new Schema({
+  eventRef:         { type: ObjectId, ref: 'Event', required: true },
+  hostRef:          { type: ObjectId, ref: 'User', required: true, index: true },
+  grossAmount:      { type: Number, required: true },   // total from bookings
+  commissionRate:   { type: Number, required: true },   // e.g. 0.10
+  commissionAmount: { type: Number, required: true },
+  netAmount:        { type: Number, required: true },   // grossAmount - commissionAmount
+  status: {
+    type: String,
+    enum: ['PENDING', 'APPROVED', 'REJECTED', 'PAID'],
+    default: 'PENDING'
+  },
+  requestedAt:      { type: Date, default: Date.now },
+  reviewedBy:       { type: ObjectId, ref: 'User' },   // admin who processed
+  reviewedAt:       { type: Date },
+  rejectionReason:  { type: String },
+  notes:            { type: String },
+}, { timestamps: true });

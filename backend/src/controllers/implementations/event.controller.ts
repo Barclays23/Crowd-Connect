@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { IEventController } from "../interfaces/IEventController";
-import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
+import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
 import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
@@ -16,7 +16,7 @@ import { SortOrder } from "mongoose";
 
 export class EventController implements IEventController {
     constructor(
-        private _eventServices: IEventManagementServices,
+        private _eventServices: IEventServices,
     ) {
         
     }

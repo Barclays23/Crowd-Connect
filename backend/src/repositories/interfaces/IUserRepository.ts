@@ -74,6 +74,10 @@ export interface IUserRepository {
     updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity>;
     // updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
 
+    incrementWalletBalance(userId: string, creditAmount: number): Promise<number>;
+
+    decrementWalletBalance(userId: string, debitAmount: number): Promise<number>;
+
 }
 
 

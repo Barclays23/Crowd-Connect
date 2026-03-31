@@ -1,10 +1,10 @@
-// backend/src/services/interfaces/IAuthRecovery.ts
+// backend/src/services/event-services/interfaces/IEventServices.ts
 
 import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { EVENT_STATUS, GetEventsFilter, GetAllEventsResult, GetPublicEventsFilter } from "@/types/event.types";
 
 
-export interface IEventManagementServices {
+export interface IEventServices {
     createEvent({ createDto, imageFile }: { 
         createDto: CreateEventRequestDTO; 
         imageFile?: Express.Multer.File;

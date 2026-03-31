@@ -10,19 +10,37 @@ import {
    InitiateBookingResponseDTO,
    VerifyPaymentRequestDTO,
 } from "@/dtos/booking.dto";
-import { mapBookingEntityToResponseDTO, mapBookingOrderDtoToInput, mapConfirmBookingInput } from "@/mappers/booking.mapper";
+import { 
+   mapBookingEntityToResponseDTO, 
+   mapBookingOrderDtoToInput, 
+   mapConfirmBookingInput 
+} from "@/mappers/booking.mapper";
 
-import { BOOKING_STATUS, GetBookingsFilter, GetBookingsResult, PAYMENT_STATUS } from "@/types/booking.types";
-import { EVENT_FORMAT, EVENT_STATUS, TICKET_TYPE } from "@/types/event.types";
+import { 
+   BOOKING_STATUS, 
+   GetBookingsFilter, 
+   GetBookingsResult, 
+   PAYMENT_STATUS 
+} from "@/types/booking.types";
+import { TICKET_TYPE } from "@/types/event.types";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { BOOKING_MESSAGES, MIN_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_USER, ONLINE_MAX_TICKETS_PER_USER } from "@/constants/booking.constants";
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { 
+   BookingCancelInput, 
+   BookingEntity, 
+   BookingEntityPopulated, 
+   ConfirmBookingInput, 
+   CreateBookingInput 
+} from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { ITicketService } from "@/services/ticket-services/interfaces/ITicketService";
-import { validateBookingCancelByAuthority, validateBookingCancelByUser } from "@/utils/validations/bookingValidations";
+import { 
+   validateBookingCancelByAuthority, 
+   validateBookingCancelByUser, 
+   validateInitiateBooking, 
+   validateVerifyAndConfirmPayment
+} from "@/utils/validations/bookingValidations";
 import { calculateRefundAmount, RefundContext } from "@/utils/refundCalculator";
 import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
@@ -30,6 +48,9 @@ import { DetectedChange } from "@/utils/event-change-detector";
 import { Types } from "mongoose";
 import { UserRole } from "@/constants/roles-and-statuses";
 import { redisClient } from "@/config/redis.config";
+import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
+import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
+import { BookingMessages } from "@/constants/responseMessages.constants";
 
 
 
@@ -41,7 +62,7 @@ export class BookingService implements IBookingService {
       private readonly _userRepository:  IUserRepository,
       private readonly _paymentService:  IPaymentService,
       private readonly _ticketService:  ITicketService,
-
+      private readonly _walletService : IWalletService,
    ) {}
 
 
@@ -52,70 +73,15 @@ export class BookingService implements IBookingService {
          const { eventId, userId, quantity: newBookingQty } = bookingReqDto;
 
          const user: UserEntity | null = await this._userRepository.getUserById(userId);
-         if (!user) {
-            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-         }
-
-         if (user.isSuperAdmin) {
-            throw createHttpError(HttpStatus.FORBIDDEN, BOOKING_MESSAGES.SUPER_ADMIN_CANNOT_BOOK);
-         }
 
          const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
-         if (!event) {
-            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-         }
-         if (event.organizer.hostId.toString() === userId) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.CANNOT_BOOK_OWN_EVENT);
-         }
-
-         if (event.eventStatus === EVENT_STATUS.CANCELLED) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_CANCELLED);
-         }
-         if (event.eventStatus === EVENT_STATUS.SUSPENDED) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_SUSPENDED);
-         }
-         if (event.eventStatus === EVENT_STATUS.COMPLETED || event.endDateTime < new Date()) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_ENDED);
-         }
-
-         if (event.eventStatus === EVENT_STATUS.DRAFT) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_NOT_BOOKABLE);
-         }
-
-         const ticketsLeft = event.capacity - event.soldTickets;
-         if (ticketsLeft <= 0) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.TICKETS_SOLD_OUT);
-         }
 
          const existingTicketCount = await this._bookingRepository.sumConfirmedTicketsForUser(userId, eventId);
 
-         if (event.format === EVENT_FORMAT.ONLINE) {
-            if (newBookingQty !== ONLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.ONLINE_LIMIT_PER_USER);
-            }
+         const ticketsLeft = event ? (event.capacity - event.soldTickets) : 0;
 
-            if (existingTicketCount >= ONLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(HttpStatus.CONFLICT, BOOKING_MESSAGES.ONLINE_LIMIT_EXCEEDED);
-            }
-
-         } else {
-            if (newBookingQty < MIN_TICKETS_PER_BOOKING) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.MIN_TICKETS_REQUIRED);
-            }
-            if (newBookingQty > OFFLINE_MAX_TICKETS_PER_BOOKING) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_BOOKING_LIMIT_EXCEEDED);
-            }
-
-            if (existingTicketCount + newBookingQty > OFFLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(
-                  HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_USER_LIMIT_EXCEEDED(existingTicketCount)
-               );
-            }
-         }
-
-         if (newBookingQty > ticketsLeft) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.NOT_ENOUGH_TICKETS(ticketsLeft));
-         }
+         validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
+         // const { user: validUser, event: validEvent } = validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
 
          const totalAmount: number = event.ticketPrice * newBookingQty; // ₹0 for free events
          const ticketNo: string =  this._ticketService.generateTicketNo();
@@ -148,7 +114,7 @@ export class BookingService implements IBookingService {
 
             const populated = await this._bookingRepository.getBookingById(bookingEntity.bookingId);
             if (!populated) {
-               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
+               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, BookingMessages.BOOKING_NOT_FOUND);
             }
 
             const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated);
@@ -199,20 +165,13 @@ export class BookingService implements IBookingService {
          const { paymentOrderId, paymentId, signature } = dto;
 
          const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(paymentOrderId);
-         if (!booking) {
-            throw createHttpError(HttpStatus.NOT_FOUND, "Booking not found for this order");
-         }
-         if (booking.userRef !== userId) {
-            throw createHttpError(HttpStatus.FORBIDDEN, "Unauthorized");
-         }
-         if (booking.bookingStatus !== BOOKING_STATUS.PENDING) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, "This booking has already been processed");
-         }
+
+         validateVerifyAndConfirmPayment(booking, userId);
 
          const isValidSignature = this._paymentService.verifyPaymentSignature(paymentOrderId, paymentId, signature);
 
          if (!isValidSignature) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, "Payment verification failed — invalid signature 2");
+            throw createHttpError(HttpStatus.BAD_REQUEST, "Payment verification failed — invalid signature");
          }
 
          const qrToken = this._ticketService.generateQrToken({
@@ -426,6 +385,17 @@ export class BookingService implements IBookingService {
             amount:    refundAmount
          });
          refundId = refund.refundId;
+
+         // ── Credit Refund Amount to User Wallet ────────────────────────────────────────────
+         await this._walletService.creditToWallet({
+            userId            : booking.user.userId,
+            amount            : refundAmount,
+            transactionType   : TRANSACTION_TYPE.BOOKING_REFUND,
+            referenceType     : TRANSACTION_REFERENCE_TYPE.BOOKING,
+            referenceId       : booking.bookingId,
+            description       : `Refund for booking at ${booking.event.title}`,
+            metadata          : { razorpayRefundId: refundId },   // attach so you can reconcile later
+         });
       }
 
       // ── Cancel Booking ────────────────────────────────────────────

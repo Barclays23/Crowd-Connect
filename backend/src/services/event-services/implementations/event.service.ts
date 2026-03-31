@@ -13,7 +13,7 @@ import {
 } from "@/mappers/event.mapper";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
-import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
+import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
 import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { 
     EVENT_FORMAT, 
@@ -36,7 +36,7 @@ import { redisClient } from "@/config/redis.config";
 
 
 
-export class EventManagementServices implements IEventManagementServices {
+export class EventManagementServices implements IEventServices {
     constructor(
         private _eventRepository: IEventRepository,
         private _bookingService: IBookingService,
