@@ -24,11 +24,12 @@ export const NO_REFUND_PERCENT           = 0;
 // }
 
 
-export const PaymentPurpose = {
+export const PAYMENT_PURPOSE = {
     EVENT_BOOKING: "booking",
     ROLE_UPGRADE: "upgrade",
     // ROLE_UPGRADE: "role_upgrade",
     // MERCHANDISE: "merchandise"
 } as const;
 
-export type PaymentPurpose = (typeof PaymentPurpose)[keyof typeof PaymentPurpose];
+
+export type PaymentPurpose = (typeof PAYMENT_PURPOSE)[keyof typeof PAYMENT_PURPOSE];

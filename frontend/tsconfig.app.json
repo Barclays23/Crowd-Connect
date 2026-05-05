@@ -33,9 +33,7 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src/**/*", 
-    // "../backend/src/utils/event-update-validations.ts", 
-    // "../backend/src/types/webhook.types.ts"
+    "src/**/*",
   ],
   "exclude": ["node_modules", "dist"]
 }
