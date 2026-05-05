@@ -16,9 +16,19 @@ export const NO_REFUND_PERCENT           = 0;
 
 
 
-export enum PaymentPurpose {
-    EVENT_BOOKING = "booking",
-    ROLE_UPGRADE = "upgrade",
-    // ROLE_UPGRADE = "role_upgrade",
-    // MERCHANDISE = "merchandise"
-}
+// export enum PaymentPurpose {
+//     EVENT_BOOKING = "booking",
+//     ROLE_UPGRADE = "upgrade",
+//     // ROLE_UPGRADE = "role_upgrade",
+//     // MERCHANDISE = "merchandise"
+// }
+
+
+export const PaymentPurpose = {
+    EVENT_BOOKING: "booking",
+    ROLE_UPGRADE: "upgrade",
+    // ROLE_UPGRADE: "role_upgrade",
+    // MERCHANDISE: "merchandise"
+} as const;
+
+export type PaymentPurpose = (typeof PaymentPurpose)[keyof typeof PaymentPurpose];
