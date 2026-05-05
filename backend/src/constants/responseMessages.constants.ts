@@ -1,3 +1,4 @@
+import { MIN_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_USER, ONLINE_MAX_TICKETS_PER_USER } from "@/constants/booking.constants";
 
 
 export enum HttpResponse {
@@ -205,6 +206,8 @@ export enum UserMessages {
     CANNOT_CHANGE_VERIFIED_EMAIL = "Verified email address cannot be changed.",
 }
 
+
+
 // ─── HOST MANAGEMENT ────────────────────────────────────────────────────────
 export enum HostMessages {
     HOST_NOT_FOUND = "Couldn't find this host user.",
@@ -228,6 +231,8 @@ export enum HostMessages {
     CANNOT_CHANGE_HOST_DIRECTLY = "Direct role changes to Host are not permitted. Please use the Role Upgrade Portal.",
 }
 
+
+
 // ─── EVENT MANAGEMENT ───────────────────────────────────────────────────────
 export enum EventMessages {
     EVENT_NOT_FOUND = "Coundn't find this event.",
@@ -238,7 +243,89 @@ export enum EventMessages {
     SUCCESS_PUBLISH_EVENT = "Event has been published.",
     FAILED_CREATE_EVENT = "Oops! We couldn’t create your event.",
     FAILED_UPDATE_EVENT = "Oops! We couldn’t update your event.",
+
+    EVENT_ALREADY_STARTED = "Cannot modify booking after event has started",
+    EVENT_ALREADY_ENDED = "Event has already ended",
+    EVENT_ALREADY_CANCELLED = "This event is already cancelled",
+    EVENT_ALREADY_SUSPENDED = "This event has been temporarily suspended",
 }
+
+
+
+
+// ─── BOOKING MANAGEMENT ───────────────────────────────────────────────────────
+export enum BookingMessages {
+    // Success
+    BOOKING_INITIATED = "Booking initiated successfully",
+    BOOKING_CONFIRMED = "Booking confirmed successfully",
+    BOOKING_CANCELLED = "Booking has been cancelled.",
+
+    // Online Event
+    ONLINE_LIMIT_PER_USER = `You can only book ${ONLINE_MAX_TICKETS_PER_USER} ticket for online events`,
+    ONLINE_LIMIT_EXCEEDED = "You already have an active booking for this online event",
+
+    // Offline Event
+    PER_BOOKING_LIMIT_EXCEEDED = `You cannot book more than ${OFFLINE_MAX_TICKETS_PER_BOOKING} tickets at a time.`,
+    MIN_TICKETS_REQUIRED = `Minimum ${MIN_TICKETS_PER_BOOKING} ticket required`,
+
+    // Availability
+    EVENT_NOT_BOOKABLE = "This event is not available for booking",
+    TICKETS_SOLD_OUT = "All tickets for this event have been sold out. Please check later.",
+    WAITLIST_AVAILABLE = "No tickets left, but you can join the waitlist",
+
+    // Booking Restrictions
+    CANNOT_BOOK_OWN_EVENT = "You cannot book your own event.",
+    ADMIN_CANNOT_BOOK = "Admins cannot book events",
+    SUPER_ADMIN_CANNOT_BOOK = "Super admin cannot book events",
+
+    // Cancellation
+    BOOKING_ALREADY_CANCELLED = "This booking is already cancelled",
+    CANCELLATION_WINDOW_CLOSED = "Cannot cancel booking. Cancellation window has already closed",
+    CANCELLATION_NOT_ALLOWED = "This booking cannot be cancelled",
+    UNAUTHORIZED_BOOKING_CANCELLATION = "You are not authorized to cancel this booking",
+    CANNOT_CANCEL_AFTER_ENTRY = "Cannot cancel booking after entry pass has been used",
+
+    // Errors
+    BOOKING_NOT_FOUND = "Booking not found",
+    INVALID_TICKET_QUANTITY = "Invalid ticket quantity",
+}
+
+
+export const DynamicBookingMessages = {
+    NOT_ENOUGH_TICKETS: (ticketsLeft: number): string =>
+        `We are sorry, only ${ticketsLeft} ticket${ticketsLeft === 1 ? '' : 's'} left for this event.`,
+
+    PER_USER_LIMIT_EXCEEDED: (bookedQty: number): string => {
+        const remaining = OFFLINE_MAX_TICKETS_PER_USER - bookedQty;
+        return bookedQty < OFFLINE_MAX_TICKETS_PER_USER
+            ? `You’ve already booked ${bookedQty} of ${OFFLINE_MAX_TICKETS_PER_USER} tickets for this event. ${remaining} more ticket${remaining > 1 ? 's' : ''} allowed.`
+            : `You’ve already booked ${bookedQty} of ${OFFLINE_MAX_TICKETS_PER_USER} tickets for this event. No more tickets allowed.`;
+    },
+
+    TICKET_FULLY_USED: (used: number, total: number): string =>
+        `This ticket has already been used for ${used} of ${total} entries`,
+} as const;
+
+
+
+// ─── QR, TICKET & CHECK-IN MESSAGES ────────────────────────────────────────────────
+export enum QRTicketMessages {
+    INVALID_TICKET = "Invalid ticket",
+    QR_CODE_INVALID = "Invalid ticket or QR code",
+    QR_CODE_EXPIRED = "QR code has expired",
+    NO_TICKETS_REMAINING = "No tickets remaining for entry",
+    CHECK_IN_SUCCESS = "Check-in successful",
+    CHECK_IN_NOT_STARTED = "Check-in for this event hasn't started yet",
+    CHECK_IN_CLOSED = "The event time is over and check-in has closed",
+}
+
+export const DynamicQRTicketMessages = {
+    TICKET_FULLY_USED: (used: number, total: number) => 
+    `This ticket has already been used for ${used} of ${total} entries`,
+}
+
+
+
 
 // ─── ADMIN & ROLE MANAGEMENT ────────────────────────────────────────────────
 export enum AdminMessages {
@@ -257,10 +344,25 @@ export enum AdminMessages {
     ADMIN_CANNOT_DELETE_SUPER_ADMIN = "Super Admin cannot be deleted",
 }
 
-// ─── PAYMENTS & BOOKINGS ────────────────────────────────────────────────────
+// ─── PAYMENTS ────────────────────────────────────────────────────
+export enum WalletMessages {
+    INSUFFICIENT_WALLET_BALANCE = "Insufficient wallet balance"
+}
+
+
 export enum PaymentMessages {
     // Payment system temporarily unavailable.
     // PAYMENT_SETUP_FAILED = "Couldn't load payment gateway. Try again later or contact support.",
     PAYMENT_SETUP_FAILED = "Unable to start payment. Try again later or contact support.",
+    PAYMENT_GATEWAY_ERROR = "Payment gateway error. Please try again.",
     PAYMENT_VERIFICATION_FAILED = "Payment verification failed. If money was deducted, it will be refunded automatically.",
+    PAYMENT_INITIATED = "Payment initiated",
+    PAYMENT_VERIFIED = "Payment verified successfully",
+    PAYMENT_FAILED = "Payment failed",
+    PAYMENT_PENDING = "Payment is pending",
+    PAYMENT_REFUNDED = "Payment refunded",
+    REFUND_INITIATED = "Refund process started",
+    MINIMUM_AMOUNT_REQUIRED = "Minimum transaction amount must be at least ₹1.00.",
+    PAYMENT_AMOUNT_MISMATCH = "Payment amount does not match ...booking... amount",  // booking ??
+    MAX_RETRIES_EXCEEDED = "Maximum payment retry attempts exceeded",
 }

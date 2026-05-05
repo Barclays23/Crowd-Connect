@@ -179,7 +179,7 @@ export function mapBookingEntityToResponseDTO(
     cancellation: entity.cancellation
       ? {
           reason:      entity.cancellation.reason,
-          cancelledAt: entity.cancellation.cancelledAt.toISOString(),
+          cancelledAt: entity.cancellation.cancelledAt?.toISOString(),
           refundId:    entity.cancellation.refundId,
           refundedAt:  entity.cancellation.refundedAt?.toISOString(),
         }

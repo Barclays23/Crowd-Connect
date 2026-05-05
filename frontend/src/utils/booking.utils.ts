@@ -3,6 +3,8 @@ import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
 import { BOOKING_STATUS } from "@/types/booking.types";
 
 
+
+
 // Simple helper for UI max quantity
 export const getMaxBookingQuantity = (
   format: EVENT_FORMAT, 

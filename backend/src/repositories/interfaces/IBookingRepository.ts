@@ -1,7 +1,8 @@
 // backend/src/repositories/interfaces/IBookingRepository.ts
 
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
-import { BOOKING_STATUS, GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
+import { CancelBookingInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput, MarkRefundedInput } from "@/entities/booking.entity";
+import { GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
+import { ClientSession } from "mongoose";
 
 
 
@@ -13,14 +14,21 @@ export interface IBookingRepository {
   getBookingById(bookingId: string): Promise<BookingEntityPopulated | null>;
 
   getBookingByOrderId(orderId: string): Promise<BookingEntity | null>;
+  getBookingByPaymentId(paymentId: string): Promise<BookingEntityPopulated | null>;
 
   getBookingByQrToken(token: string): Promise<BookingEntity | null>;
 
   // Confirm booking after payment verified — sets CONFIRMED status + stores payment + qrToken
-  confirmBooking(bookingId: string, input: ConfirmBookingInput): Promise<BookingEntity | null>;
+  confirmBooking(bookingId: string, input: ConfirmBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
 
   // Mark as FAILED when Razorpay payment.failed webhook received
   markBookingFailed(bookingId: string): Promise<void>;
+
+  markBookingAsRefunded(
+    bookingId: string, 
+    refundDetails: MarkRefundedInput, 
+    options?: { session?: ClientSession }
+  ): Promise<BookingEntity | null>;
 
   // Get paginated bookings — works for both user dashboard and admin dashboard
   // Pass userId to scope to one user; omit for admin (all users)
@@ -35,11 +43,18 @@ export interface IBookingRepository {
   // Atomically decrement remainingEntries — used during QR scan
   decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null>;
 
-  cancelBooking(bookingId: string, cancellationInput: BookingCancelInput): Promise<BookingEntity | null>;
+  cancelBooking(
+    bookingId: string, 
+    cancellationInput: CancelBookingInput, 
+    options?: { session?: ClientSession }
+  ): Promise<BookingEntity | null>;
 
+  
   setGracePeriodForEvent(eventId: string, data: { gracePeriodEnd: Date; majorEventChange: MajorEventChange }): Promise<void>;
-
+  
   findConfirmedBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]>;
   findPendingBookingsForEvent(eventId: string):   Promise<BookingEntityPopulated[]>;
   bulkCancelBookings(bookingIds: string[], updateInput: BulkCancelBookingsInput): Promise<void>;
+  
+  startSession(): Promise<ClientSession>;
 }

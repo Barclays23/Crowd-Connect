@@ -7,6 +7,7 @@ import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { EVENT_STATUS, EventFilterQuery, IEventModel, IEventModelPopulatedHost, SortQuery } from "@/types/event.types";
 import { isGeoNearQuery } from "@/utils/general.utils";
+import { ClientSession } from "mongoose";
 
 
 
@@ -15,69 +16,35 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       super(Event);
    }
 
+   
    async createEvent(eventInput: CreateEventInput): Promise<EventEntity> {
-      try {
-         const eventData = await this.createOne(eventInput);
-         const eventEntity: EventEntity = mapEventModelToEventEntity(eventData);
-         return eventEntity;
-
-      } catch (error) {
-         const msg = error instanceof Error ? error.message : 'Unknown error';
-         console.error("Error in EventRepository.createEvent:", msg);
-         throw error;
-      }
+      const eventData = await this.createOne(eventInput);
+      const eventEntity: EventEntity = mapEventModelToEventEntity(eventData);
+      return eventEntity;
    }
 
 
-   async updateEvent(eventId: string, updateInput: UpdateEventInput): Promise<EventEntity|null> {
-      try {
-         const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, updateInput);
-         const updatedEvent: EventEntity | null = updatedEventData ? mapEventModelToEventEntity(updatedEventData) : null;
-         return updatedEvent;
+   async getEventById(eventId: string): Promise<EventEntity | null> {
+      const eventData: IEventModelPopulatedHost | null = await this.findByIdQuery(eventId)
+         .populate('hostRef')
+         .lean<IEventModelPopulatedHost>()
+         .exec();
 
-      } catch (error) {
-         console.log('error in eventRepository.updateEvent :', error);
-         throw error;
-      }
-   }
-
-
-   async updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS|undefined> {
-      try {
-         const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, updateInput);
-         // const result: EventEntity | null = updatedEventData ? mapEventModelToEventEntity(updatedEventData) : null;
-         // return result;
-         const updatedStatus = updatedEventData?.eventStatus;
-         return updatedStatus;
-
-      } catch (error) {
-         console.log('error in eventRepository.updateEventStatus :', error);
-         throw error;
-      }
+      const result: EventEntity | null = eventData ? mapEventModelToEventEntity(eventData) : null;
+      return result;
    }
 
 
 
-   async deleteEvent(eventId: string): Promise<void> {
-      try {
-         await this.findByIdAndDelete(eventId);
-      } catch (error) {
-         console.log('error in deleteEvent :', error);
-         throw error;
-      }
-   }
-
-
-   // for showing the events in public events page.
    async getPublicEvents(
       filters: EventFilterQuery,
       skip: number,
       limit: number,
       sortField: string,
       sortDirection: 1 | -1
-   ): Promise<{ eventEntity: EventEntity[] | null; totalCount: number }> {
+   ): Promise<{ events: EventEntity[]; totalCount: number }> {
 
-      const query = this.model.find(filters)
+      const query = this.findManyQuery(filters)
          .select('-onlineLink') // don't fetch link for public users
          .populate("hostRef", "name organizationName");
 
@@ -87,17 +54,26 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
          query.sort({ [sortField]: sortDirection });
       }
 
-      const paginatedEvents: IEventModelPopulatedHost[] = await query.skip(skip).limit(limit).lean<IEventModelPopulatedHost[]>().exec();
-      const eventEntity: EventEntity[] | null = paginatedEvents ? paginatedEvents.map(event => mapEventModelToEventEntity(event)) : null;
-      const totalCount: number = await this.model.countDocuments(filters).exec();
+      const [paginatedEvents, totalCount]: [IEventModelPopulatedHost[], number] = await Promise.all([
+         query.skip(skip).limit(limit).lean<IEventModelPopulatedHost[]>().exec(),
+         this.countDocuments(filters),
+      ]);
 
-      return { eventEntity, totalCount };
+      const events: EventEntity[] = paginatedEvents.map(event => mapEventModelToEventEntity(event));
+
+      return { events, totalCount };
    }
 
 
+
    // for listing events in user/admin dashboard
-   async findEvents(query: EventFilterQuery, skip: number, limit: number, sort: SortQuery) {
-      const paginatedEvents = await this.model.find(query)
+   async findEvents(
+      query: EventFilterQuery,
+      skip : number,
+      limit: number,
+      sort : SortQuery
+   ): Promise<EventEntity[]> {  
+      const paginatedEvents: IEventModelPopulatedHost[] = await this.findManyQuery(query)
          .select('-onlineLink') // dont send online link to public users
          .populate("hostRef", "name organizationName")
          .collation({ locale: 'en', strength: 2 })
@@ -107,9 +83,11 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
          .lean<IEventModelPopulatedHost[]>()
          .exec();
 
-         const eventEntity: EventEntity[] | null = paginatedEvents ? paginatedEvents.map(event => mapEventModelToEventEntity(event)) : null;
+      const eventEntity: EventEntity[] = paginatedEvents.map(mapEventModelToEventEntity);
+
       return eventEntity;
    }
+
 
 
    async getTrendingEvents(limit: number): Promise<EventEntity[]> {
@@ -124,32 +102,32 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
          {
             $addFields: {
                trendingScore: {
-               $add: [
-                  // 50% weight: sell-through rate (soldTickets / capacity)
-                  { $multiply: [
-                        { $divide: ["$soldTickets", { $max: ["$capacity", 1] }] },
-                        0.5
-                  ]},
-                  // 30% weight: views (normalized — views / (views + 100) keeps it 0–1)
-                  { $multiply: [
-                        { $divide: ["$views", { $add: ["$views", 100] }] },
-                        0.3
-                  ]},
-                  // 20% weight: recency boost (closer start date = higher score)
-                  { $multiply: [
+                  $add: [
+                     // 50% weight: sell-through rate (soldTickets / capacity)
+                     { $multiply: [
+                           { $divide: ["$soldTickets", { $max: ["$capacity", 1] }] },
+                           0.5
+                     ]},
+                     // 30% weight: views (normalized — views / (views + 100) keeps it 0–1)
+                     { $multiply: [
+                           { $divide: ["$views", { $add: ["$views", 100] }] },
+                           0.3
+                     ]},
+                     // 20% weight: recency boost (closer start date = higher score)
+                     { $multiply: [
                         { $min: [
                            { $divide: [
-                           1,
-                           { $max: [
-                              { $divide: [{ $subtract: ["$startDateTime", now] }, 86400000] }, // days until start
-                              1
-                           ]}
+                              1,
+                              { $max: [
+                                 { $divide: [{ $subtract: ["$startDateTime", now] }, 86400000] }, // days until start
+                                 1
+                              ]}
                            ]},
                            1
                         ]},
                         0.2
-                  ]}
-               ]
+                     ]}
+                  ]
                }
             }
          },
@@ -171,56 +149,65 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
 
-
-   async countEvents(query: EventFilterQuery): Promise<number> {
-      return await this.model.countDocuments(query).exec();
+   async updateEvent(eventId: string, updateInput: UpdateEventInput): Promise<EventEntity|null> {
+      const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, { $set: updateInput });
+      const updatedEvent: EventEntity | null = updatedEventData ? mapEventModelToEventEntity(updatedEventData) : null;
+      return updatedEvent;
    }
 
 
-   async getEventById(eventId: string): Promise<EventEntity | null> {
-      const eventData: IEventModelPopulatedHost | null = await this.findByIdQuery(eventId)
-         .populate('hostRef')
-         .lean<IEventModelPopulatedHost>()
-         .exec();
+   async updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS | null> {
+      const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, { $set: updateInput });
+      const updatedStatus = updatedEventData ? updatedEventData.eventStatus : null;
+      return updatedStatus;
+   }
 
-      const result: EventEntity | null = eventData ? mapEventModelToEventEntity(eventData) : null;
-      return result;
+
+
+   async countEvents(query: EventFilterQuery): Promise<number> {
+      return await this.countDocuments(query);
    }
 
 
    async incrementEventViews(eventId: string): Promise<void> {
-      await this.model.findByIdAndUpdate(eventId, { $inc: { views: 1 } });
+      await this.findByIdAndUpdate(eventId, { $inc: { views: 1 } });
    }
 
 
-   async incrementEventTicketStats(eventId: string, newBookingQty: number, totalAmount: number): Promise<void> {
-      try {
-         await this.model.findByIdAndUpdate(eventId, {
+   async incrementEventTicketAndRevenueStats(eventId: string, newBookingQty: number, totalAmount: number, options: { session?: ClientSession } = {}): Promise<void> {
+      const { session } = options;
+      
+      await this.findByIdAndUpdate(
+         eventId,
+         {
             $inc: {
-               soldTickets: newBookingQty,
-               grossTicketRevenue: totalAmount,  // stays 0 for free events
+               soldTickets       : newBookingQty,
+               grossTicketRevenue: totalAmount, // stays 0 for free events
             },
-         });
-      } catch (error) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in EventRepository.incrementSoldTickets:", msg);
-         throw error;
-      }
+         },
+         { session }
+      );
    }
 
-   async decrementEventTicketStats(eventId: string, cancelledQty: number, totalAmount: number): Promise<void> {
-      try {
-         await this.model.findByIdAndUpdate(eventId, {
+   async decrementEventTicketAndRevenueStats(eventId: string, cancelledQty: number, totalAmount: number, options: { session?: ClientSession } = {}): Promise<void> {
+      const { session } = options;
+
+      await this.findByIdAndUpdate(
+        eventId,
+        {
             $inc: {
-               soldTickets:        -cancelledQty,
+               soldTickets       : -cancelledQty,
                grossTicketRevenue: -totalAmount,
             },
-         });
-      } catch (error) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in EventRepository.decrementSoldTickets:", msg);
-         throw error;
-      }
+        },
+        { session },
+      );
+   }
+
+
+
+   async deleteEvent(eventId: string): Promise<void> {
+      await this.findByIdAndDelete(eventId);
    }
    
 

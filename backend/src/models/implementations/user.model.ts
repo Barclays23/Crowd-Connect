@@ -1,6 +1,6 @@
 // src/models/implementations/user.model.ts
 
-import { model, Schema, Document, Types } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
 
 
@@ -14,6 +14,8 @@ export interface IUserModel {
   mobile : string;
   password : string;
   profilePic? : string;
+
+  walletBalance: number;
 
   isEmailVerified : boolean;
   isMobileVerified : boolean;
@@ -70,6 +72,12 @@ const userSchema = new Schema<IUserModel>(
     profilePic: {
       type: String,
     },
+    walletBalance: { 
+      type: Number, 
+      default: 0, 
+      min: 0 
+    },
+
     isEmailVerified: {
       type: Boolean,
       default: false

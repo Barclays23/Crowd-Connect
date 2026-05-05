@@ -1,6 +1,6 @@
 // backend/src/routes/admin.routes.ts
 
-import { Router } from 'express';
+import e, { Router } from 'express';
 
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
 import { uploadDocument, uploadEventPoster, uploadImage } from '@/middlewares/file-upload.middleware';
@@ -20,7 +20,7 @@ import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
 import { ADMIN_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
-import { EventManagementServices } from '@/services/event-services/implementations/eventManagement.service';
+import { EventManagementServices } from '@/services/event-services/implementations/event.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
 import { suspendEventSchema, UpdateEventFormSchema } from '@/schemas/event.schema';
@@ -32,6 +32,9 @@ import { RazorpayProvider } from '@/services/payment-services/providers/razorpay
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
+import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
+import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
+import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 
 
 
@@ -39,10 +42,10 @@ import { PasswordService } from '@/services/password-services/implementations/pa
 
 
 // ──  REPOSITORIES
-const userRepo = new UserRepository();
-const eventRepo = new EventRepository();
-const bookingRepo = new BookingRepository();
-
+const userRepo          = new UserRepository();
+const eventRepo         = new EventRepository();
+const bookingRepo       = new BookingRepository();
+const transactionRepo   = new TransactionRepository();
 
 
 // ──  PROVIDERS
@@ -52,22 +55,25 @@ const razorPayProvider = new RazorpayProvider();
 
 
 // ──  SERVICES
-const ticketService    = new TicketService(bookingRepo, eventRepo);
-const paymentServices = new PaymentService(razorPayProvider);
-const userManagementServices = new UserManagementService(userRepo);
-const userProfileServices = new UserProfileService(userRepo);
-const hostManagementServices = new HostManagementServices(userRepo);
-const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService);
-const eventManagementServices = new EventManagementServices(eventRepo, bookingServices);
-const passwordService = new PasswordService(userRepo);
+const ticketService             = new TicketService(bookingRepo, eventRepo);
+const paymentServices           = new PaymentService(razorPayProvider);
+const userManagementServices    = new UserManagementService(userRepo);
+const userProfileServices       = new UserProfileService(userRepo);
+const hostManagementServices    = new HostManagementServices(userRepo);
+const walletService             = new WalletService(userRepo, transactionRepo);
+const cacheService              = new RedisCacheService();
+
+const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService);
+const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService);
+const passwordService           = new PasswordService(userRepo, cacheService);
 
 
 
 // ──  CONTROLLERS ──
-const userController = new UserController(userProfileServices, userManagementServices, passwordService);
-const hostController = new HostController(hostManagementServices);
-const eventController = new EventController(eventManagementServices);
-const bookingController = new BookingController(bookingServices);
+const userController        = new UserController(userProfileServices, userManagementServices, passwordService);
+const hostController        = new HostController(hostManagementServices);
+const eventController       = new EventController(eventServices, bookingServices);
+const bookingController     = new BookingController(bookingServices);
 
 
 

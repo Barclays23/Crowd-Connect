@@ -7,6 +7,8 @@ import type {
    GetMyBookingsResponse, 
    InitiateBookingResponse 
 } from "@/types/booking.types";
+import type { UserRole } from "@/types/user.types";
+import { toast } from "react-toastify";
 
 
 
@@ -64,8 +66,32 @@ export const bookingServices = {
 
 
 
-   getAllBookings: async (queryString: string): Promise<GetBookingsApiResponse> => {
+   getAllBookingsForAdmin: async (queryString: string): Promise<GetBookingsApiResponse> => {
       const res = await axiosInstance.get(`/api/admin/bookings?${queryString}`, {
+         withCredentials: true,
+      });
+      return res.data;
+   },
+
+
+   // getBookingsListOfEvent: async (userRole: UserRole | undefined, queryString: string): Promise<GetBookingsApiResponse> => {
+   //    const res = await axiosInstance.get(`/api/event/bookings?${queryString}`, {
+   //       withCredentials: true,
+   //    });
+   //    return res.data;
+   // },
+
+   // interface BookingQueryParams {
+   //    page: string;
+   //    limit: string;
+   //    sortBy: string;
+   //    sortOrder: string;
+   //    search?: string;
+   //    status?: string;
+   // }
+
+   getBookingsListOfEvent: async (eventId: string, queryString: string): Promise<GetBookingsApiResponse> => {
+      const res = await axiosInstance.get(`/api/event/${eventId}/bookings?${queryString}`, {
          withCredentials: true,
       });
       return res.data;

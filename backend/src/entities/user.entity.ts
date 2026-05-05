@@ -46,6 +46,7 @@ export interface UserEntity {
   status: UserStatus;
   mobile?: string;
   profilePic?: string;
+  walletBalance: number;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
   isSuperAdmin: boolean;

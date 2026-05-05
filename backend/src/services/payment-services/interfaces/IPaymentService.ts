@@ -1,6 +1,7 @@
 // src/services/payment-services/interfaces/IPaymentService.ts
 
-import { CreateOrderResult, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { CreateOrderResult, RefundResult } from "@/types/payment.types";
+import { StandardWebhookEvent } from "@/types/webhook.types";
 
 export interface InitiateRefundInput {
    paymentId: string;   // razorpayPaymentId from booking.payment
@@ -12,11 +13,16 @@ export interface InitiateRefundInput {
 
 
 export interface IPaymentService {
-    // Creates a Razorpay order for a paid booking. Called during initiateBooking for paid events.
+    // Creates a payment order for a paid booking. Called during initiateBooking for paid events.
     createBookingOrder(amount: number, userId: string): Promise<CreateOrderResult>;
 
-    // Verifies Razorpay webhook signature after payment capture. Called in verifyPayment flow.
+    // Verifies webhook signature after payment capture. Called in verifyPayment flow.
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
+
+    // Verifies webhook signature for incoming webhooks events.
+    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, any>): boolean;
+
+    normalizeWebhookPayload(rawPayload: any): StandardWebhookEvent | null;
 
     // Initiates a refund via Razorpay or Stripe.
     initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult>;

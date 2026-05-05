@@ -353,8 +353,9 @@ const eventFormSchemaFactory = (isEditMode = false) =>
       if (data.ticketType === TICKET_TYPE.PAID && data.ticketPrice <= 0) {
             ctx.addIssue({
             code: z.ZodIssueCode.custom,
+            // message: "Paid events must have a valid ticket price.",
+            message: "Ticket price should be at least ₹1 for paid events",
             path: ["ticketPrice"],
-            message: "Paid events must have a valid ticket price.",
          });
       }
 

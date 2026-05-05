@@ -1,23 +1,21 @@
 // src/services/payment-services/interfaces/IPaymentProvider.ts
 
-export interface CreateOrderResult {
-  orderId:  string;
-  amount:   number;   // paise
-  currency: string;
-}
+import { CreateOrderResult, RefundResult } from "@/types/payment.types";
+import { StandardWebhookEvent } from "@/types/webhook.types";
 
 
 
-export interface RefundResult {
-  refundId: string;  // Razorpay refund ID — stored in booking.cancellation.refundId
-  amount:   number;  // Refunded amount in paise
-  status:   "pending" | "processed" | "failed";
-}
 
 
 export interface IPaymentProvider {
   createOrder(purpose: string, amount: number, currency: string, userId: string): Promise<CreateOrderResult>;
-  verifySignature(orderId: string, paymentId: string, signature: string): boolean;
+
+  verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
+  
+  verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, any>): boolean;
+
+  normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null
+  
   initiateRefund(paymentId: string, amount: number): Promise<RefundResult>;
 }
 

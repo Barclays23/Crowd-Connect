@@ -19,6 +19,9 @@ import { PaymentService } from "@/services/payment-services/implementations/paym
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
+import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
+import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
+import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
 
 
 
@@ -27,6 +30,8 @@ import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
 const bookingRepo       = new BookingRepository();
 const eventRepo         = new EventRepository();
 const userRepo          = new UserRepository();
+const transactionRepo     = new TransactionRepository();
+// const payoutRequestRepo   = new PayoutRequestRepository();
 
 
 const razorpayProvider = new RazorpayProvider();
@@ -34,7 +39,9 @@ const razorpayProvider = new RazorpayProvider();
 
 const paymentService   = new PaymentService(razorpayProvider);
 const ticketService    = new TicketService(bookingRepo, eventRepo);
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService);
+const walletService    = new WalletService(userRepo, transactionRepo);
+const cacheService    = new RedisCacheService();
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService);
 
 
 const bookingController = new BookingController(bookingService);

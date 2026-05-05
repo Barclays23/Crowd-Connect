@@ -109,7 +109,8 @@ export const priceBase = z.coerce
    .number()
    .finite()
    .nonnegative("Price cannot be negative")
-   .min(0, "Price must be at least 0");
+   .min(0, "Ticket price required");
+
 
 
 
@@ -308,10 +309,10 @@ export const eventFormSchemaFactory = (
       }
 
       // 3. Price Validation: Required if PAID
-      if (data.ticketType === "paid" && data.ticketPrice <= 0) {
+      if (data.ticketType === "paid" && data.ticketPrice < 1) {
             ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Ticket price shouldn't be 0 for paid events",
+            message: "Ticket price should be at least ₹1 for paid events",
             path: ["ticketPrice"],
          });
       }

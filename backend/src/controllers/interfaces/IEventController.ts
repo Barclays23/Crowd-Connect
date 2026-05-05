@@ -18,4 +18,6 @@ export interface IEventController {
     getTrendingEvents(req: Request, res: Response, next: NextFunction): Promise<void>;
 
     getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void>;
+
+    getAllBookingsOfEvent(req: Request, res: Response, next: NextFunction): Promise<void>;
 }

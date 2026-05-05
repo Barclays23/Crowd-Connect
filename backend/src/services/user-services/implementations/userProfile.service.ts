@@ -14,7 +14,7 @@ import {
 
 import { UpdateUserInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
-import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HttpResponse, UserMessages } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { UserStatus } from "@/constants/roles-and-statuses";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
@@ -75,7 +75,11 @@ export class UserProfileService implements IUserProfileService {
 
             const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
                 
-            const updatedUserResult: UserEntity = await this._userRepository.updateUserProfile(currentUserId, updateInput);
+            const updatedUserResult: UserEntity | null = await this._userRepository.updateUserProfile(currentUserId, updateInput);
+            
+            if (!updatedUserResult) {
+                throw createHttpError(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
+            }
 
             const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
 
@@ -127,7 +131,11 @@ export class UserProfileService implements IUserProfileService {
 
             const profilPicInput = {profilePic: profilePicUrl}
 
-            const updatedUserResult: UserEntity = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
+            const updatedUserResult: UserEntity | null = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
+
+            if (!updatedUserResult) {
+                throw createHttpError(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
+            }
 
             const updatedProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
 

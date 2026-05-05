@@ -32,7 +32,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src/**/*", "../backend/src/utils/event-update-validations.ts"],
+  "include": [
+    "src/**/*", 
+    // "../backend/src/utils/event-update-validations.ts", 
+    // "../backend/src/types/webhook.types.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
 

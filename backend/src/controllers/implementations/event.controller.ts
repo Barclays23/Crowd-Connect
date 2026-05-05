@@ -2,13 +2,16 @@
 
 import { Request, Response, NextFunction } from "express";
 import { IEventController } from "../interfaces/IEventController";
-import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
+import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
 import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { mapCreateEventRequestToDto, mapEventDiscoveryQueryToFilters } from "@/mappers/event.mapper";
 import { allowedEventSortFields, EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, GetPublicEventsFilter, TICKET_TYPE } from "@/types/event.types";
 import { SortOrder } from "mongoose";
+import { ALLOWED_BOOKING_SORT_FIELDS, BOOKING_STATUS, BookingSortField, GetBookingsFilter } from "@/types/booking.types";
+import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
+import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 
 
 
@@ -16,7 +19,8 @@ import { SortOrder } from "mongoose";
 
 export class EventController implements IEventController {
     constructor(
-        private _eventServices: IEventManagementServices,
+        private _eventServices: IEventServices,
+        private _bookingServices: IBookingService,
     ) {
         
     }
@@ -191,7 +195,7 @@ export class EventController implements IEventController {
             console.log('eventId :', eventId);
             console.log('suspendReason :', suspendReason);
 
-            const updatedStatus: EVENT_STATUS | undefined = await this._eventServices.suspendEvent({eventId, suspendReason});
+            const updatedStatus: EVENT_STATUS | null = await this._eventServices.suspendEvent({eventId, suspendReason});
 
             res.status(HttpStatus.OK).json({
                 success: true,
@@ -349,6 +353,54 @@ export class EventController implements IEventController {
             console.error('Error in eventController.getEventDetails:', msg);
             next(error);
         };
+    }
+
+
+
+    async getAllBookingsOfEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+
+            const page    = parseInt(req.query.page  as string) || 1;
+            const limit   = parseInt(req.query.limit as string) || 10;
+
+            const status  = (req.query.status  as BOOKING_STATUS) || undefined;
+            const search      = (req.query.search      as string)?.trim() || "";
+            const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
+
+            const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
+            ? (req.query.sortBy as BookingSortField)
+            : "createdAt";
+
+            const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+
+            const filters: GetBookingsFilter = {
+                eventId,
+                page,
+                limit,
+                status:      status      ? (status as BOOKING_STATUS) : undefined,
+                eventFormat: eventFormat ? (eventFormat as EVENT_FORMAT) : undefined,
+                search:      search      ? search : undefined,
+                sortBy,
+                sortOrder,
+            };
+
+            console.log("✅ Parsed filters for getAllBookingsOfEvent:", filters);
+
+            // const result: GetBookingsResponseDTO = await this._bookingServices.getAllBookingsOfEvent(filters);
+            const result: GetBookingsResponseDTO = await this._bookingServices.getBookingsList(filters);
+
+            res.status(HttpStatus.OK).json({
+                success:    true,
+                bookingsData:   result.bookings,
+                pagination: result.pagination,
+            });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            console.error("Error in EventController.getAllBookingsOfEvent:", msg);
+            next(error);
+        }
     }
 
 }

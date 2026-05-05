@@ -49,6 +49,7 @@ export const EVENT_ROUTES = {
     PUBLIC_EVENTS: '/public-events',
     TRENDING_EVENTS: '/trending-events',
     EVENT_DETAILS: '/events/:eventId',
+    GET_BOOKINGS_OF_EVENT: '/:eventId/bookings',
     INITIATE_BOOKING: '/:eventId/initiate-booking',
 } as const;
 
@@ -59,6 +60,19 @@ export const BOOKING_ROUTES = {
     MY_BOOKINGS: '/my-bookings',
     BOOKING_DETAILS: '/:bookingId',
     VERIFY_PAYMENT: '/:bookingId/verify-payment'
+} as const;
+
+
+
+export const WALLET_ROUTES = {
+    MY_WALLET: '/my-wallet',
+    WALLET_TRANSACTIONS: '/transactions'
+} as const;
+
+
+export const WEBHOOK_ROUTES = {
+    RAZORPAY_WEBHOOK: '/razorpay',
+    STRIPE_WEBHOOK: '/stripe'
 } as const;
 
 

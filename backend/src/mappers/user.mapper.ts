@@ -45,6 +45,7 @@ export const mapUserModelToUserEntity = (doc: IUserModel): UserEntity => ({
    status: doc.status,
    mobile: doc.mobile,
    profilePic: doc.profilePic,
+   walletBalance: doc.walletBalance,
    isEmailVerified: doc.isEmailVerified,
    isMobileVerified: doc.isMobileVerified,
    isSuperAdmin: doc.isSuperAdmin,
@@ -121,6 +122,7 @@ export const mapUserEntityToAuthUserDto = (entity: UserEntity): AuthUserResponse
    // mobile: entity?.mobile,
    mobile: entity.mobile,
    profilePic: entity.profilePic ?? undefined,
+   walletBalance: entity.walletBalance,
    isEmailVerified: entity.isEmailVerified,
    isSuperAdmin: entity.isSuperAdmin,
 });
@@ -145,6 +147,7 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
       // profilePic: entity.profilePic ?? undefined,
       mobile: entity.mobile,
       profilePic: entity.profilePic,
+      walletBalance: entity.walletBalance,
       isEmailVerified: entity.isEmailVerified,
       isMobileVerified: entity.isMobileVerified,
       isSuperAdmin: entity.isSuperAdmin,

@@ -24,7 +24,7 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
   const isAttended = booking.bookingStatus === BOOKING_STATUS.ATTENDED;
   const isCancelled = booking.bookingStatus === BOOKING_STATUS.CANCELLED;
 
-  const ticketNumber = booking.bookingId.slice(-8).toUpperCase();
+  const ticketNumber = booking.ticketNo;
 
   return (
     <div

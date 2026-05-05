@@ -98,18 +98,13 @@ export interface ConfirmBookingInput {
   bookingStatus: BOOKING_STATUS;
 }
 
-// 1
-// export interface ConfirmBookingInput {
-//   paymentId: string;
-//   signature: string;
-//   qrToken: string;
-//   paymentStatus: PAYMENT_STATUS;
-//   bookingStatus: BOOKING_STATUS;
-//   paidAt: Date;
-// }
+
+export interface UpdateBookingInput {  // or UpdateBookingRefundInput
+
+}
 
 
-export interface BookingCancelInput {
+export interface CancelBookingInput {
   bookingStatus: BOOKING_STATUS;
   paymentStatus: PAYMENT_STATUS;
   // qrToken:       string;
@@ -126,6 +121,13 @@ export interface BulkCancelBookingsInput {
   bookingStatus: BOOKING_STATUS;
   cancellation: {
     cancelledAt:  Date;
-    cancelReason: string;
+    reason: string;
   };
+}
+
+
+export interface MarkRefundedInput {
+  paymentStatus: PAYMENT_STATUS;
+  refundId: string;
+  refundedAt: Date;
 }

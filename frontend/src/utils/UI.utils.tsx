@@ -4,6 +4,7 @@ import type { EVENT_STATUS, IEventState } from "@/types/event.types";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
 import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { SiIcloud } from 'react-icons/si'
+import { TRANSACTION_DIRECTION, TRANSACTION_STATUS, TRANSACTION_TYPE } from "@/types/wallet.types";
 
 
 
@@ -165,6 +166,37 @@ export function getPaymentStatusVariant(
     case PAYMENT_STATUS.FAILED:   return "destructive";
     default:                      return "outline";
   }
+}
+
+
+
+
+
+
+// ─── Wallet & Transaction UI helpers ────────────────────────────────────────────────────
+export function getTransactionStatusVariant (status: TRANSACTION_STATUS): "default" | "secondary" | "destructive" | "outline" {
+  switch (status) {
+    case TRANSACTION_STATUS.COMPLETED: return "default";
+    case TRANSACTION_STATUS.PENDING:   return "secondary";
+    case TRANSACTION_STATUS.FAILED:    return "destructive";
+    default:                           return "outline";
+  }
+}
+
+
+export const TRANSACTION_TYPE_LABELS: Record<TRANSACTION_TYPE, string> = {
+  [TRANSACTION_TYPE.BOOKING_REFUND]  : "Booking refund",
+  [TRANSACTION_TYPE.CASHBACK]        : "Cashback",
+  [TRANSACTION_TYPE.REFERRAL_CREDIT] : "Referral credit",
+  [TRANSACTION_TYPE.HOST_PAYOUT]     : "Host payout",
+  [TRANSACTION_TYPE.WALLET_PAYMENT]  : "Wallet payment",
+  [TRANSACTION_TYPE.WITHDRAWAL]      : "Withdrawal",
+};
+
+
+export function formatTransactionAmount(amount: number, direction: TRANSACTION_DIRECTION): string {
+  const prefix = direction === TRANSACTION_DIRECTION.CREDIT ? "+ " : "− ";
+  return `${prefix}₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 }
 
 

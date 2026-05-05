@@ -1,4 +1,4 @@
-// src/types/razorpay.types.ts
+// frontend/src/types/razorpay.types.ts
 
 export interface RazorpayPaymentSuccessResponse {
   razorpay_order_id: string;

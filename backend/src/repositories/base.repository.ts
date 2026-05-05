@@ -1,6 +1,6 @@
 // backend/src/repositories/base.repository.ts
-import mongoose, { 
-    Document, 
+import { 
+    ClientSession,
     Model,
     QueryFilter,
     UpdateQuery,
@@ -12,15 +12,19 @@ import mongoose, {
 
 
 
-// export abstract class BaseRepository<T extends Document> {
 export abstract class BaseRepository<T> {
 
-    constructor(protected model: Model<T>) {}
+    constructor(protected readonly model: Model<T>) {}
     
 
-    async createOne(data: Partial<T>): Promise<T>{
+    async createOne(
+        data: Partial<T>,
+        options: { session?: ClientSession } = {}
+    ): Promise<T>{
+        const { session } = options;
+
         const document = new this.model(data);
-        const savedDocument = await document.save();
+        const savedDocument = await document.save({session});
         return savedDocument as unknown as T;
     }
 
@@ -36,36 +40,21 @@ export abstract class BaseRepository<T> {
         return findDocument as unknown as T;
     }
     
-    // Query builders for complex operations (populations)
-    findByIdQuery(id: string) { // findByIdQuery
+
+    // Returns Query object for chaining (.populate, .select, etc.)
+    findByIdQuery(id: string) {
         return this.model.findById(id);  // Returns a Query object, not a Promise
     }
 
-    async findByIdAndUpdate(updateId: string, updateData: UpdateQuery<T>): Promise<T | null>{
-        const updatedDocument = await this.model.findByIdAndUpdate(
-            updateId,
-            { $set: updateData },
-            // { new: true, runValidators: true }  // depricated
-            { returnDocument: 'after', runValidators: true }
-        );
-        return updatedDocument as unknown as T;
+    
+    findOneQuery(query: QueryFilter<T>) {
+        return this.model.findOne(query);  // Returns Query object for chaining
     }
 
 
-    async findByIdAndDelete(id: string): Promise<T | null>{
-        const deletedDocument = await this.model.findByIdAndDelete(id);
-        return deletedDocument as unknown as T;
-    }
-
-
-    async findOneAndUpdate(query: QueryFilter<T>, updateData: Partial<T>): Promise<T | null>{
-        const updatedDocument = await this.model.findOneAndUpdate(
-            query,
-            { $set: updateData },
-            // { new: true, runValidators: true }  // depricated
-            { returnDocument: 'after', runValidators: true }
-        );
-        return updatedDocument as unknown as T;
+    // Returns Query object for chaining (.sort, .skip, .limit, .lean, .select etc.)
+    findManyQuery(query: QueryFilter<T> = {}) {
+        return this.model.find(query);  // Returns a Query object, not a Promise
     }
 
 
@@ -80,6 +69,55 @@ export abstract class BaseRepository<T> {
             .limit(options?.limit ?? 0)
             .sort(options?.sort ?? {}) as unknown as T[];
     }
+
+
+
+    // Caller controls the full update operator ($set, $inc, $push, etc.)
+    async findOneAndUpdate(
+        query: QueryFilter<T>, 
+        updateData: UpdateQuery<T>,
+        options: { session?: ClientSession; new?: boolean } = {}
+    ): Promise<T | null>{
+        const updatedDocument = await this.model.findOneAndUpdate(
+            query,
+            updateData,
+            // { new: true, runValidators: true }  // depricated
+            { 
+                returnDocument  : 'after', 
+                runValidators   : true, 
+                session         : options.session
+            }
+        );
+        return updatedDocument as unknown as T;
+    }
+
+
+
+    // Caller controls the full update operator ($set, $inc, $push, etc.)
+    async findByIdAndUpdate(
+        updateId: string, 
+        updateData: UpdateQuery<T>,
+        options: { session?: ClientSession; new?: boolean } = {}
+    ): Promise<T | null> {
+        const updatedDocument = await this.model.findByIdAndUpdate(
+            updateId,
+            updateData,
+            // { new: true, runValidators: true }  // depricated
+            { 
+                returnDocument  : 'after', 
+                runValidators   : true, 
+                session         : options.session
+            }
+        );
+        return updatedDocument as unknown as T;
+    }
+
+
+    async findByIdAndDelete(id: string): Promise<T | null>{
+        const deletedDocument = await this.model.findByIdAndDelete(id);
+        return deletedDocument as unknown as T;
+    }
+
     
 
     async updateMany(query: QueryFilter<T>, updateData: UpdateQuery<T>): Promise<void> {
@@ -90,6 +128,11 @@ export abstract class BaseRepository<T> {
     async countDocuments(query: QueryFilter<T>): Promise<number> {
         const count = await this.model.countDocuments(query);
         return count;
+    }
+
+
+    async startSession(): Promise<ClientSession> {
+        return this.model.db.startSession();
     }
 
 }

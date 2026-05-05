@@ -150,6 +150,12 @@ export interface IBookingPopulatedUserAndEvent extends Omit<IBookingModel, "even
 }
 
 
+export interface BookingFacetResult {
+  paginatedResults: IBookingPopulatedUserAndEvent[];
+  totalCountQuery : { total: number }[];
+}
+
+
 // ─── Filter / Query types ─────────────────────────────────────────────────────
 
 export const ALLOWED_BOOKING_SORT_FIELDS: BookingSortField[] = ["createdAt", "startDateTime", "ticketRate", "quantity", "ticketNo"];

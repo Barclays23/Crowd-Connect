@@ -1,19 +1,32 @@
 // backend/src/services/event-services/implementations/eventManagement.service.ts
-import { deleteFromCloudinary, uploadBase64ToCloudinary, uploadToCloudinary } from "@/config/cloudinary";
+import { 
+    deleteFromCloudinary, 
+    uploadBase64ToCloudinary, 
+    uploadToCloudinary 
+} from "@/config/cloudinary";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
-import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
+import { 
+    CreateEventRequestDTO, 
+    EventResponseDTO, 
+    GetDiscoveryEventsResult, 
+    UpdateEventRequestDTO 
+} from "@/dtos/event.dto";
+import { 
+    CreateEventInput, 
+    EventEntity, 
+    EventStatusUpdateInput, 
+    UpdateEventInput 
+} from "@/entities/event.entity";
 import { 
     mapCreateEventRequestDtoToInput, 
     mapEventEntityToEventResponseDto, 
     mapToEventStatusUpdateInput, 
-    mapToEventStatusUpdateResponseDto, 
     mapUpdateEventRequestDtoToInput 
 } from "@/mappers/event.mapper";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
-import { IEventManagementServices } from "@/services/event-services/interfaces/IEventManagementServices";
+import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
 import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { 
     EVENT_FORMAT, 
@@ -24,22 +37,36 @@ import {
     TICKET_TYPE, 
     GetPublicEventsFilter 
 } from "@/types/event.types";
-import { buildChangeSummary, DetectedChange, detectMajorEventChanges } from "@/utils/event-change-detector";
-import { validateEventCancel, validateEventCreate, validateEventDelete, validateEventPublish, validateEventSuspend, validateEventUpdateByAdmin, validateEventUpdateByHost } from "@/utils/validations/eventValidations";
+import { 
+    buildChangeSummary, 
+    DetectedChange, 
+    detectMajorEventChanges 
+} from "@/utils/event-change-detector";
+import { 
+    validateEventCancel, 
+    validateEventCreate, 
+    validateEventDelete, 
+    validateEventPublish, 
+    validateEventSuspend, 
+    validateEventUpdateByAdmin, 
+    validateEventUpdateByHost 
+} from "@/utils/validations/eventValidations";
 import { applyEventStatusFilter } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
 import { redisClient } from "@/config/redis.config";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 
 
 
 
 
-export class EventManagementServices implements IEventManagementServices {
+export class EventManagementServices implements IEventServices {
     constructor(
         private _eventRepository: IEventRepository,
         private _bookingService: IBookingService,
+        private _cacheService: ICacheService,
         // private _paymentService:    IPaymentService,
         // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
@@ -108,90 +135,7 @@ export class EventManagementServices implements IEventManagementServices {
 
             validateEventUpdateByHost(existingEvent, updateEventDto, currentUserId, imageFile);
 
-            let updatedPosterUrl: string | undefined = undefined;
-
-            if (imageFile) {
-                updatedPosterUrl = await uploadToCloudinary({
-                    fileBuffer: imageFile.buffer,
-                    folderPath: "event-posters",
-                    fileType:   "image",
-                });
-            } else if (updateEventDto.aiGeneratedImage) {
-                // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
-                updatedPosterUrl = await uploadBase64ToCloudinary({
-                    base64Data: updateEventDto.aiGeneratedImage,
-                    folderPath: "event-posters",
-                });
-            }
-
-            const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
-                existingEvent,
-                updateEventDto,
-                updatedPosterUrl,
-            });
-
-            const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
-            const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
-
-            if (formatChanged) {
-                if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
-                    // Switching to offline: clear the online link, ensure location is present
-                    updateEventInput.onlineLink    = null;
-                    updateEventInput.locationName  = updateEventDto.locationName;
-                    updateEventInput.location      = updateEventDto.location;
-                }
-
-                if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
-                    // Switching to online: clear location fields
-                    updateEventInput.locationName = undefined;
-                    updateEventInput.location     = null;
-
-                    // If event is already published, generate the online link immediately.
-                    // If still draft, the link will be generated at publish time.
-                    if (isPublished) {
-                        // updateEventInput.onlineLink = generateMeetingLink(existingEvent);
-                    }
-                }
-            }
-
-
-            // if no changes made while updating event
-            if (Object.keys(updateEventInput).length === 0) {
-                // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
-            }
-
-            const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(eventId, updateEventInput);
-
-            if (!updatedEvent) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
-            }
-
-            // ── Major change detection → grace period implememtation ────────────────────────────
-            const hasStarted = existingEvent.startDateTime <= new Date();
-            if (!hasStarted) {
-                const majorChanges: DetectedChange[] = detectMajorEventChanges(existingEvent, updateEventDto);
-
-                if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
-
-                    const gracePeriodEnd = new Date(
-                        Math.min(
-                            existingEvent.startDateTime.getTime(),
-                            Date.now() + 48 * 60 * 60 * 1000
-                        )
-                    );
-
-                    await this._bookingService.setGracePeriodForEvent(eventId, {
-                        gracePeriodEnd,
-                        summary: buildChangeSummary(majorChanges),
-                        changes:  majorChanges,
-                    });
-    
-                    // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
-                }
-            }
-
-            const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
-            return mappedEvent;
+            return this._executeEventUpdate(existingEvent, updateEventDto, imageFile);
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";
@@ -211,90 +155,7 @@ export class EventManagementServices implements IEventManagementServices {
 
             validateEventUpdateByAdmin(existingEvent, updateEventDto, imageFile);
 
-            let updatedPosterUrl: string | undefined = undefined;
-
-            if (imageFile) {
-                updatedPosterUrl = await uploadToCloudinary({
-                    fileBuffer: imageFile.buffer,
-                    folderPath: "event-posters",
-                    fileType:   "image",
-                });
-            } else if (updateEventDto.aiGeneratedImage) {
-                // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
-                updatedPosterUrl = await uploadBase64ToCloudinary({
-                    base64Data: updateEventDto.aiGeneratedImage,
-                    folderPath: "event-posters",
-                });
-            }
-
-            const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
-                existingEvent,
-                updateEventDto,
-                updatedPosterUrl,
-            });
-
-            const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
-            const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
-
-            if (formatChanged) {
-                if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
-                    // Switching to offline: clear the online link, ensure location is present
-                    updateEventInput.onlineLink    = null;
-                    updateEventInput.locationName  = updateEventDto.locationName;
-                    updateEventInput.location      = updateEventDto.location;
-                }
-
-                if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
-                    // Switching to online: clear location fields
-                    updateEventInput.locationName = undefined;
-                    updateEventInput.location     = null;
-
-                    // If event is already published, generate the online link immediately.
-                    // If still draft, the link will be generated at publish time.
-                    if (isPublished) {
-                        // updateEventInput.onlineLink = generateMeetingLink(existingEvent);
-                    }
-                }
-            }
-
-
-            // if no changes made while updating event
-            if (Object.keys(updateEventInput).length === 0) {
-                // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
-            }
-
-            const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(eventId, updateEventInput);
-
-            if (!updatedEvent) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
-            }
-
-            // ── Major change detection → grace period implememtation ────────────────────────────
-            const hasStarted = existingEvent.startDateTime <= new Date();
-            if (!hasStarted) {
-                const majorChanges: DetectedChange[] = detectMajorEventChanges(existingEvent, updateEventDto);
-
-                if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
-
-                    const gracePeriodEnd = new Date(
-                        Math.min(
-                            existingEvent.startDateTime.getTime(),
-                            Date.now() + 48 * 60 * 60 * 1000
-                        )
-                    );
-
-                    await this._bookingService.setGracePeriodForEvent(eventId, {
-                        gracePeriodEnd,
-                        summary: buildChangeSummary(majorChanges),
-                        changes:  majorChanges,
-                    });
-    
-                    // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
-                }
-            }
-
-            const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
-            return mappedEvent;
+            return this._executeEventUpdate(existingEvent, updateEventDto, imageFile);
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";
@@ -435,24 +296,25 @@ export class EventManagementServices implements IEventManagementServices {
 
 
     // cancel /suspend by admin
-    async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EVENT_STATUS | undefined> {
+    async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EVENT_STATUS | null> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventSuspend(eventEntity);
 
-            // Cancel event + refund all confirmed bookings before changing event status
-            await this._bookingService.cancelAllBookingsForEvent(
-                eventId,
-                `Event suspended by admin: ${suspendReason}`
-            );
-
+            // suspend the event
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
                 newStatus: EVENT_STATUS.SUSPENDED,
                 reason: suspendReason,
             });
-
+            
             const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+
+            // Cancel + refund all confirmed bookings (batched process)
+            await this._bookingService.cancelAllBookingsForEvent(
+                eventId,
+                `Event suspended by admin: ${suspendReason}`
+            );
 
             // Send notification to host and attendees (later)
             // if (updatedStatus === EVENT_STATUS.SUSPENDED) {
@@ -474,31 +336,32 @@ export class EventManagementServices implements IEventManagementServices {
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in EventManagementServices.suspendEvent:", msg);
+            console.error("Error in EventServices.suspendEvent:", msg);
             throw error;
         }
     }
 
 
     // cancel by host
-    async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | undefined> {
+    async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | null> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventCancel(eventEntity, userId);
 
-            // Cancel event + refund all confirmed bookings before changing event status
-            await this._bookingService.cancelAllBookingsForEvent(
-                eventId,
-                `Event cancelled by host: ${cancelReason}`
-            );
-
+            // cancel the event
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
                 newStatus: EVENT_STATUS.CANCELLED,
                 reason: cancelReason,
             });
-
+            
             const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+            
+            // Cancel + refund all confirmed bookings (batched process)
+            await this._bookingService.cancelAllBookingsForEvent(
+                eventId,
+                `Event cancelled by host: ${cancelReason}`
+            );
 
             // Send notification to host and attendees (later)
             // if (updatedStatus === EVENT_STATUS.CANCELLED) {
@@ -541,7 +404,9 @@ export class EventManagementServices implements IEventManagementServices {
             // }
 
             await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
-            await redisClient.del("trending_events");
+
+            // await redisClient.del("trending_events");
+            await this._cacheService.deleteKeyValue("trending_events");
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -635,7 +500,7 @@ export class EventManagementServices implements IEventManagementServices {
         console.log('Selected Sort Option :', sortBy)
         console.log('sortField :', sortField, 'sortOrder :', sortOrder)
 
-        const { eventEntity, totalCount } = await this._eventRepository.getPublicEvents(
+        const { events, totalCount } = await this._eventRepository.getPublicEvents(
             dbQuery, 
             skip, 
             limit, 
@@ -645,7 +510,7 @@ export class EventManagementServices implements IEventManagementServices {
 
         // 3. Map Mongoose documents to secure public DTOs
         // (Removing sensitive info like onlineLink [cite: 186, 523])
-        const eventsData: EventResponseDTO[] = eventEntity ? eventEntity.map(mapEventEntityToEventResponseDto) : [];
+        const eventsData: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
 
         return {
             eventsData,
@@ -682,7 +547,9 @@ export class EventManagementServices implements IEventManagementServices {
         const CACHE_KEY = "trending_events";
         const TTL = 60 * 20; // 20 minutes
 
-        const cached = await redisClient.get(CACHE_KEY);
+        // const cached = await redisClient.get(CACHE_KEY);
+        const cached: string | null = await this._cacheService.getKeyValue(CACHE_KEY);
+
         if (cached) {
             const cachedTredingEvents: EventResponseDTO[] = JSON.parse(cached) as EventResponseDTO[];
             return cachedTredingEvents;
@@ -691,9 +558,107 @@ export class EventManagementServices implements IEventManagementServices {
         const events: EventEntity[] = await this._eventRepository.getTrendingEvents(limit);
         const trendingEvents: EventResponseDTO[] = events.map(mapEventEntityToEventResponseDto);
 
-        await redisClient.setEx(CACHE_KEY, TTL, JSON.stringify(trendingEvents));
+        // await redisClient.setEx(CACHE_KEY, TTL, JSON.stringify(trendingEvents));
+        await this._cacheService.setKeyValue(CACHE_KEY, JSON.stringify(trendingEvents), TTL);
 
         return trendingEvents;
+    }
+
+
+
+
+    // used for both updateEventByHost & updateEventByAdmin
+    private async _executeEventUpdate(
+        existingEvent: EventEntity, 
+        updateEventDto: UpdateEventRequestDTO, 
+        imageFile?: Express.Multer.File
+    ): Promise<EventResponseDTO> {
+
+        let updatedPosterUrl: string | undefined = undefined;
+
+        if (imageFile) {
+            updatedPosterUrl = await uploadToCloudinary({
+                fileBuffer: imageFile.buffer,
+                folderPath: "event-posters",
+                fileType:   "image",
+            });
+        } else if (updateEventDto.aiGeneratedImage) {
+            // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
+            updatedPosterUrl = await uploadBase64ToCloudinary({
+                base64Data: updateEventDto.aiGeneratedImage,
+                folderPath: "event-posters",
+            });
+        }
+
+        const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
+            existingEvent,
+            updateEventDto,
+            updatedPosterUrl,
+        });
+
+        const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
+        const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
+
+        if (formatChanged) {
+            if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
+                // Switching to offline: clear the online link, ensure location is present
+                updateEventInput.onlineLink    = null;
+                updateEventInput.locationName  = updateEventDto.locationName;
+                updateEventInput.location      = updateEventDto.location;
+            }
+
+            if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
+                // Switching to online: clear location fields
+                updateEventInput.locationName = undefined;
+                updateEventInput.location     = null;
+
+                // If event is already published, generate the online link immediately.
+                // If still draft, the link will be generated at publish time.
+                if (isPublished) {
+                    // updateEventInput.onlineLink = generateMeetingLink(existingEvent);
+                }
+            }
+        }
+
+
+        // if no changes made while updating event
+        if (Object.keys(updateEventInput).length === 0) {
+            // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
+        }
+
+        const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(existingEvent.id, updateEventInput);
+
+        if (!updatedEvent) {
+            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
+        }
+
+        // ── Major change detection → grace period implememtation ────────────────────────────
+        const hasStarted = existingEvent.startDateTime <= new Date();
+        if (!hasStarted) {
+            const majorChanges: DetectedChange[] = detectMajorEventChanges(existingEvent, updateEventDto);
+
+            if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
+
+                const gracePeriodEnd = new Date(
+                    Math.min(
+                        existingEvent.startDateTime.getTime(),
+                        Date.now() + 48 * 60 * 60 * 1000
+                    )
+                );
+
+                await this._bookingService.setGracePeriodForEvent(existingEvent.id, {
+                    gracePeriodEnd,
+                    summary: buildChangeSummary(majorChanges),
+                    changes:  majorChanges,
+                });
+
+                // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
+            }
+        }
+
+        const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
+        return mappedEvent;
+
     }
 
 

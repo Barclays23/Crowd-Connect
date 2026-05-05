@@ -22,6 +22,7 @@ export interface UserState {
   isEmailVerified: boolean;
   isMobileVerified: boolean;
   isSuperAdmin?: boolean;
+  walletBalance?: number;
 
   organizationName?: string | null;
   registrationNumber?: string | null;

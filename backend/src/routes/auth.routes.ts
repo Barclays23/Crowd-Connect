@@ -22,6 +22,7 @@ import { AuthController } from '@/controllers/implementations/auth.controller';
 
 import { AUTH_ROUTES } from '@/constants/routes.constants';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
+import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 
 
 
@@ -31,10 +32,13 @@ const userRepository = new UserRepository()
 
 
 // SERVICES
-const registrationService = new AuthRegistrationService(userRepository);
-const sessionService = new AuthSessionService(userRepository);
-const recoveryService = new AuthRecoveryService(userRepository);
-const passwordService = new PasswordService(userRepository)
+const cacheService          = new RedisCacheService();
+const registrationService   = new AuthRegistrationService(userRepository, cacheService);
+const sessionService        = new AuthSessionService(userRepository, cacheService);
+const recoveryService       = new AuthRecoveryService(userRepository, cacheService);
+const passwordService       = new PasswordService(userRepository, cacheService)
+
+
 
 // CONTROLLER
 const authController = new AuthController(

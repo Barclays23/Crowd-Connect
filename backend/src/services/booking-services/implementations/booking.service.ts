@@ -10,26 +10,52 @@ import {
    InitiateBookingResponseDTO,
    VerifyPaymentRequestDTO,
 } from "@/dtos/booking.dto";
-import { mapBookingEntityToResponseDTO, mapBookingOrderDtoToInput, mapConfirmBookingInput } from "@/mappers/booking.mapper";
+import { 
+   mapBookingEntityToResponseDTO, 
+   mapBookingOrderDtoToInput, 
+   mapConfirmBookingInput 
+} from "@/mappers/booking.mapper";
 
-import { BOOKING_STATUS, GetBookingsFilter, GetBookingsResult, PAYMENT_STATUS } from "@/types/booking.types";
-import { EVENT_FORMAT, EVENT_STATUS, TICKET_TYPE } from "@/types/event.types";
+import { 
+   BOOKING_STATUS, 
+   GetBookingsFilter, 
+   GetBookingsResult, 
+   PAYMENT_STATUS 
+} from "@/types/booking.types";
+import { TICKET_TYPE } from "@/types/event.types";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { BOOKING_MESSAGES, MIN_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_BOOKING, OFFLINE_MAX_TICKETS_PER_USER, ONLINE_MAX_TICKETS_PER_USER } from "@/constants/booking.constants";
-import { BookingCancelInput, BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { 
+   CancelBookingInput, 
+   BookingEntity, 
+   BookingEntityPopulated, 
+   ConfirmBookingInput, 
+   CreateBookingInput 
+} from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { ITicketService } from "@/services/ticket-services/interfaces/ITicketService";
-import { validateBookingCancelByAuthority, validateBookingCancelByUser } from "@/utils/validations/bookingValidations";
+import { 
+   validateBookingCancelByAuthority, 
+   validateBookingCancelByUser, 
+   validateInitiateBooking, 
+   validateVerifyAndConfirmPayment
+} from "@/utils/validations/bookingValidations";
 import { calculateRefundAmount, RefundContext } from "@/utils/refundCalculator";
 import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
-import { Types } from "mongoose";
+import { ClientSession, Types } from "mongoose";
 import { UserRole } from "@/constants/roles-and-statuses";
 import { redisClient } from "@/config/redis.config";
+import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
+import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
+import { BookingMessages } from "@/constants/responseMessages.constants";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
+import { executeWithTransactionRetry } from "@/utils/transaction.utils";
+import { RefundResult } from "@/types/payment.types";
+
+
 
 
 
@@ -41,7 +67,8 @@ export class BookingService implements IBookingService {
       private readonly _userRepository:  IUserRepository,
       private readonly _paymentService:  IPaymentService,
       private readonly _ticketService:  ITicketService,
-
+      private readonly _walletService : IWalletService,
+      private readonly _cacheService: ICacheService,
    ) {}
 
 
@@ -52,70 +79,15 @@ export class BookingService implements IBookingService {
          const { eventId, userId, quantity: newBookingQty } = bookingReqDto;
 
          const user: UserEntity | null = await this._userRepository.getUserById(userId);
-         if (!user) {
-            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-         }
-
-         if (user.isSuperAdmin) {
-            throw createHttpError(HttpStatus.FORBIDDEN, BOOKING_MESSAGES.SUPER_ADMIN_CANNOT_BOOK);
-         }
 
          const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
-         if (!event) {
-            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
-         }
-         if (event.organizer.hostId.toString() === userId) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.CANNOT_BOOK_OWN_EVENT);
-         }
-
-         if (event.eventStatus === EVENT_STATUS.CANCELLED) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_CANCELLED);
-         }
-         if (event.eventStatus === EVENT_STATUS.SUSPENDED) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_SUSPENDED);
-         }
-         if (event.eventStatus === EVENT_STATUS.COMPLETED || event.endDateTime < new Date()) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_ALREADY_ENDED);
-         }
-
-         if (event.eventStatus === EVENT_STATUS.DRAFT) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.EVENT_NOT_BOOKABLE);
-         }
-
-         const ticketsLeft = event.capacity - event.soldTickets;
-         if (ticketsLeft <= 0) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.TICKETS_SOLD_OUT);
-         }
 
          const existingTicketCount = await this._bookingRepository.sumConfirmedTicketsForUser(userId, eventId);
 
-         if (event.format === EVENT_FORMAT.ONLINE) {
-            if (newBookingQty !== ONLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.ONLINE_LIMIT_PER_USER);
-            }
+         const ticketsLeft = event ? (event.capacity - event.soldTickets) : 0;
 
-            if (existingTicketCount >= ONLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(HttpStatus.CONFLICT, BOOKING_MESSAGES.ONLINE_LIMIT_EXCEEDED);
-            }
-
-         } else {
-            if (newBookingQty < MIN_TICKETS_PER_BOOKING) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.MIN_TICKETS_REQUIRED);
-            }
-            if (newBookingQty > OFFLINE_MAX_TICKETS_PER_BOOKING) {
-               throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_BOOKING_LIMIT_EXCEEDED);
-            }
-
-            if (existingTicketCount + newBookingQty > OFFLINE_MAX_TICKETS_PER_USER) {
-               throw createHttpError(
-                  HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.PER_USER_LIMIT_EXCEEDED(existingTicketCount)
-               );
-            }
-         }
-
-         if (newBookingQty > ticketsLeft) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, BOOKING_MESSAGES.NOT_ENOUGH_TICKETS(ticketsLeft));
-         }
+         validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
+         // const { user: validUser, event: validEvent } = validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
 
          const totalAmount: number = event.ticketPrice * newBookingQty; // ₹0 for free events
          const ticketNo: string =  this._ticketService.generateTicketNo();
@@ -142,13 +114,14 @@ export class BookingService implements IBookingService {
                ...createBookingInput,
             });
 
-            await this._eventRepository.incrementEventTicketStats(eventId, newBookingQty, totalAmount);
+            await this._eventRepository.incrementEventTicketAndRevenueStats(eventId, newBookingQty, totalAmount);
             
-            await redisClient.del("trending_events");
+            // await redisClient.del("trending_events");
+            await this._cacheService.deleteKeyValue("trending_events");
 
             const populated = await this._bookingRepository.getBookingById(bookingEntity.bookingId);
             if (!populated) {
-               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
+               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, BookingMessages.BOOKING_NOT_FOUND);
             }
 
             const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated);
@@ -194,51 +167,21 @@ export class BookingService implements IBookingService {
 
 
 
-   async verifyAndConfirmPayment(userId: string, dto: VerifyPaymentRequestDTO): Promise<BookingResponseDTO> {
+   async verifyAndConfirmBookingPayment(userId: string, dto: VerifyPaymentRequestDTO): Promise<BookingResponseDTO> {
       try {
          const { paymentOrderId, paymentId, signature } = dto;
 
          const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(paymentOrderId);
-         if (!booking) {
-            throw createHttpError(HttpStatus.NOT_FOUND, "Booking not found for this order");
-         }
-         if (booking.userRef !== userId) {
-            throw createHttpError(HttpStatus.FORBIDDEN, "Unauthorized");
-         }
-         if (booking.bookingStatus !== BOOKING_STATUS.PENDING) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, "This booking has already been processed");
-         }
+
+         validateVerifyAndConfirmPayment(booking, userId);
 
          const isValidSignature = this._paymentService.verifyPaymentSignature(paymentOrderId, paymentId, signature);
 
          if (!isValidSignature) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, "Payment verification failed — invalid signature 2");
+            throw createHttpError(HttpStatus.BAD_REQUEST, "Payment verification failed — invalid signature");
          }
 
-         const qrToken = this._ticketService.generateQrToken({
-            userId,
-            eventId: booking.eventRef.toString(),
-            bookingId: booking.bookingId.toString(), 
-         });
-
-         const confirmBookingInput: ConfirmBookingInput = mapConfirmBookingInput(paymentId, signature, qrToken);
-
-         await this._bookingRepository.confirmBooking(booking.bookingId, confirmBookingInput);
-
-         await this._eventRepository.incrementEventTicketStats(
-            booking.eventRef.toString(),
-            booking.quantity,
-            booking.totalAmount
-         );
-
-         await redisClient.del("trending_events");
-
-         const confirmedBooking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(booking.bookingId);
-         if (!confirmedBooking) {
-            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Could not retrieve confirmed booking");
-         }
-
-         return mapBookingEntityToResponseDTO(confirmedBooking);
+         return await this._processPaymentConfirmationAndBooking(booking!, userId, paymentId, signature);
 
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
@@ -271,6 +214,7 @@ export class BookingService implements IBookingService {
    }
 
 
+   // not needed
    async getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
       try {
          console.log("filters in BookingService.getAdminBookings:", filters);
@@ -285,6 +229,47 @@ export class BookingService implements IBookingService {
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
          console.error("Error in BookingService.getAdminBookings:", msg);
+         throw error;
+      }
+   }
+
+
+   // not needed
+   async getAllBookingsOfEvent(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
+      try {
+         console.log("filters in BookingService.getAllBookingsOfEvent:", filters);
+
+         const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
+
+         return {
+            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+            pagination: result.pagination,
+         };
+
+      } catch (error: unknown) {
+         const msg = error instanceof Error ? error.message : "Unknown error";
+         console.error("Error in BookingService.getAllBookingsOfEvent:", msg);
+         throw error;
+      }
+   }
+
+
+   // instead of getAdminBookings & getAllBookingsOfEvent
+   // for both admin side bookings & event-bookings/attendees list
+   async getBookingsList(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
+      try {
+         console.log("filters in BookingService.getBookingsList:", filters);
+
+         const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
+
+         return {
+            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+            pagination: result.pagination,
+         };
+
+      } catch (error: unknown) {
+         const msg = error instanceof Error ? error.message : "Unknown error";
+         console.error("Error in BookingService.getBookingsList:", msg);
          throw error;
       }
    }
@@ -321,7 +306,7 @@ export class BookingService implements IBookingService {
 
          validateBookingCancelByUser(booking, userId);
 
-         await this._processRefundAndCancel(booking!, cancelReason, context);
+         await this._processRefundAndCancelBooking(booking!, cancelReason, context);
 
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
@@ -338,7 +323,7 @@ export class BookingService implements IBookingService {
 
          validateBookingCancelByAuthority(booking);
 
-         await this._processRefundAndCancel(booking, `Admin Cancellation: ${cancelReason}`, context);
+         await this._processRefundAndCancelBooking(booking, `Admin Cancellation: ${cancelReason}`, context);
 
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
@@ -348,7 +333,6 @@ export class BookingService implements IBookingService {
    }
 
 
-
    async cancelAllBookingsForEvent(eventId: string, cancelReason: string): Promise<void> {
       try {
          const [confirmedBookings, pendingBookings] = await Promise.all([
@@ -356,16 +340,38 @@ export class BookingService implements IBookingService {
             this._bookingRepository.findPendingBookingsForEvent(eventId),
          ]);
 
-         // Confirmed Bookins — refund + cancel
-         const refundResults = await Promise.allSettled(
-            confirmedBookings.map(booking => this._processRefundAndCancel(booking, cancelReason, "event_cancelled"))
-         );
+         // Limit concurrency to 5-10 at a time to respect Razorpay API limits and DB connection pools
+         // const BATCH_SIZE = 5;
 
-         refundResults.forEach((result: PromiseSettledResult<void>, i: number) => {
-            if (result.status === "rejected") {
-               console.error(`Failed to cancel booking ${confirmedBookings[i].bookingId}:`, result.reason);
+         // Confirmed Bookings — refund + cancel
+         // for (let i = 0; i < confirmedBookings.length; i += BATCH_SIZE) {
+         //    const batch = confirmedBookings.slice(i, i + BATCH_SIZE);
+
+         //    const refundResults = await Promise.allSettled(
+         //       batch.map(booking => this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled"))
+         //    );
+
+         //    refundResults.forEach((result: PromiseSettledResult<void>, index: number) => {
+         //       if (result.status === "rejected") {
+         //          const failedBookingId = batch[index].bookingId;
+         //          // In a production environment, should save this to a "FailedRefundQueue" 
+         //          // collection in DB so an admin can retry it later, rather than just console.logging it.
+         //          console.error(`[CRITICAL] Failed to cancel and refund booking ${failedBookingId}:`, result.reason);
+         //       }
+         //    });
+         // }
+
+         // ---------------------
+
+         // Process Confirmed Bookings SEQUENTIALLY (refund + cancel)
+         for (const booking of confirmedBookings) {
+            try {
+               await this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled");
+            } catch (error) {
+               // Log individual failures, but let the loop continue processing others
+               console.error(`[CRITICAL] Failed to cancel and refund booking ${booking.bookingId}:`, error);
             }
-         });
+         }
 
          // Pending Bookings — no payment yet, just mark cancelled
          if (pendingBookings.length > 0) {
@@ -373,7 +379,10 @@ export class BookingService implements IBookingService {
                pendingBookings.map(booking => booking.bookingId),
                { 
                   bookingStatus: BOOKING_STATUS.CANCELLED, 
-                  cancellation: { cancelledAt: new Date(), cancelReason } 
+                  cancellation: { 
+                     cancelledAt: new Date(), 
+                     reason: cancelReason 
+                  } 
                }
             );
          }
@@ -406,7 +415,64 @@ export class BookingService implements IBookingService {
 
 
 
-   private async _processRefundAndCancel(
+
+   private async _processPaymentConfirmationAndBooking(
+      booking: BookingEntity, 
+      userId: string, 
+      paymentId: string, 
+      signature: string
+   ): Promise<BookingResponseDTO> {
+      const session = await this._bookingRepository.startSession();
+      session.startTransaction();
+
+      try {
+         const adminWalletId = process.env.SUPER_ADMIN_ID!; 
+
+         const event = await this._eventRepository.getEventById(booking.eventRef.toString());
+         const eventName = event ? event.title : "Event";
+
+         const qrToken = this._ticketService.generateQrToken({
+            userId,
+            eventId: booking.eventRef.toString(),
+            bookingId: booking.bookingId.toString(), 
+         });
+
+         const confirmBookingInput: ConfirmBookingInput = mapConfirmBookingInput(paymentId, signature, qrToken);
+         await this._bookingRepository.confirmBooking(booking.bookingId, confirmBookingInput, { session });
+
+         await this._eventRepository.incrementEventTicketAndRevenueStats(
+            booking.eventRef.toString(), booking.quantity, booking.totalAmount, { session }
+         );
+
+         await this._walletService.creditToWallet({
+            userId: adminWalletId,
+            amount: booking.totalAmount,
+            transactionType: TRANSACTION_TYPE.BOOKING_PAYMENT,
+            referenceType: TRANSACTION_REFERENCE_TYPE.BOOKING,
+            referenceId: booking.bookingId,
+            description: `Payment for booking event (${eventName}). Ticket No: ${booking.ticketNo}`,
+            metadata: { paymentId },
+         }, { session });
+
+         await session.commitTransaction();
+
+         // await redisClient.del("trending_events");
+         await this._cacheService.deleteKeyValue("trending_events");
+
+         const confirmedBooking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(booking.bookingId);
+         return mapBookingEntityToResponseDTO(confirmedBooking!);
+
+      } catch (error) {
+         await session.abortTransaction();
+         throw error;
+      } finally {
+         session.endSession();
+      }
+   }
+
+
+
+   private async _processRefundAndCancelBooking(
       booking:  BookingEntityPopulated,
       cancelReason:   string,
       context:  RefundContext,
@@ -414,42 +480,90 @@ export class BookingService implements IBookingService {
       const refundAmount: number = calculateRefundAmount(booking, context);
       let refundId: string | undefined;
 
-      // ── Refund Process ────────────────────────────────────────────
-      if (refundAmount > 0) {
-         if (!booking.payment.paymentId) {
-            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Payment ID missing — cannot initiate refund");
+      console.log('refund amount calculated...', refundAmount)
+
+      try {
+         // ── Initiate the Refund Process (Network call). Webhook will handle the refund process ─────────────────────────
+         if (refundAmount > 0) {
+            if (!booking.payment?.paymentId) {
+               throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Payment ID missing — cannot initiate refund");
+            }
+
+            console.log('initiating booking refund....');
+            
+            
+            const refundResult: RefundResult = await this._paymentService.initiateBookingRefund({
+               paymentId: booking.payment.paymentId,
+               bookingId: booking.bookingId,
+               amount:    refundAmount
+            });            
+
+            refundId = refundResult.refundId;
          }
+
+
+         // Execute Database Updates with Retry Logic ──
+         // Now that Razorpay is done, 
+         // Update DB sequentially (No Wallet Transfer Here!)
+         console.log('executing transaction with retry...');
          
-         const refund = await this._paymentService.initiateBookingRefund({
-            paymentId: booking.payment.paymentId,
-            bookingId: booking.bookingId,
-            amount:    refundAmount
+         await executeWithTransactionRetry(async (session: ClientSession) => {
+            // const superAdminId = process.env.SUPER_ADMIN_ID!;
+
+            // Wallet Transfer
+            // if (refundAmount > 0) {
+            //    // ── Double-Entry Transfer (Debit Admin Wallet-> Credit User Wallet) ───────────────────
+            //    await this._walletService.transferFunds({
+            //       fromUserId          : superAdminId,
+            //       toUserId            : booking.user.userId.toString(),
+            //       transferAmount      : refundAmount,
+            //       fromTransactionType : TRANSACTION_TYPE.REFUND_ISSUED, // Admin side (debit)
+            //       toTransactionType   : TRANSACTION_TYPE.BOOKING_REFUND,  // User side (credit)
+            //       referenceType       : TRANSACTION_REFERENCE_TYPE.BOOKING,
+            //       referenceId         : booking.bookingId,
+            //       description         : `Refund for cancelled booking - ${booking.event.title}. Ticket No.${booking.ticketNo}`,
+            //       metadata            : { refundId: refundId }, 
+            //    }, { session });
+            // }
+
+            // Cancel Booking Document
+            const cancellationInput: CancelBookingInput = {
+               bookingStatus:  BOOKING_STATUS.CANCELLED,
+               // If a refund is expected, mark it PENDING. Webhook will change it to REFUNDED later.
+               paymentStatus:  refundAmount > 0 ? PAYMENT_STATUS.PENDING : PAYMENT_STATUS.COMPLETED,
+               cancellation: {
+                  cancelledAt: new Date(),
+                  reason: cancelReason,
+                  ...(refundId && { refundId: refundId }),
+                  // refundedAt: refundAmount > 0 ? new Date() : undefined, // Razorpay sends seconds, JS needs ms or send in ms
+                  // Do NOT set refundedAt here. Wait for the webhook.
+               },
+               // qrToken: "",
+            };
+
+            console.log('cancelling booking....');
+            
+            await this._bookingRepository.cancelBooking(booking.bookingId, cancellationInput, { session });
+
+            console.log('decrementing Event Ticket Booking & Revenue Stats....');
+
+            // Update Event Ticket Booking & Revenue Stats
+            await this._eventRepository.decrementEventTicketAndRevenueStats(
+               booking.event.eventId,
+               booking.quantity,
+               booking.totalAmount,
+               { session }
+            );
+
          });
-         refundId = refund.refundId;
+         
+      } catch (error) {
+         console.error("Error in _processRefundAndCancelBooking:", error);
+         throw error;
       }
 
-      // ── Cancel Booking ────────────────────────────────────────────
-      const cancellationInput: BookingCancelInput = {
-         bookingStatus:  BOOKING_STATUS.CANCELLED,
-         paymentStatus:  refundAmount > 0 ? PAYMENT_STATUS.REFUNDED : PAYMENT_STATUS.COMPLETED,
-         cancellation: {
-            cancelledAt: new Date(),
-            reason: cancelReason,
-            ...(refundId && { refundId: refundId }),
-         },
-         // qrToken: "",  // should clear QR token ??
-      };
-
-      await this._bookingRepository.cancelBooking(booking.bookingId, cancellationInput);
-
-      
-      // ── Update Event Ticket Stats ───────────────────────────────────────
-      await this._eventRepository.decrementEventTicketStats(
-         booking.event.eventId,
-         booking.quantity,
-         booking.totalAmount,
-      );
    }
+
 
 
 }

@@ -28,12 +28,12 @@ const tabs = [
 type TabId = (typeof tabs)[number]['id'];
 
 const pathToTab: Record<string, TabId> = {
-  '/my-account': 'profile',
-  '/dashboard': 'dashboard',
-  '/my-events': 'events',
-  '/my-bookings': 'bookings',
-  '/my-wishlist': 'wishlist',
-  '/my-wallet': 'wallet',
+  '/my-account'  : 'profile',
+  '/dashboard'   : 'dashboard',
+  '/my-events'   : 'events',
+  '/my-bookings' : 'bookings',
+  '/my-wishlist' : 'wishlist',
+  '/my-wallet'   : 'wallet',
 };
 
 const UserAccount = () => {

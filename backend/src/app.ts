@@ -1,4 +1,5 @@
 import express from 'express';
+// import webhookRoutes from './routes/webhook.routes';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
@@ -12,7 +13,11 @@ import userRouter from '@/routes/user.routes';
 import hostRouter from '@/routes/host.routes';
 import eventRouter from '@/routes/event.routes';
 import bookingRouter from '@/routes/booking.routes';
+import walletRouter from '@/routes/wallet.routes';
+
+
 import morganMiddleware from '@/config/morgan.config';
+import webhookRouter from '@/routes/webhook.routes';
 
 
 const app = express();
@@ -29,9 +34,11 @@ const allowedOrigins = rawFrontendUrls
 allowedOrigins.push("http://localhost:5173");
 
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+  origin: allowedOrigins,
+  credentials: true
 }));
+
+app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -47,6 +54,7 @@ app.use('/api/user', userRouter);
 app.use('/api/host', hostRouter);
 app.use('/api/event', eventRouter);
 app.use('/api/booking', bookingRouter);
+app.use('/api/wallet', walletRouter);
 
 
 app.use(errorHandler);
