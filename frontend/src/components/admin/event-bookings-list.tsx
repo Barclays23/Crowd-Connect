@@ -36,10 +36,12 @@ import { cancelReasonBase } from "@/schemas/booking.schema";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/ui/FieldError";
 import { canCancelBooking } from "@/utils/booking.utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EventBookingsListProps {
     eventId: string;
 }
+
 
 export function EventBookingsList({ eventId }: EventBookingsListProps) {
     const [searchTerm, setSearchTerm]           = useState("");
@@ -61,23 +63,28 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
 
     const itemsPerPage = 10;
 
+    const {user} = useAuth();
+
     useEffect(() => {
         const t = setTimeout(() => { setDebouncedSearch(searchTerm); setCurrentPage(1); }, 500);
         return () => clearTimeout(t);
     }, [searchTerm]);
 
-    const fetchBookingsOfEvent = useCallback(async () => {
+
+    const fetchBookingsListOfEvent = useCallback(async () => {
         setLoading(true); setError(null);
+
         try {
             const params = new URLSearchParams({
-                eventId,
+                // eventId, remove from here and pass as argument
                 page: currentPage.toString(),
                 limit: itemsPerPage.toString(),
-                sortBy, sortOrder, 
+                sortBy, 
+                sortOrder, 
                 ...(debouncedSearch && { search: debouncedSearch }),
                 ...(statusFilter !== "all" && { status: statusFilter }),
             });
-            const response: GetBookingsApiResponse = await bookingServices.getAllBookings(params.toString());
+            const response: GetBookingsApiResponse = await bookingServices.getBookingsListOfEvent(eventId, params.toString());
             setBookings(response.bookingsData ?? []);
             setTotalBookings(response.pagination.totalCount ?? 0);
             setTotalPages(response.pagination.totalPages ?? Math.ceil((response.pagination.totalCount ?? 0) / itemsPerPage));
@@ -88,7 +95,9 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
         } finally { setLoading(false); }
     }, [eventId, currentPage, debouncedSearch, statusFilter, sortBy, sortOrder]);
 
-    useEffect(() => { fetchBookingsOfEvent(); }, [fetchBookingsOfEvent]);
+    useEffect(() => { 
+        fetchBookingsListOfEvent();
+    }, [fetchBookingsListOfEvent]);
 
     const handleCancelBooking = async () => {
         if (!cancelBookingId) return;
@@ -177,7 +186,7 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                         <TableRow className="bg-(--bg-tertiary) hover:bg-(--bg-tertiary)">
                             <TableHead className="text-(--text-secondary) font-semibold w-10">#</TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold cursor-pointer" onClick={() => handleSort("ticketNo")}>
-                                <div className="flex items-center">Ticket <SortIcon field="ticketNo" /></div>
+                                <div className="flex items-center">Ticket No <SortIcon field="ticketNo" /></div>
                             </TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold">User</TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold cursor-pointer" onClick={() => handleSort("createdAt")}>
@@ -187,7 +196,7 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                                 <div className="flex items-center justify-center">Qty <SortIcon field="quantity" /></div>
                             </TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold cursor-pointer" onClick={() => handleSort("totalAmount")}>
-                                <div className="flex items-center">Amount <SortIcon field="totalAmount" /></div>
+                                <div className="flex items-center">Total Amount <SortIcon field="totalAmount" /></div>
                             </TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold">Status</TableHead>
                             <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
@@ -223,12 +232,12 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                                     <TableRow key={booking.bookingId} className="hover:bg-(--table-row-hover-bg) transition-colors">
                                         <TableCell className="text-(--text-tertiary) text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className="font-mono text-xs">
+                                            <Badge variant="outline" className="font-mono text-xs truncate">
                                                 <Hash className="h-3 w-3 mr-1" />{booking.ticketNo}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex flex-col gap-0.5">
+                                            <div className="flex flex-col gap-0.5 truncate">
                                                 {booking.user?.name && (
                                                     <span className="text-sm font-medium text-(--text-primary)">{booking.user.name}</span>
                                                 )}
@@ -276,7 +285,13 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                 <AdminPagination currentPage={currentPage} totalPages={totalPages} totalItems={totalBookings} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
             )}
 
-            <Modal isOpen={!!viewBooking} onClose={() => setViewBooking(null)} title="Booking Details" size="lg">
+            {/* Details of a booking */}
+            <Modal
+                isOpen={!!viewBooking} 
+                onClose={() => setViewBooking(null)} 
+                title="Booking Details" 
+                size="lg"
+            >
                 {viewBooking && <BookingDetails booking={viewBooking} />}
             </Modal>
 

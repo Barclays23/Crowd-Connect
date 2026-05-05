@@ -5,6 +5,7 @@ import { HttpStatus } from "@/constants/statusCodes.constants";
 import { ResetPasswordDto } from "@/dtos/auth.dto";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { IPasswordService } from "@/services/password-services/interfaces/IPasswordService";
 import { comparePassword, hashPassword } from "@/utils/bcrypt.utils";
 import { createHttpError } from "@/utils/httpError.utils";
@@ -13,7 +14,8 @@ import { createHttpError } from "@/utils/httpError.utils";
 
 export class PasswordService implements IPasswordService {
     constructor(
-        private _userRepository: IUserRepository
+        private _userRepository: IUserRepository,
+        private _cacheService: ICacheService,
     ) {}
 
 
@@ -21,7 +23,8 @@ export class PasswordService implements IPasswordService {
     async resetPassword({ token, newPassword }: ResetPasswordDto): Promise<string> {
         try {
             const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
-            const raw = await redisClient.get(redisKey);
+            // const raw = await redisClient.get(redisKey);
+            const raw = await this._cacheService.getKeyValue(redisKey);
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.RESET_LINK_INVALID_OR_EXPIRED}`);
             }
@@ -35,7 +38,8 @@ export class PasswordService implements IPasswordService {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_ACCOUNT_NOT_EXIST);
             }
 
-            await redisClient.del(redisKey);
+            // await redisClient.del(redisKey);
+            await this._cacheService.deleteKeyValue(redisKey);
 
             return updatedUser.email;
 

@@ -7,14 +7,16 @@ import { BOOKING_STATUS, GetBookingsFilter, BookingSortField, ALLOWED_BOOKING_SO
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { IBookingController } from "@/controllers/interfaces/IBookingController";
 import { EVENT_FORMAT } from "@/types/event.types";
-import { BOOKING_MESSAGES } from "@/constants/booking.constants";
 import { UserRole } from "@/constants/roles-and-statuses";
+import { BookingMessages } from "@/constants/responseMessages.constants";
 
 
 
 
 export class BookingController implements IBookingController{
-  constructor(private readonly _bookingService: IBookingService) {}
+  constructor(
+    private readonly _bookingService: IBookingService
+  ) {}
 
 
   async initiateBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,7 +47,7 @@ export class BookingController implements IBookingController{
       const userId = req.user.userId;
       const dto: VerifyPaymentRequestDTO = req.body;
 
-      const populatedBooking: BookingResponseDTO = await this._bookingService.verifyAndConfirmPayment(userId, dto);
+      const populatedBooking: BookingResponseDTO = await this._bookingService.verifyAndConfirmBookingPayment(userId, dto);
 
       res.status(HttpStatus.OK).json({
         success: true,
@@ -110,6 +112,7 @@ export class BookingController implements IBookingController{
   }
 
 
+
   async getAdminBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const page    = parseInt(req.query.page  as string) || 1;
@@ -119,7 +122,7 @@ export class BookingController implements IBookingController{
       const search      = (req.query.search      as string)?.trim() || "";
       const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
 
-      const eventId = (req.query.eventId as string)        || undefined;
+      const eventId = (req.query.eventId as string)        || undefined;   // need eventId for this func ??
 
       const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
         ? (req.query.sortBy as BookingSortField)
@@ -128,7 +131,7 @@ export class BookingController implements IBookingController{
       const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
 
       const filters: GetBookingsFilter = {
-        eventId,
+        // eventId,
         page,
         limit,
         status:      status      ? (status as BOOKING_STATUS) : undefined,
@@ -140,7 +143,8 @@ export class BookingController implements IBookingController{
 
       console.log("✅ Parsed filters for getAdminBookings:", filters);
 
-      const result: GetBookingsResponseDTO = await this._bookingService.getAdminBookings(filters);
+      // const result: GetBookingsResponseDTO = await this._bookingService.getAdminBookings(filters);
+      const result: GetBookingsResponseDTO = await this._bookingService.getBookingsList(filters);
 
       res.status(HttpStatus.OK).json({
         success:    true,
@@ -186,7 +190,7 @@ export class BookingController implements IBookingController{
 
       res.status(HttpStatus.OK).json({
         success: true,
-        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
+        message: BookingMessages.BOOKING_CANCELLED,
       });
 
     } catch (error: unknown) {
@@ -206,7 +210,7 @@ export class BookingController implements IBookingController{
 
       res.status(HttpStatus.OK).json({
         success: true,
-        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
+        message: BookingMessages.BOOKING_CANCELLED,
       });
 
     } catch (error: unknown) {

@@ -1,7 +1,7 @@
 // src/models/implementations/walletTransaction.model.ts
 
 import { ITransactionModel, TRANSACTION_DIRECTION, TRANSACTION_REFERENCE_TYPE, TRANSACTION_STATUS, TRANSACTION_TYPE } from "@/types/wallet.types";
-import { model, Model, Schema, HydratedDocument } from "mongoose";
+import { model, Model, Schema } from "mongoose";
 
 
 

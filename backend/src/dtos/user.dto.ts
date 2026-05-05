@@ -68,6 +68,8 @@ export interface BaseUserResponseDto {
 
   mobile?: string;
   profilePic?: string;
+  getUserProfile?: number;
+  walletBalance: number;
 
   role: UserRole;
   status: UserStatus;

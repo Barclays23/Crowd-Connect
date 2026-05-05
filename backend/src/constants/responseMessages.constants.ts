@@ -345,6 +345,11 @@ export enum AdminMessages {
 }
 
 // ─── PAYMENTS ────────────────────────────────────────────────────
+export enum WalletMessages {
+    INSUFFICIENT_WALLET_BALANCE = "Insufficient wallet balance"
+}
+
+
 export enum PaymentMessages {
     // Payment system temporarily unavailable.
     // PAYMENT_SETUP_FAILED = "Couldn't load payment gateway. Try again later or contact support.",
@@ -357,6 +362,7 @@ export enum PaymentMessages {
     PAYMENT_PENDING = "Payment is pending",
     PAYMENT_REFUNDED = "Payment refunded",
     REFUND_INITIATED = "Refund process started",
+    MINIMUM_AMOUNT_REQUIRED = "Minimum transaction amount must be at least ₹1.00.",
     PAYMENT_AMOUNT_MISMATCH = "Payment amount does not match ...booking... amount",  // booking ??
     MAX_RETRIES_EXCEEDED = "Maximum payment retry attempts exceeded",
 }

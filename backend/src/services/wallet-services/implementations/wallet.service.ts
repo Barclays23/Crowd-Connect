@@ -1,34 +1,31 @@
 // backend/src/services/wallet-services/implementations/wallet.service.ts
-import { Types } from "mongoose";
+import { ClientSession } from "mongoose";
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { ITransactionRepository } from "@/repositories/interfaces/ITransactionRepository";
-import { IPayoutRequestRepository } from "@/repositories/interfaces/IPayoutRequestRepository";
-import { IWithdrawalRequestRepository } from "@/repositories/interfaces/IWithdrawalRequestRepository";
+
 import {
    WalletCreditInput,
    WalletDebitInput,
-   CreatePayoutRequestInput,
-   ReviewPayoutRequestInput,
    CreateWithdrawalRequestInput,
-   GetPayoutRequestsFilter,
    TransactionsFilterQuery,
    GetWithdrawalRequestsFilter,
    TRANSACTION_DIRECTION,
-   TRANSACTION_STATUS,
+   WalletTransferInput,
 } from "@/types/wallet.types";
 import {
-   GetPayoutRequestsResponse,
    GetTransactionsResponse,
    GetWithdrawalRequestsResponse,
-   PayoutRequestResponseDTO,
    WalletOverviewResponse,
    WithdrawalRequestResponseDTO,
 } from "@/dtos/wallet.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { UserMessages } from "@/constants/responseMessages.constants";
-import { mapToCreateTransactionInput, mapTransactionEntityToResponseDTO } from "@/mappers/wallet.mapper";
+import { UserMessages, WalletMessages } from "@/constants/responseMessages.constants";
+import { 
+   mapToCreateTransactionInput, 
+   mapTransactionEntityToResponseDTO 
+} from "@/mappers/wallet.mapper";
 import { UserEntity } from "@/entities/user.entity";
 import { TransactionEntity } from "@/entities/transaction.entity";
 
@@ -48,10 +45,15 @@ export class WalletService implements IWalletService {
 
    // ─── Core Wallet Mutations ───────────────────────────────────────────────────
 
-   async creditToWallet(creditInput: WalletCreditInput): Promise<number> {
-      const { userId, amount, transactionType, referenceType, referenceId, description, metadata } = creditInput;
+   async creditToWallet(creditInput: WalletCreditInput, options: { session?: ClientSession } = {}): Promise<number> {
+      const { userId, amount} = creditInput;
+      const { session } = options;
 
-      const newBalance = await this._userRepository.incrementWalletBalance(userId, amount);
+      const newBalance: number | null = await this._userRepository.incrementWalletBalance(userId, amount, { session });
+
+      if (newBalance === null) {
+         throw createHttpError(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND)
+      }
 
       const transactionInput = mapToCreateTransactionInput(
          creditInput, 
@@ -59,7 +61,7 @@ export class WalletService implements IWalletService {
          newBalance
       );
 
-      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput);
+      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
       
       return newBalance;
 
@@ -71,24 +73,59 @@ export class WalletService implements IWalletService {
    }
 
 
-   async debitFromWallet(debitInput: WalletDebitInput): Promise<number> {
-      const { userId, amount, transactionType, referenceType, referenceId, description, metadata } = debitInput;
+   async debitFromWallet(debitInput: WalletDebitInput, options: { session?: ClientSession } = {}): Promise<number> {
+      const { userId, amount } = debitInput;
+      const { session } = options;
 
-      const user = await this._userRepository.getUserById(userId.toString());
-      if (!user) throw createHttpError(HttpStatus.UNAUTHORIZED, UserMessages.USER_NOT_FOUND);
-      if (user.walletBalance < amount) throw new Error("Insufficient wallet balance");
-
-      const newBalance = await this._userRepository.decrementWalletBalance(userId, -amount);
+      const newBalance = await this._userRepository.decrementWalletBalance(userId, amount, { session });
+      if (newBalance === null) {
+         throw createHttpError(HttpStatus.BAD_REQUEST, WalletMessages.INSUFFICIENT_WALLET_BALANCE);
+      }
 
       const transactionInput = mapToCreateTransactionInput(
          debitInput, 
-         TRANSACTION_DIRECTION.CREDIT, 
+         TRANSACTION_DIRECTION.DEBIT, 
          newBalance
       );
 
-      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput);
+      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
 
       return newBalance;
+   }
+
+
+
+   // ─── Double-Entry Transfer (Critical for Refunds & Payouts) ──────────────────
+
+   async transferFunds(transferInput: WalletTransferInput, options: { session: ClientSession }): Promise<void> {
+      const { 
+         fromUserId, toUserId, transferAmount, 
+         fromTransactionType, toTransactionType, 
+         referenceType, referenceId, description, 
+         metadata 
+      } = transferInput;
+
+      // Debit From Sender
+      await this.debitFromWallet({
+         userId: fromUserId,
+         amount: transferAmount,
+         transactionType: fromTransactionType,
+         referenceType,
+         referenceId,
+         description: `[Transfer Out] ${description}`,
+         metadata
+      }, { session: options.session });
+
+      // Credit to Receiver
+      await this.creditToWallet({
+         userId: toUserId,
+         amount: transferAmount,
+         transactionType: toTransactionType,
+         referenceType,
+         referenceId,
+         description: `[Transfer In] ${description}`,
+         metadata
+      }, { session: options.session });
    }
 
 
@@ -124,39 +161,6 @@ export class WalletService implements IWalletService {
       };
    }
 
-
-
-   async createPayoutRequest(input: CreatePayoutRequestInput): Promise<PayoutRequestResponseDTO> {
-      throw new Error("Not implemented");
-   }
-
-   async getPayoutRequests(filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse> {
-      throw new Error("Not implemented");
-   }
-
-   async getMyPayoutRequests(hostId: string, filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse> {
-      throw new Error("Not implemented");
-   }
-
-   async reviewPayoutRequest(input: ReviewPayoutRequestInput): Promise<PayoutRequestResponseDTO> {
-      throw new Error("Not implemented");
-   }
-
-   async createWithdrawalRequest(input: CreateWithdrawalRequestInput): Promise<WithdrawalRequestResponseDTO> {
-      throw new Error("Not implemented");
-   }
-
-   async getWithdrawalRequests(hostId: string, filters: GetWithdrawalRequestsFilter): Promise<GetWithdrawalRequestsResponse> {
-      throw new Error("Not implemented");
-   }
-
-   async handleWithdrawalWebhook(
-      razorpayPayoutId : string,
-      event            : "payout.processed" | "payout.failed",
-      failureReason   ?: string,
-   ): Promise<void> {
-      throw new Error("Not implemented");
-   }
 }
 
 

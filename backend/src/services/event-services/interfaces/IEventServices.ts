@@ -1,6 +1,8 @@
 // backend/src/services/event-services/interfaces/IEventServices.ts
 
+import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
 import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
+import { GetBookingsFilter } from "@/types/booking.types";
 import { EVENT_STATUS, GetEventsFilter, GetAllEventsResult, GetPublicEventsFilter } from "@/types/event.types";
 
 
@@ -27,9 +29,9 @@ export interface IEventServices {
 
     getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult>;
 
-    cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | undefined>
+    cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | null>
     
-    suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EVENT_STATUS | undefined>;
+    suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EVENT_STATUS | null>;
     
     deleteEvent(eventId: string): Promise<void>;
 
@@ -40,4 +42,5 @@ export interface IEventServices {
     getTrendingEvents(limit: number): Promise<EventResponseDTO[]>;
     
     getEventDetails(eventId: string): Promise<EventResponseDTO>;
+
 }

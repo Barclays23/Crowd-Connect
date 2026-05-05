@@ -4,13 +4,27 @@ import { Types } from "mongoose";
 
 
 
+
 export enum TRANSACTION_TYPE {
-  BOOKING_REFUND     = "BOOKING_REFUND",      // attendee cancelled / event cancelled / suspended
-  CASHBACK           = "CASHBACK",            // 5-star review reward
-  REFERRAL_CREDIT    = "REFERRAL_CREDIT",     // referral bonus
-  HOST_PAYOUT        = "HOST_PAYOUT",         // host receives net earnings after event
-  WALLET_PAYMENT     = "WALLET_PAYMENT",      // user pays booking using wallet balance (future)
-  WITHDRAWAL         = "WITHDRAWAL",          // host withdraws wallet balance to bank
+  // ── User wallet ───────────────────────────────────────────────
+  BOOKING_REFUND      = "BOOKING_REFUND",      // admin → user  (refund for booking cancelled / event cancelled / suspended)
+  CASHBACK            = "CASHBACK",            // admin → user  (5-star review reward)
+  REFERRAL_CREDIT     = "REFERRAL_CREDIT",     // admin → user  (referral bonus)
+  WALLET_PAYMENT      = "WALLET_PAYMENT",      // user  → admin (user pay via wallet)
+  WITHDRAWAL          = "WITHDRAWAL",          // host wallet → bank (host withdraws wallet balance to bank)
+  WITHDRAWAL_REVERSAL = "WITHDRAWAL_REVERSAL", // failed payout → credit back
+
+  // ── Host wallet ───────────────────────────────────────────────
+  HOST_PAYOUT         = "HOST_PAYOUT",         // admin → host  (host receives net earnings after event)    
+
+  // ── Admin wallet ──────────────────────────────────────────────  ← ADD THESE
+  BOOKING_PAYMENT     = "BOOKING_PAYMENT",     // user  → admin (ticket purchase via Razorpay)
+  HOSTING_FEE         = "HOSTING_FEE",         // user  → admin (role upgrade fee)
+  COMMISSION_EARNED   = "COMMISSION_EARNED",   // retained from host payout
+  REFUND_ISSUED       = "REFUND_ISSUED",       // admin → user  (debit from admin wallet)
+
+  // ── Both ──────────────────────────────────────────────────────
+  ADMIN_ADJUSTMENT    = "ADMIN_ADJUSTMENT",    // manual correction by super admin
 }
 
 
@@ -39,15 +53,7 @@ export enum TRANSACTION_REFERENCE_TYPE {
 }
 
 
-
-export enum PAYOUT_REQUEST_STATUS {
-  PENDING  = "PENDING",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-  PAID     = "PAID",
-}
-
-
+// move to with drawal types ts
 export enum WITHDRAWAL_STATUS {
   PENDING    = "PENDING",
   PROCESSING = "PROCESSING",   // Razorpay Payout API call initiated
@@ -58,9 +64,7 @@ export enum WITHDRAWAL_STATUS {
 
 
 
-// ─────────────────────────────────────────
-// Sub-interfaces
-// ─────────────────────────────────────────
+// Sub-interfaces ─────────────────────────────────────────
 
 export interface IBankDetails {
   accountHolderName : string;
@@ -72,9 +76,8 @@ export interface IBankDetails {
 
 
 
-// ─────────────────────────────────────────
-// Model Interfaces
-// ─────────────────────────────────────────
+
+// Model Interfaces ─────────────────────────────────────────
 
 export interface ITransactionModel {
   _id           : Types.ObjectId;
@@ -93,25 +96,7 @@ export interface ITransactionModel {
 }
 
 
-export interface IPayoutRequestModel {
-  _id              : Types.ObjectId;
-  eventRef         : Types.ObjectId;               // ref: Event — required
-  hostRef          : Types.ObjectId;               // ref: User — indexed
-  grossAmount      : number;                       // total collected ticket revenue for the event
-  commissionRate   : number;                       // e.g. 0.10 for 10%
-  commissionAmount : number;                       // grossAmount × commissionRate
-  netAmount        : number;                       // grossAmount − commissionAmount → released to host wallet
-  status           : PAYOUT_REQUEST_STATUS;
-  requestedAt      : Date;
-  reviewedBy      ?: Types.ObjectId;               // ref: User (admin who processed)
-  reviewedAt      ?: Date;
-  rejectionReason ?: string;
-  notes           ?: string;                       // internal admin notes
-  createdAt        : Date;
-  updatedAt        : Date;
-}
-
-
+// move to with drawal types ts
 export interface IWithdrawalRequestModel {
   _id               : Types.ObjectId;
   hostRef           : Types.ObjectId;              // ref: User
@@ -128,9 +113,8 @@ export interface IWithdrawalRequestModel {
 
 
 
-// ─────────────────────────────────────────
-// Populated variants (for service responses)
-// ─────────────────────────────────────────
+
+// Populated variants (for service responses) ─────────────────────────────────────────
 
 export interface IPopulatedUserFromTransaction {
   _id   : Types.ObjectId;
@@ -139,30 +123,35 @@ export interface IPopulatedUserFromTransaction {
 }
 
 
-export interface IPopulatedEventFromPayout {
-  _id   : Types.ObjectId;
-  title : string;
-}
-
 
 export type ITransactionPopulated = Omit<ITransactionModel, "userRef"> & {
   userRef: IPopulatedUserFromTransaction;
 };
 
 
-export type IPayoutRequestPopulated = Omit<IPayoutRequestModel, "hostRef" | "eventRef"> & {
-  hostRef  : IPopulatedUserFromTransaction;
-  eventRef : IPopulatedEventFromPayout;
-};
+
 
 
 
 // move to wallet.entity.ts?? or wallet.dto.ts ?? or keep here??
-// ─────────────────────────────────────────
-// Service Layer Input Types   // move to wallet.entity.ts?? or wallet.dto.ts ?? or keep here??
-// ─────────────────────────────────────────
+// Service Layer Input Types ─────────────────────────────────────────
 
-// What WalletService.credit() / .debit() accepts
+
+// for double entry (credit & debit)
+export interface WalletTransferInput {
+  fromUserId: string;
+  toUserId: string;
+  transferAmount: number;
+  fromTransactionType: TRANSACTION_TYPE;
+  toTransactionType: TRANSACTION_TYPE;
+  referenceType: TRANSACTION_REFERENCE_TYPE;
+  referenceId: Types.ObjectId | string;
+  description: string;
+  metadata?: Record<string, unknown>;
+}
+
+
+
 export interface WalletCreditInput {
   userId            : string;
   amount            : number;
@@ -176,22 +165,9 @@ export interface WalletCreditInput {
 export type WalletDebitInput = WalletCreditInput;   // same shape, direction is set by the method
 
 
-// Host submits payout request
-export interface CreatePayoutRequestInput {
-  eventRef  : Types.ObjectId | string;
-  hostRef   : Types.ObjectId | string;
-  grossAmount: number;
-}
 
-// Admin approves/rejects
-export interface ReviewPayoutRequestInput {
-  payoutRequestId : string;
-  adminId         : Types.ObjectId | string;
-  decision        : "approve" | "reject";
-  rejectionReason?: string;
-  notes          ?: string;
-}
 
+// move to withdrawal types or input or dto
 // Host requests bank withdrawal
 export interface CreateWithdrawalRequestInput {
   hostRef     : Types.ObjectId | string;
@@ -202,9 +178,7 @@ export interface CreateWithdrawalRequestInput {
 
 
 // move to wallet.entity.ts?? or wallet.dto.ts ?? or keep here??
-// ─────────────────────────────────────────
-// Query / Filter Types   // move to wallet.entity.ts?? or wallet.dto.ts ?? or keep here??
-// ─────────────────────────────────────────
+// Query / Filter Types ─────────────────────────────────────────
 
 export interface TransactionsFilterQuery {
   userId    ?: string;
@@ -219,13 +193,9 @@ export interface TransactionsFilterQuery {
   endDate   ?: string;
 }
 
-export interface GetPayoutRequestsFilter {
-  page     : number;
-  limit    : number;
-  status  ?: PAYOUT_REQUEST_STATUS;
-  hostRef ?: string;                  // admin filtering by host
-}
 
+
+// move to withdrawal types or input or dto
 export interface GetWithdrawalRequestsFilter {
   page    : number;
   limit   : number;
@@ -234,4 +204,24 @@ export interface GetWithdrawalRequestsFilter {
 
 
 
+// Money flow with wallet
 
+// BOOKING PAYMENT (₹500 ticket, 10% commission):
+//   Razorpay webhook confirms payment
+//   → admin.walletBalance += 500   (BOOKING_PAYMENT  CREDIT  ₹500)
+
+// HOST PAYOUT REQUEST approved:
+//   → admin.walletBalance -= 450   (HOST_PAYOUT      DEBIT   ₹450)
+//   → host.walletBalance  += 450   (HOST_PAYOUT      CREDIT  ₹450)
+//   → admin keeps ₹50 commission — recorded via COMMISSION_EARNED or
+//     just visible as the difference (your choice)
+
+// CANCELS BOOKING (100% refund = ₹500):
+//   Razorpay refund initiated
+//   → admin.walletBalance -= 500   (REFUND_ISSUED    DEBIT   ₹500)
+//   → user.walletBalance  += 500   (BOOKING_REFUND   CREDIT  ₹500)
+
+// HOSTING FEE (₹999):
+//   Razorpay webhook confirms payment
+//   → admin.walletBalance += 999   (HOSTING_FEE      CREDIT  ₹999)
+//   (non-refundable — no reverse transaction ever)

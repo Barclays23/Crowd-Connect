@@ -1,4 +1,5 @@
 import express from 'express';
+// import webhookRoutes from './routes/webhook.routes';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 // import helmet from 'helmet';
@@ -16,6 +17,7 @@ import walletRouter from '@/routes/wallet.routes';
 
 
 import morganMiddleware from '@/config/morgan.config';
+import webhookRouter from '@/routes/webhook.routes';
 
 
 const app = express();
@@ -32,9 +34,11 @@ const allowedOrigins = rawFrontendUrls
 allowedOrigins.push("http://localhost:5173");
 
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+  origin: allowedOrigins,
+  credentials: true
 }));
+
+app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

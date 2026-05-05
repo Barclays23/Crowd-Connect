@@ -28,8 +28,7 @@ import { UpdateEmailDto } from "@/dtos/auth.dto";
 
 
 import { UserFilterQuery } from '@/types/user.types';
-
-
+import { ClientSession } from "mongoose";
 
 
 
@@ -37,322 +36,209 @@ import { UserFilterQuery } from '@/types/user.types';
 export class UserRepository extends BaseRepository<IUserModel> implements IUserRepository {
     constructor() {
         super(User)
-        this.model = User;
     }
 
 
 
-    async getUserByEmail(email: string): Promise<UserEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findOne({email});
-            const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
-            return result;
-            
-        } catch (error) {
-            console.log('error in getUserByEmail :', error);
-            throw new Error("Error Finding User");
-        }
+    async getUserByEmail(email: string): Promise<SensitiveUserEntity | null> {
+        const userData: IUserModel | null = await this.findOne({email});
+        const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+        return result;
     }
 
 
 
 
-    async getUserByMobile(mobile: string): Promise<UserEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findOne({mobile});
-            const result: UserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
-            return result;
-            
-        } catch (error) {
-            console.log('error in getUserByMobile :', error);
-            throw new Error("Error Finding User");
-        }
+    async getUserByMobile(mobile: string): Promise<SensitiveUserEntity | null> {
+        const userData: IUserModel | null = await this.findOne({mobile});
+        const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+        return result;
     }
 
 
     async getUserById(userId: string): Promise<UserEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findById(userId);
-            const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
-            return result;
-
-        } catch (error) {
-            console.log('error in getUserById :', error);
-            throw new Error("Error Finding User");
-        }
+        const userData: IUserModel | null = await this.findById(userId);
+        const result: UserEntity | null = userData ? mapUserModelToUserEntity(userData) : null;
+        return result;
     }
 
 
     async getHostById(hostId: string): Promise<HostEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findById(hostId);
-            const result: HostEntity | null = userData ? mapUserModelToHostEntity(userData) : null;
-            return result;
-
-        } catch (error) {
-            console.log('error in getUserById :', error);
-            throw new Error("Error Finding User");
-        }
+        const userData: IUserModel | null = await this.findById(hostId);
+        const result: HostEntity | null = userData ? mapUserModelToHostEntity(userData) : null;
+        return result;
     }
 
 
     // to get full profile
     async getUserProfile(userId: string): Promise<UserProfileEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findById(userId);
-            const result: UserProfileEntity | null = userData ? mapUserModelToProfileEntity(userData) : null;
-            return result;
-        } catch (error) {
-            console.log('error in getUserProfile :', error);
-            throw new Error("Error Finding User Profile");
-        }
+        const userData: IUserModel | null = await this.findById(userId);
+        const result: UserProfileEntity | null = userData ? mapUserModelToProfileEntity(userData) : null;
+        return result;
     }
 
 
     async findAuthUser(email: AuthUserCheckInput): Promise<SensitiveUserEntity | null> {
-        try {
-            const userData: IUserModel | null = await this.findOne(email);
-            const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
-            return result;
-
-        } catch (error) {
-            console.log('error in getUserById :', error);
-            throw new Error("Error Finding User");
-        }
+        const userData: IUserModel | null = await this.findOne(email);
+        const result: SensitiveUserEntity | null = userData ? mapUserModelToSensitiveUserEntity(userData) : null;
+        return result;
     }
 
 
-    async findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[] | null> {
-        try {
-            const paginatedUsers: IUserModel[] = await this.model.find(query)
-                .select('-password')
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .lean(); // faster + easier to map
+    async findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[]> {
+        const users: IUserModel[] = await this.findManyQuery(query)
+            .select('-password')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
-            // console.log('✅  paginatedUsers :', paginatedUsers);
-
-            const result: UserEntity[] | null = paginatedUsers ? paginatedUsers.map(user => mapUserModelToUserEntity(user)) : null;
-            return result;
-
-        } catch (error) {
-            console.log('error in findUsers :', error);
-            throw new Error("Error Finding Users");
-        }
+        const result: UserEntity[] = users.map(user => mapUserModelToUserEntity(user));
+        return result;
     }
 
     
-    async findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[] | null> {
-        try {
-            const paginatedHosts: IUserModel[] = await this.model.find(query)
+    async findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[]> {
+        const hosts: IUserModel[] = await this.findManyQuery(query)
             .select('-password')
             .sort({ hostAppliedAt: -1 })
             .skip(skip)
             .limit(limit)
-            .lean(); // faster + easier to map
+            .lean();
 
-            // console.log('✅  paginatedHosts :', paginatedHosts);
-
-            const result: HostEntity[] | null = paginatedHosts ? paginatedHosts.map(host => mapUserModelToHostEntity(host)) : null;
-            return result;
-
-        } catch (error) {
-            console.log('error in findHosts :', error);
-            throw new Error("Error Finding Hosts");
-        }
+        const result: HostEntity[] = hosts.map(mapUserModelToHostEntity);
+        return result;
     }
 
 
     async countUsers(query: UserFilterQuery): Promise<number> {
-        try {
-            const count: number = await this.countDocuments(query);
-            return count;
-        } catch (error) {
-            console.log('error in countUsers :', error);
-            throw new Error("Error Counting Users");
-        }
+        const count: number = await this.countDocuments(query);
+        return count;
     }
 
 
     // user registration (after verifying otp)
-    async createUser(user: SignUpUserInput): Promise<UserEntity> {
-        try {
-            const userData: IUserModel = await this.createOne(user);
-            const userEntity: UserEntity = mapUserModelToUserEntity(userData);
-            return userEntity;
-
-        } catch (error) {
-            console.log('error in createUser :', error);
-            throw error;
-        }
+    async createUser(userInput: SignUpUserInput): Promise<UserEntity> {
+        const userData: IUserModel = await this.createOne(userInput);
+        const userEntity: UserEntity = mapUserModelToUserEntity(userData);
+        return userEntity;
     }
 
     
     async createUserByAdmin(userInput: CreateUserInput): Promise<UserEntity> {
-        try {
-            const userData: IUserModel = await this.createOne(userInput);
-            const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in createUserByAdmin :', error);
-            throw error;
-        }
+        const userData: IUserModel = await this.createOne(userInput);
+        const resultEntity: UserEntity = mapUserModelToUserEntity(userData);
+        return resultEntity;
     }
 
 
-    async updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity> {
-        try {
-            // console.log('✅ userId received in userRepository.updateUserByAdmin:', userId);
-            // console.log('✅ userEntity received in userRepository.updateUserByAdmin:', userEntity);
+    async updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity | null> {
+        const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { $set: updateInput });
 
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
-            // console.log('✅ resultEntity in userRepository.updateUserByAdmin:', resultEntity);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in updateUserByAdmin :', error);
-            throw error;
-        }
+        const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
+        return resultEntity;
     }
 
 
-    async updateUserProfile(userId: string, updateInput: UpdateUserInput): Promise<UserEntity> {
-        try {
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
-            return resultEntity;
+    async updateUserProfile(userId: string, updateInput: UpdateUserInput): Promise<UserEntity|null> {
+        const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { $set: updateInput });
 
-        } catch (error) {
-            console.log('error in updateUserProfile :', error);
-            throw error;
-        }
+        const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData): null;
+        return resultEntity;
     }
 
     
-    async updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity>{
-        try {
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, profilPicInput);
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
-            return resultEntity;
+    async updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity | null>{
+        const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { $set: profilPicInput });
 
-        } catch (error) {
-            console.log('error in updateProfilePicture :', error);
-            throw error;
-        }
+        const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
+        return resultEntity;
     }
 
 
-    async deleteUser(userId: string): Promise<void> {
-        try {
-            await this.findByIdAndDelete(userId);
-        } catch (error) {
-            console.log('error in deleteUser :', error);
-            throw error;
-        }
+
+    async updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus | null> {
+        const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { $set: { status: newStatus } });
+
+        const updatedStatus: UserStatus | null = updatedUserData ? updatedUserData.status : null;
+        return updatedStatus;
     }
 
 
-    async updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus> {
-        try {
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, { status: newStatus });
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-
-            const updatedStatus: UserStatus = updatedUserData.status;
-            return updatedStatus;
-
-        } catch (error) {
-            console.log('error in userRepository.updateUserStatus :', error);
-            throw error;
-        }
+    async updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity | null> {
+        const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(hostId, { $set: hostStatusInput });
+        const resultEntity: HostEntity | null = updatedHostData ? mapUserModelToHostEntity(updatedHostData) : null;
+        return resultEntity;
     }
 
 
-    async updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity> {
-        try {
-            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(hostId, hostStatusInput);
-            if (!updatedHostData) {
-                throw new Error("Host not found");
-            }
-            const resultEntity: HostEntity = mapUserModelToHostEntity(updatedHostData);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in updateHostStatus :', error);
-            throw error;
-        }
-    }
-
-
-    async updateUserEmail(userId: string, updateInput: UpdateEmailDto): Promise<UserEntity> {
-        try {
-            const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, updateInput);
-            if (!updatedUserData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: UserEntity = mapUserModelToUserEntity(updatedUserData);
-            return resultEntity;
-
-        } catch (error) {
-            console.log('error in userRepository.updateUserEmail :', error);
-            throw error;
-        }
+    async updateUserEmail(userId: string, updateInput: UpdateEmailDto): Promise<UserEntity | null> {
+        const updatedUserData: IUserModel | null = await this.findByIdAndUpdate(userId, {$set: updateInput});
+        const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
+        return resultEntity;
     }
 
 
     async updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null> {
-        try {
-            const updatedUserData: IUserModel | null = await this.findOneAndUpdate({ email }, { password: hashedPassword });
-            const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
-            return resultEntity;
+        const updatedUserData: IUserModel | null  = await this.findOneAndUpdate(
+            { email },
+            { $set: { password: hashedPassword } }
+        );
 
-        } catch (error) {
-            console.log('error in updateUserPassword :', error);
-            throw new Error("Error Updating User Password");
-        }
+        const resultEntity: UserEntity | null = updatedUserData ? mapUserModelToUserEntity(updatedUserData) : null;
+        return resultEntity;
     }
 
 
-    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity> {
-        try {
-            const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, hostInput);
-            if (!updatedHostData) {
-                throw new Error("User not found");
-            }
-            const resultEntity: HostEntity = mapUserModelToHostEntity(updatedHostData);
-            return resultEntity;
+    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity | null> {
+        const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, {$set: hostInput});
 
-        } catch (error) {
-            console.log('error in updateHostDetails :', error);
-            throw error;
-        }
+        const resultEntity: HostEntity | null = updatedHostData ? mapUserModelToHostEntity(updatedHostData) : null;
+        return resultEntity;
     }
 
 
 
-
-    async incrementWalletBalance(userId: string, creditAmount: number): Promise<number> {
-        // findOneAndUpdate or findByIdAndUpdate
+    async deleteUser(userId: string): Promise<void> {
+        await this.findByIdAndDelete(userId);
     }
 
 
 
-    async decrementWalletBalance(userId: string, debitAmount: number): Promise<number> {
-        // findOneAndUpdate or findByIdAndUpdate
+    async incrementWalletBalance(
+        userId: string, 
+        creditAmount: number,
+        options: { session?: ClientSession } = {}
+    ): Promise<number | null> {
+        const { session } = options;
+
+        const updated = await this.findByIdAndUpdate(
+            userId,
+            { $inc: { walletBalance: creditAmount } },
+            { session }
+        );
+        return updated ? updated.walletBalance : null;
     }
+    
+    
+    async decrementWalletBalance(
+        userId: string, 
+        debitAmount: number,
+        options: { session?: ClientSession } = {}
+    ): Promise<number | null> {
+        const { session } = options;
+
+        const updated = await this.findOneAndUpdate(
+            { 
+                _id : userId, 
+                walletBalance: { $gte: debitAmount }  // only updates if sufficient balance
+            },
+            { $inc: { walletBalance: -debitAmount } },
+            { session }
+        );
+
+        return updated ? updated.walletBalance : null;
+    }    
 
     
 

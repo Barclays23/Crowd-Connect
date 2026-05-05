@@ -1,6 +1,6 @@
 // backend/src/repositories/implementations/transaction.repository.ts
 
-import { Types } from "mongoose";
+import { ClientSession, Types } from "mongoose";
 import { ITransactionRepository } from "@/repositories/interfaces/ITransactionRepository";
 import { CreateTransactionInput, TransactionEntity } from "@/entities/transaction.entity";
 import { TransactionsFilterQuery, ITransactionModel } from "@/types/wallet.types";
@@ -14,12 +14,14 @@ export class TransactionRepository extends BaseRepository<ITransactionModel> imp
 
    constructor() {
       super(Transaction)
-      this.model = Transaction;
    }
 
 
-   async createTransaction(createInput: CreateTransactionInput): Promise<TransactionEntity> {
-      const transactionDoc = await this.createOne(createInput);
+   async createTransaction(
+      createInput: CreateTransactionInput,
+      options: { session?: ClientSession } = {}
+   ): Promise<TransactionEntity> {
+      const transactionDoc = await this.createOne(createInput, options);
       return mapTransactionModelToEntity(transactionDoc);
    }
 
@@ -31,8 +33,7 @@ export class TransactionRepository extends BaseRepository<ITransactionModel> imp
       const sort      = { [sortField]: filters.sortOrder === "asc" ? 1 : -1 } as Record<string, 1 | -1>;
       const skip      = (filters.page - 1) * filters.limit;
 
-      const docs = await this
-         .findMany(query)
+      const docs = await this.findManyQuery(query)
          .sort(sort)
          .skip(skip)
          .limit(filters.limit)
@@ -48,12 +49,8 @@ export class TransactionRepository extends BaseRepository<ITransactionModel> imp
    }
 
 
-   async findRecentTxnByUserId(
-      userId : string | Types.ObjectId,
-      limit  : number,
-   ): Promise<TransactionEntity[]> {
-      const docs = await this
-         .findMany({ userRef: new Types.ObjectId(userId.toString()) })
+   async findRecentTxnByUserId(userId : string, limit  : number): Promise<TransactionEntity[]> {
+      const docs = await this.findManyQuery({userRef: userId})
          .sort({ createdAt: -1 })
          .limit(limit)
          .lean();
@@ -69,7 +66,7 @@ export class TransactionRepository extends BaseRepository<ITransactionModel> imp
 
       if (filters.userId)    query.userRef          = new Types.ObjectId(filters.userId.toString());
       if (filters.direction) query.direction        = filters.direction;
-      if (filters.type)      query.transactionType  = filters.type;
+      if (filters.transactionType)      query.transactionType  = filters.transactionType;
       if (filters.status)    query.status           = filters.status;
 
       if (filters.startDate || filters.endDate) {

@@ -1,6 +1,7 @@
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { ButtonLoader } from "@/components/common/ButtonLoader";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface ConfirmationModalProps {
 
   confirmText?: string;
   cancelText?: string;
+  loadingText?: string;
 
   variant?: "default" | "danger" | "destructive";
   children?: React.ReactNode;
@@ -30,6 +32,7 @@ export function ConfirmationModal({
   description = "Are you sure you want to proceed?",
   confirmText = "Confirm",
   cancelText = "Cancel",
+  loadingText = "Please wait...",
   variant = "default",
   children,
 }: ConfirmationModalProps) {
@@ -73,8 +76,9 @@ export function ConfirmationModal({
             onClick={onConfirm}
             disabled={loading || disableConfirm}
           >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {confirmText}
+            <ButtonLoader loading={loading} loadingText={loadingText}>
+              {confirmText}
+            </ButtonLoader>
           </Button>
         </div>
       </div>

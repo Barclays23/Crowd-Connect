@@ -13,19 +13,20 @@ import { initiateBookingSchema } from "@/schemas/booking.schema";
 import { CreateEventFormSchema, UpdateEventFormSchema } from "@/schemas/event.schema";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { BookingService } from "@/services/booking-services/implementations/booking.service";
+import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
 import { EventManagementServices } from "@/services/event-services/implementations/event.service";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
-import { WalletService } from "@/services/wallet-services/implementations/wallet.services";
+import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
 
 
 // REPOS
-const eventRepo = new EventRepository();
-const bookingRepo = new BookingRepository();
-const userRepo = new UserRepository();
-const transactionRepo     = new TransactionRepository();
+const eventRepo         = new EventRepository();
+const bookingRepo       = new BookingRepository();
+const userRepo          = new UserRepository();
+const transactionRepo   = new TransactionRepository();
 
 
 // PROVIDERS
@@ -36,12 +37,13 @@ const razorPayProvider = new RazorpayProvider();
 const ticketService    = new TicketService(bookingRepo, eventRepo);
 const paymentService   = new PaymentService(razorPayProvider);
 const walletService    = new WalletService(userRepo, transactionRepo);
-const bookingService   = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService);
-const eventService     = new EventManagementServices(eventRepo, bookingService);
+const cacheService     = new RedisCacheService();
+const bookingService   = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService);
+const eventService     = new EventManagementServices(eventRepo, bookingService, cacheService);
 
 
 // CONTROLLER
-const eventController = new EventController(eventService);
+const eventController   = new EventController(eventService, bookingService);
 const bookingController = new BookingController(bookingService);
 
 
@@ -85,8 +87,14 @@ eventRouter.get(EVENT_ROUTES.TRENDING_EVENTS,
     eventController.getTrendingEvents.bind(eventController)
 );
 
+// for public event details
 eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
     eventController.getEventDetails.bind(eventController)
+);
+
+
+eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(UserRole.HOST, UserRole.ADMIN),
+    eventController.getAllBookingsOfEvent.bind(eventController)
 );
 
 eventRouter.post(

@@ -25,13 +25,15 @@ import {
   type GetTransactionsResponse,
 } from "@/types/wallet.types";
 import { formatTransactionAmount, getTransactionStatusVariant, TRANSACTION_TYPE_LABELS } from "@/utils/UI.utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { toTitleCase } from "@/utils/namingConventions";
 
 
 
 
 
 function UserWallet() {
-  const [overview,     setOverview]     = useState<WalletOverviewResponse | null>(null);
+  const [walletOverview, setOverview]   = useState<WalletOverviewResponse | null>(null);
   const [transactions, setTransactions] = useState<ITransactionState[]>([]);
   const [totalCount,   setTotalCount]   = useState(0);
   const [totalPages,   setTotalPages]   = useState(1);
@@ -48,6 +50,7 @@ function UserWallet() {
 
   const itemsPerPage = 10;
   const hasFetched   = useRef(false);
+  const {user} = useAuth()
 
 
   // ── Initial overview fetch (balance + last 10) ──────────────────────────
@@ -59,6 +62,7 @@ function UserWallet() {
       setLoading(true);
       try {
         const response: WalletOverviewResponse = await walletServices.getWalletOverview();
+        console.log('fetchOverview response :', response)
         setOverview(response);
         setTransactions(response.recentTransactions);
         setTotalCount(response.recentTransactions.length);
@@ -178,26 +182,26 @@ function UserWallet() {
         <div className="bg-secondary rounded-lg p-4">
           <p className="text-xs text-muted-foreground mb-1">Available balance</p>
           <p className="text-2xl font-semibold">
-            ₹{(overview?.walletBalance ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+            ₹{(walletOverview?.walletBalance ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
         </div>
 
         <div className="bg-secondary rounded-lg p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-            <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+            <TrendingUp className="h-3.5 w-3.5 text-green-500" />
             Total credited
           </div>
-          <p className="text-2xl font-semibold text-green-700 dark:text-green-400">
+          <p className="text-2xl font-semibold text-green-500">
             + ₹{totalCredited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
         </div>
 
         <div className="bg-secondary rounded-lg p-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-            <TrendingDown className="h-3.5 w-3.5 text-red-500" />
+            <TrendingDown className="h-3.5 w-3.5 text-red-400" />
             Total debited
           </div>
-          <p className="text-2xl font-semibold text-red-700 dark:text-red-400">
+          <p className="text-2xl font-semibold text-red-400">
             − ₹{totalDebited.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
           </p>
         </div>
@@ -281,6 +285,8 @@ function UserWallet() {
                 Date {getSortIcon("createdAt")}
               </TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-center">Status</TableHead>
               <TableHead
                 className="cursor-pointer text-right"
                 onClick={() => handleSort("amount")}
@@ -288,8 +294,6 @@ function UserWallet() {
                 Amount {getSortIcon("amount")}
               </TableHead>
               <TableHead className="text-right">Balance after</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-center">Status</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -331,28 +335,28 @@ function UserWallet() {
 
                     <TableCell>
                       <Badge variant="outline" className="font-normal text-xs">
-                        {TRANSACTION_TYPE_LABELS[tx.type] ?? tx.type}
+                        {toTitleCase(TRANSACTION_TYPE_LABELS[tx.type] ?? tx.type)}
                       </Badge>
                     </TableCell>
 
-                    <TableCell className={`text-right font-medium whitespace-nowrap ${
-                      isCredit ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"
-                    }`}>
-                      export {formatTransactionAmount(tx.amount, tx.direction)}
-                    </TableCell>
-
-                    <TableCell className="text-right text-muted-foreground text-sm">
-                      ₹{tx.balanceAfter.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                    </TableCell>
-
-                    <TableCell className="text-muted-foreground text-sm max-w-52">
-                      <span className="truncate block">{tx.description ?? "—"}</span>
+                    <TableCell className="text-muted-foreground text-xs max-w-60">
+                      <span className="truncat block">{tx.description ?? "—"}</span>
                     </TableCell>
 
                     <TableCell className="text-center">
                       <Badge variant={getTransactionStatusVariant(tx.status)}>
                         {tx.status.charAt(0) + tx.status.slice(1).toLowerCase()}
                       </Badge>
+                    </TableCell>
+
+                    <TableCell className={`text-right font-medium whitespace-nowrap ${
+                      isCredit ? "text-green-500" : "text-red-400"
+                    }`}>
+                      {formatTransactionAmount(tx.amount, tx.direction)}
+                    </TableCell>
+
+                    <TableCell className="text-right text-muted-foreground">
+                      ₹{tx.balanceAfter.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                     </TableCell>
 
                   </TableRow>

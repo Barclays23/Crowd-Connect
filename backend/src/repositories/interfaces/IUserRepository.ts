@@ -16,6 +16,7 @@ import {
 } from '@/entities/user.entity';
 
 import { UserFilterQuery } from '@/types/user.types';
+import { ClientSession } from 'mongoose';
 
 
 
@@ -27,9 +28,9 @@ import { UserFilterQuery } from '@/types/user.types';
 
 
 export interface IUserRepository {
-    getUserByEmail(email: string): Promise<UserEntity | null>;
+    getUserByEmail(email: string): Promise<SensitiveUserEntity | null>;
 
-    getUserByMobile(mobile: string): Promise<UserEntity | null>;
+    getUserByMobile(mobile: string): Promise<SensitiveUserEntity | null>;
 
     getUserById(userId: string): Promise<UserEntity | null>;
 
@@ -42,7 +43,7 @@ export interface IUserRepository {
 
     findUsers(query: UserFilterQuery, skip: number, limit: number): Promise<UserEntity[] | null>;
 
-    findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[] | null>;
+    findHosts(query: UserFilterQuery, skip: number, limit: number): Promise<HostEntity[]>;
 
     countUsers(query: UserFilterQuery): Promise<number>;
 
@@ -51,32 +52,32 @@ export interface IUserRepository {
 
     createUserByAdmin(userInput: CreateUserInput): Promise<UserEntity>;
 
-    updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity>;
+    updateUserByAdmin(userId: string, updateInput: UpdateUserInput): Promise<UserEntity|null>;
 
     deleteUser(userId: string): Promise<void>;
     
     // update user profile by user
-    updateUserProfile(userId: string, userInput: UpdateUserInput): Promise<UserEntity>;
+    updateUserProfile(userId: string, userInput: UpdateUserInput): Promise<UserEntity|null>;
     
-    updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity>;
+    updateProfilePicture(userId: string, profilPicInput: UpdateProfilePicInput): Promise<UserEntity|null>;
     
-    updateUserEmail(userId: string, updateInput: { email?: string; isEmailVerified: boolean }): Promise<UserEntity>
+    updateUserEmail(userId: string, updateInput: { email?: string; isEmailVerified: boolean }): Promise<UserEntity | null>
 
     updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null>;
 
-    updateUserPassword(email: string, hashedPassword: string): Promise<UserEntity | null>;
+    updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus | null>;
 
-    updateUserStatus(userId: string, newStatus: UserStatus): Promise<UserStatus>;
-
-    updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity>;
+    updateHostStatus(hostId: string, hostStatusInput: HostManageInput): Promise<HostEntity | null>;
 
     // for both upgrading host request & updating host details
-    updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity>;
+    updateHostDetails(hostId: string, hostUpdateInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity | null>;
     // updateHostProfile(userId: string, hostEntity: Partial<HostEntity>): Promise<HostEntity>;
 
-    incrementWalletBalance(userId: string, creditAmount: number): Promise<number>;
+    incrementWalletBalance(userId: string, creditAmount: number, options?: { session?: ClientSession }): Promise<number | null>;
 
-    decrementWalletBalance(userId: string, debitAmount: number): Promise<number>;
+    decrementWalletBalance(userId: string, debitAmount: number, options?: { session?: ClientSession }): Promise<number | null>;
+
+    startSession(): Promise<ClientSession>;
 
 }
 

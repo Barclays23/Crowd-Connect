@@ -8,7 +8,7 @@ import {
     BELOW_H48_REFUND_PERCENT, 
     // GRACE_PERIOD_REFUND_PERCENT, 
     NO_REFUND_PERCENT 
-} from "@/types/payment.types";
+} from "@/constants/payment.constants";
 
 export type RefundContext = "user" | "authority" | "event_cancelled";
 
@@ -52,9 +52,9 @@ export function calculateRefundAmount(
     
     if (refundPercentage === NO_REFUND_PERCENT) return 0;
     
-    const refundAmount: number =  Math.round(
-        booking.totalAmount * (refundPercentage / 100) * (1 - ADMIN_COMMISSION_PERCENT / 100)
-    );
+    const refundAmount: number = Math.round(
+        booking.totalAmount * (refundPercentage / 100) * (1 - ADMIN_COMMISSION_PERCENT / 100) * 100
+    ) / 100;
     console.log('ADMIN_COMMISSION_PERCENT :', ADMIN_COMMISSION_PERCENT)
     console.log('refundAmount :', refundAmount)
 

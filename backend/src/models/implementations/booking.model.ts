@@ -25,7 +25,7 @@ const bookingSchema = new Schema<IBookingModel>(
          type: Number,
          required: true,
          min: 1,
-         max:10
+         max: 10
       },
       ticketRate: {
          type: Number,

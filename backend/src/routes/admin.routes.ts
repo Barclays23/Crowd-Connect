@@ -1,6 +1,6 @@
 // backend/src/routes/admin.routes.ts
 
-import { Router } from 'express';
+import e, { Router } from 'express';
 
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
 import { uploadDocument, uploadEventPoster, uploadImage } from '@/middlewares/file-upload.middleware';
@@ -32,8 +32,9 @@ import { RazorpayProvider } from '@/services/payment-services/providers/razorpay
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
-import { WalletService } from '@/services/wallet-services/implementations/wallet.services';
+import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
 import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
+import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 
 
 
@@ -41,10 +42,10 @@ import { TransactionRepository } from '@/repositories/implementations/transactio
 
 
 // ──  REPOSITORIES
-const userRepo = new UserRepository();
-const eventRepo = new EventRepository();
-const bookingRepo = new BookingRepository();
-const transactionRepo     = new TransactionRepository();
+const userRepo          = new UserRepository();
+const eventRepo         = new EventRepository();
+const bookingRepo       = new BookingRepository();
+const transactionRepo   = new TransactionRepository();
 
 
 // ──  PROVIDERS
@@ -54,24 +55,25 @@ const razorPayProvider = new RazorpayProvider();
 
 
 // ──  SERVICES
-const ticketService    = new TicketService(bookingRepo, eventRepo);
-const paymentServices = new PaymentService(razorPayProvider);
-const userManagementServices = new UserManagementService(userRepo);
-const userProfileServices = new UserProfileService(userRepo);
-const hostManagementServices = new HostManagementServices(userRepo);
-const walletService = new WalletService(userRepo, transactionRepo);
+const ticketService             = new TicketService(bookingRepo, eventRepo);
+const paymentServices           = new PaymentService(razorPayProvider);
+const userManagementServices    = new UserManagementService(userRepo);
+const userProfileServices       = new UserProfileService(userRepo);
+const hostManagementServices    = new HostManagementServices(userRepo);
+const walletService             = new WalletService(userRepo, transactionRepo);
+const cacheService              = new RedisCacheService();
 
-const bookingServices = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService);
-const eventManagementServices = new EventManagementServices(eventRepo, bookingServices);
-const passwordService = new PasswordService(userRepo);
+const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService);
+const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService);
+const passwordService           = new PasswordService(userRepo, cacheService);
 
 
 
 // ──  CONTROLLERS ──
-const userController = new UserController(userProfileServices, userManagementServices, passwordService);
-const hostController = new HostController(hostManagementServices);
-const eventController = new EventController(eventManagementServices);
-const bookingController = new BookingController(bookingServices);
+const userController        = new UserController(userProfileServices, userManagementServices, passwordService);
+const hostController        = new HostController(hostManagementServices);
+const eventController       = new EventController(eventServices, bookingServices);
+const bookingController     = new BookingController(bookingServices);
 
 
 

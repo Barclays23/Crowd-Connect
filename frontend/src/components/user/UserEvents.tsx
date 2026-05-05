@@ -139,12 +139,10 @@ export default function UserEvents() {
    }, [currentPage, debouncedSearchTerm, statusFilter, categoryFilter, sortBy, sortOrder]);
 
    
-   const hasFetched = useRef(false);
-
+   // const hasFetched = useRef(false);
    useEffect(() => {
-      if (hasFetched.current) return;
-      hasFetched.current = true;
-
+      // if (hasFetched.current) return;
+      // hasFetched.current = true;
       fetchMyEvents();
    }, [fetchMyEvents]);
 

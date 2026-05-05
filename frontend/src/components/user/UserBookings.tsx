@@ -116,11 +116,11 @@ function UserBookings() {
 
 
 
-  const hasFetched = useRef(false);
+  // const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    // if (hasFetched.current) return;
+    // hasFetched.current = true;
 
     fetchMyBookings();
   }, [fetchMyBookings]);
@@ -161,8 +161,8 @@ function UserBookings() {
     }
 
     try {
-      const response = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
       setIsCancelling(true);
+      const response = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
       toast.success(response.message);
       fetchMyBookings();
 
@@ -283,7 +283,7 @@ function UserBookings() {
                 className="cursor-pointer"
                 onClick={() => handleSort("ticketRate")}
               >
-                Ticket Price {getSortIcon("ticketRate")}
+                Amount Paid {getSortIcon("ticketRate")}
               </TableHead>
               <TableHead
                 className="cursor-pointer text-center"
@@ -452,9 +452,10 @@ function UserBookings() {
         description="Are you sure you want to cancel this booking? This action cannot be undone. If eligible, a refund will be processed within 5–7 business days."
         confirmText="Cancel Booking"
         cancelText="Keep Booking"
+        loadingText = "Cancelling..."
         variant="danger"
         loading={isCancelling}
-        disableConfirm={!cancelReason.trim()}
+        disableConfirm={!cancelReason.trim() || isCancelling}
       >
         <div className="mt-4 space-y-2">
           <label htmlFor="cancel-reason" className="text-sm font-medium text-(--text-primary)">

@@ -13,15 +13,19 @@ import { sendEmail } from "@/utils/email.utils";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { REDIS_DATA_TTL_SECONDS, redisClient } from "@/config/redis.config";
 import { AuthResult } from "@/types/auth.types";
-import { mapSignUpRequestDtoToInput } from "@/mappers/user.mapper";
+import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken } from "@/utils/jwt.utils";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 
 
 
 
 
 export class AuthRegistrationService implements IAuthRegistrationService {
-    constructor(private readonly _userRepository: IUserRepository) {}
+    constructor(
+        private readonly _userRepository: IUserRepository,
+        private readonly _cacheService: ICacheService
+    ) {}
 
     async signUp(signUpDto: SignUpRequestDto): Promise<string> {
         try {
@@ -56,13 +60,19 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             };
 
             // store temp data in redis for expiryMinutes minutes
-            const response = await redisClient.setEx(
-                signUpDto.email,
-                REDIS_DATA_TTL_SECONDS,
-                JSON.stringify(redisData)
+            // const response = await redisClient.setEx(
+            //     signUpDto.email,
+            //     REDIS_DATA_TTL_SECONDS,
+            //     JSON.stringify(redisData)
+            // );
+
+            // store temp data in redis for expiryMinutes minutes
+            const response: string | null = await this._cacheService.setKeyValue(
+                signUpDto.email, 
+                JSON.stringify(redisData), 
+                expiryMinutes * 60
             );
 
-            
             if (!response) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
             }
@@ -80,7 +90,8 @@ export class AuthRegistrationService implements IAuthRegistrationService {
 
     async verifyAccount(email: string, otp: string): Promise<AuthResult> {
         try {
-            const raw = await redisClient.get(email);
+            const raw: string | null = await this._cacheService.getKeyValue(email);
+
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
@@ -112,23 +123,14 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             }
 
             // Delete temp data from Redis
-            await redisClient.del(email);
+            // await redisClient.del(email);
+            await this._cacheService.deleteKeyValue(email);
 
             const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
-
-            const safeUser: AuthUserResponseDto = {
-                userId: userData.id.toString(),
-                name: userData.name,
-                email: userData.email,
-                role: userData.role,
-                // mobile: userData?.mobile,
-                status: userData.status,
-                isEmailVerified: userData.isEmailVerified,
-                isSuperAdmin: userData.isSuperAdmin
-            };
+            const safeUser: AuthUserResponseDto = mapUserEntityToAuthUserDto(userData);
 
             return {
                 safeUser, 
@@ -147,7 +149,8 @@ export class AuthRegistrationService implements IAuthRegistrationService {
 
     async resendOtp(email: string): Promise<string> {
         try {
-            const raw = await redisClient.get(email);
+            const raw: string | null = await this._cacheService.getKeyValue(email);
+
             if (!raw) {
                 throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
@@ -179,7 +182,8 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             };
 
             // Update OTP and expiry in Redis (Redis TTL will remain the same as when requested first otp)
-            const response = await redisClient.set(email, JSON.stringify(updatedRedisData));
+            // const response = await redisClient.set(email, JSON.stringify(updatedRedisData));
+            const response: string | null = await this._cacheService.setKeyValue(email, JSON.stringify(updatedRedisData))
             if (!response) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
             }

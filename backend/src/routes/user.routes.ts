@@ -10,6 +10,7 @@ import { UserRole } from "@/constants/roles-and-statuses";
 import { PasswordService } from "@/services/password-services/implementations/password.service";
 import { validateBody } from "@/middlewares/validate.middleware";
 import { changePasswordSchema } from "@/schemas/user.schema";
+import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
 
 
 
@@ -19,9 +20,10 @@ const userRepo = new UserRepository();
 
 
 // SERVICES
-const userProfileServices = new UserProfileService(userRepo);
-const userManagementServices = new UserManagementService(userRepo);
-const passwordService = new PasswordService(userRepo);
+const userProfileServices       = new UserProfileService(userRepo);
+const userManagementServices    = new UserManagementService(userRepo);
+const cacheService              = new RedisCacheService();
+const passwordService           = new PasswordService(userRepo, cacheService);
 
 
 // CONTROLLER

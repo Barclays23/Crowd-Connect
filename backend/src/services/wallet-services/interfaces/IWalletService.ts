@@ -1,26 +1,18 @@
 
 // backend/src/services/wallet-services/interfaces/IWalletService.ts
 
-import { Types } from "mongoose";
+import { ClientSession } from "mongoose";
 import {
-   ReviewPayoutRequestInput,
    WalletCreditInput,
    WalletDebitInput,
-   CreatePayoutRequestInput,
-   CreateWithdrawalRequestInput,
 
    TransactionsFilterQuery,
-   GetPayoutRequestsFilter,
-   GetWithdrawalRequestsFilter,
+   WalletTransferInput,
 } from "@/types/wallet.types";
 
 import {
-   GetPayoutRequestsResponse,
    GetTransactionsResponse,
-   GetWithdrawalRequestsResponse,
-   PayoutRequestResponseDTO,
    WalletOverviewResponse,
-   WithdrawalRequestResponseDTO,
 } from "@/dtos/wallet.dto";
 
 
@@ -29,10 +21,9 @@ import {
 export interface IWalletService {
 
    // ─── Core Wallet Mutations ───────────────────────────────────────────────────
-   // Never update walletBalance directly — always go through these two methods.
-   // Both return the new wallet balance after the operation.
+   transferFunds(transferInput: WalletTransferInput, options: { session: ClientSession }): Promise<void>;
 
-   creditToWallet(input: WalletCreditInput): Promise<number>;
+   creditToWallet(input: WalletCreditInput, options?: { session?: ClientSession }): Promise<number>;
    debitFromWallet(input: WalletDebitInput): Promise<number>;
 
 
@@ -43,25 +34,4 @@ export interface IWalletService {
    // ─── Transaction History ─────────────────────────────────────────────────────
    getTransactions(filters : TransactionsFilterQuery): Promise<GetTransactionsResponse>;
 
-   // ─── Payout Requests (Host → Admin → Host Wallet) ────────────────────────────
-   createPayoutRequest(input: CreatePayoutRequestInput): Promise<PayoutRequestResponseDTO>;
-
-   getPayoutRequests(filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse>;
-
-   getMyPayoutRequests(hostId: string, filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse>;
-
-   reviewPayoutRequest(input: ReviewPayoutRequestInput): Promise<PayoutRequestResponseDTO>;
-
-
-   // ─── Withdrawal Requests (Host Wallet → Bank) ────────────────────────────────
-   createWithdrawalRequest(input: CreateWithdrawalRequestInput): Promise<WithdrawalRequestResponseDTO>;
-
-   getWithdrawalRequests(hostId: string, filters: GetWithdrawalRequestsFilter ): Promise<GetWithdrawalRequestsResponse>;
-
-   // Called by Razorpay webhook — not a user-facing action
-   handleWithdrawalWebhook(
-      razorpayPayoutId : string,
-      event            : "payout.processed" | "payout.failed",
-      failureReason   ?: string,
-   ): Promise<void>;
 }

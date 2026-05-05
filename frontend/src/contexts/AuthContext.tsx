@@ -150,7 +150,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
                 if (isMounted && response.authUser) {
                     setUser(response.authUser);
-                    // setAccessToken(newAccessToken); // it is already setting in axios incepter (when token refreshes)
                 }
             
             } catch (err: unknown) {

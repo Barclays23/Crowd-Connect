@@ -13,12 +13,16 @@ import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/utils/jwt.utils";
 import { redisClient } from "@/config/redis.config";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 
 
 
 
 export class AuthSessionService implements IAuthSessionService {
-    constructor(private readonly _userRepository: IUserRepository) {}
+    constructor(
+        private readonly _userRepository: IUserRepository,
+        private readonly _cacheService: ICacheService
+    ) {}
 
     async signIn(signInDto: SignInRequestDto): Promise<AuthResult> {
         try {
@@ -35,7 +39,7 @@ export class AuthSessionService implements IAuthSessionService {
             
             // change user.status to 'active' if it was 'inactive' or 'pending'
             if (userData.status === UserStatus.PENDING) {
-                const updatedStatus: UserStatus = await this._userRepository.updateUserStatus(userData.id, UserStatus.ACTIVE);
+                const updatedStatus: UserStatus | null = await this._userRepository.updateUserStatus(userData.id, UserStatus.ACTIVE);
                 // console.log(`✅ User status updated to '${updatedStatus}' upon sign-in.`);
             }
 
@@ -75,7 +79,8 @@ export class AuthSessionService implements IAuthSessionService {
             }
 
             // Check the blacklist. If the JTI exists in the store, it means the token was logged out/revoked.
-            const isBlacklisted = await redisClient.get(decoded.jti);
+            // const isBlacklisted = await redisClient.get(decoded.jti);
+            const isBlacklisted: string | null = await this._cacheService.getKeyValue(decoded.jti);
             if (isBlacklisted) {
                 throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_REVOKED);
             }
@@ -109,7 +114,8 @@ export class AuthSessionService implements IAuthSessionService {
             if (typeof decoded.exp === "number") {
                 const timeToLive = decoded.exp - Math.floor(Date.now() / 1000);
                 if (timeToLive > 0) {
-                    await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
+                    // await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
+                    await this._cacheService.setKeyValue(decoded.jti, 'revoked', timeToLive);
                     console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
                 }
             } else {
@@ -136,7 +142,8 @@ export class AuthSessionService implements IAuthSessionService {
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
-                // mobile: userData?.mobile,
+                mobile: userData?.mobile,
+                walletBalance: userData.walletBalance || 0,
                 status: userData.status,
                 isEmailVerified: userData.isEmailVerified,
                 isSuperAdmin: userData.isSuperAdmin

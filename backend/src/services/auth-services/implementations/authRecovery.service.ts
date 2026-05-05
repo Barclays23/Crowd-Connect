@@ -12,14 +12,20 @@ import { HttpResponse } from "@/constants/responseMessages.constants";
 import { ResetPasswordDto, UpdateEmailDto } from "@/dtos/auth.dto";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { generateOTP } from "@/utils/generateOTP.utils";
+import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 
 
 
 
 
 export class AuthRecoveryService implements IAuthRecoveryService {
-    constructor(private readonly _userRepository: IUserRepository) {}
+    constructor(
+        private readonly _userRepository: IUserRepository,
+        private readonly _cacheService: ICacheService
+    ) {}
 
+
+    
     async requestPasswordReset(email: string): Promise<string>{
         try {
             const existingUser: UserEntity | null = await this._userRepository.getUserByEmail(email);
@@ -61,11 +67,12 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                     createdAt: Date.now(),
                 };
                 
-                await redisClient.setEx(
-                    redisKey,
-                    expiryMinutes * 60, // expiry in seconds
-                    JSON.stringify(redisData)
-                );
+                // await redisClient.setEx(
+                //     redisKey,
+                //     expiryMinutes * 60, // expiry in seconds
+                //     JSON.stringify(redisData)
+                // );
+                await this._cacheService.setKeyValue(redisKey, JSON.stringify(redisData), expiryMinutes * 60);
             }
             
             return email;
@@ -80,7 +87,8 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
     async validateResetLink(token: string): Promise<boolean> {
         const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
-        const exists = await redisClient.get(redisKey);
+        // const exists = await redisClient.get(redisKey);
+        const exists = await this._cacheService.getKeyValue(redisKey);
 
         if (!exists) {
             throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.RESET_LINK_INVALID_OR_EXPIRED);
@@ -135,10 +143,16 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 createdAt: Date.now(),
             };
 
-            const response = await redisClient.setEx(
-                redisKey,
-                expiryMinutes * 60,
-                JSON.stringify(redisData)
+            // const response = await redisClient.setEx(
+            //     redisKey,
+            //     expiryMinutes * 60,
+            //     JSON.stringify(redisData)
+            // );
+
+            const response = await this._cacheService.setKeyValue(
+                redisKey, 
+                JSON.stringify(redisData), 
+                expiryMinutes * 60
             );
 
             // --- Dynamic HTML Template Loading ---
@@ -193,7 +207,8 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             }
 
             const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
-            const redisRawValue = await redisClient.get(redisKey);
+            // const redisRawValue = await redisClient.get(redisKey);
+            const redisRawValue = await this._cacheService.getKeyValue(redisKey);
 
             if (!redisRawValue) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
@@ -206,7 +221,9 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             }
 
             if (Date.now() > redisData.otpExpiry) {
-                await redisClient.del(redisKey);
+                // await redisClient.del(redisKey);
+                await this._cacheService.deleteKeyValue(redisKey);
+
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
             }
 
@@ -225,9 +242,14 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 updateInput.email = normalizedRequestedEmail
             }
 
-            const updatedUser: UserEntity = await this._userRepository.updateUserEmail(currentUser.id, updateInput);
+            const updatedUser: UserEntity | null = await this._userRepository.updateUserEmail(currentUser.id, updateInput);
 
-            await redisClient.del(redisKey);
+            if (!updatedUser) {
+                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            }
+
+            // await redisClient.del(redisKey);
+            await this._cacheService.deleteKeyValue(redisKey);
 
             return updatedUser.email;
 

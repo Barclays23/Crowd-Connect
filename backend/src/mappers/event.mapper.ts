@@ -196,18 +196,6 @@ export const mapEventEntityToEventResponseDto = (
 
 
 
-// EVENT ENTITY to EventStatusUpdateResponse DTO
-export const mapToEventStatusUpdateResponseDto = (
-   event: EventEntity
-): EventStatusUpdateResponseDto => {
-   return {
-      updatedStatus: event.eventStatus,
-      // cancelledAt: event.cancellation?.cancelledAt.toISOString(),
-      // reason: event.cancellation?.reason,
-   };
-};
-
-
 
 
 

@@ -7,7 +7,7 @@ import { UserRepository } from '@/repositories/implementations/user.repository';
 import { WALLET_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
 import { WalletController } from '@/controllers/implementations/wallet.controller';
-import { WalletService } from '@/services/wallet-services/implementations/wallet.services';
+import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
 import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
 
 

@@ -19,8 +19,9 @@ import { PaymentService } from "@/services/payment-services/implementations/paym
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
-import { WalletService } from "@/services/wallet-services/implementations/wallet.services";
+import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
+import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
 
 
 
@@ -39,7 +40,8 @@ const razorpayProvider = new RazorpayProvider();
 const paymentService   = new PaymentService(razorpayProvider);
 const ticketService    = new TicketService(bookingRepo, eventRepo);
 const walletService    = new WalletService(userRepo, transactionRepo);
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService);
+const cacheService    = new RedisCacheService();
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService);
 
 
 const bookingController = new BookingController(bookingService);
