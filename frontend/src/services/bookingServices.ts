@@ -7,8 +7,6 @@ import type {
    GetMyBookingsResponse, 
    InitiateBookingResponse 
 } from "@/types/booking.types";
-import type { UserRole } from "@/types/user.types";
-import { toast } from "react-toastify";
 
 
 

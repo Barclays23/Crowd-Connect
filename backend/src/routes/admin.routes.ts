@@ -18,7 +18,7 @@ import { HostController } from '@/controllers/implementations/host.controller';
 import { validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
-import { ADMIN_ROUTES } from '@/constants/routes.constants';
+import { ADMIN_ROUTES, SETTINGS_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/event.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
@@ -35,6 +35,9 @@ import { PasswordService } from '@/services/password-services/implementations/pa
 import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
 import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
+import { PlatformSettingsController } from '@/controllers/implementations/platformSettings.controller';
+import { PlatformSettingsService } from '@/services/platform-settings-services/implementations/platformSettings.service';
+import { PlatformSettingsRepository } from '@/repositories/implementations/platformSettings.repository';
 
 
 
@@ -46,6 +49,8 @@ const userRepo          = new UserRepository();
 const eventRepo         = new EventRepository();
 const bookingRepo       = new BookingRepository();
 const transactionRepo   = new TransactionRepository();
+const settingsRepo      = new PlatformSettingsRepository();
+
 
 
 // ──  PROVIDERS
@@ -62,11 +67,11 @@ const userProfileServices       = new UserProfileService(userRepo);
 const hostManagementServices    = new HostManagementServices(userRepo);
 const walletService             = new WalletService(userRepo, transactionRepo);
 const cacheService              = new RedisCacheService();
+const settingsService           = new PlatformSettingsService(settingsRepo);
 
-const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService);
-const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService);
+const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
+const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService);
 const passwordService           = new PasswordService(userRepo, cacheService);
-
 
 
 // ──  CONTROLLERS ──
@@ -128,6 +133,8 @@ adminRouter.patch(ADMIN_ROUTES.UPDATE_EVENT, uploadEventPoster.single("eventPost
 // booking management
 adminRouter.get(ADMIN_ROUTES.GET_BOOKINGS, bookingController.getAdminBookings.bind(bookingController));
 adminRouter.put(ADMIN_ROUTES.CANCEL_BOOKING, validateRequest({body: cancelBookingSchema, params: BookingIdParamSchema}), bookingController.cancelBookingByAdmin.bind(bookingController));
+
+
 
 
 export default adminRouter;

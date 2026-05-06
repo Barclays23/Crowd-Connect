@@ -118,7 +118,9 @@ export function AdminNavbar() {
                 <span>Profile</span>
               </DropdownMenuItem>
 
-              <DropdownMenuItem className="cursor-pointer hover:bg-(--bg-secondary) rounded-lg">
+              <DropdownMenuItem 
+                onClick={()=> navigate('/admin/settings')}
+                className="cursor-pointer hover:bg-(--bg-secondary) rounded-lg">
                 <Settings className="mr-3 h-4 w-4 text-(--text-secondary)" />
                 <span>Settings</span>
               </DropdownMenuItem>

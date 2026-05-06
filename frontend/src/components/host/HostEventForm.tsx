@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { TextArea } from "@/components/ui/text-area";
 import { ButtonLoader } from "@/components/common/ButtonLoader";
 import { type EventFormValues } from "@/schemas/event.schema";
-import { EVENT_CATEGORIES, ADMIN_COMMISSION_PERCENT } from "@/types/event.types";
+import { EVENT_CATEGORIES } from "@/types/event.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
 import { FieldError } from "../ui/FieldError";
@@ -39,6 +39,7 @@ interface EventFormProps {
    onCancel?: () => void;
    onSubmit: (data: EventFormValues) => Promise<void>;
    existingImageUrl?: string;
+   commissionPercent?: number;
 }
 
 
@@ -47,6 +48,7 @@ export const HostEventForm = ({
   onCancel,
   onSubmit,
   existingImageUrl,
+  commissionPercent = 10,  // safe fallback
 }: EventFormProps) => {
    const {
       register,
@@ -104,7 +106,7 @@ export const HostEventForm = ({
 
    const estimatedEarnings =
       currentTicketPrice && Number(currentTicketPrice) > 0
-         ? (Number(currentTicketPrice) * (1 - ADMIN_COMMISSION_PERCENT / 100)).toFixed(2)
+         ? (Number(currentTicketPrice) * (1 - commissionPercent  / 100)).toFixed(2)
          : "0.00";
 
 
@@ -147,10 +149,10 @@ export const HostEventForm = ({
 
    const confirmMapSelection = () => {
       if (selectedPosition) {
-      setValue("locationCoordinates", selectedPosition, { shouldValidate: true });
-      setMapCenter(selectedPosition);
-      setShowMapModal(false);
-      toast.success("Location pinned!");
+         setValue("locationCoordinates", selectedPosition, { shouldValidate: true });
+         setMapCenter(selectedPosition);
+         setShowMapModal(false);
+         toast.success("Location pinned!");
       }
    };
 
@@ -617,9 +619,9 @@ export const HostEventForm = ({
                {currentTicketType === "paid" && Number(currentTicketPrice || 0) > 0 && (
                   <div className="mt-2 text-xs text-(--text-secondary) flex flex-col gap-1 bg-(--bg-secondary) p-2 rounded-md">
                      <div className="flex justify-between">
-                     <span>Platform Fee ({ADMIN_COMMISSION_PERCENT}%):</span>
+                     <span>Platform Fee ({commissionPercent}%):</span>
                      <span className="text-(--status-error)">
-                        - ₹{((Number(currentTicketPrice) * ADMIN_COMMISSION_PERCENT) / 100).toFixed(2)}
+                        - ₹{((Number(currentTicketPrice) * commissionPercent) / 100).toFixed(2)}
                      </span>
                      </div>
                      <div className="flex justify-between font-semibold border-t border-(--border-muted) pt-1 mt-1">
@@ -768,7 +770,7 @@ export const HostEventForm = ({
                </Button>
             )}
             <Button
-               // type="submit"
+               type="submit"
                variant="default"
                disabled={isSubmitting || isGeneratingAI}
             >

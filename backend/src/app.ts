@@ -14,6 +14,7 @@ import hostRouter from '@/routes/host.routes';
 import eventRouter from '@/routes/event.routes';
 import bookingRouter from '@/routes/booking.routes';
 import walletRouter from '@/routes/wallet.routes';
+import settingsRouter from '@/routes/settings.routes';
 
 
 import morganMiddleware from '@/config/morgan.config';
@@ -55,6 +56,7 @@ app.use('/api/host', hostRouter);
 app.use('/api/event', eventRouter);
 app.use('/api/booking', bookingRouter);
 app.use('/api/wallet', walletRouter);
+app.use('/api/settings', settingsRouter);
 
 
 app.use(errorHandler);

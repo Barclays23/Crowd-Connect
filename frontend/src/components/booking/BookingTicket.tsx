@@ -168,7 +168,7 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
                   </div>
                 )
               ) : (
-                <div className="font-semibold text-(--text-primary) truncate">
+                <div className="font-semibold text-(--text-primary) truncat">
                   {booking.event.locationName || "To Be Announced"}
                 </div>
               )}

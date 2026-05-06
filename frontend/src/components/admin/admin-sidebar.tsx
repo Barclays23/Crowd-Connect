@@ -11,6 +11,7 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react"
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const menuItems = [
   { title: "Payments", url: "/admin/payments", icon: IndianRupee },
   { title: "Payout Requests", url: "/admin/payout-requests", icon: FileText },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
+  { title: "Settings", url: "/admin/settings", icon: Settings },
 ]
 
 

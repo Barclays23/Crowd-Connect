@@ -78,7 +78,7 @@ export interface BookingResponseDTO {
     refundId?:   string;
     refundedAt?: string;
   };
-  refundGracePeriodEnd?: string;
+  gracePeriodEnd?: string;
   createdAt: string;
 }
 

@@ -50,6 +50,7 @@ import AdminUserList from "@/pages/admin/AdminUserList";
 import AdminHostsList from "./pages/admin/AdminHostsList";
 import AdminEventList from "@/pages/admin/AdminEventsList";
 import AdminBookingsList from "@/pages/admin/AdminBookingsList";
+import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
 
 
 
@@ -105,6 +106,7 @@ function App() {
                               <Route path="/admin/hosts" element={<AdminHostsList />} />
                               <Route path="/admin/events" element={<AdminEventList />} />
                               <Route path="/admin/bookings" element={<AdminBookingsList />} />
+                              <Route path="/admin/settings" element={<AdminPlatformSettings />} />
                            </Route>
 
 

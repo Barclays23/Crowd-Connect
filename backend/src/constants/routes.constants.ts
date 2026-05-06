@@ -77,6 +77,13 @@ export const WEBHOOK_ROUTES = {
 
 
 
+export const SETTINGS_ROUTES = {
+    GET_SETTINGS: '/',
+    UPDATE_SETTINGS: '/',
+} as const;
+
+
+
 
 export const ADMIN_ROUTES = {
     // User Management
@@ -101,6 +108,6 @@ export const ADMIN_ROUTES = {
     
     // Booking Mangement
     GET_BOOKINGS: '/bookings',
-    CANCEL_BOOKING: '/bookings/:bookingId/cancel'
+    CANCEL_BOOKING: '/bookings/:bookingId/cancel',
 
 } as const;

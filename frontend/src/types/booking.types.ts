@@ -104,7 +104,7 @@ export interface IBookingState {
     refundId?:   string;
     refundedAt?: string;
   };
-  refundGracePeriodEnd?: string;
+  gracePeriodEnd?: string;
   createdAt: string;
 }
 

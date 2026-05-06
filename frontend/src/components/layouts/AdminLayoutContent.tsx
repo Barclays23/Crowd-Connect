@@ -14,7 +14,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
    
    return (
-      <div className="flex min-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="flex min-h-screen w-full bg-(--bg-primary) text-(--text-primary)">
          
          {/* Sidebar */}
          <AdminSidebar />
@@ -37,7 +37,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
             <BreadcrumbNav />
 
             {/* Scrollable main content */}
-            <main className="flex-1 overflow-y-auto bg-[var(--bg-primary)]">
+            <main className="flex-1 overflow-y-auto bg-(--bg-primary)">
                <div className="container mx-auto p-4 sm:p-6 max-w-7xl w-full">
                   {children}
                </div>

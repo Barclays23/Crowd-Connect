@@ -309,7 +309,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       {
         $set: {
           majorEventChange:     data.majorEventChange,
-          refundGracePeriodEnd: data.gracePeriodEnd,
+          gracePeriodEnd: data.gracePeriodEnd,
         },
       }
     );
