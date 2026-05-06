@@ -70,7 +70,7 @@ function mapBookingBase(model: {
   checkedInAt?: Date
   cancellation?: IBookingModel["cancellation"]
   majorEventChange?: IBookingModel["majorEventChange"]
-  refundGracePeriodEnd?: Date | null
+  gracePeriodEnd?: Date | null
   createdAt: Date
   updatedAt: Date
 }): BookingEntity {
@@ -89,7 +89,7 @@ function mapBookingBase(model: {
     checkedInAt: model.checkedInAt,
     cancellation: model.cancellation,
     majorEventChange: model.majorEventChange,
-    refundGracePeriodEnd: model.refundGracePeriodEnd,
+    gracePeriodEnd: model.gracePeriodEnd,
     createdAt: model.createdAt,
     updatedAt: model.updatedAt,
   };
@@ -184,7 +184,7 @@ export function mapBookingEntityToResponseDTO(
           refundedAt:  entity.cancellation.refundedAt?.toISOString(),
         }
       : undefined,
-    refundGracePeriodEnd: entity.refundGracePeriodEnd?.toISOString(),
+    gracePeriodEnd: entity.gracePeriodEnd?.toISOString(),
     createdAt: entity.createdAt.toISOString(),
   };
 }

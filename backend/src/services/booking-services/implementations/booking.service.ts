@@ -54,6 +54,9 @@ import { BookingMessages } from "@/constants/responseMessages.constants";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { RefundResult } from "@/types/payment.types";
+import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
+import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+// import { IPlatformSettings } from "@/models/implementations/platformSettings.model";
 
 
 
@@ -69,6 +72,7 @@ export class BookingService implements IBookingService {
       private readonly _ticketService:  ITicketService,
       private readonly _walletService : IWalletService,
       private readonly _cacheService: ICacheService,
+      private readonly _settingsService: IPlatformSettingsService,
    ) {}
 
 
@@ -340,29 +344,6 @@ export class BookingService implements IBookingService {
             this._bookingRepository.findPendingBookingsForEvent(eventId),
          ]);
 
-         // Limit concurrency to 5-10 at a time to respect Razorpay API limits and DB connection pools
-         // const BATCH_SIZE = 5;
-
-         // Confirmed Bookings — refund + cancel
-         // for (let i = 0; i < confirmedBookings.length; i += BATCH_SIZE) {
-         //    const batch = confirmedBookings.slice(i, i + BATCH_SIZE);
-
-         //    const refundResults = await Promise.allSettled(
-         //       batch.map(booking => this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled"))
-         //    );
-
-         //    refundResults.forEach((result: PromiseSettledResult<void>, index: number) => {
-         //       if (result.status === "rejected") {
-         //          const failedBookingId = batch[index].bookingId;
-         //          // In a production environment, should save this to a "FailedRefundQueue" 
-         //          // collection in DB so an admin can retry it later, rather than just console.logging it.
-         //          console.error(`[CRITICAL] Failed to cancel and refund booking ${failedBookingId}:`, result.reason);
-         //       }
-         //    });
-         // }
-
-         // ---------------------
-
          // Process Confirmed Bookings SEQUENTIALLY (refund + cancel)
          for (const booking of confirmedBookings) {
             try {
@@ -477,10 +458,12 @@ export class BookingService implements IBookingService {
       cancelReason:   string,
       context:  RefundContext,
    ): Promise<void> {
-      const refundAmount: number = calculateRefundAmount(booking, context);
+      const settings: PlatformSettingsEntity = await this._settingsService.getSettings();
+      const refundAmount: number = calculateRefundAmount(booking, context, settings);
+
       let refundId: string | undefined;
 
-      console.log('refund amount calculated...', refundAmount)
+      console.log('refund amount calculated...:', refundAmount)
 
       try {
          // ── Initiate the Refund Process (Network call). Webhook will handle the refund process ─────────────────────────

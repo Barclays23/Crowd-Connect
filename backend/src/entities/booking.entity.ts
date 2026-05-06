@@ -38,7 +38,7 @@ export interface BookingEntity {
 
   majorEventChange?: MajorEventChange;
 
-  refundGracePeriodEnd?: Date | null;
+  gracePeriodEnd?: Date | null;
 
   createdAt: Date;
   updatedAt: Date;

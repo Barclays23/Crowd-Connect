@@ -1,14 +1,10 @@
 // backend/src/utils/refundCalculator.ts
 
 import { BookingEntityPopulated } from "@/entities/booking.entity";
-import { 
-    ABOVE_H48_REFUND_PERCENT, 
-    ADMIN_COMMISSION_PERCENT, 
-    BELOW_H24_REFUND_PERCENT, 
-    BELOW_H48_REFUND_PERCENT, 
-    // GRACE_PERIOD_REFUND_PERCENT, 
-    NO_REFUND_PERCENT 
-} from "@/constants/payment.constants";
+
+import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+
+
 
 export type RefundContext = "user" | "authority" | "event_cancelled";
 
@@ -16,61 +12,86 @@ export type RefundContext = "user" | "authority" | "event_cancelled";
 export type RefundBookingInput = {
     ticketRate: number;
     totalAmount: number;
-    refundGracePeriodEnd?: Date | null;
+    gracePeriodEnd?: Date | null;
     event: {
         startDateTime: Date;
     };
 };
 
 
+
+
 export function calculateRefundAmount(
     booking: BookingEntityPopulated,
-    context: RefundContext
+    context: RefundContext,
+    settings: PlatformSettingsEntity
 ): number {
-    console.log('booking.ticketRate :', booking.ticketRate)
-    console.log('booking.quantity :', booking.quantity)
-    console.log('booking.totalAmount :', booking.totalAmount)
-    console.log('cancel context :', context)
-    
-    if (booking.totalAmount === 0) return 0;
+    console.log('booking.ticketRate     :', booking.ticketRate)
+    console.log('booking.quantity       :', booking.quantity)
+    console.log('booking.totalAmount    :', booking.totalAmount)
+    console.log('cancel context         :', context)
 
-    // ── Full refund cases — no commission deduction ──────────────────────────
-    const isGraceActive = !!booking.refundGracePeriodEnd && new Date() <= booking.refundGracePeriodEnd;
-    console.log('isGraceActive :', isGraceActive)
-    if (
-        context === "event_cancelled" || 
-        context === "authority" || 
-        isGraceActive
-    ) {
+
+    // Free ticket — nothing to refund
+    if (booking.totalAmount === 0) return 0;
+    
+
+    // let refundAmount: number;
+
+
+    // Authority or event cancellation → always 100% refund (no commission deduction)
+    if (context === 'authority' || context === 'event_cancelled') {
         return booking.totalAmount;
     }
 
 
-    // ── Standard user cancellation — admin retains commission ────────────────
-    const refundPercentage = getRefundPercentage(booking);
-    console.log('refundPercentage :', refundPercentage)
-    
-    if (refundPercentage === NO_REFUND_PERCENT) return 0;
-    
-    const refundAmount: number = Math.round(
-        booking.totalAmount * (refundPercentage / 100) * (1 - ADMIN_COMMISSION_PERCENT / 100) * 100
-    ) / 100;
-    console.log('ADMIN_COMMISSION_PERCENT :', ADMIN_COMMISSION_PERCENT)
-    console.log('refundAmount :', refundAmount)
+    // Grace period active (major event change) → full grace period refund %
+    const isGraceActive = !!booking.gracePeriodEnd && new Date() <= new Date(booking.gracePeriodEnd);
+    console.log('isGraceActive      :', isGraceActive)
 
-    return refundAmount;
+    if (isGraceActive) {
+        return Math.round((booking.totalAmount * settings.gracePeriodRefundPercent) / 100);
+    }
+
+
+    // Standard user cancellation — remaining time-based tiers ────────────────
+    const refundPercent = getRefundPercentage(booking, settings);
+    console.log('refundPercent   :', refundPercent)
+
+    if (refundPercent === 0) return 0;
+
+    return Math.round((booking.totalAmount * refundPercent) / 100);
+
+    // NOTE ON ADMIN COMMISSION:
+    // Commission (settings.commissionPercent) is NOT deducted here.
+    // The user always gets back the full percentage of what they paid.
+    // Commission is deducted when calculating HOST PAYOUTS, not refunds.
+    // Example: User paid ₹1000. 50% refund = user gets ₹500 back.
+    // The admin wallet absorbs this. Commission accounting happens at payout time.
 }
 
 
-export function getRefundPercentage(booking: RefundBookingInput): number {
-    // const isGraceActive = !!booking.refundGracePeriodEnd && new Date() <= booking.refundGracePeriodEnd;
+export function getRefundPercentage(
+    booking: BookingEntityPopulated, 
+    settings: PlatformSettingsEntity
+): number {
 
-    // if (isGraceActive) return GRACE_PERIOD_REFUND_PERCENT;
+    const now               = new Date();
+    const eventStart        = new Date(booking.event.startDateTime);
+    const hoursUntilEvent   = (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-    const hoursToStart = (new Date(booking.event.startDateTime).getTime() - Date.now()) / (1000 * 60 * 60);
+    console.log('Hours Left Until Event :', hoursUntilEvent);
 
-    if (hoursToStart >= 48) return ABOVE_H48_REFUND_PERCENT;
-    if (hoursToStart >= 24) return BELOW_H48_REFUND_PERCENT;
-    if (hoursToStart > 0)   return BELOW_H24_REFUND_PERCENT;
-    return NO_REFUND_PERCENT;
+    if (hoursUntilEvent >= settings.refundTier1Hours) {
+        return settings.refundTier1Percent;     // e.g. >= 48h → 100%
+    }
+    if (hoursUntilEvent >= settings.refundTier2Hours) {
+        return settings.refundTier2Percent;     // e.g. 24–48h → 50%
+    }
+    if (hoursUntilEvent > 0) {
+        return settings.refundTier3Percent;     // e.g. 0-24h   → 25%
+    }
+
+    // hoursUntilEvent <= 0 → event already started → 0% (no refund)
+    return 0;
 }

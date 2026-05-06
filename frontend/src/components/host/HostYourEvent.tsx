@@ -12,11 +12,35 @@ import { createEventFormSchema, type EventFormValues } from "@/schemas/event.sch
 import { HostEventForm } from "@/components/host/HostEventForm";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { eventServices } from "@/services/eventServices";
+import { useEffect, useState } from "react";
+import { platformSettingsService } from "@/services/platformSettingsService";
+import type { SettingsResponse } from "@/types/platformSettings.types";
 
 
 
 
 const HostYourEvent = () => {
+  const [commissionPercent, setCommissionPercent] = useState<number>(10);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    const fetchCommissionPercent = async () => {
+        try {
+          setLoading(true);
+          const response: SettingsResponse = await platformSettingsService.getSettings();
+          setCommissionPercent(response?.settingsData?.commissionPercent ?? commissionPercent);
+
+        } catch (error: unknown) {
+          console.warn("Could not load platform settings, using default commission :", error);
+
+        } finally {
+          setLoading(false);
+        }
+    };
+    
+    fetchCommissionPercent();
+  }, []);
+
   const methods = useForm<EventFormValues>({
     resolver: zodResolver(createEventFormSchema) as Resolver<EventFormValues>,
     defaultValues: {
@@ -101,6 +125,7 @@ const HostYourEvent = () => {
             <HostEventForm
               isEditMode={false}
               onSubmit={handleSubmit}
+              commissionPercent={commissionPercent}
             />
           </FormProvider>
         </div>

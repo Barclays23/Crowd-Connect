@@ -106,7 +106,7 @@ export interface IBookingModel {
 
   // Full refund allowed until this deadline regardless of normal cancellation policy.
   // Null = no active grace period.
-  refundGracePeriodEnd?: Date | null;
+  gracePeriodEnd?: Date | null;
 
   // Timestamps (auto-managed by Mongoose { timestamps: true })
   createdAt: Date;

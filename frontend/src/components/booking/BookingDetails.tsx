@@ -141,10 +141,10 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                         )}
 
                         {/* Optional: show if you later add estimated / grace period info */}
-                        {booking.refundGracePeriodEnd && (
+                        {booking.gracePeriodEnd && (
                            <DetailRow
                               label="Refund Period Ends"
-                              value={formatDate5(booking.refundGracePeriodEnd)}
+                              value={formatDate5(booking.gracePeriodEnd)}
                            />
                         )}
                         </div>
@@ -154,7 +154,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                </div>
 
                {/* Extra space filler if content is short */}
-               <div className="flex-1 min-h-[80px]" />
+               <div className="flex-1 min-h-20" />
             </div>
          </div>
 
@@ -238,7 +238,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                {!isCancelled && !booking.checkedInAt && (
                <div className="flex flex-col items-center justify-center py-12 text-(--text-tertiary) opacity-70 mt-4">
                   <Plane className="w-12 h-12 mb-4 opacity-40" />
-                  <p className="text-center text-sm max-w-[280px]">
+                  <p className="text-center text-sm max-w-70">
                      Booking confirmed • Show your Entry Pass QR code at the venue
                   </p>
                </div>

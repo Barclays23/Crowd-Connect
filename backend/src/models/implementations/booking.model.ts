@@ -88,7 +88,7 @@ const bookingSchema = new Schema<IBookingModel>(
          summary:    { type: String },
       },
 
-      refundGracePeriodEnd: {    // If set → full refund allowed until this time
+      gracePeriodEnd: {    // If set → full refund allowed until this time
          type: Date,
          default: null,
       },
@@ -115,7 +115,7 @@ const bookingSchema = new Schema<IBookingModel>(
 
 // Is a major-change grace period currently active?
 bookingSchema.virtual("isGraceRefundActive").get(function (this: IBookingModel) {
-  return !!this.refundGracePeriodEnd && new Date() <= this.refundGracePeriodEnd;
+  return !!this.gracePeriodEnd && new Date() <= this.gracePeriodEnd;
 });
 
 
@@ -138,7 +138,7 @@ bookingSchema.virtual("currentRefundPercentage").get(function (
    return getRefundPercentage({
       ticketRate: this.ticketRate,
       totalAmount: this.totalAmount,
-      refundGracePeriodEnd: this.refundGracePeriodEnd,
+      gracePeriodEnd: this.gracePeriodEnd,
       event: {
          startDateTime: this.eventRef.startDateTime
       }
@@ -160,7 +160,7 @@ bookingSchema.index(
    // { unique: true, partialFilterExpression: { qrToken: { $exists: true } }}
    { unique: true, partialFilterExpression: { qrToken: { $type: "string", $ne: "" } }}
 );     // QR scan — sparse skips empty-string PENDING rows
-bookingSchema.index({ refundGracePeriodEnd: 1 }, { sparse: true });      // Grace-period queries — sparse skips null rows
+bookingSchema.index({ gracePeriodEnd: 1 }, { sparse: true });      // Grace-period queries — sparse skips null rows
 bookingSchema.index({ "payment.orderId": 1 }, { unique: true });         // Webhook lookup — must be unique
 
 

@@ -1,9 +1,14 @@
 import { HostEventForm } from "@/components/host/HostEventForm";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
+import { platformSettingsService } from "@/services/platformSettingsService";
 import type { EVENT_STATUS, IEventState } from "@/types/event.types";
+import type { IPlatformSettings, SettingsResponse } from "@/types/platformSettings.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm, type Resolver } from "react-hook-form";
+import { toast } from "react-toastify";
 
 
 // ── Drop-in replacement: owns its own form, initialised with correct defaults ──
@@ -16,6 +21,31 @@ interface EditEventFormProps {
 
 
 const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) => {
+  const [commissionPercent, setCommissionPercent] = useState<number>(10);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setLoading(true);
+        const response: SettingsResponse = await platformSettingsService.getSettings();
+        console.log('fetched settings:', response);
+        setCommissionPercent(response?.settingsData?.commissionPercent ?? commissionPercent);
+
+      } catch (error: unknown) {
+        console.warn("Could not load platform settings, using default commission :", error);
+        const errorMessage = getApiErrorMessage(error);
+        toast.error(errorMessage);
+        toast.error("Failed to load platform settings----------");
+
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchSettings();
+  }, []);
+
   const start = toLocalInputDateTime(editEvent.startDateTime);
   const end   = toLocalInputDateTime(editEvent.endDateTime);
 
@@ -59,6 +89,7 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
         existingImageUrl={editEvent.posterUrl || undefined}
         onSubmit={onSubmit}
         onCancel={onCancel}
+        commissionPercent={commissionPercent}
       />
     </FormProvider>
   );

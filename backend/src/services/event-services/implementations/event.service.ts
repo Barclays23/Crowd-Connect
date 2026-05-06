@@ -57,6 +57,7 @@ import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
 import { redisClient } from "@/config/redis.config";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
+import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 
 
 
@@ -64,9 +65,10 @@ import { ICacheService } from "@/services/cache-services/interfaces/ICacheServic
 
 export class EventManagementServices implements IEventServices {
     constructor(
-        private _eventRepository: IEventRepository,
-        private _bookingService: IBookingService,
-        private _cacheService: ICacheService,
+        private readonly _eventRepository   : IEventRepository,
+        private readonly _bookingService    : IBookingService,
+        private readonly _cacheService      : ICacheService,
+        private readonly _settingsService   : IPlatformSettingsService,
         // private _paymentService:    IPaymentService,
         // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
@@ -639,10 +641,12 @@ export class EventManagementServices implements IEventServices {
 
             if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
 
+                const settings = await this._settingsService.getSettings();
+
                 const gracePeriodEnd = new Date(
                     Math.min(
                         existingEvent.startDateTime.getTime(),
-                        Date.now() + 48 * 60 * 60 * 1000
+                        Date.now() + settings.gracePeriodHours * 60 * 60 * 1000
                     )
                 );
 

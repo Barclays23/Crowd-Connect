@@ -7,6 +7,7 @@ import { uploadDocument, uploadEventPoster } from "@/middlewares/file-upload.mid
 import { validateParams, validateRequest } from "@/middlewares/validate.middleware";
 import { BookingRepository } from "@/repositories/implementations/booking.repository";
 import { EventRepository } from "@/repositories/implementations/event.repository";
+import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
 import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { initiateBookingSchema } from "@/schemas/booking.schema";
@@ -17,6 +18,7 @@ import { RedisCacheService } from "@/services/cache-services/implementations/red
 import { EventManagementServices } from "@/services/event-services/implementations/event.service";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
+import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
@@ -27,7 +29,7 @@ const eventRepo         = new EventRepository();
 const bookingRepo       = new BookingRepository();
 const userRepo          = new UserRepository();
 const transactionRepo   = new TransactionRepository();
-
+const settingsRepo      = new PlatformSettingsRepository();
 
 // PROVIDERS
 const razorPayProvider = new RazorpayProvider();
@@ -38,8 +40,9 @@ const ticketService    = new TicketService(bookingRepo, eventRepo);
 const paymentService   = new PaymentService(razorPayProvider);
 const walletService    = new WalletService(userRepo, transactionRepo);
 const cacheService     = new RedisCacheService();
-const bookingService   = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService);
-const eventService     = new EventManagementServices(eventRepo, bookingService, cacheService);
+const settingsService  = new PlatformSettingsService(settingsRepo);
+const bookingService   = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
+const eventService     = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService);
 
 
 // CONTROLLER

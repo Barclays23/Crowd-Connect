@@ -115,7 +115,7 @@ export interface IEventState {
 
 // Based on your plan (5-10%)
 // Also check the same percentage value in backend
-export const ADMIN_COMMISSION_PERCENT = 10;
+// export const ADMIN_COMMISSION_PERCENT = 10;
 
 
 export const POSTER_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
