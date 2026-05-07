@@ -30,22 +30,22 @@ export function LoadingSpinner1({
       <div className="relative">
         {/* Decorative background ring */}
         <div className={cn(
-          "absolute rounded-full border-4 border-[var(--brand-primary)] opacity-10",
+          "absolute rounded-full border-4 border-(--brand-primary] opacity-10",
           sizeClasses[size].replace('h-', 'h-').replace('w-', 'w-') // match sizes
         )} />
         {/* Main Spinner */}
-        <Loader2 className={cn("animate-spin text-[var(--brand-primary)]", sizeClasses[size])} />
+        <Loader2 className={cn("animate-spin text-(--brand-primary]", sizeClasses[size])} />
       </div>
       
         {message && (
-        <p className="text-sm font-semibold text-[var(--text-primary)] animate-pulse">
+        <p className="text-sm font-semibold text-(--text-primary) animate-pulse">
             {message}
         </p>
         )}
 
 
         {subMessage && (
-        <p className="text-xs text-[var(--text-tertiary)] opacity-80">
+        <p className="text-xs text-(--text-tertiary] opacity-80">
             {subMessage}
             <span className="inline-flex gap-1 ml-1">
             <span className="animate-bounce">.</span>
