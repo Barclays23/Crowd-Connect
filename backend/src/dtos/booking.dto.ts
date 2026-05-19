@@ -79,6 +79,10 @@ export interface BookingResponseDTO {
     refundedAt?: string;
   };
   gracePeriodEnd?: string;
+  isGraceRefundActive:    boolean;   // true if gracePeriodEnd is set and hasn't passed
+  currentRefundPercent:   number;    // 0 for non-CONFIRMED bookings
+  currentRefundableAmount: number;   // ₹ amount user would receive right now
+
   createdAt: string;
 }
 

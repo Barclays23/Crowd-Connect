@@ -27,6 +27,8 @@ export interface IEventRepository {
     incrementEventViews(eventId: string): Promise<void>;
     incrementEventTicketAndRevenueStats(eventId: string, newBookingQty: number, totalAmount: number, options?: { session?: ClientSession }): Promise<void>;
     decrementEventTicketAndRevenueStats(eventId: string, cancelledQty: number, totalAmount: number, options?: { session?: ClientSession }): Promise<void>;
+    incrementEventCheckedInCount(eventId: string, count: number): Promise<void>;
+    
     
     startSession(): Promise<ClientSession>;
 }

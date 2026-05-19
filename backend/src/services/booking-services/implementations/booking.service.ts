@@ -56,6 +56,7 @@ import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { RefundResult } from "@/types/payment.types";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { QRTokenPayload } from "@/types/ticket.types";
 // import { IPlatformSettings } from "@/models/implementations/platformSettings.model";
 
 
@@ -99,9 +100,11 @@ export class BookingService implements IBookingService {
 
          // ── FREE EVENT ──────────────────────────────────────────────────────────
          if (event.ticketType === TICKET_TYPE.FREE) {
-            const newBookingId = new Types.ObjectId().toHexString();   // Pre-generate the Booking ID so the QR token and DB record match perfectly
+            const newBookingId: string = new Types.ObjectId().toHexString();   // Pre-generate the Booking ID so the QR token and DB record match perfectly
 
-            const qrToken = this._ticketService.generateQrToken({ userId, eventId, bookingId: newBookingId });
+            const qRTokenPayload: QRTokenPayload = { userId, eventId, bookingId: newBookingId }
+
+            const qrToken: string = this._ticketService.generateQrToken(qRTokenPayload);
 
             // const freeBookingInput = mapFreeBookingOrderDtoToInput(...);
             // const paidBookingInput = mapPaidBookingOrderDtoToInput(...);
@@ -123,12 +126,16 @@ export class BookingService implements IBookingService {
             // await redisClient.del("trending_events");
             await this._cacheService.deleteKeyValue("trending_events");
 
-            const populated = await this._bookingRepository.getBookingById(bookingEntity.bookingId);
+            const [populated, settings] = await Promise.all([
+               this._bookingRepository.getBookingById(bookingEntity.bookingId),
+               this._settingsService.getSettings(),
+            ]);
+
             if (!populated) {
                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, BookingMessages.BOOKING_NOT_FOUND);
             }
 
-            const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated);
+            const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated, settings);
 
             return {
                isFree: true,
@@ -203,10 +210,13 @@ export class BookingService implements IBookingService {
       try {
          console.log("filters in BookingService.getMyBookings:", filters);
 
-         const result: GetBookingsResult = await this._bookingRepository.findBookings({ ...filters, userId });
+         const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
+            this._bookingRepository.findBookings({ ...filters, userId }),
+            this._settingsService.getSettings(),
+         ]);
 
          return {
-            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+            bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
             pagination: result.pagination,
          };
 
@@ -218,45 +228,6 @@ export class BookingService implements IBookingService {
    }
 
 
-   // not needed
-   async getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
-      try {
-         console.log("filters in BookingService.getAdminBookings:", filters);
-
-         const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
-
-         return {
-            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
-            pagination: result.pagination,
-         };
-
-      } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.getAdminBookings:", msg);
-         throw error;
-      }
-   }
-
-
-   // not needed
-   async getAllBookingsOfEvent(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
-      try {
-         console.log("filters in BookingService.getAllBookingsOfEvent:", filters);
-
-         const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
-
-         return {
-            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
-            pagination: result.pagination,
-         };
-
-      } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.getAllBookingsOfEvent:", msg);
-         throw error;
-      }
-   }
-
 
    // instead of getAdminBookings & getAllBookingsOfEvent
    // for both admin side bookings & event-bookings/attendees list
@@ -264,10 +235,13 @@ export class BookingService implements IBookingService {
       try {
          console.log("filters in BookingService.getBookingsList:", filters);
 
-         const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
+         const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
+            this._bookingRepository.findBookings(filters),
+            this._settingsService.getSettings(),
+         ]);
 
          return {
-            bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+            bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
             pagination: result.pagination,
          };
 
@@ -279,13 +253,58 @@ export class BookingService implements IBookingService {
    }
 
 
+   
+   // // not needed
+   // async getAdminBookings(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
+   //    try {
+   //       console.log("filters in BookingService.getAdminBookings:", filters);
+
+   //       const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
+
+   //       return {
+   //          bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+   //          pagination: result.pagination,
+   //       };
+
+   //    } catch (error: unknown) {
+   //       const msg = error instanceof Error ? error.message : "Unknown error";
+   //       console.error("Error in BookingService.getAdminBookings:", msg);
+   //       throw error;
+   //    }
+   // }
+
+
+   // // not needed
+   // async getAllBookingsOfEvent(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
+   //    try {
+   //       console.log("filters in BookingService.getAllBookingsOfEvent:", filters);
+
+   //       const result: GetBookingsResult = await this._bookingRepository.findBookings(filters);
+
+   //       return {
+   //          bookings:   result.bookings.map(mapBookingEntityToResponseDTO),
+   //          pagination: result.pagination,
+   //       };
+
+   //    } catch (error: unknown) {
+   //       const msg = error instanceof Error ? error.message : "Unknown error";
+   //       console.error("Error in BookingService.getAllBookingsOfEvent:", msg);
+   //       throw error;
+   //    }
+   // }
+
+
    async getBookingById(
       bookingId:        string,
       requestingUserId: string,
       role:             UserRole
    ): Promise<BookingResponseDTO> {
       try {
-         const booking = await this._bookingRepository.getBookingById(bookingId);
+         const [booking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
+            this._bookingRepository.getBookingById(bookingId),
+            this._settingsService.getSettings(),
+         ]);
+
          if (!booking) {
             throw createHttpError(HttpStatus.NOT_FOUND, "Booking not found");
          }
@@ -293,7 +312,7 @@ export class BookingService implements IBookingService {
             throw createHttpError(HttpStatus.FORBIDDEN, "You are not authorised to view this booking");
          }
 
-         return mapBookingEntityToResponseDTO(booking);
+         return mapBookingEntityToResponseDTO(booking, settings);
 
       } catch (error: unknown) {
          const msg = error instanceof Error ? error.message : "Unknown error";
@@ -412,11 +431,13 @@ export class BookingService implements IBookingService {
          const event = await this._eventRepository.getEventById(booking.eventRef.toString());
          const eventName = event ? event.title : "Event";
 
-         const qrToken = this._ticketService.generateQrToken({
+         const qRTokenPayload: QRTokenPayload = {
             userId,
             eventId: booking.eventRef.toString(),
             bookingId: booking.bookingId.toString(), 
-         });
+         }
+
+         const qrToken: string = this._ticketService.generateQrToken(qRTokenPayload);
 
          const confirmBookingInput: ConfirmBookingInput = mapConfirmBookingInput(paymentId, signature, qrToken);
          await this._bookingRepository.confirmBooking(booking.bookingId, confirmBookingInput, { session });
@@ -440,8 +461,12 @@ export class BookingService implements IBookingService {
          // await redisClient.del("trending_events");
          await this._cacheService.deleteKeyValue("trending_events");
 
-         const confirmedBooking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(booking.bookingId);
-         return mapBookingEntityToResponseDTO(confirmedBooking!);
+         const [confirmedBooking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
+            this._bookingRepository.getBookingById(booking.bookingId),
+            this._settingsService.getSettings(),
+         ]);
+         
+         return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
 
       } catch (error) {
          await session.abortTransaction();

@@ -6,7 +6,7 @@ import { BaseRepository } from "@/repositories/base.repository";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { CancelBookingInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput, MarkRefundedInput } from "@/entities/booking.entity";
 import { mapBookingModelToEntity, mapPopulatedBookingModelToEntity } from "@/mappers/booking.mapper";
-import { BOOKING_STATUS, BookingFacetResult, BookingFilterQuery, GetBookingsFilter, GetBookingsResult, IBookingModel, IBookingPopulatedUserAndEvent, MajorEventChange } from "@/types/booking.types";
+import { BOOKING_STATUS, BookingCheckinUpdate, BookingFacetResult, BookingFilterQuery, GetBookingsFilter, GetBookingsResult, IBookingModel, IBookingPopulatedUserAndEvent, MajorEventChange } from "@/types/booking.types";
 import { PAYMENT_STATUS } from "@/types/booking.types";
 
 
@@ -273,16 +273,20 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   // }
 
 
-  async decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null> {
-    const updated = await this.findByIdAndUpdate(
-      bookingId,
-      { $inc: { remainingEntries: -count } },
-    );
 
-    const updatedBooking: BookingEntity | null = updated ? mapBookingModelToEntity(updated) : null;
+  // no need this. already doing in applyCheckInUpdate
+  // async decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null> {
+  //   const updated = await this.findByIdAndUpdate(
+  //     bookingId,
+  //     { $inc: { remainingEntries: -count } },
+  //   );
 
-    return updatedBooking;
-  }
+  //   const updatedBooking: BookingEntity | null = updated ? mapBookingModelToEntity(updated) : null;
+
+  //   return updatedBooking;
+  // }
+
+
 
 
   async cancelBooking(

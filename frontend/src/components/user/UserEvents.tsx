@@ -10,6 +10,7 @@ import {
   ArrowDown,
   Rocket,
   Ban,
+  ScanLine,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ import { type EventFormValues } from "@/schemas/event.schema";
 import EditEventForm from "@/components/user/EditEventForm";
 import { capitalize } from "@/utils/namingConventions";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
+import { EventCheckIn } from "@/pages/event/EventCheckIn";
 
 
 
@@ -73,12 +75,15 @@ export default function UserEvents() {
    const [cancelReason, setCancelReason] = useState("");
    const [isCancelling, setIsCancelling] = useState(false);
 
+   const [checkInEvent, setCheckInEvent] = useState<IEventState | null>(null);
+
    const itemsPerPage = 10;
    const [currentPage, setCurrentPage] = useState(1);
    const [totalEvents, setTotalEvents] = useState(0);
    const [totalPages, setTotalPages] = useState(1);
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
 
 
    const handleEditEventSubmit = async (data: EventFormValues) => {
@@ -316,99 +321,116 @@ export default function UserEvents() {
 
                <TableBody>
                   {loading ? (
-                  <TableRow>
-                     <TableCell colSpan={8} className="h-48 text-center">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                        <span className="text-muted-foreground">Loading...</span>
-                     </TableCell>
-                  </TableRow>
-                  ) : error ? (
-                  <TableRow>
-                     <TableCell colSpan={8} className="h-48 text-center text-destructive">
-                        {error}
-                     </TableCell>
-                  </TableRow>
-                  ) : events.length === 0 ? (
-                  <TableRow>
-                     <TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
-                        No events found
-                     </TableCell>
-                  </TableRow>
-                  ) : (
-                  events.map((event, idx) => (
-                     <TableRow key={event.eventId}>
-                        <TableCell className="font-medium">
-                           {(currentPage - 1) * itemsPerPage + idx + 1}
-                        </TableCell>
-                        <TableCell className="font-medium">{event.title}</TableCell>
-                        <TableCell>{event.category}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                           {formatDate2(event.startDateTime)}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                           {formatDate2(event.endDateTime)}
-                        </TableCell>
-                        <TableCell>
-                           <Badge variant={event.format === "online" ? "secondary" : "outline"}>
-                              {capitalize(event.format)}
-                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                           <Badge variant={getEventStatusBadgeVariant(event.eventStatus)}>
-                              {capitalize(event.eventStatus)}
-                           </Badge>
-                        </TableCell>
-
-                        {/* Action Buttons */}
-                        <TableCell className="text-right pr-5">
-                           <div className="flex items-center justify-end gap-1">
-                              <Button
-                                 variant="ghost"
-                                 size="icon"
-                                 title="View Event"
-                                 onClick={() => setViewEvent(event)}
-                              >
-                                 <Eye className="h-4 w-4" />
-                              </Button>
-
-                              {/* Show edit only for draft / upcoming events — adjust logic as needed */}
-                              {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
-                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="Edit Event"
-                                    onClick={() => {
-                                       setEditEvent(event);
-                                       setEditModalOpen(true);
-                                    }}
-                                 >
-                                    <Edit className="h-4 w-4" />
-                                 </Button>
-                              )}
-                              {event.eventStatus === "draft" && (
-                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="Publish Event"
-                                    onClick={() => requestPublish(event.eventId)}
-                                 >
-                                    <Rocket className="h-4 w-4 text-green-600" />
-                                 </Button>
-                              )}
-                              {!(["completed", "cancelled", "suspended"].includes(event.eventStatus)) && (
-                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="Cancel Event"
-                                    onClick={() => requestCancel(event.eventId)}
-                                 >
-                                    <Ban className="h-4 w-4 text-destructive" />
-                                 </Button>
-                              )}
-                           </div>
+                     <TableRow>
+                        <TableCell colSpan={8} className="h-48 text-center">
+                           <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                           <span className="text-muted-foreground">Loading...</span>
                         </TableCell>
                      </TableRow>
-                  ))
+                  ) : error ? (
+                     <TableRow>
+                        <TableCell colSpan={8} className="h-48 text-center text-destructive">
+                           {error}
+                        </TableCell>
+                     </TableRow>
+                  ) : events.length === 0 ? (
+                     <TableRow>
+                        <TableCell colSpan={8} className="h-48 text-center text-muted-foreground">
+                           No events found
+                        </TableCell>
+                     </TableRow>
+                  ) : (
+                     events.map((event, idx) => (
+                        <TableRow key={event.eventId}>
+                           <TableCell className="font-medium">
+                              {(currentPage - 1) * itemsPerPage + idx + 1}
+                           </TableCell>
+                           <TableCell className="font-medium">{event.title}</TableCell>
+                           <TableCell>{event.category}</TableCell>
+                           <TableCell className="text-muted-foreground">
+                              {formatDate2(event.startDateTime)}
+                           </TableCell>
+                           <TableCell className="text-muted-foreground">
+                              {formatDate2(event.endDateTime)}
+                           </TableCell>
+                           <TableCell>
+                              <Badge variant={event.format === "online" ? "secondary" : "outline"}>
+                                 {capitalize(event.format)}
+                              </Badge>
+                           </TableCell>
+                           <TableCell>
+                              <Badge variant={getEventStatusBadgeVariant(event.eventStatus)}>
+                                 {capitalize(event.eventStatus)}
+                              </Badge>
+                           </TableCell>
+
+                           {/* Action Buttons */}
+                           <TableCell className="text-right pr-5">
+                              <div className="flex items-center justify-end gap-1">
+                                 {/* View Event */}
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="View Event"
+                                    onClick={() => setViewEvent(event)}
+                                 >
+                                    <Eye className="h-4 w-4" />
+                                 </Button>
+
+                                 {/* Edit Event */}
+                                 {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       title="Edit Event"
+                                       onClick={() => {
+                                          setEditEvent(event);
+                                          setEditModalOpen(true);
+                                       }}
+                                    >
+                                       <Edit className="h-4 w-4" />
+                                    </Button>
+                                 )}
+
+                                 {/* Publish Event */}
+                                 {event.eventStatus === "draft" && (
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       title="Publish Event"
+                                       onClick={() => requestPublish(event.eventId)}
+                                    >
+                                       <Rocket className="h-4 w-4 text-green-600" />
+                                    </Button>
+                                 )}
+
+                                 {/* Cancel Event */}
+                                 {!(["completed", "cancelled", "suspended"].includes(event.eventStatus)) && (
+                                    <Button
+                                       variant="ghost"
+                                       size="icon"
+                                       title="Cancel Event"
+                                       onClick={() => requestCancel(event.eventId)}
+                                    >
+                                       <Ban className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                 )}
+
+                                 {/* Checkin Event */}
+                                 {(event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Gate Check-In"
+                                    onClick={() => setCheckInEvent(event)}
+                                 >
+                                    <ScanLine className="h-4 w-4 text-blue-400" />
+                                 </Button>
+                                 )}
+                              </div>
+                           </TableCell>
+                        </TableRow>
+                     ))
                   )}
                </TableBody>
             </Table>
@@ -516,6 +538,17 @@ export default function UserEvents() {
                </div>
             </div>
          </Modal>
+
+         {/* Checkin Event Modal */}
+         <Modal
+            isOpen={!!checkInEvent}
+            onClose={() => setCheckInEvent(null)}
+            title={`Check-In : ${checkInEvent?.title}`}
+            size="lg"
+         >
+            {checkInEvent && <EventCheckIn event={checkInEvent} />}
+         </Modal>
+
       </div>
    );
 }

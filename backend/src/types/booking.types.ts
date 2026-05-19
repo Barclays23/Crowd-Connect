@@ -186,8 +186,8 @@ export interface BookingFilterQuery {
 }
 
 
-// IPagination should contain: { page, limit, totalCount, totalPages }
-// Verify this matches your common.types.ts definition.
+
+
 export interface GetBookingsResult {
   bookings:   BookingEntityPopulated[];
   pagination: IPagination;
@@ -202,3 +202,19 @@ export interface MapBookingParams {
   qrToken?: string;        // Only passed for free events
   paymentOrderId?: string; // Only passed for paid events
 }
+
+
+
+// After Event checkin
+//  Decrements remainingEntries by entryCount
+//  Sets bookingStatus (ATTENDED when all entries used, else unchanged)
+//  Sets checkedInAt on the first scan only (undefined = not first scan, skip it)
+export interface BookingCheckinUpdate {
+  bookingId   : string,
+  entryCount  : number,
+  newStatus   : BOOKING_STATUS,
+  checkedInAt?: Date,
+}
+
+
+
