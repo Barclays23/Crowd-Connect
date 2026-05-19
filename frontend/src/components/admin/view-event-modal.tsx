@@ -7,18 +7,26 @@ import {
     Calendar, MapPin, Video, IndianRupee,
     Ticket, AlertTriangle, Clock, TrendingUp,
     ImageOff, UserCircle, LayoutList, Users,
+    ScanLine,
 } from "lucide-react";
 import type { IEventState } from "@/types/event.types";
 import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/common/EventMap";
 import { EventBookingsList } from "./event-bookings-list";
+import { EventCheckIn } from "@/pages/event/EventCheckIn";
+
+
 
 interface ViewEventModalProps {
     event: IEventState;
 }
 
-type Tab = "overview" | "bookings";
+type Tab = "overview" | "bookings" | "checkin";
+
+
+
+
 
 export function ViewEventModal({ event }: ViewEventModalProps) {
     const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -44,7 +52,10 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
     const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
         { key: "overview",  label: "Overview",  icon: <LayoutList size={15} /> },
         { key: "bookings", label: "Bookings", icon: <Users size={15} /> },
+        { key: "checkin", label: "Check-In", icon: <ScanLine size={15} /> },
     ];
+
+
 
     return (
         <div className="space-y-0 pb-2 text-(--text-primary)">
@@ -262,6 +273,11 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
             {/* ── BOOKINGS TAB ─────────────────────────────────────────────── */}
             {activeTab === "bookings" && (
                 <EventBookingsList eventId={event.eventId} />
+            )}
+
+            {/* ── CHECKIN TAB ─────────────────────────────────────────────── */}
+            {activeTab === "checkin" && (
+                <EventCheckIn event={event} />
             )}
         </div>
     );

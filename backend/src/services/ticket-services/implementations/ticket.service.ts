@@ -8,6 +8,7 @@ import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { BOOKING_STATUS } from "@/types/booking.types";
 import { EVENT_FORMAT, EVENT_STATUS } from "@/types/event.types";
+import { QRTokenPayload } from "@/types/ticket.types";
 
 
 
@@ -17,15 +18,11 @@ export class TicketService implements ITicketService {
         private readonly _eventRepository: IEventRepository
     ) {}
 
-    generateQrToken({ userId, eventId, bookingId }: {
-        userId:   string;
-        eventId:  string;
-        bookingId: string;
-    }): string {
-        const toketPayload = { bookingId, eventId, userId };
+    generateQrToken(qRTokenPayload: QRTokenPayload): string {
+        const { bookingId, eventId, userId } = qRTokenPayload;
 
-        const generatedQRString = jwt.sign(
-            toketPayload,
+        const generatedQRString: string = jwt.sign(
+            qRTokenPayload,
             process.env.JWT_QRCODE_SECRET!,
             // { expiresIn: "90d" } // NOTICE: No 'expiresIn' option here. Time windows are checked live in the DB.
         );
@@ -47,11 +44,7 @@ export class TicketService implements ITicketService {
     async validateQrToken(qrToken: string, scanQuantity: number): Promise<ValidateQrResult> {
         try {
             // 1. Verify the JWT signature (This will throw if tampered with)
-            const decoded = jwt.verify(qrToken, process.env.JWT_QRCODE_SECRET!) as {
-                bookingId: string;
-                eventId: string;
-                userId: string;
-            };
+            const decoded: QRTokenPayload = jwt.verify(qrToken, process.env.JWT_QRCODE_SECRET!) as QRTokenPayload;
 
             // 2. Fetch live data from DB using the decoded bookingId [cite: 186]
             const booking = await this._bookingRepository.getBookingById(decoded.bookingId);

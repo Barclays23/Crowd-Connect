@@ -5,6 +5,8 @@ import { BookingResponseDTO } from "@/dtos/booking.dto";
 import { BOOKING_STATUS, IBookingModel, IBookingPopulatedUserAndEvent, MapBookingParams, PAYMENT_STATUS } from "@/types/booking.types";
 import { Types } from "mongoose";
 import { EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
+import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { getRefundPercentage } from "@/utils/refundCalculator";
 
 
 
@@ -141,8 +143,26 @@ export function mapPopulatedBookingModelToEntity(
 // Used in service layer — converts entity to the shape the frontend receives.
 
 export function mapBookingEntityToResponseDTO(
-  entity: BookingEntityPopulated
+  entity: BookingEntityPopulated,
+  settings: PlatformSettingsEntity
 ): BookingResponseDTO {
+  const isGraceRefundActive = !!entity.gracePeriodEnd && new Date() <= new Date(entity.gracePeriodEnd);
+
+  let currentRefundPercent    = 0;
+  let currentRefundableAmount = 0;
+
+  if (entity.bookingStatus === BOOKING_STATUS.CONFIRMED) {
+    if (isGraceRefundActive) {
+      currentRefundPercent = settings.gracePeriodRefundPercent;
+    } else {
+      currentRefundPercent = getRefundPercentage(entity, settings);
+    }
+    currentRefundableAmount = Math.round(
+      (entity.totalAmount * currentRefundPercent) / 100
+    );
+  }
+  // PENDING / CANCELLED / ATTENDED → stays 0
+
   return {
     bookingId: entity.bookingId,
     event: {
@@ -185,6 +205,9 @@ export function mapBookingEntityToResponseDTO(
         }
       : undefined,
     gracePeriodEnd: entity.gracePeriodEnd?.toISOString(),
+    isGraceRefundActive,
+    currentRefundPercent,
+    currentRefundableAmount,
     createdAt: entity.createdAt.toISOString(),
   };
 }

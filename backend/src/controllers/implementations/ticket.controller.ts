@@ -8,9 +8,12 @@ import {Request, Response, NextFunction} from "express";
 
 
 export class TicketController {
-    constructor(private readonly _ticketService: ITicketService) {}
+    constructor(
+        private readonly _ticketService: ITicketService
+    ) {}
 
-    async validateQr(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // move to checkin controller
+    async scanQRCode(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const { qrToken, scanQuantity } = req.body;
 

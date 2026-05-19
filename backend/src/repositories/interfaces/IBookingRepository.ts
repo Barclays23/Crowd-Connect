@@ -1,7 +1,7 @@
 // backend/src/repositories/interfaces/IBookingRepository.ts
 
 import { CancelBookingInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput, MarkRefundedInput } from "@/entities/booking.entity";
-import { GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
+import { BOOKING_STATUS, BookingCheckinUpdate, GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
 import { ClientSession } from "mongoose";
 
 
@@ -40,8 +40,6 @@ export interface IBookingRepository {
   // Update booking fields — used for cancellation
   // updateBooking(bookingId: string, data: Partial<BookingEntity>): Promise<BookingEntity | null>;
 
-  // Atomically decrement remainingEntries — used during QR scan
-  decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null>;
 
   cancelBooking(
     bookingId: string, 

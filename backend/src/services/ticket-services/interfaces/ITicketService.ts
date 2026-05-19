@@ -1,5 +1,7 @@
 // services/ticket-services/interfaces/ITicketService.ts
 
+import { QRTokenPayload } from "@/types/ticket.types";
+
 
 // not used
 export interface ValidateQrRequestDTO {
@@ -16,7 +18,7 @@ export interface ValidateQrResult {
 }
 
 export interface ITicketService {
-    generateQrToken(payload: { userId: string; eventId: string; bookingId: string }): string;
+    generateQrToken(qRTokenPayload: QRTokenPayload): string;
     generateTicketNo(): string;
     validateQrToken(qrToken: string, scanQuantity: number): Promise<ValidateQrResult>;
 }

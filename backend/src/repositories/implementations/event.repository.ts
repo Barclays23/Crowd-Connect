@@ -205,6 +205,14 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
 
+   async incrementEventCheckedInCount(eventId: string, entryCount: number): Promise<void> {
+      await this.findByIdAndUpdate(eventId, {
+         $inc: { checkedInCount: entryCount },
+      });
+   }
+
+
+
 
    async deleteEvent(eventId: string): Promise<void> {
       await this.findByIdAndDelete(eventId);
