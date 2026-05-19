@@ -309,6 +309,20 @@ export const DynamicBookingMessages = {
 
 
 // ─── QR, TICKET & CHECK-IN MESSAGES ────────────────────────────────────────────────
+
+export type CheckInErrorCode =
+  | "INVALID_TOKEN"           // JWT verification failed / tampered
+  | "WRONG_EVENT"             // token.eventId !== hostEventId
+  | "BOOKING_NOT_FOUND"       // booking deleted or token stale
+  | "BOOKING_NOT_CONFIRMED"   // status is pending / failed / cancelled
+  | "QR_FULLY_USED"           // remainingEntries === 0
+  | "ENTRY_EXCEEDS_REMAINING" // entryCount > remainingEntries
+  | "OUTSIDE_TIME_WINDOW"     // scanned before start or after end
+  | "EVENT_NOT_ACTIVE";       // event cancelled / suspended / completed
+
+
+
+
 export enum QRTicketMessages {
     INVALID_TICKET = "Invalid ticket",
     QR_CODE_INVALID = "Invalid ticket or QR code",

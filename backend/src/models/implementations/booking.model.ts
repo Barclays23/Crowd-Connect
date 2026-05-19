@@ -1,7 +1,6 @@
 
 import { BOOKING_STATUS, IBookingModel, IBookingVirtuals, PAYMENT_STATUS } from '@/types/booking.types';
 import { IEventModel } from '@/types/event.types';
-import { getRefundPercentage } from '@/utils/refundCalculator';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
 
@@ -119,31 +118,14 @@ bookingSchema.virtual("isGraceRefundActive").get(function (this: IBookingModel) 
 });
 
 
-// What refund percentage does this user get if they cancel right now?
-// NOTE: for USER refund calculation only.
-// Host payout is NOT affected — hosts earn all CONFIRMED + ATTENDED bookings.
+
 
 function isPopulatedEvent(event: unknown): event is IEventModel {
    return typeof event === "object" && event !== null && "startDateTime" in event;
 }
 
 
-bookingSchema.virtual("currentRefundPercentage").get(function (
-   this: IBookingModel & IBookingVirtuals
-) {
-   if (this.bookingStatus !== BOOKING_STATUS.CONFIRMED) return 0;
 
-   if (!isPopulatedEvent(this.eventRef)) return 0;
-
-   return getRefundPercentage({
-      ticketRate: this.ticketRate,
-      totalAmount: this.totalAmount,
-      gracePeriodEnd: this.gracePeriodEnd,
-      event: {
-         startDateTime: this.eventRef.startDateTime
-      }
-   });
-});
 
 
 
@@ -181,6 +163,6 @@ bookingSchema.pre("save", async function (this: HydratedDocument<IBookingModel>)
 });
 
 
-// const Booking = model<IBookingModel>('Booking', bookingSchema);
+
 const Booking: Model<IBookingModel> = model<IBookingModel>("Booking", bookingSchema);
 export default Booking;
