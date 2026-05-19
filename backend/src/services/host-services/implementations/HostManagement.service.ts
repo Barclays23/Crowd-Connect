@@ -131,7 +131,11 @@ export class HostManagementServices implements IHostManagementServices {
 
             const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});
 
-            const hostEntity: HostEntity = await this._userRepository.updateHostDetails(userId, upgradeInput);
+            const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(userId, upgradeInput);
+
+            if (!hostEntity) {
+                throw new Error("Failed to update host details. User not found."); 
+            }
 
             const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
 
@@ -173,7 +177,11 @@ export class HostManagementServices implements IHostManagementServices {
 
             const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
             
-            const updatedHostEntity: HostEntity = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
+            const updatedHostEntity: HostEntity | null = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
+
+            if (!updatedHostEntity) {
+                throw new Error("Failed to update host details. User not found."); 
+            }
 
             const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
 
@@ -243,7 +251,11 @@ export class HostManagementServices implements IHostManagementServices {
 
             const hostUpdateInput: HostUpdateInput = mapUpdateHostDTOToInput({isDoneByAdmin, updateDto, hostDocumentUrl});
 
-            const hostEntity: HostEntity = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
+            const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
+
+            if (!hostEntity) {
+                throw new Error("Failed to update host details. User not found."); 
+            }
 
             const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
 

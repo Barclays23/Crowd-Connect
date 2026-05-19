@@ -238,7 +238,11 @@ export class UserManagementService implements IUserManagementService {
 
             const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
             
-            const updatedUserResult: UserEntity = await this._userRepository.updateUserByAdmin(targetUserId, updateInput);
+            const updatedUserResult: UserEntity|null = await this._userRepository.updateUserByAdmin(targetUserId, updateInput);
+
+            if (!updatedUserResult) {
+                throw new Error("Failed to update user. User not found.");
+            }
 
             const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
 
@@ -290,7 +294,11 @@ export class UserManagementService implements IUserManagementService {
                 ? UserStatus.BLOCKED
                 : UserStatus.PENDING;
 
-            const updatedStatus: UserStatus = await this._userRepository.updateUserStatus(targetUserId, newStatus);
+            const updatedStatus: UserStatus|null = await this._userRepository.updateUserStatus(targetUserId, newStatus);
+
+            if (!updatedStatus) {
+                throw new Error("Failed to update user status.");
+            }
 
             return updatedStatus;
 
