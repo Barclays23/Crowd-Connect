@@ -2,7 +2,14 @@
 
 
 import { Types } from "mongoose";
-import { IWithdrawalRequestModel, GetWithdrawalRequestsFilter, WITHDRAWAL_STATUS } from "@/types/wallet.types";
+import { 
+  IWithdrawalRequestModel, 
+  GetWithdrawalRequestsFilter, 
+  WITHDRAWAL_STATUS 
+} from "@/types/wallet.types";
+
+
+
 
 export interface IWithdrawalRequestRepository {
   create(data: Omit<IWithdrawalRequestModel, "_id" | "createdAt" | "updatedAt">): Promise<IWithdrawalRequestModel>;
