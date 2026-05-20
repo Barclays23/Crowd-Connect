@@ -1,3 +1,4 @@
+// src/components/ui/LoadingSpinner1.tsx
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,11 +31,11 @@ export function LoadingSpinner1({
       <div className="relative">
         {/* Decorative background ring */}
         <div className={cn(
-          "absolute rounded-full border-4 border-(--brand-primary] opacity-10",
-          sizeClasses[size].replace('h-', 'h-').replace('w-', 'w-') // match sizes
+          "absolute rounded-full border-4 border-(--brand-primary) opacity-10",
+          sizeClasses[size]
         )} />
         {/* Main Spinner */}
-        <Loader2 className={cn("animate-spin text-(--brand-primary]", sizeClasses[size])} />
+        <Loader2 className={cn("animate-spin text-(--brand-primary)", sizeClasses[size])} />
       </div>
       
         {message && (
@@ -43,9 +44,8 @@ export function LoadingSpinner1({
         </p>
         )}
 
-
         {subMessage && (
-        <p className="text-xs text-(--text-tertiary] opacity-80">
+        <p className="text-xs text-(--text-tertiary) opacity-80">
             {subMessage}
             <span className="inline-flex gap-1 ml-1">
             <span className="animate-bounce">.</span>
@@ -54,9 +54,6 @@ export function LoadingSpinner1({
             </span>
         </p>
         )}
-
-
-
     </div>
   );
 }

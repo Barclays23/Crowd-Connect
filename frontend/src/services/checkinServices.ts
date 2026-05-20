@@ -13,7 +13,7 @@ export const checkinServices = {
         qrToken:    string,
         entryCount: number,
     ): Promise<{ message: string; data: CheckInResult }> {
-        const res = await axiosInstance.post(`/event/${eventId}/checkin`, {
+        const res = await axiosInstance.post(`api/event/${eventId}/checkin`, {
             qrToken,
             entryCount,
         });
@@ -22,7 +22,7 @@ export const checkinServices = {
     },
 
 
-    async getAttendance(eventId: string): Promise<GetAttendanceResult> {
+    async getAttendance(eventId: string): Promise<{success: true, data: GetAttendanceResult}> {
         const res = await axiosInstance.get(`api/event/${eventId}/checkin/attendance`);
         return res.data;
     },

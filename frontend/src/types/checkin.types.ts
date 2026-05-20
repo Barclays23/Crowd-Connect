@@ -34,8 +34,13 @@ export interface AttendanceRecord {
 
 
 export interface GetAttendanceResult {
-  attendanceRecords:      AttendanceRecord[];
-  totalChecked: number;
+  attendanceRecords : AttendanceRecord[];
+  totalChecked      : number;
+}
+
+export interface GetAttendanceResponse {
+  success : true;
+  data    : GetAttendanceResult
 }
 
 
