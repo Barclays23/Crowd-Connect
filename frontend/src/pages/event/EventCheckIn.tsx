@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
   ScanLine, CheckCircle2, XCircle, Users,
-  RefreshCw, Loader2, ChevronUp, ChevronDown, Camera,
+  RefreshCw, ChevronUp, ChevronDown, Camera,
   CameraOff, Ticket, Clock,
 } from "lucide-react";
 import { Button }  from "@/components/ui/button";
 import { Badge }   from "@/components/ui/badge";
+import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { toast }   from "react-toastify";
 import { checkinServices } from "@/services/checkinServices";
 import { formatDate3 }     from "@/utils/dateAndTimeFormats";
@@ -17,9 +18,13 @@ import type {
     AttendanceRecord, 
     CheckInResult, 
     CheckInScanState, 
+    GetAttendanceResponse, 
     GetAttendanceResult 
 } from "@/types/checkin.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+
+
+
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SCANNER_DIV_ID = "cc-qr-scanner";
@@ -41,6 +46,7 @@ export function EventCheckIn({ event }: EventCheckInProps) {
     const [scanState, setScanState]         = useState<CheckInScanState>({ status: "idle" });
     const [entryCount, setEntryCount]       = useState(1);
     const [pendingToken, setPendingToken]   = useState<string>("");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [pendingMax, setPendingMax]       = useState(1);
 
     const [attendance, setAttendance]       = useState<GetAttendanceResult | null>(null);
@@ -50,20 +56,17 @@ export function EventCheckIn({ event }: EventCheckInProps) {
     const resetTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isScanning  = useRef(false); // guard against concurrent scans
 
-
-
     // ── Fetch attendance ───────────────────────────────────────────────────────
     const fetchAttendance = useCallback(async () => {
         setAttendanceLoading(true);
         
         try {
-            const res: GetAttendanceResult = await checkinServices.getAttendance(event.eventId);
-            setAttendance(res);
+            const res: GetAttendanceResponse = await checkinServices.getAttendance(event.eventId);
+            setAttendance(res.data);
 
         } catch(error: unknown) {
             const errorMessage = getApiErrorMessage(error)
-            toast.error("Failed to load attendance....");
-            toast.error(errorMessage)
+            if (errorMessage) toast.error(errorMessage)
         } finally {
             setAttendanceLoading(false);
         }
@@ -76,13 +79,15 @@ export function EventCheckIn({ event }: EventCheckInProps) {
     // ── QR scanner lifecycle ───────────────────────────────────────────────────
     const stopScanner = useCallback(async () => {
         if (html5QrRef.current) {
-        try {
-            if (html5QrRef.current.isScanning) {
-            await html5QrRef.current.stop();
+            try {
+                if (html5QrRef.current.isScanning) {
+                    await html5QrRef.current.stop();
+                }
+                html5QrRef.current.clear();
+            } catch {
+                /* ignore */ 
             }
-            html5QrRef.current.clear();
-        } catch { /* ignore */ }
-        html5QrRef.current = null;
+            html5QrRef.current = null;
         }
         isScanning.current = false;
     }, []);
@@ -92,45 +97,47 @@ export function EventCheckIn({ event }: EventCheckInProps) {
         isScanning.current = true;
 
         try {
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras.length) {
-            toast.error("No camera found on this device.");
+            const cameras = await Html5Qrcode.getCameras();
+            if (!cameras.length) {
+                toast.error("No camera found on this device.");
+                isScanning.current = false;
+                return;
+            }
+
+            // Prefer the back/environment camera (for mobile use at the door)
+            const preferredCamera = cameras.find((c) => /back|environment|rear/i.test(c.label)) ?? cameras[0];
+
+            const scanner = new Html5Qrcode(SCANNER_DIV_ID, {
+                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+                verbose: false,
+            });
+            html5QrRef.current = scanner;
+
+            await scanner.start(
+                preferredCamera.id,
+                { fps: 10, qrbox: { width: 240, height: 240 } },
+                onScanSuccess,
+                () => {} // ignore decode errors (not every frame has a QR)
+            );
+
+            setScanState({ status: "scanning" });
+
+        } catch (error: unknown) {
             isScanning.current = false;
-            return;
+            const msg = error instanceof Error ? error.message : "Camera access denied.";
+            const errorMessage  = getApiErrorMessage(error);
+            if (errorMessage) toast.error(errorMessage)
+            toast.error(msg);
+            setScanState({ status: "idle" });
         }
-
-        // Prefer the back/environment camera (for mobile use at the door)
-        const preferredCamera =
-            cameras.find((c) => /back|environment|rear/i.test(c.label)) ?? cameras[0];
-
-        const scanner = new Html5Qrcode(SCANNER_DIV_ID, {
-            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-            verbose: false,
-        });
-        html5QrRef.current = scanner;
-
-        await scanner.start(
-            preferredCamera.id,
-            { fps: 10, qrbox: { width: 240, height: 240 } },
-            onScanSuccess,
-            () => {} // ignore decode errors (not every frame has a QR)
-        );
-
-        setScanState({ status: "scanning" });
-        } catch (err: unknown) {
-        isScanning.current = false;
-        const msg = err instanceof Error ? err.message : "Camera access denied.";
-        toast.error(msg);
-        setScanState({ status: "idle" });
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-        stopScanner();
-        if (resetTimer.current) clearTimeout(resetTimer.current);
+            stopScanner();
+            if (resetTimer.current) clearTimeout(resetTimer.current);
         };
     }, [stopScanner]);
 
@@ -153,25 +160,30 @@ export function EventCheckIn({ event }: EventCheckInProps) {
         setScanState({ status: "loading" });
 
         try {
-        const res = await checkinServices.scanQRCode(event.eventId, pendingToken, entryCount);
-        setScanState({ status: "success", result: res.data });
-        fetchAttendance(); // refresh attendance list
+            const res = await checkinServices.scanQRCode(event.eventId, pendingToken, entryCount);
+            setScanState({ status: "success", result: res.data });
+            fetchAttendance();
 
-        // Auto-resume scanning after delay
-        resetTimer.current = setTimeout(() => {
-            setScanState({ status: "idle" });
-            setPendingToken("");
-        }, AUTO_RESET_DELAY_MS);
-        } catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string; errorCode?: string } } };
-        const message = error?.response?.data?.message ?? "Unknown error.";
-        const code    = error?.response?.data?.errorCode ?? "UNKNOWN";
-        setScanState({ status: "error", code, message });
+            // Auto-resume scanning after delay
+            resetTimer.current = setTimeout(() => {
+                setScanState({ status: "idle" });
+                setPendingToken("");
+            }, AUTO_RESET_DELAY_MS);
 
-        resetTimer.current = setTimeout(() => {
-            setScanState({ status: "idle" });
-            setPendingToken("");
-        }, AUTO_RESET_DELAY_MS);
+        } catch (error: unknown) {
+            console.log('confirmEntry error :', error)
+            const errorMessage  = getApiErrorMessage(error);
+            // Safely cast error to access axios response properties
+            const axiosError    = error as { response?: { data?: { errorCode?: string } } };
+            const codeCode      = axiosError?.response?.data?.errorCode ?? "UNKNOWN";
+            
+            if (errorMessage) toast.error(errorMessage)
+            setScanState({ status: "error", code: codeCode, message: errorMessage });
+
+            resetTimer.current = setTimeout(() => {
+                setScanState({ status: "idle" });
+                setPendingToken("");
+            }, AUTO_RESET_DELAY_MS);
         }
     };
 
@@ -181,190 +193,186 @@ export function EventCheckIn({ event }: EventCheckInProps) {
         setScanState({ status: "idle" });
     };
 
-
-
     return (
         <div className="space-y-0 pb-2 text-(--text-primary)">
 
-        {/* ── Event Header ───────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between mb-6 p-4 rounded-xl bg-(--bg-secondary) border border-(--card-border)">
-            <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-(--text-tertiary) mb-1">
-                Gate Check-In Station
-            </p>
-            <h3 className="text-lg font-bold text-(--heading-primary)">{event.title}</h3>
-            <div className="flex items-center gap-3 mt-1 text-xs text-(--text-tertiary)">
-                <span className="flex items-center gap-1">
-                <Clock size={11} />
-                {formatDate3(event.startDateTime)}
-                </span>
-                <span>→</span>
-                <span>{formatDate3(event.endDateTime)}</span>
-            </div>
-            </div>
-            <div className="text-right">
-            <p className="text-xs text-(--text-tertiary) mb-0.5">Checked in</p>
-            <p className="text-2xl font-extrabold text-(--status-success)">
-                {attendance?.totalChecked ?? event.checkedInCount ?? 0}
-            </p>
-            <p className="text-xs text-(--text-tertiary)">/ {event.capacity} capacity</p>
-            </div>
-        </div>
-
-        {/* ── Tab Bar ────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 p-1 rounded-xl bg-(--bg-secondary) border border-(--card-border) mb-5 w-fit">
-            {(["scanner", "attendance"] as ActiveTab[]).map((tab) => (
-            <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={[
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 cursor-pointer",
-                activeTab === tab
-                    ? "bg-(--brand-primary) text-(--heading-primary) shadow-sm"
-                    : "text-(--text-tertiary) hover:bg-(--bg-accent) hover:text-(--text-secondary)",
-                ].join(" ")}
-            >
-                {tab === "scanner" ? <ScanLine size={14} /> : <Users size={14} />}
-                {tab === "scanner" ? "QR Scanner" : "Attendance"}
-                {tab === "attendance" && attendance && attendance?.attendanceRecords?.length > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-(--brand-primary-light) text-(--text-inverse)">
-                    {attendance.attendanceRecords.length}
-                </span>
-                )}
-            </button>
-            ))}
-        </div>
-
-        {/* SCANNER TAB ══════════════════════════════════════════════════════════════════ */}
-        {activeTab === "scanner" && (
-            <div className="space-y-4">
-
-            {/* ── Camera viewport ──────────────────────────────────────────── */}
-            <div className="relative rounded-2xl overflow-hidden bg-(--bg-tertiary) border border-(--card-border)">
-                {/* html5-qrcode mounts here */}
-                <div
-                id={SCANNER_DIV_ID}
-                className="w-full"
-                style={{ minHeight: 280 }}
-                />
-
-                {/* Overlay when not scanning */}
-                {scanState.status === "idle" && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-(--bg-tertiary)/90">
-                    <Camera size={48} className="text-(--text-tertiary) opacity-40" />
-                    <p className="text-sm text-(--text-tertiary)">Camera is off</p>
-                    <Button onClick={startScanner} className="gap-2">
-                    <ScanLine size={15} />
-                    Start Scanner
-                    </Button>
+            {/* ── Event Header ───────────────────────────────────────────────── */}
+            <div className="flex items-start justify-between mb-6 p-4 rounded-xl bg-(--bg-secondary) border border-(--card-border)">
+                <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-(--text-tertiary) mb-1">
+                        Gate Check-In Station
+                    </p>
+                    <h3 className="text-lg font-bold text-(--heading-primary)">{event.title}</h3>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-(--text-tertiary)">
+                        <span className="flex items-center gap-1">
+                        <Clock size={11} />
+                        {formatDate3(event.startDateTime)}
+                        </span>
+                        <span>→</span>
+                        <span>{formatDate3(event.endDateTime)}</span>
+                    </div>
                 </div>
-                )}
-
-                {/* Scanning indicator */}
-                {scanState.status === "scanning" && (
-                <div className="absolute top-3 left-3">
-                    <Badge className="gap-1.5 text-xs bg-green-500/20 text-green-400 border-green-500/30">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
-                    Live — Point at QR code
-                    </Badge>
+                <div className="text-right">
+                    <p className="text-xs text-(--text-tertiary) mb-0.5">Checked in</p>
+                    <p className="text-2xl font-extrabold text-(--status-success)">
+                        {attendance?.totalChecked ?? event.checkedInCount ?? 0}
+                    </p>
+                    <p className="text-xs text-(--text-tertiary)">/ {event.capacity} capacity</p>
                 </div>
-                )}
-
-                {/* Stop button */}
-                {scanState.status === "scanning" && (
-                <div className="absolute bottom-3 right-3">
-                    <Button size="sm" variant="outline" onClick={stopScanner} className="gap-1.5 text-xs">
-                    <CameraOff size={13} />
-                    Stop
-                    </Button>
-                </div>
-                )}
             </div>
 
-            {/* ── Confirm Panel (QR detected) ───────────────────────────────── */}
-            {scanState.status === "confirming" && (
-                <div className="rounded-xl border border-(--card-border) bg-(--bg-secondary) p-5 space-y-4">
-                <div className="flex items-center gap-2">
-                    <ScanLine size={18} className="text-(--brand-primary)" />
-                    <p className="font-semibold text-(--heading-primary)">QR Code Detected</p>
-                </div>
-                <p className="text-sm text-(--text-secondary)">
-                    How many people are entering with this ticket?
-                </p>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setEntryCount((c) => Math.max(1, c - 1))}
-                    disabled={entryCount <= 1}
-                    >
-                    <ChevronDown size={16} />
-                    </Button>
-                    <span className="text-3xl font-extrabold w-12 text-center text-(--heading-primary)">
-                    {entryCount}
+            {/* ── Tab Bar ────────────────────────────────────────────────────── */}
+            <div className="flex gap-1 p-1 rounded-xl bg-(--bg-secondary) border border-(--card-border) mb-5 w-fit">
+                {(["scanner", "attendance"] as ActiveTab[]).map((tab) => (
+                <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={[
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 cursor-pointer",
+                    activeTab === tab
+                        ? "bg-(--brand-primary) text-(--heading-primary) shadow-sm"
+                        : "text-(--text-tertiary) hover:bg-(--bg-accent) hover:text-(--text-secondary)",
+                    ].join(" ")}
+                >
+                    {tab === "scanner" ? <ScanLine size={14} /> : <Users size={14} />}
+                    {tab === "scanner" ? "QR Scanner" : "Attendance"}
+                    {tab === "attendance" && attendance && attendance?.attendanceRecords?.length > 0 && (
+                    <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-(--brand-primary-light) text-(--text-inverse)">
+                        {attendance.totalChecked}
                     </span>
-                    <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setEntryCount((c) => c + 1)}
-                    >
-                    <ChevronUp size={16} />
-                    </Button>
-                    <span className="text-sm text-(--text-tertiary) ml-1">
-                    person{entryCount !== 1 ? "s" : ""} entering
-                    </span>
-                </div>
+                    )}
+                </button>
+                ))}
+            </div>
 
-                <div className="flex gap-2 pt-1">
-                    <Button onClick={confirmEntry} className="flex-1 gap-2">
-                    <CheckCircle2 size={15} />
-                    Grant Entry
-                    </Button>
-                    <Button variant="outline" onClick={handleScanAgain} className="gap-2">
-                    <RefreshCw size={14} />
-                    Rescan
-                    </Button>
-                </div>
+            {/* SCANNER TAB ══════════════════════════════════════════════════════════════════ */}
+            {activeTab === "scanner" && (
+                <div className="space-y-4">
+
+                {/* ── Camera viewport ──────────────────────────────────────────── */}
+                <div className="relative rounded-2xl overflow-hidden bg-(--bg-tertiary) border border-(--card-border)">
+                    {/* html5-qrcode mounts here */}
+                    <div
+                        id={SCANNER_DIV_ID}
+                        className="w-full"
+                        style={{ minHeight: 280 }}
+                    />
+
+                        {/* Overlay when not scanning */}
+                        {scanState.status === "idle" && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-(--bg-tertiary)/90">
+                                <Camera size={48} className="text-(--text-tertiary) opacity-40" />
+                                <p className="text-sm text-(--text-tertiary)">Camera is off</p>
+                                <Button onClick={startScanner} className="gap-2">
+                                    <ScanLine size={15} />
+                                    Start Scanner
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Scanning indicator */}
+                        {scanState.status === "scanning" && (
+                            <div className="absolute top-3 left-3">
+                                <Badge className="gap-1.5 text-xs bg-(--badge-success-bg) text-(--badge-success-text) border-(--badge-success-border)">
+                                <span className="h-1.5 w-1.5 rounded-full bg-(--status-success) animate-pulse inline-block" />
+                                Live — Point at QR code
+                                </Badge>
+                            </div>
+                        )}
+
+                        {/* Stop button */}
+                        {scanState.status === "scanning" && (
+                            <div className="absolute bottom-3 right-3">
+                                <Button size="sm" variant="outline" onClick={stopScanner} className="gap-1.5 text-xs">
+                                    <CameraOff size={13} />
+                                    Stop
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Confirm Panel (QR detected) ───────────────────────────────── */}
+                    {scanState.status === "confirming" && (
+                        <div className="rounded-xl border border-(--card-border) bg-(--bg-secondary) p-5 space-y-4">
+                            <div className="flex items-center gap-2">
+                                <ScanLine size={18} className="text-(--brand-primary)" />
+                                <p className="font-semibold text-(--heading-primary)">QR Code Detected</p>
+                            </div>
+                            <p className="text-sm text-(--text-secondary)">
+                                How many people are entering with this ticket?
+                            </p>
+
+                            <div className="flex items-center gap-3">
+                                <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setEntryCount((c) => Math.max(1, c - 1))}
+                                disabled={entryCount <= 1}
+                                >
+                                <ChevronDown size={16} />
+                                </Button>
+                                <span className="text-3xl font-extrabold w-12 text-center text-(--heading-primary)">
+                                {entryCount}
+                                </span>
+                                <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setEntryCount((c) => c + 1)}
+                                >
+                                <ChevronUp size={16} />
+                                </Button>
+                                <span className="text-sm text-(--text-tertiary) ml-1">
+                                person{entryCount !== 1 ? "s" : ""} entering
+                                </span>
+                            </div>
+
+                            <div className="flex gap-2 pt-1">
+                                <Button onClick={confirmEntry} className="flex-1 gap-2">
+                                <CheckCircle2 size={15} />
+                                Grant Entry
+                                </Button>
+                                <Button variant="outline" onClick={handleScanAgain} className="gap-2">
+                                <RefreshCw size={14} />
+                                Rescan
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── Loading ─────────────────────────────────────────────────── */}
+                    {scanState.status === "loading" && (
+                        <div className="rounded-xl border border-(--card-border) bg-(--bg-secondary) py-4 flex items-center justify-center">
+                            <LoadingSpinner1 message="Validating ticket..." size="sm" />
+                        </div>
+                    )}
+
+                    {/* ── Success ──────────────────────────────────────────────────── */}
+                    {scanState.status === "success" && (
+                        <ScanSuccessCard result={scanState.result} onScanAgain={handleScanAgain} />
+                    )}
+
+                    {/* ── Error ────────────────────────────────────────────────────── */}
+                    {scanState.status === "error" && (
+                        <ScanErrorCard
+                            code={scanState.code}
+                            message={scanState.message}
+                            onScanAgain={handleScanAgain}
+                        />
+                    )}
                 </div>
             )}
 
-            {/* ── Loading ─────────────────────────────────────────────────── */}
-            {scanState.status === "loading" && (
-                <div className="rounded-xl border border-(--card-border) bg-(--bg-secondary) p-6 flex items-center justify-center gap-3">
-                <Loader2 size={20} className="animate-spin text-(--brand-primary)" />
-                <span className="text-sm text-(--text-secondary)">Validating ticket...</span>
-                </div>
-            )}
-
-            {/* ── Success ──────────────────────────────────────────────────── */}
-            {scanState.status === "success" && (
-                <ScanSuccessCard result={scanState.result} onScanAgain={handleScanAgain} />
-            )}
-
-            {/* ── Error ────────────────────────────────────────────────────── */}
-            {scanState.status === "error" && (
-                <ScanErrorCard
-                code={scanState.code}
-                message={scanState.message}
-                onScanAgain={handleScanAgain}
+            {/* ATTENDANCE TAB ══════════════════════════════════════════════════════════════════ */}
+            {activeTab === "attendance" && (
+                <AttendanceTab
+                    attendance={attendance}
+                    loading={attendanceLoading}
+                    onRefresh={fetchAttendance}
                 />
             )}
-            </div>
-        )}
-
-        {/* ATTENDANCE TAB ══════════════════════════════════════════════════════════════════ */}
-        {activeTab === "attendance" && (
-            <AttendanceTab
-            attendance={attendance}
-            loading={attendanceLoading}
-            onRefresh={fetchAttendance}
-            />
-        )}
         </div>
     );
 }
-
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -376,15 +384,15 @@ function ScanSuccessCard({
   onScanAgain: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-5 space-y-3">
+    <div className="rounded-xl border border-(--badge-success-border) bg-(--badge-success-bg) p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <CheckCircle2 size={20} className="text-green-400" />
-        <p className="font-bold text-green-400">
+        <CheckCircle2 size={20} className="text-(--status-success)" />
+        <p className="font-bold text-(--status-success)">
           {result.isFullyUsed ? "Entry Complete — All tickets used" : "Entry Granted"}
         </p>
       </div>
 
-      <div className="rounded-lg bg-(--bg-secondary) p-4 space-y-2 text-sm">
+      <div className="rounded-lg bg-(--bg-secondary) p-4 space-y-2 text-sm border border-(--card-border)">
         <Row label="Name"    value={result.attendeeName} />
         <Row label="Email"   value={result.attendeeEmail} />
         <Row label="Ticket"  value={result.ticketNo} mono />
@@ -414,10 +422,10 @@ function ScanErrorCard({
   onScanAgain: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5 space-y-3">
+    <div className="rounded-xl border border-(--badge-error-border) bg-(--badge-error-bg) p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <XCircle size={20} className="text-red-400" />
-        <p className="font-bold text-red-400">Entry Denied</p>
+        <XCircle size={20} className="text-(--status-error)" />
+        <p className="font-bold text-(--status-error)">Entry Denied</p>
       </div>
       <p className="text-sm text-(--text-secondary)">{message}</p>
       <p className="text-xs text-(--text-tertiary) font-mono">{code}</p>
@@ -440,9 +448,8 @@ function AttendanceTab({
 }) {
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-16 gap-3">
-                <Loader2 className="animate-spin text-(--brand-primary)" />
-                <span className="text-sm text-(--text-secondary)">Loading attendance...</span>
+            <div className="flex items-center justify-center py-8">
+                <LoadingSpinner1 message="Loading attendance..." size="md" />
             </div>
         );
     }
@@ -483,8 +490,6 @@ function AttendanceTab({
     );
 }
 
-
-
 function AttendanceRow({ record }: { record: AttendanceRecord }) {
     const isFullyUsed = record.remainingEntries === 0;
 
@@ -492,10 +497,10 @@ function AttendanceRow({ record }: { record: AttendanceRecord }) {
         <div className="flex items-center gap-3 p-3 rounded-xl bg-(--bg-secondary) border border-(--card-border)">
             <div className={[
                 "h-9 w-9 rounded-full flex items-center justify-center shrink-0",
-                isFullyUsed ? "bg-green-500/15" : "bg-(--brand-primary)/15",
+                isFullyUsed ? "bg-(--badge-success-bg)" : "bg-(--badge-primary-bg)",
             ].join(" ")}>
                 {isFullyUsed
-                ? <CheckCircle2 size={17} className="text-green-400" />
+                ? <CheckCircle2 size={17} className="text-(--status-success)" />
                 : <Ticket size={17} className="text-(--brand-primary)" />
                 }
             </div>
@@ -514,7 +519,6 @@ function AttendanceRow({ record }: { record: AttendanceRecord }) {
         </div>
     );
 }
-
 
 function Row({
     label, value, mono = false, highlight = false,
