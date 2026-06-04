@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc && tsc-alias && copyfiles -u 1 \"src/templates/**/*.html\" dist/templates",
+    "build": "tsc && tsc-alias && copyfiles -u 1 \"src/templates/**/*.html\" dist",
     "dev": "tsx watch src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
