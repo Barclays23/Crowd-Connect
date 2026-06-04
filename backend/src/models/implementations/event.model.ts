@@ -5,10 +5,6 @@ import { model, Model, Schema, HydratedDocument } from "mongoose";
 
 
 
-// export interface IEventModel extends Document { }
-
-
-
 const eventSchema = new Schema<IEventModel>(
    {
       hostRef: {

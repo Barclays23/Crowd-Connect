@@ -128,7 +128,7 @@ export class BookingService implements IBookingService {
 
             const [populated, settings] = await Promise.all([
                this._bookingRepository.getBookingById(bookingEntity.bookingId),
-               this._settingsService.getSettings(),
+               this._settingsService.getPlatformSettings(),
             ]);
 
             if (!populated) {
@@ -212,7 +212,7 @@ export class BookingService implements IBookingService {
 
          const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
             this._bookingRepository.findBookings({ ...filters, userId }),
-            this._settingsService.getSettings(),
+            this._settingsService.getPlatformSettings(),
          ]);
 
          return {
@@ -237,7 +237,7 @@ export class BookingService implements IBookingService {
 
          const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
             this._bookingRepository.findBookings(filters),
-            this._settingsService.getSettings(),
+            this._settingsService.getPlatformSettings(),
          ]);
 
          return {
@@ -302,7 +302,7 @@ export class BookingService implements IBookingService {
       try {
          const [booking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(bookingId),
-            this._settingsService.getSettings(),
+            this._settingsService.getPlatformSettings(),
          ]);
 
          if (!booking) {
@@ -463,7 +463,7 @@ export class BookingService implements IBookingService {
 
          const [confirmedBooking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(booking.bookingId),
-            this._settingsService.getSettings(),
+            this._settingsService.getPlatformSettings(),
          ]);
          
          return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
@@ -483,7 +483,7 @@ export class BookingService implements IBookingService {
       cancelReason:   string,
       context:  RefundContext,
    ): Promise<void> {
-      const settings: PlatformSettingsEntity = await this._settingsService.getSettings();
+      const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
       const refundAmount: number = calculateRefundAmount(booking, context, settings);
 
       let refundId: string | undefined;

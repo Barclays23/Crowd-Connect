@@ -1,6 +1,6 @@
 // backend/src/routes/admin.routes.ts
 
-import e, { Router } from 'express';
+import { Router } from 'express';
 
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
 import { uploadDocument, uploadEventPoster, uploadImage } from '@/middlewares/file-upload.middleware';
@@ -18,7 +18,7 @@ import { HostController } from '@/controllers/implementations/host.controller';
 import { validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
-import { ADMIN_ROUTES, SETTINGS_ROUTES } from '@/constants/routes.constants';
+import { ADMIN_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/event.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
@@ -38,6 +38,9 @@ import { RedisCacheService } from '@/services/cache-services/implementations/red
 import { PlatformSettingsController } from '@/controllers/implementations/platformSettings.controller';
 import { PlatformSettingsService } from '@/services/platform-settings-services/implementations/platformSettings.service';
 import { PlatformSettingsRepository } from '@/repositories/implementations/platformSettings.repository';
+import { PayoutService } from '@/services/payout-services/implementations/payout.service';
+import { PayoutRepository } from '@/repositories/implementations/payout.repository';
+import { PayoutController } from '@/controllers/implementations/payout.controller';
 
 
 
@@ -50,6 +53,7 @@ const eventRepo         = new EventRepository();
 const bookingRepo       = new BookingRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
+const payoutRepo        = new PayoutRepository()
 
 
 
@@ -72,6 +76,8 @@ const settingsService           = new PlatformSettingsService(settingsRepo);
 const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
 const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService);
 const passwordService           = new PasswordService(userRepo, cacheService);
+const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
+
 
 
 // ──  CONTROLLERS ──
@@ -79,7 +85,7 @@ const userController        = new UserController(userProfileServices, userManage
 const hostController        = new HostController(hostManagementServices);
 const eventController       = new EventController(eventServices, bookingServices);
 const bookingController     = new BookingController(bookingServices);
-
+const payoutController      = new PayoutController(payoutService)
 
 
 
@@ -130,9 +136,19 @@ adminRouter.patch(ADMIN_ROUTES.UPDATE_EVENT, uploadEventPoster.single("eventPost
 );
 
 
+
+
 // booking management
 adminRouter.get(ADMIN_ROUTES.GET_BOOKINGS, bookingController.getAdminBookings.bind(bookingController));
 adminRouter.put(ADMIN_ROUTES.CANCEL_BOOKING, validateRequest({body: cancelBookingSchema, params: BookingIdParamSchema}), bookingController.cancelBookingByAdmin.bind(bookingController));
+
+
+
+
+// payout request management
+adminRouter.get(ADMIN_ROUTES.GET_PAYOUTS, payoutController.getAllPayouts.bind(payoutController));
+adminRouter.put(ADMIN_ROUTES.REVIEW_PAYOUT, payoutController.reviewPayout.bind(payoutController));
+
 
 
 

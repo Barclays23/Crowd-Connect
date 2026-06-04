@@ -641,7 +641,7 @@ export class EventManagementServices implements IEventServices {
 
             if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
 
-                const settings = await this._settingsService.getSettings();
+                const settings = await this._settingsService.getPlatformSettings();
 
                 const gracePeriodEnd = new Date(
                     Math.min(

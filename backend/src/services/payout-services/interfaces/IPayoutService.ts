@@ -1,29 +1,31 @@
 
 // backend/src/services/payout-services/interfaces/IPayoutService.ts
-
-import {
-   GetPayoutRequestsResponse,
-   PayoutRequestResponseDTO,
-} from "@/dtos/wallet.dto";
-
 import { 
-   CreatePayoutRequestInput, 
-   GetPayoutRequestsFilter, 
-   ReviewPayoutRequestInput 
+   GetEligibleEventsResponse,
+   GetPayoutsResponse, 
+   PayoutResponseDTO 
+} from "@/dtos/payout.dto";
+import { 
+   GetPayoutsFilter,
+   ReviewPayoutInput, 
 } from "@/types/payout.types";
 
 
 
 
 export interface IPayoutService {
+   // host submits the payout request
+   requestPayout(hostId: string, eventId: string, proofFiles?: Express.Multer.File[]): Promise<PayoutResponseDTO>;
 
-   // ─── Payout Requests (Host → Admin → Host Wallet) ────────────────────────────
-   createPayoutRequest(input: CreatePayoutRequestInput): Promise<PayoutRequestResponseDTO>;
+   // admin approve or reject the payout request
+   reviewPayout(adminId: string, payoutId: string, payoutInput: ReviewPayoutInput): Promise<PayoutResponseDTO>;
 
-   reviewPayoutRequest(input: ReviewPayoutRequestInput): Promise<PayoutRequestResponseDTO>;
+   // for host
+   getMyPayouts(hostId: string, filters: GetPayoutsFilter): Promise<GetPayoutsResponse>;
+   
+   // for admin
+   getAllPayouts(filters: GetPayoutsFilter): Promise<GetPayoutsResponse>;
 
-   getPayoutRequests(filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse>;
-
-   getMyPayoutRequests(hostId: string, filters: GetPayoutRequestsFilter): Promise<GetPayoutRequestsResponse>;
+   getEligibleEvents(hostId: string): Promise<GetEligibleEventsResponse>;
 
 }

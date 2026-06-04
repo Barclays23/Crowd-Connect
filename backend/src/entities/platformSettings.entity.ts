@@ -14,6 +14,8 @@ export interface PlatformSettingsEntity {
     gracePeriodHours      : number;
     gracePeriodRefundPercent: number;
 
+    minPayoutAttendancePercent: number;
+
     updatedBy?            : string;
     updatedAt?            : Date;
 }

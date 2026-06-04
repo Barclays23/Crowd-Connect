@@ -1,9 +1,10 @@
 // backend/src/repositories/implementations/platformSettings.repository.ts
 import { PlatformSettingsEntity } from '@/entities/platformSettings.entity';
 import { mapSettingsModelToEntity } from '@/mappers/platformSettings.mapper';
-import { IPlatformSettingsModel, PlatformSettingsModel } from '@/models/implementations/platformSettings.model';
+import { PlatformSettingsModel } from '@/models/implementations/platformSettings.model';
 import { BaseRepository } from '@/repositories/base.repository';
 import { IPlatformSettingsRepository } from '@/repositories/interfaces/IPlatformSettingsRepository';
+import { IPlatformSettingsModel } from '@/types/platformSettings.types';
 
 
 

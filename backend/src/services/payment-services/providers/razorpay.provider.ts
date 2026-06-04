@@ -207,6 +207,10 @@ export class RazorpayProvider implements IPaymentProvider {
 
             const refunddata = await this._client.payments.refund(paymentId, { amount: amountInPaise });
 
+            // AFTER CALLING THIS API CALL, RAZORPAY WEBHOOK WILL HANDLE THE WEBHOOK EVENT
+            // APPLICATION HANDLES IT BY WEBHOOK ROUTES, CONTROLLER, SERVICE LAYERS
+            // AND THE WALLET TRANSFER HAPPENS THERE.
+
             console.log('Razorpay refund successful:', refunddata);
 
             return {

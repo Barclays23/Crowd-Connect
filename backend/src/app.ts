@@ -20,6 +20,7 @@ import settingsRouter from '@/routes/settings.routes';
 import morganMiddleware from '@/config/morgan.config';
 import webhookRouter from '@/routes/webhook.routes';
 import checkinRouter from '@/routes/checkin.routes';
+import payoutRouter from '@/routes/payout.routes';
 
 
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/booking', bookingRouter);
 app.use('/api/wallet', walletRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/event/:eventId/checkin', checkinRouter);
+app.use('/api/payout', payoutRouter);
 
 
 app.use(errorHandler);

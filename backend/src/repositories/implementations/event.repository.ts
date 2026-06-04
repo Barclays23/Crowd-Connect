@@ -149,6 +149,26 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
 
+
+   async getCompletedEventsByHost(hostId: string): Promise<EventEntity[]> {
+      const query = { 
+         hostRef: hostId, 
+         $or: [
+            { eventStatus: EVENT_STATUS.COMPLETED },
+            { 
+               eventStatus: EVENT_STATUS.PUBLISHED, 
+               endDateTime: { $lt: new Date() } 
+            }
+         ]
+      };
+
+      const docs: IEventModel[] = await this.findMany(query);
+
+      return docs.map(mapEventModelToEventEntity);
+   }
+
+
+
    async updateEvent(eventId: string, updateInput: UpdateEventInput): Promise<EventEntity|null> {
       const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, { $set: updateInput });
       const updatedEvent: EventEntity | null = updatedEventData ? mapEventModelToEventEntity(updatedEventData) : null;

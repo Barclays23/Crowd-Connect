@@ -13,12 +13,12 @@ export class PlatformSettingsService implements IPlatformSettingsService {
     ) {}
 
 
-    async getSettings(): Promise<PlatformSettingsEntity> {
+    async getPlatformSettings(): Promise<PlatformSettingsEntity> {
         return this._settingsRepo.getSettings();
     }
 
 
-    async updateSettings(
+    async updatePlatformSettings(
         updateData: Partial<PlatformSettingsEntity>,
         adminId: string
     ): Promise<PlatformSettingsEntity> {

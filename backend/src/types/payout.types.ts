@@ -4,29 +4,41 @@ import { IPopulatedUserFromTransaction } from "@/types/wallet.types";
 import { Types } from "mongoose";
 
 
-export enum PAYOUT_REQUEST_STATUS {
-  PENDING  = "PENDING",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED",
-  PAID     = "PAID",
-}
 
+export enum PAYOUT_REQUEST_STATUS {
+  PENDING    = "pending",
+  // REQUESTED  = 'requested',   // Host clicked "Request Payout"
+  APPROVED   = 'approved',    // Admin reviewed & approved
+  REJECTED   = 'rejected',    // Admin denied (fraud, low attendance, policy violation)
+  // PROCESSED  = 'processed',   // Razorpay transfer succeeded
+  // FAILED     = 'failed',      // Transfer failed (e.g. invalid account, insufficient balance)
+  PAID       = "paid",
+}
 
 
 export interface IPayoutRequestModel {
   _id              : Types.ObjectId;
   eventRef         : Types.ObjectId;               // ref: Event — required
   hostRef          : Types.ObjectId;               // ref: User — indexed
+
+  eventTitle       : string;  // need this? it can take from eventRef i think  // Needed for UI display
+  hostName         : string;  // why this need? it can get from userref i think   // Needed for UI display
+  ticketsSold      : number;  // need this? it can take from eventRef i think   // Snapshot of sales
+  checkedInCount   : number;
+
   grossAmount      : number;                       // total collected ticket revenue for the event
   commissionRate   : number;                       // e.g. 0.10 for 10%
   commissionAmount : number;                       // grossAmount × commissionRate
   netAmount        : number;                       // grossAmount − commissionAmount → released to host wallet
+  
   status           : PAYOUT_REQUEST_STATUS;
   requestedAt      : Date;
-  reviewedBy      ?: Types.ObjectId;               // ref: User (admin who processed)
   reviewedAt      ?: Date;
+  reviewedBy      ?: Types.ObjectId;               // ref: User (admin who processed)
   rejectionReason ?: string;
   notes           ?: string;                       // internal admin notes
+  proofUrls        : string[];
+  
   createdAt        : Date;
   updatedAt        : Date;
 }
@@ -50,32 +62,62 @@ export type IPayoutRequestPopulated = Omit<IPayoutRequestModel, "hostRef" | "eve
 
 
 
-// Input Types ─────────────────────────────────────────
 
-// Host submits payout request
-export interface CreatePayoutRequestInput {
-  eventRef  : Types.ObjectId | string;
-  hostRef   : Types.ObjectId | string;
-  grossAmount: number;
+
+
+
+
+// DB Input Types ─────────────────────────────────────────
+
+export interface CreatePayoutInput {
+  eventRef        : string;
+  hostRef         : string;
+  eventTitle      : string;
+  hostName        : string;
+  grossAmount     : number;
+  commissionRate  : number;
+  commissionAmount: number;
+  netAmount       : number;
+  ticketsSold     : number;
+  checkedInCount  : number;
+  status          : PAYOUT_REQUEST_STATUS;
+  proofUrls       : string[];
+  requestedAt     : Date;
 }
 
 
 // Admin approves/rejects
-export interface ReviewPayoutRequestInput {
-  payoutRequestId : string;
-  adminId         : Types.ObjectId | string;
-  decision        : "approve" | "reject";
+export interface ReviewPayoutInput {
+  action          : "approve" | "reject";
   rejectionReason?: string;
   notes          ?: string;
 }
 
 
 
+export interface UpdatePayoutInput {
+  status?           : PAYOUT_REQUEST_STATUS;
+  reviewedBy?       : string;
+  reviewedAt?       : Date;
+  rejectionReason?  : string;
+  notes?            : string;
+}
+
+
+
+
+
+
 // Query / Filter Types ─────────────────────────────────────────
 
-export interface GetPayoutRequestsFilter {
-  page     : number;
-  limit    : number;
-  status  ?: PAYOUT_REQUEST_STATUS;
-  hostRef ?: string;                  // admin filtering by host
+export type PayoutFilterQuery = Partial<IPayoutRequestModel> & Record<string, unknown>;
+
+export interface GetPayoutsFilter {
+  page        : number;
+  limit       : number;
+  sortBy?     : string;
+  sortOrder?  : "asc" | "desc";
+  status?     : string;
+  search?     : string;
+  hostId?     : string;
 }

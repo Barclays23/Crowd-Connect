@@ -18,7 +18,7 @@ import * as path from "path";
  */
 export async function renderTemplate(
   templateName: string,
-  templateData: Record<string, string | number | boolean>
+  templatePayload: Record<string, string | number | boolean>
 ): Promise<string> {
   // Construct the absolute path to the template file
   // Assuming templates are in 'src/templates/' and this utility is in 'src/utils/'
@@ -29,6 +29,7 @@ export async function renderTemplate(
   try {
     // Read the HTML file content asynchronously
     htmlContent = await fs.readFile(templatePath, { encoding: "utf-8" });
+
   } catch (error: unknown) {
     console.error(`Error loading template ${templateName}:`, error);
     // You must handle the case where the template file doesn't exist
@@ -38,11 +39,11 @@ export async function renderTemplate(
   // Simple placeholder replacement logic (e.g., replaces {{OTP_CODE}} with templateData.otpCode)
   let finalHtml = htmlContent;
 
-  for (const key in templateData) {
-    if (Object.prototype.hasOwnProperty.call(templateData, key)) {
+  for (const key in templatePayload) {
+    if (Object.prototype.hasOwnProperty.call(templatePayload, key)) {
       // Create the placeholder format, e.g., '{{USER_NAME}}', '{{OTP_CODE}}' etc
       const placeholder = new RegExp(`{{${key.toUpperCase()}}}`, "g"); 
-      finalHtml = finalHtml.replace(placeholder, String(templateData[key]));
+      finalHtml = finalHtml.replace(placeholder, String(templatePayload[key]));
     }
   }
 
