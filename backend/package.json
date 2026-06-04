@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc && copyfiles -u 1 \"src/templates/**/*.html\" dist/templates",
+    "build": "tsc && tsc-alias && copyfiles -u 1 \"src/templates/**/*.html\" dist/templates",
     "dev": "tsx watch src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
@@ -35,7 +35,6 @@
     "nodemailer": "^7.0.10",
     "razorpay": "^2.9.6",
     "redis": "^5.10.0",
-    "tsc-alias": "^1.8.16",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^4.1.12"
@@ -60,6 +59,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.17",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
