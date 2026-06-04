@@ -75,16 +75,16 @@ export class WebhookService implements IWebhookService {
 
     private async _handleRefundProcessed(webhookEvent: StandardWebhookEvent): Promise<void> {
 
-        const strategy: IRefundStrategy | undefined = this._refundStrategies.get(webhookEvent.paymentPurpose);
+        const refundStrategy: IRefundStrategy | undefined = this._refundStrategies.get(webhookEvent.paymentPurpose);
 
-        if (!strategy) {
+        if (!refundStrategy) {
             console.error(`🚨 [Webhook Error] No refund strategy registered for type: ${webhookEvent.paymentPurpose}`);
             return;
         }
 
         // execute the refund process
         // Execute it blindly. (OCP & Polymorphism in action!)
-        await strategy.executeRefund(webhookEvent);
+        await refundStrategy.executeRefund(webhookEvent);
 
         // console.log(`[Webhook] Processing confirmed refund ${refundId} for payment ${paymentId}`);
 

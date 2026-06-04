@@ -10,7 +10,7 @@ interface PaginationProps {
   itemsPerPage: number;
   onPageChange: (page: number) => void;
   className?: string;
-  showSummary?: boolean; // Optional: show "Showing X to Y of Z"
+  showSummary?: boolean;
 }
 
 
@@ -31,7 +31,7 @@ export function AdminPagination({
   return (
     <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 mt-6", className)}>
       {showSummary && (
-        <p className="text-sm text-[var(--text-secondary)] whitespace-nowrap">
+        <p className="text-sm text-(--text-secondary) whitespace-nowrap">
           Showing <span className="font-medium">{startItem}</span> to{" "}
           <span className="font-medium">{endItem}</span> of{" "}
           <span className="font-medium">{totalItems}</span> items
@@ -44,13 +44,13 @@ export function AdminPagination({
           size="sm"
           onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
-          className="h-10 rounded-xl border-[var(--border-strong)] hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+          className="h-10 rounded-xl border-(--border-strong) hover:bg-(--bg-secondary) disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Previous
         </Button>
 
-        <span className="px-4 py-2 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-lg font-medium text-sm min-w-[80px] text-center">
+        <span className="px-4 py-2 bg-(--bg-tertiary) text-(--text-primary) rounded-lg font-medium text-sm min-w-20 text-center">
           {currentPage} / {totalPages}
         </span>
 
@@ -59,7 +59,7 @@ export function AdminPagination({
           size="sm"
           onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className="h-10 rounded-xl border-[var(--border-strong)] hover:bg-[var(--bg-secondary)] disabled:opacity-50"
+          className="h-10 rounded-xl border-(--border-strong) hover:bg-(--bg-secondary) disabled:opacity-50"
         >
           Next
           <ChevronRight className="h-4 w-4 ml-1" />

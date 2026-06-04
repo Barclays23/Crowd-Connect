@@ -55,16 +55,16 @@ export const DEFAULT_RADIUS_KM = 25
 
 
 export enum EVENT_STATUS {
-   DRAFT = "draft",             // DRAFT: Creating / Editing phase.
-   PUBLISHED = "published",     // PUBLISHED: Live and bookable. and cannot change back to draft (time-based display computed from here).
-   CANCELLED = "cancelled",     // CANCELLED: Permanent stop.
-   SUSPENDED = "suspended",     // SUSPENDED: admin suspended. (but reason in cancelledReason)
-   COMPLETED = "completed",     // COMPLETED: Auto or manual (after end / payouts). After every process completed.
+  DRAFT = "draft",             // DRAFT: Creating / Editing phase.
+  PUBLISHED = "published",     // PUBLISHED: Live and bookable. and cannot change back to draft (time-based display computed from here).
+  CANCELLED = "cancelled",     // CANCELLED: Permanent stop.
+  SUSPENDED = "suspended",     // SUSPENDED: admin suspended. (but reason in cancelledReason)
+  COMPLETED = "completed",     // COMPLETED: Auto or manual (after end / payouts). After every process completed.
 
-   // Onlu for virtual UI display based on startDateTime & endDateTime
-   // use getEventDisplayStatus to generate the display event status.
-   UPCOMING = "upcoming",
-   ONGOING = "ongoing",
+  // Onlu for virtual UI display based on startDateTime & endDateTime
+  // use getEventDisplayStatus to generate the display event status.
+  UPCOMING = "upcoming",
+  ONGOING  = "ongoing",
 }
 
 
@@ -144,6 +144,7 @@ export interface GeoNearQueryOperator {
   };
 }
 
+
 export interface GeoWithinQueryOperator {
   $geoWithin: {
     $centerSphere?: [
@@ -152,7 +153,7 @@ export interface GeoWithinQueryOperator {
     ];
     $geometry?: {
       type: string;
-      coordinates: any;
+      coordinates: [number, number];
     };
     // Add other shapes if needed later: $box, $polygon, $center, etc.
   };

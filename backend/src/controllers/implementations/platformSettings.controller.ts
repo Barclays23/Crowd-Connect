@@ -15,7 +15,7 @@ export class PlatformSettingsController implements ISettingsController {
 
     getSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {          
-            const settings: PlatformSettingsEntity = await this._settingsService.getSettings();
+            const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
             console.log('platform settings fetched :', settings)
 
             res.status(HttpStatus.OK).json({ success: true, settingsData: settings });
@@ -30,7 +30,7 @@ export class PlatformSettingsController implements ISettingsController {
     updateSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const adminId: string = req.user.userId;
-            const updated: PlatformSettingsEntity = await this._settingsService.updateSettings(req.body, adminId);
+            const updated: PlatformSettingsEntity = await this._settingsService.updatePlatformSettings(req.body, adminId);
 
             res.status(HttpStatus.OK).json({ success: true, data: updated });
             

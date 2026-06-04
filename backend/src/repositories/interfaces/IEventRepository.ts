@@ -17,6 +17,7 @@ export interface IEventRepository {
         skip: number, limit: number, 
         sortField: string, sortOrder: 1 | -1
     ): Promise<{ events: EventEntity[]; totalCount: number }>;
+    getCompletedEventsByHost(hostId: string): Promise<EventEntity[]>;
     
     updateEvent(eventId: string, eventInput: UpdateEventInput) : Promise<EventEntity|null>;
     updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS | null>;

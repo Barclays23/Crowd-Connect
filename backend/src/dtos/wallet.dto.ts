@@ -1,7 +1,4 @@
 // backend/src/dtos/wallet.dto.ts
-
-import { IPagination } from "@/types/common.types";
-import { PAYOUT_REQUEST_STATUS } from "@/types/payout.types";
 import { 
   TRANSACTION_DIRECTION, 
   TRANSACTION_REFERENCE_TYPE, 
@@ -10,19 +7,20 @@ import {
   WITHDRAWAL_STATUS, 
   IBankDetails 
 } from "@/types/wallet.types";
+import { IPagination } from "@/types/common.types";
 
 
-// Request DTO Types
-// ─────────────────────────────────────────
-
-
-
+// Request DTO Types ─────────────────────────────────────────
 
 
 
 
 
 
+
+
+
+// Response DTO Types ─────────────────────────────────────────
 
 export interface TransactionResponseDTO {
   transactionId : string;
@@ -38,23 +36,7 @@ export interface TransactionResponseDTO {
 }
 
 
-// move to payout
-export interface PayoutRequestResponseDTO {
-  _id              : string;
-  eventRef         : { _id: string; title: string };
-  hostRef          : { _id: string; name: string; email: string };
-  grossAmount      : number;
-  commissionRate   : number;
-  commissionAmount : number;
-  netAmount        : number;
-  status           : PAYOUT_REQUEST_STATUS;
-  requestedAt      : string;
-  reviewedBy      ?: string;
-  reviewedAt      ?: string;
-  rejectionReason ?: string;
-  notes           ?: string;
-  createdAt        : string;
-}
+
 
 // move to withdrawal
 export interface WithdrawalRequestResponseDTO {
@@ -86,11 +68,6 @@ export interface WalletOverviewResponse {
 }
 
 
-// move to payout
-export interface GetPayoutRequestsResponse {
-  payoutRequests : PayoutRequestResponseDTO[];
-  pagination     : IPagination;
-}
 
 // move to withdrawal
 export interface GetWithdrawalRequestsResponse {

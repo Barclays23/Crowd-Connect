@@ -1,29 +1,7 @@
 // backend/src/models/platformSettings.model.ts
 import mongoose, { Document, Model, model, Schema } from 'mongoose';
+import { IPlatformSettingsModel } from '@/types/platformSettings.types';
 
-
-
-// move this interface to platform-settings.types.ts
-export interface IPlatformSettingsModel extends Document {
-  commissionPercent         : number;
-
-  // Refund time cutoffs (hours before event start)
-  refundTier1Hours          : number;    // default: 48  → full refund above this
-  refundTier2Hours          : number;    // default: 24  → partial refund between tier2 and tier1
-
-  // Refund percentages
-  refundTier1Percent        : number;  // default: 100 (>= 48h)
-  refundTier2Percent        : number;  // default: 50  (24h–48h)
-  refundTier3Percent        : number;  // default: 25  (<24h but before event)
-
-  // Grace period for major event changes
-  gracePeriodHours          : number;    // default: 48
-  gracePeriodRefundPercent  : number; // default: 100
-
-  createdAt : Date;
-  updatedAt : Date;
-  updatedBy?                : mongoose.Types.ObjectId;
-}
 
 
 
@@ -40,6 +18,14 @@ const platformSettingsSchema = new Schema<IPlatformSettingsModel>(
 
     gracePeriodHours        : { type: Number, required: true, default: 48,  min: 0 },
     gracePeriodRefundPercent: { type: Number, required: true, default: 100, min: 0, max: 100 },
+
+    minPayoutAttendancePercent: { type: Number, default: 30, min: 0, max: 100 },
+
+    generalTerms            : { type: [String], default: [] },
+    bookingTerms            : { type: [String], default: [] },
+    hostTerms               : { type: [String], default: [] },
+    cancellationTerms       : { type: [String], default: [] },
+    reviewTerms             : { type: [String], default: [] },
 
     updatedBy               : { type: Schema.Types.ObjectId, ref: 'User' },
   },

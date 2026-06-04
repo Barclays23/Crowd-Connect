@@ -4,6 +4,6 @@ import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 
 
 export interface IPlatformSettingsService {
-    getSettings(): Promise<PlatformSettingsEntity>;
-    updateSettings(data: Partial<PlatformSettingsEntity>, adminId: string): Promise<PlatformSettingsEntity>;
+    getPlatformSettings(): Promise<PlatformSettingsEntity>;
+    updatePlatformSettings(data: Partial<PlatformSettingsEntity>, adminId: string): Promise<PlatformSettingsEntity>;
 }

@@ -16,6 +16,8 @@ import { AuthResult } from "@/types/auth.types";
 import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken } from "@/utils/jwt.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
+import { EmailTemplate, OtpEmailPayload } from "@/types/email.types";
+import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
 
 
 
@@ -35,13 +37,14 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP:', otpNumber);
 
-            const templateData = { 
+            const templatePayload: OtpEmailPayload = { 
                 // Keys here must match the placeholders in your HTML file (e.g., {{USER_NAME}}, {{OTP_CODE}}), {{EXPIRY_MINUTES}}
                 USER_NAME: signUpDto.name,
                 OTP_CODE: otpNumber,
                 EXPIRY_MINUTES: expiryMinutes 
             };
-            const htmlTemplate = await renderTemplate("otpEmail.html", templateData);
+            // const htmlTemplate = await renderTemplate("otpEmail.html", templatePayload);
+            const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.OTP_VERIFICATION, templatePayload);
 
             const mailSubject = "Your OTP Verification Code";
             const text = `TEXT..... Your verification code is: ${otpNumber}. It is valid for ${expiryMinutes} minutes.`;
@@ -52,11 +55,11 @@ export class AuthRegistrationService implements IAuthRegistrationService {
 
             // Prepare data to store in Redis
             const redisData = {
-                name: signUpDto.name,
-                email: signUpDto.email,
-                password: hashedPassword,
-                otp: otpNumber,
-                otpExpiry: expiryDate.getTime(),
+                name        : signUpDto.name,
+                email       : signUpDto.email,
+                password    : hashedPassword,
+                otp         : otpNumber,
+                otpExpiry   : expiryDate.getTime(),
             };
 
             // store temp data in redis for expiryMinutes minutes

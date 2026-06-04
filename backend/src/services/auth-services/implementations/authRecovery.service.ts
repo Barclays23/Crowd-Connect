@@ -13,6 +13,8 @@ import { ResetPasswordDto, UpdateEmailDto } from "@/dtos/auth.dto";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { generateOTP } from "@/utils/generateOTP.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
+import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
+import { EmailTemplate, PasswordResetPayload } from "@/types/email.types";
 
 
 
@@ -36,21 +38,19 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 // throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
             } else {
                 const { cryptoToken, expiryDate, expiryMinutes } = generateCryptoToken();
-                // console.log('cryptoToken:', cryptoToken);
-                // console.log('Expiry:', expiryDate.toISOString());
-                // console.log('Valid for:', expiryMinutes, 'minutes');
                 
                 const baseUrl = process.env.FRONTEND_URL;
                 const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
                 
                 // email template data
-                const templateData = {
+                const templatePayload: PasswordResetPayload = {
                     USER_NAME: existingUser?.name || 'User',
                     RESET_LINK: resetLink,
                     EXPIRY_MINUTES: expiryMinutes
                 };
                 
-                const htmlTemplate = await renderTemplate('resetPassword.html', templateData);
+                // const htmlTemplate = await renderTemplate('passwordReset.html', templatePayload);
+                const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.PASSWORD_RESET, templatePayload);
                 const mailSubject = 'Reset Your Crowd Connect Password';
                 const text = `Reset your password here: ${resetLink}\nThis link expires in ${expiryMinutes} minutes.`;
                 

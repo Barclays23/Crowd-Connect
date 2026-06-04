@@ -7,6 +7,7 @@ import {
   BookOpen,
   Heart,
   Wallet,
+  IndianRupee,
 } from 'lucide-react';
 
 import UserProfile from '@/components/user/UserProfile';
@@ -15,26 +16,32 @@ import UserEvents from '@/components/user/UserEvents';
 import UserBookings from '@/components/user/UserBookings';
 import UserWishlist from '@/components/user/UserWishlist';
 import UserWallet from '@/components/user/UserWallet';
+import UserPayouts from '@/components/user/UserPayouts';
 
 const tabs = [
-  { id: 'profile', label: 'My Profile', icon: User, path: '/my-account' },
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { id: 'events', label: 'My Events', icon: Calendar, path: '/my-events' },
-  { id: 'bookings', label: 'My Bookings', icon: BookOpen, path: '/my-bookings' },
-  { id: 'wishlist', label: 'Wishlist', icon: Heart, path: '/my-wishlist' },
-  { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/my-wallet' },
+  { id: 'profile',    label: 'My Profile',  icon: User,             path: '/my-account' },
+  { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard,  path: '/dashboard' },
+  { id: 'events',     label: 'My Events',   icon: Calendar,         path: '/my-events' },
+  { id: 'bookings',   label: 'My Bookings', icon: BookOpen,         path: '/my-bookings' },
+  { id: 'wishlist',   label: 'Wishlist',    icon: Heart,            path: '/my-wishlist' },
+  { id: 'wallet',     label: 'Wallet',      icon: Wallet,           path: '/my-wallet' },
+  { id: 'payouts',    label: "Payouts",     icon: IndianRupee,      path: "/my-payouts" }
 ] as const;
 
 type TabId = (typeof tabs)[number]['id'];
 
 const pathToTab: Record<string, TabId> = {
-  '/my-account'  : 'profile',
-  '/dashboard'   : 'dashboard',
-  '/my-events'   : 'events',
-  '/my-bookings' : 'bookings',
-  '/my-wishlist' : 'wishlist',
-  '/my-wallet'   : 'wallet',
+  '/my-account'   : 'profile',
+  '/dashboard'    : 'dashboard',
+  '/my-events'    : 'events',
+  '/my-bookings'  : 'bookings',
+  '/my-wishlist'  : 'wishlist',
+  '/my-wallet'    : 'wallet',
+  "/my-payouts"   : 'payouts'
 };
+
+
+
 
 const UserAccount = () => {
   const location = useLocation();
@@ -48,6 +55,7 @@ const UserAccount = () => {
       navigate('/my-account', { replace: true });
     }
   }, [location.pathname, navigate]);
+
 
   const renderContent = () => {
     switch (currentTab) {
@@ -63,10 +71,13 @@ const UserAccount = () => {
         return <UserWishlist />;
       case 'wallet':
         return <UserWallet />;
+      case 'payouts':
+        return <UserPayouts />;
       default:
         return <UserProfile />;
     }
   };
+
 
   return (
     <div className="min-h-screen bg p-6 md:p-10">
@@ -93,7 +104,7 @@ const UserAccount = () => {
         </div>
 
         {/* Content Area */}
-        <div className="mt-8 p-6 sm:p-8 rounded-2xl bg-(--card-bg) border border-(--card-border) shadow-(--card-shadow) min-h-[400px]">
+        <div className="mt-8 p-6 sm:p-8 rounded-2xl bg-(--card-bg) border border-(--card-border) shadow-(--card-shadow) min-h-100">
           {renderContent()}
         </div>
       </div>

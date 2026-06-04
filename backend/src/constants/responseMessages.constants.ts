@@ -380,3 +380,19 @@ export enum PaymentMessages {
     PAYMENT_AMOUNT_MISMATCH = "Payment amount does not match ...booking... amount",  // booking ??
     MAX_RETRIES_EXCEEDED = "Maximum payment retry attempts exceeded",
 }
+
+
+
+
+export const PayoutMessages = {
+   PAYOUT_REQUEST_SUBMITTED : "Payout request submitted successfully",
+   PAYOUT_APPROVED          : "Payout approved and credited to host wallet",
+   PAYOUT_REJECTED          : "Payout request rejected",
+   PAYOUT_NOT_FOUND         : "Payout request not found",
+   PAYOUT_ALREADY_REQUESTED : "A payout has already been requested for this event",
+   PAYOUT_ALREADY_REVIEWED  : "This payout has already been reviewed",
+   NOT_EVENT_HOST           : "You are not the host of this event",
+   EVENT_NOT_COMPLETED      : "Payout can only be requested for completed events",
+   NO_REVENUE               : "This event has no ticket revenue to pay out",
+   REJECTION_REASON_REQUIRED: "A rejection reason is required",
+};

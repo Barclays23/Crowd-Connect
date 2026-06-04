@@ -38,7 +38,6 @@ export class WalletService implements IWalletService {
    constructor(
       private _userRepository            : IUserRepository,
       private _transactionRepository     : ITransactionRepository,
-      // private _payoutRequestRepository   : IPayoutRequestRepository,
       // private _withdrawalRequestRepository : IWithdrawalRequestRepository,
    ) {}
 

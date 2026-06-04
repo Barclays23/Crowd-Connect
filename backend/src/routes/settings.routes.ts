@@ -13,11 +13,11 @@ import { PlatformSettingsRepository } from "@/repositories/implementations/platf
 
 
 // REPOS
-const settingsRepo      = new PlatformSettingsRepository();
+const settingsRepo          = new PlatformSettingsRepository();
 
 
 // SERVICES
-const settingsService           = new PlatformSettingsService(settingsRepo);
+const settingsService       = new PlatformSettingsService(settingsRepo);
 
 
 // CONTROLLER

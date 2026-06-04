@@ -322,6 +322,22 @@ const AdminPlatformSettings = () => {
                         max={100}
                     />
                 </SettingsSection>
+
+                {/* Attendance Policy */}
+                <SettingsSection
+                    title="Payout Requirements"
+                    description="Conditions hosts must meet to request an automatic payout."
+                >
+                    <SettingRow
+                        label="Minimum Attendance %"
+                        description="If event attendance is below this, hosts must upload image proof to request payout."
+                        value={savedSettings?.minPayoutAttendancePercent ?? 30}
+                        editValue={draftSettings.minPayoutAttendancePercent ?? 30}
+                        isEditing={isEditing}
+                        onChange={(v) => updateDraft("minPayoutAttendancePercent", v)}
+                        max={100}
+                    />
+                </SettingsSection>
             </div>
         </AdminLayout>
     );

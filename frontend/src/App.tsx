@@ -51,6 +51,7 @@ import AdminHostsList from "./pages/admin/AdminHostsList";
 import AdminEventList from "@/pages/admin/AdminEventsList";
 import AdminBookingsList from "@/pages/admin/AdminBookingsList";
 import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
+import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
 
 
 
@@ -95,6 +96,7 @@ function App() {
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
                                  <Route path="/my-wishlist" element={<UserAccountTabs />} />
                                  <Route path="/my-wallet" element={<UserAccountTabs />} />
+                                 <Route path="/my-payouts" element={<UserAccountTabs />} />
                               </Route>
                            </Route>
 
@@ -107,6 +109,7 @@ function App() {
                               <Route path="/admin/events" element={<AdminEventList />} />
                               <Route path="/admin/bookings" element={<AdminBookingsList />} />
                               <Route path="/admin/settings" element={<AdminPlatformSettings />} />
+                              <Route path="/admin/payout-requests" element={<AdminPayoutRequests />} />
                            </Route>
 
 
