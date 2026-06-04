@@ -1,8 +1,10 @@
 // backend/src/types/platformSettings.types.ts
 
-import { Types } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IPlatformSettingsModel extends Document {
+  _id                       : Types.ObjectId;
+
   commissionPercent         : number;
 
   // Refund time cutoffs (hours before event start)
