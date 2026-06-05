@@ -9,7 +9,6 @@ import { HttpStatus } from "@/constants/statusCodes.constants";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { generateOTP } from "@/utils/generateOTP.utils";
 import { renderTemplate } from "@/utils/templateLoader2";
-import { sendEmail } from "@/utils/email.utils";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { REDIS_DATA_TTL_SECONDS, redisClient } from "@/config/redis.config";
 import { AuthResult } from "@/types/auth.types";
