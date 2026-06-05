@@ -9,12 +9,12 @@ import { REDIS_TOKEN_PREFIX, redisClient } from "@/config/redis.config";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { HttpResponse } from "@/constants/responseMessages.constants";
-import { ResetPasswordDto, UpdateEmailDto } from "@/dtos/auth.dto";
-import { hashPassword } from "@/utils/bcrypt.utils";
+import { UpdateEmailDto } from "@/dtos/auth.dto";
 import { generateOTP } from "@/utils/generateOTP.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
-import { EmailTemplate, PasswordResetPayload } from "@/types/email.types";
+import { EmailTemplate, PasswordResetPayload, VerifyEmailPayload } from "@/types/email.types";
+import { IMailService } from "@/services/mail-services/interfaces/IMailService";
 
 
 
@@ -23,7 +23,8 @@ import { EmailTemplate, PasswordResetPayload } from "@/types/email.types";
 export class AuthRecoveryService implements IAuthRecoveryService {
     constructor(
         private readonly _userRepository: IUserRepository,
-        private readonly _cacheService: ICacheService
+        private readonly _cacheService  : ICacheService,
+        private readonly _mailService   : IMailService
     ) {}
 
 
@@ -42,7 +43,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 const baseUrl = process.env.FRONTEND_URL;
                 const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
                 
-                // email template data
                 const templatePayload: PasswordResetPayload = {
                     USER_NAME: existingUser?.name || 'User',
                     RESET_LINK: resetLink,
@@ -53,13 +53,20 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.PASSWORD_RESET, templatePayload);
                 const mailSubject = 'Reset Your Crowd Connect Password';
                 const text = `Reset your password here: ${resetLink}\nThis link expires in ${expiryMinutes} minutes.`;
-                
-                await sendEmail({
+
+                await this._mailService.sendEmailToUser({
                     toAddress: email,
                     mailSubject,
                     text,
                     htmlTemplate,
-                });
+                })
+                
+                // await sendEmail({
+                //     toAddress: email,
+                //     mailSubject,
+                //     text,
+                //     htmlTemplate,
+                // });
                 
                 const redisKey = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
                 const redisData = {
@@ -156,30 +163,36 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             );
 
             // --- Dynamic HTML Template Loading ---
-            const templateData = {
-                USER_NAME: currentUser?.name || 'User',
-                OTP_NUMBER: otpNumber,
-                EXPIRY_MINUTES: expiryMinutes,
-                CURRENT_YEAR: new Date().getFullYear(),
-                GREETING_SUFFIX: currentUser?.name ? ` ${currentUser.name}` : '',
-                EMAIL_HEADING: isChangingEmail
-                    ? 'Verify Your New Email'
-                    : 'Verify Your Email Address',
-                EMAIL_MESSAGE: isChangingEmail
+            const templatePayload: VerifyEmailPayload = {
+                USER_NAME       : currentUser?.name || 'User',
+                OTP_NUMBER      : otpNumber,
+                EXPIRY_MINUTES  : expiryMinutes,
+                CURRENT_YEAR    : new Date().getFullYear(),
+                GREETING_SUFFIX : currentUser?.name ? ` ${currentUser.name}` : '',
+                EMAIL_HEADING   : isChangingEmail ? 'Verify Your New Email' : 'Verify Your Email Address',
+                EMAIL_MESSAGE   : isChangingEmail
                     ? "You’re updating your email address. Please use the code below to confirm your new email."
                     : "You’re almost there! Use this code to verify your email and start connecting with amazing events and people."
             };
 
-            const htmlTemplate = await renderTemplate('verifyEmail.html', templateData);
+            // const htmlTemplate = await renderTemplate('verifyEmail.html', templatePayload);
+            const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.VERIFY_EMAIL, templatePayload);
             const mailSubject = isChangingEmail ? 'Verify Your New Email Address' : 'Verify Your Email Address';
             const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
 
-            await sendEmail({
+            await this._mailService.sendEmailToUser({
                 toAddress: normalizedRequestedEmail,
                 mailSubject,
                 text,
                 htmlTemplate,
-            });
+            })
+
+            // await sendEmail({
+            //     toAddress: normalizedRequestedEmail,
+            //     mailSubject,
+            //     text,
+            //     htmlTemplate,
+            // });
 
             return normalizedRequestedEmail;
 

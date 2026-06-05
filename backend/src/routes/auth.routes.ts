@@ -23,6 +23,7 @@ import { AuthController } from '@/controllers/implementations/auth.controller';
 import { AUTH_ROUTES } from '@/constants/routes.constants';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
+import { mailDispatcher } from '@/services/mail-services/implementations/MailServiceFactory';
 
 
 
@@ -33,9 +34,9 @@ const userRepository = new UserRepository()
 
 // SERVICES
 const cacheService          = new RedisCacheService();
-const registrationService   = new AuthRegistrationService(userRepository, cacheService);
+const registrationService   = new AuthRegistrationService(userRepository, cacheService, mailDispatcher);
 const sessionService        = new AuthSessionService(userRepository, cacheService);
-const recoveryService       = new AuthRecoveryService(userRepository, cacheService);
+const recoveryService       = new AuthRecoveryService(userRepository, cacheService, mailDispatcher);
 const passwordService       = new PasswordService(userRepository, cacheService)
 
 
@@ -47,6 +48,7 @@ const authController = new AuthController(
     recoveryService,
     passwordService
 );
+
 
 
 const authRouter = Router();

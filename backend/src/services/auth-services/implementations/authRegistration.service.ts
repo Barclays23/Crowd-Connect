@@ -18,6 +18,7 @@ import { createAccessToken, createRefreshToken } from "@/utils/jwt.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { EmailTemplate, OtpEmailPayload } from "@/types/email.types";
 import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
+import { IMailService } from "@/services/mail-services/interfaces/IMailService";
 
 
 
@@ -26,7 +27,8 @@ import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
 export class AuthRegistrationService implements IAuthRegistrationService {
     constructor(
         private readonly _userRepository: IUserRepository,
-        private readonly _cacheService: ICacheService
+        private readonly _cacheService  : ICacheService,
+        private readonly _mailService   : IMailService
     ) {}
 
     async signUp(signUpDto: SignUpRequestDto): Promise<string> {
@@ -49,7 +51,14 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             const mailSubject = "Your OTP Verification Code";
             const text = `TEXT..... Your verification code is: ${otpNumber}. It is valid for ${expiryMinutes} minutes.`;
 
-            await sendEmail({ toAddress: signUpDto.email, mailSubject, text, htmlTemplate });
+            await this._mailService.sendEmailToUser({
+                toAddress: signUpDto.email,
+                mailSubject,
+                text,
+                htmlTemplate,
+            })
+
+            // await sendEmail({ toAddress: signUpDto.email, mailSubject, text, htmlTemplate });
 
             const hashedPassword = await hashPassword(signUpDto.password);
 
@@ -164,17 +173,24 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP (Resent):', otpNumber);
 
-            // --- Dynamic HTML Template Loading ---
-            const templateData = { 
-                // Keys here must match the placeholders in your HTML file (e.g., {{USER_NAME}}, {{OTP_CODE}}), {{EXPIRY_MINUTES}}
+            const templatePayload: OtpEmailPayload = { 
                 USER_NAME: tempRedisData.name,
                 OTP_CODE: otpNumber,
                 EXPIRY_MINUTES: expiryMinutes 
             };
-            const htmlTemplate = await renderTemplate("otpEmail.html", templateData);
+            // const htmlTemplate = await renderTemplate("otpEmail.html", templatePayload);
+            const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.OTP_VERIFICATION, templatePayload);
             const mailSubject = "Your OTP Verification Code - Resent";
             const text = `TEXT..... Your verification code is: ${otpNumber}. It is valid for ${expiryMinutes} minutes.`;
-            await sendEmail({ toAddress: email, mailSubject, text, htmlTemplate });
+
+            await this._mailService.sendEmailToUser({
+                toAddress: email,
+                mailSubject,
+                text,
+                htmlTemplate,
+            });
+
+            // await sendEmail({ toAddress: email, mailSubject, text, htmlTemplate });
 
 
             // Prepare updated data for Redis
