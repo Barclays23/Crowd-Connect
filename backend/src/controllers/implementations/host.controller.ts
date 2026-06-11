@@ -90,6 +90,18 @@ export class HostController implements IHostController {
                 },
             });
 
+                        res.status(HttpStatus.OK).json({
+                success: true,
+                message: HttpResponse.SUCCESS_GET_HOSTS,
+                hostsData: result.hosts,
+                pagination: {
+                    page: result.page,
+                    limit: result.limit,
+                    total: result.total,
+                    totalPages: Math.ceil(result.total / result.limit),
+                },
+            });
+
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';

@@ -1,5 +1,5 @@
 // frontend/src/components/user/UserPayouts.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import {
    Loader2,
    ArrowUpDown,
@@ -27,8 +27,6 @@ import {
    TableHeader,
    TableRow,
 } from "@/components/ui/table";
-import { Modal } from "@/components/ui/modal";
-import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { UserPagination } from "@/components/user/UserPagination";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { toast } from "react-toastify";
@@ -37,15 +35,13 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { payoutServices } from "@/services/payoutServices";
 import {
    type IPayoutRequest,
-   type IPayoutEligibleEvent,
    type PayoutSortField,
    type PayoutSortDirection,
    type PayoutRequestStatus,
    PAYOUT_REQUEST_STATUSES,
 } from "@/types/payout.types";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { PayoutRequestSchema, type PayoutRequestFormValues } from "@/schemas/payout.schema";
+import { formatNumberToINR } from "@/utils/UI.utils";
+import { RequestPayoutModal } from "@/components/payout/request-payout-modal";
 
 
 
@@ -66,12 +62,9 @@ const PAYOUT_STATUS_ICON: Record<PayoutRequestStatus, React.ReactNode> = {
     rejected : <Ban className="h-3 w-3"     />,
 };
 
-function formatINR(amount: number) {
-    return `₹${amount.toLocaleString("en-IN")}`;
-}
+
 
 // ── Summary stat card ──────────────────────────────────────────────────────────
-
 function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
     return (
         <div className="rounded-xl p-4 flex flex-col gap-1.5 bg-(--bg-secondary) border border-(--card-border)">
@@ -85,195 +78,7 @@ function StatCard({ icon, label, value, sub }: { icon: React.ReactNode; label: s
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Request Payout Modal
-// ═══════════════════════════════════════════════════════════════════════════════
 
-interface RequestPayoutModalProps {
-    isOpen        : boolean;
-    onClose       : () => void;
-    onRequested   : () => void;
-}
-
-function RequestPayoutModal({ isOpen, onClose, onRequested }: RequestPayoutModalProps) {
-    const { 
-        register, 
-        handleSubmit, 
-        formState: { errors }, 
-        reset 
-    } = useForm<PayoutRequestFormValues>({
-        resolver: zodResolver(PayoutRequestSchema),
-    });
-
-    const [eligibleEvents, setEligibleEvents] = useState<IPayoutEligibleEvent[]>([]);
-    const [commissionRate, setCommissionRate] = useState(0.10);
-    const [minAttendance, setMinAttendance]   = useState(30);
-    const [loading, setLoading]               = useState(true);
-    const [selectedEventId, setSelectedEventId] = useState<string>("");
-    const [isSubmitting, setIsSubmitting]     = useState(false);
-    const [confirmOpen, setConfirmOpen]       = useState(false);
-    const [submittingId, setSubmittingId]     = useState<string | null>(null);
-    const [proofFiles, setProofFiles]         = useState<Record<string, File | null>>({});
-
-    const COMMISSION_RATE = 0.10; // 10% — keep in sync with your backend constant
-
-    const selected = eligibleEvents.find((e) => e.eventId === selectedEventId);
-    const commissionAmount = selected ? selected.grossTicketRevenue * COMMISSION_RATE : 0;
-    const netAmount        = selected ? selected.grossTicketRevenue - commissionAmount : 0;
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const fetchEligibleEvents = async () => {
-            setLoading(true);
-            try {
-                const res = await payoutServices.getEligibleEvents();
-                console.log('response for fetchEligibleEvents :', res)
-                setEligibleEvents(res.events);
-                setCommissionRate(res.commissionRate);
-                setMinAttendance(res.minAttendancePercent);
-
-            } catch (error: unknown) {
-                const errorMessage = getApiErrorMessage(error);
-                if (errorMessage) toast.error(errorMessage);
-
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchEligibleEvents();
-    }, [isOpen]);
-
-
-    const onSubmit = async (data: PayoutRequestFormValues, event: IPayoutEligibleEvent, needsProof: boolean) => {
-        if (needsProof && (!data.proofs || data.proofs.length === 0)) {
-            toast.error("Proof images are required due to low attendance.");
-            return;
-        }
-
-        setSubmittingId(event.eventId);
-
-        try {
-            const formData = new FormData();
-            formData.append("eventId", event.eventId);
-
-            if (data.proofs && data.proofs.length > 0) {
-                Array.from(data.proofs).forEach((file: File) => {
-                    formData.append("payout-proofs", file);
-                });
-            }
-
-            const res = await payoutServices.requestPayout(formData);
-
-            toast.success(res.message);
-            onRequested();
-            onClose();
-
-        } catch (error: unknown) {
-            const errorMessages = getApiErrorMessage(error);
-            if (errorMessages) toast.error(errorMessages);
-        } finally {
-            setIsSubmitting(false);
-            setConfirmOpen(false);
-        }
-    };
-
-    const unRequestedEvents = eligibleEvents.filter((e) => !e.payoutRequested);
-
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Request Payout" size="lg">
-            <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2">
-                {loading ? (
-                    <div className="flex justify-center py-10">
-                        <LoadingSpinner1 size="md" message="Loading eligible events..." />
-                    </div>
-                ) : unRequestedEvents.length === 0 ? (
-                    <div className="rounded-xl p-6 text-center bg-(--bg-secondary) border border-(--card-border)">
-                        <Wallet className="mx-auto h-10 w-10 mb-3 text-(--text-tertiary) opacity-40" />
-                        <p className="font-semibold text-(--text-primary)">No eligible events available</p>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {unRequestedEvents.map((event) => {
-                            // Safe math
-                            const attendancePercent = event.soldTickets > 0 
-                                ? Math.round(((event as any).checkedInCount ?? 0) / event.soldTickets * 100) 
-                                : 0;
-                            const needsProof = attendancePercent < minAttendance;
-                            
-                            const commAmount = Math.round(event.grossTicketRevenue * commissionRate);
-                            const net = event.grossTicketRevenue - commAmount;
-
-                            return (
-                                <form onSubmit={handleSubmit((data) => onSubmit(data, event, needsProof))}>
-                                    <div key={event.eventId} className="rounded-xl p-5 bg-(--bg-secondary) border border-(--card-border) space-y-4 shadow-sm">
-                                        <h3 className="font-bold text-lg text-(--heading-primary)">{event.title}</h3>
-                                        
-                                        <div className="grid grid-cols-2 gap-4 text-sm bg-(--bg-primary) p-4 rounded-lg border border-(--border-muted)">
-                                            <Row label="Tickets Sold" value={`${event.soldTickets}`} />
-                                            <Row label="Attendance" value={`${attendancePercent}%`} className={needsProof ? "text-destructive" : "text-(--status-success)"} />
-                                            <Row label="Gross Revenue" value={formatINR(event.grossTicketRevenue)} />
-                                            <Row label={`Platform Fee (${commissionRate * 100}%)`} value={`− ${formatINR(commAmount)}`} className="text-(--status-error)" />
-                                            <div className="col-span-2 border-t border-(--border-muted) pt-3 mt-1">
-                                                <Row label="You Receive" value={formatINR(net)} className="text-(--status-success) font-extrabold text-base" />
-                                            </div>
-                                        </div>
-
-                                        {needsProof && (
-                                            <div className="bg-(--badge-danger-bg) border border-(--border-brand) p-4 rounded-lg flex flex-col gap-3 mt-4">
-                                                <div className="flex items-center gap-2 text-destructive text-sm font-semibold">
-                                                    <AlertTriangle className="w-4 h-4" />
-                                                    Attendance ({attendancePercent}%) is below {minAttendance}%. Proof required.
-                                                </div>
-                                                <div>
-                                                    <input 
-                                                        type="file" 
-                                                        multiple
-                                                        accept="image/png, image/jpeg, image/webp"
-                                                        {...register("proofs")}
-                                                        className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-(--brand-primary-light) file:text-white hover:file:bg-(--brand-primary)"
-                                                    />
-                                                    {errors.proofs && <p className="text-xs text-destructive mt-1">{errors.proofs.message?.toString()}</p>}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-end pt-4 mt-2">
-                                            <Button type="submit" disabled={submittingId === event.eventId}>
-                                                {submittingId === event.eventId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                                                Submit Request
-                                            </Button>
-                                        </div>
-
-                                    </div>
-                                </form>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-            <div className="flex justify-end pt-4 mt-4 border-t border-(--border-muted)">
-                <Button variant="outline" onClick={onClose} disabled={submittingId !== null}>Close</Button>
-            </div>
-        </Modal>
-    );
-}
-
-function Row({ label, value, className = "" }: { label: string; value: string; className?: string }) {
-    return (
-        <div className="flex items-center justify-between">
-            <span className="text-(--text-secondary)">{label}</span>
-            <span className={`font-semibold text-(--text-primary) ${className}`}>{value}</span>
-        </div>
-    );
-}
-
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Main Component
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export default function UserPayouts() {
     const [payouts, setPayouts]           = useState<IPayoutRequest[]>([]);
@@ -307,6 +112,7 @@ export default function UserPayouts() {
             setPayouts(res.payouts ?? []);
             setTotalPayouts(res.pagination.totalCount ?? 0);
             setTotalPages(res.pagination.totalPages ?? 1);
+            
         } catch (error: unknown) {
             const errorMessages = getApiErrorMessage(error);
             if (errorMessages) {
@@ -362,7 +168,7 @@ export default function UserPayouts() {
                 <StatCard
                     icon={<Wallet    className="h-3.5 w-3.5" />}
                     label="Total Paid Out"
-                    value={formatINR(totalEarned)}
+                    value={formatNumberToINR(totalEarned)}
                     sub="credited to wallet"
                 />
                 <StatCard
@@ -472,87 +278,87 @@ export default function UserPayouts() {
                         </TableRow>
                     ) : (
                         payouts.map((payout, idx) => (
-                            <>
-                            <TableRow
-                                key={payout.payoutId}
-                                className="cursor-pointer"
-                                onClick={() => setExpandedRow(expandedRow === payout.payoutId ? null : payout.payoutId)}
-                            >
-                                <TableCell className="font-medium">
-                                    {(currentPage - 1) * itemsPerPage + idx + 1}
-                                </TableCell>
-                                <TableCell className="font-medium max-w-45 truncate">
-                                    {payout.eventTitle}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">
-                                    {formatINR(payout.grossAmount)}
-                                </TableCell>
-                                <TableCell className="text-destructive text-sm">
-                                    − {formatINR(payout.commissionAmount)}
-                                </TableCell>
-                                <TableCell className="font-semibold text-(--status-success)">
-                                    {formatINR(payout.netAmount)}
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={PAYOUT_STATUS_BADGE[payout.status]} className="gap-1 capitalize">
-                                        {PAYOUT_STATUS_ICON[payout.status]}
-                                        {payout.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm">
-                                    {formatDate2(payout.requestedAt)}
-                                </TableCell>
-                                <TableCell className="text-right pr-4">
-                                    {expandedRow === payout.payoutId
-                                        ? <ChevronUp   className="h-4 w-4 text-muted-foreground" />
-                                        : <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                    }
-                                </TableCell>
-                            </TableRow>
-
-                            {/* Expanded detail row */}
-                            {expandedRow === payout.payoutId && (
-                                <TableRow key={`${payout.payoutId}-detail`} className="bg-(--bg-secondary) hover:bg-(--bg-secondary)">
-                                    <TableCell colSpan={8} className="px-6 py-4">
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-0.5">Tickets Sold</p>
-                                            <p className="font-semibold">{payout.ticketsSold}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-0.5">Commission Rate</p>
-                                            <p className="font-semibold">{(payout.commissionRate * 100).toFixed(0)}%</p>
-                                        </div>
-                                        {payout.reviewedAt && (
-                                            <div>
-                                                <p className="text-xs text-muted-foreground mb-0.5">Reviewed At</p>
-                                                <p className="font-semibold">{formatDate1(payout.reviewedAt)}</p>
-                                            </div>
-                                        )}
-                                        {payout.reviewedAt && (
-                                                <div>
-                                                    <p className="text-xs text-muted-foreground mb-0.5">
-                                                        {payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "Paid At" : "Reviewed At"}
-                                                    </p>
-                                                    <p className={`font-semibold ${payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "text-(--status-success)" : ""}`}>
-                                                        {formatDate1(payout.reviewedAt)}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        {payout.status === PAYOUT_REQUEST_STATUSES.REJECTED && payout.rejectionReason && (
-                                            <div className="col-span-2 sm:col-span-4">
-                                                <p className="text-xs text-muted-foreground mb-1">Rejection Reason</p>
-                                                <div className="flex items-start gap-2 rounded-lg p-3 bg-(--badge-danger-bg) border border-(--border-brand)">
-                                                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
-                                                    <p className="text-sm text-(--badge-danger-text)">{payout.rejectionReason}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        </div>
+                            <Fragment key={payout.payoutId}>
+                                <TableRow
+                                    key={payout.payoutId}
+                                    className="cursor-pointer"
+                                    onClick={() => setExpandedRow(expandedRow === payout.payoutId ? null : payout.payoutId)}
+                                >
+                                    <TableCell className="font-medium">
+                                        {(currentPage - 1) * itemsPerPage + idx + 1}
+                                    </TableCell>
+                                    <TableCell className="font-medium max-w-45 truncate">
+                                        {payout.eventTitle}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                        {formatNumberToINR(payout.grossAmount)}
+                                    </TableCell>
+                                    <TableCell className="text-destructive text-sm">
+                                        − {formatNumberToINR(payout.commissionAmount)}
+                                    </TableCell>
+                                    <TableCell className="font-semibold text-(--status-success)">
+                                        {formatNumberToINR(payout.netAmount)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={PAYOUT_STATUS_BADGE[payout.status]} className="gap-1 capitalize">
+                                            {PAYOUT_STATUS_ICON[payout.status]}
+                                            {payout.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        {formatDate2(payout.requestedAt)}
+                                    </TableCell>
+                                    <TableCell className="text-right pr-4">
+                                        {expandedRow === payout.payoutId
+                                            ? <ChevronUp   className="h-4 w-4 text-muted-foreground" />
+                                            : <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                        }
                                     </TableCell>
                                 </TableRow>
-                            )}
-                            </>
+
+                                {/* Expanded detail row */}
+                                {expandedRow === payout.payoutId && (
+                                    <TableRow key={`${payout.payoutId}-detail`} className="bg-(--bg-secondary) hover:bg-(--bg-secondary)">
+                                        <TableCell colSpan={8} className="px-6 py-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                                            <div>
+                                                <p className="text-xs text-muted-foreground mb-0.5">Tickets Sold</p>
+                                                <p className="font-semibold">{payout.ticketsSold}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground mb-0.5">Commission Rate</p>
+                                                <p className="font-semibold">{(payout.commissionRate * 100).toFixed(0)}%</p>
+                                            </div>
+                                            {payout.reviewedAt && (
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-0.5">Reviewed At</p>
+                                                    <p className="font-semibold">{formatDate1(payout.reviewedAt)}</p>
+                                                </div>
+                                            )}
+                                            {payout.reviewedAt && (
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground mb-0.5">
+                                                            {payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "Paid At" : "Reviewed At"}
+                                                        </p>
+                                                        <p className={`font-semibold ${payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "text-(--status-success)" : ""}`}>
+                                                            {formatDate1(payout.reviewedAt)}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            {payout.status === PAYOUT_REQUEST_STATUSES.REJECTED && payout.rejectionReason && (
+                                                <div className="col-span-2 sm:col-span-4">
+                                                    <p className="text-xs text-muted-foreground mb-1">Rejection Reason</p>
+                                                    <div className="flex items-start gap-2 rounded-lg p-3 bg-(--badge-danger-bg) border border-(--border-brand)">
+                                                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                                                        <p className="text-sm text-(--badge-danger-text)">{payout.rejectionReason}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </Fragment>
                         ))
                     )}
                 </TableBody>

@@ -201,6 +201,13 @@ export function formatTransactionAmount(amount: number, direction: TRANSACTION_D
 
 
 
+// converts the number into the Indian number format.
+// eg: 12345678 to ₹1,23,45,678
+export function formatNumberToINR(amount: number) {
+  return `₹${amount.toLocaleString("en-IN")}`;
+}
+
+
 
 // ── Email providers ─────────────────────────────────────────────────────────
 export const EMAIL_PROVIDERS = [

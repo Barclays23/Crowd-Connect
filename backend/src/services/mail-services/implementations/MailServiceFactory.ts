@@ -9,6 +9,7 @@ import { ResendProvider } from "@/services/mail-services/providers/ResendProvide
 export class MailServiceFactory {
     static create(): IMailService {
         const activeMailProvider: string = process.env.ACTIVE_EMAIL_PROVIDER || 'nodemailer';
+        // const activeMailProvider: string = 'nodemailer';
         console.log('activeMailProvider :', activeMailProvider);
 
         switch (activeMailProvider.toLowerCase()) {
