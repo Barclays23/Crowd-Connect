@@ -3,13 +3,10 @@
 import { PaymentPurpose } from "@/constants/payment.constants";
 
 
-// ─── STRICT RAZORPAY TYPES ───────────────────────────────────────────────────
-
-
 export interface RazorpayNotes {
-    payment_purpose: string; // Kept as string to strictly satisfy Razorpay's Record<string, string | number>
-    // 🐛 FIX: No 'undefined' allowed! Razorpay strictly requires string or number.
-    [key: string]: string | number; 
+    // payment_purpose : string; // Kept as string to strictly satisfy Razorpay's Record<string, string | number>
+    payment_purpose : PaymentPurpose;
+    [key: string]   : string | number; 
 }
 
 

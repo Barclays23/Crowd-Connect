@@ -1,5 +1,5 @@
 // backend/src/models/platformSettings.model.ts
-import mongoose, { Document, Model, model, Schema } from 'mongoose';
+import { Model, model, Schema } from 'mongoose';
 import { IPlatformSettingsModel } from '@/types/platformSettings.types';
 
 

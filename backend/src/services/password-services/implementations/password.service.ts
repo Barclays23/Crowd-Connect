@@ -1,4 +1,4 @@
-import { REDIS_TOKEN_PREFIX, redisClient } from "@/config/redis.config";
+import { REDIS_TOKEN_PREFIX } from "@/config/redis.config";
 import { AuthMessages, HttpResponse } from "@/constants/responseMessages.constants";
 import { UserStatus } from "@/constants/roles-and-statuses";
 import { HttpStatus } from "@/constants/statusCodes.constants";

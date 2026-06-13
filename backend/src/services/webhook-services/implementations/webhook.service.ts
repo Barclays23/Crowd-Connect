@@ -1,16 +1,10 @@
 // backend/src/services/webhook-services/implementations/webhook.service.ts
-
-import { executeWithTransactionRetry } from "@/utils/transaction.utils";
-import { ClientSession } from "mongoose";
-import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
-import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
-import { MarkRefundedInput } from "@/entities/booking.entity";
-import { PAYMENT_STATUS } from "@/types/booking.types";
-import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
 import { IWebhookService } from "@/services/webhook-services/interfaces/IWebhookService";
 import { IRefundStrategy } from "@/services/webhook-strategy-services/interfaces/IRefundStrategy";
-import { PaymentPurpose } from "@/constants/payment.constants";
-import { StandardWebhookEvent, StandardWebhookEventType } from "@/types/webhook.types";
+import { 
+    StandardWebhookEvent, 
+    StandardWebhookEventType 
+} from "@/types/webhook.types";
 
 
 

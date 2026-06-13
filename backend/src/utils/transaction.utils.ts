@@ -2,6 +2,11 @@
 
 import mongoose, { ClientSession } from "mongoose";
 
+interface MongoTransactionError extends Error {
+    errorLabels?: string[];
+}
+
+
 /**
  * Executes a MongoDB transaction with automatic retries for transient write conflicts.
  * * @param operation - The database operations to execute within the transaction session.
@@ -25,11 +30,15 @@ export async function executeWithTransactionRetry<T>(
             
             return result; // Exit loop and return result on success
             
-        } catch (error: any) {
+        } catch (error: unknown) {
             await session.abortTransaction();
                 
             // Check if MongoDB tells us this is a temporary conflict
-            const isTransient = error.errorLabels && error.errorLabels.includes('TransientTransactionError');
+            const txError = error as MongoTransactionError;
+            const isTransient = 
+                txError.errorLabels && 
+                Array.isArray(txError.errorLabels) &&
+                txError.errorLabels.includes('TransientTransactionError');
             
             if (isTransient && attempt <= maxRetries) {
                 console.warn(`[DB Write Conflict] Retrying transaction... (Attempt ${attempt} of ${maxRetries})`);

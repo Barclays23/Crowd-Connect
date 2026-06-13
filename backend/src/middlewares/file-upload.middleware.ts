@@ -1,4 +1,4 @@
-// ============================= FOR STORING IN CLOUDINARY ===============================
+// ============================= FOR STORING IN CLOUDINARY / S3 ===============================
 import multer from 'multer';
 
 
@@ -6,15 +6,6 @@ import multer from 'multer';
 // Configure Multer storage
 const memoryStorage = multer.memoryStorage(); // Use memory storage since we'll upload to Cloudinary
 
-
-interface MulterFile {
-   fieldname: string;
-   originalname: string;
-   encoding: string;
-   mimetype: string;
-   size: number;
-   buffer: Buffer;
-}
 
 const IMAGE_MIME_TYPES = [
   'image/jpeg',
@@ -27,25 +18,27 @@ const DOCUMENT_MIME_TYPES = [
   ...IMAGE_MIME_TYPES,
   'application/pdf',
 ];
+// const POSTER_IMAGE_TYPES = IMAGE_MIME_TYPES;
 
 
  
 // ─── file size ───────────────────────────────────
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
-const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024; // 5MB
-const POSTER_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-// const POSTER_IMAGE_TYPES = IMAGE_MIME_TYPES;
+const MAX_IMAGE_SIZE          = 2 * 1024 * 1024; // 2MB (for profile pic)
+const MAX_DOCUMENT_SIZE       = 5 * 1024 * 1024; // 5MB (for host organization document)
+const MAX_POSTER_SIZE         = 5 * 1024 * 1024; // 5MB (for event poster)
+const MAX_PAYOUT_PROOF_SIZE   = 5 * 1024 * 1024; // 5MB (for payouts proofs)
+
 
 // ─── file type checkers ───────────────────────────────────
-const isImage = (mimetype: string) => IMAGE_MIME_TYPES.includes(mimetype);
-const isDocument = (mimetype: string) => DOCUMENT_MIME_TYPES.includes(mimetype);
+const isImage     = (mimetype: string) => IMAGE_MIME_TYPES.includes(mimetype);
+const isDocument  = (mimetype: string) => DOCUMENT_MIME_TYPES.includes(mimetype);
 
 
 
 export const uploadImage = multer({
-   storage: memoryStorage,
-   limits: { fileSize: MAX_IMAGE_SIZE }, // 2MB
-   fileFilter: (req, file, cb) => {
+   storage     : memoryStorage,
+   limits      : { fileSize: MAX_IMAGE_SIZE }, // 2MB
+   fileFilter  : (req, file, cb) => {
       if (isImage(file.mimetype)) {
          cb(null, true);
       } else {
@@ -57,9 +50,9 @@ export const uploadImage = multer({
 
 
 export const uploadDocument = multer({
-   storage: memoryStorage,
-   limits: { fileSize: MAX_DOCUMENT_SIZE }, // 5MB
-   fileFilter: (req, file, cb) => {
+   storage     : memoryStorage,
+   limits      : { fileSize: MAX_DOCUMENT_SIZE }, // 5MB
+   fileFilter  : (req, file, cb) => {
       if (isImage(file.mimetype) || isDocument(file.mimetype)) {
          cb(null, true);
       } else {
@@ -71,9 +64,24 @@ export const uploadDocument = multer({
 
 
 export const uploadEventPoster = multer({
-   storage: memoryStorage,
-   limits: { fileSize: POSTER_MAX_FILE_SIZE }, // 5MB
-   fileFilter: (req, file, cb) => {
+   storage     : memoryStorage,
+   limits      : { fileSize: MAX_POSTER_SIZE }, // 5MB
+   fileFilter  : (req, file, cb) => {
+      if (isImage(file.mimetype)) {
+         cb(null, true);
+      } else {
+         cb(new Error('Only JPEG, PNG, GIF, WEBP images allowed'));
+      }
+   },
+});
+
+
+
+
+export const uploadPayoutProof = multer({
+   storage     : memoryStorage,
+   limits      : { fileSize: MAX_PAYOUT_PROOF_SIZE },
+   fileFilter  : (req, file, cb) => {
       if (isImage(file.mimetype)) {
          cb(null, true);
       } else {

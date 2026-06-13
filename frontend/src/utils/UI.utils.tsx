@@ -207,6 +207,11 @@ export function formatNumberToINR(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`;
 }
 
+// eg: 12345 to ₹12345.00
+export function formatNumberToINRWithDecimal(amount: number) {
+  return `₹${amount.toFixed(2)}`;
+}
+
 
 
 // ── Email providers ─────────────────────────────────────────────────────────

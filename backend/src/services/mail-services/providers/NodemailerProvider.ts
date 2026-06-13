@@ -33,13 +33,7 @@ export class NodemailerProvider implements IMailProvider {
             html    : htmlTemplate
         };
         
-        const info = await this.transporter.sendMail({
-            from    : process.env.SMTP_USER,
-            to      : toAddress,
-            subject : mailSubject || "No Subject",
-            text,
-            html    : htmlTemplate
-        });
+        const info = await this.transporter.sendMail(mailOptions);
 
         console.log("✅ Email sent successfully via NodeMailer");
     }

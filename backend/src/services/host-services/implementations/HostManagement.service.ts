@@ -1,10 +1,22 @@
 // backend/src/services/host-servies/implementations/hostManagement.service.ts
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
-import { HostManageRequestDto, HostStatusUpdateResponseDto, HostUpgradeRequestDto, UserProfileResponseDto } from "@/dtos/user.dto";
+import { 
+    HostManageRequestDto, 
+    HostStatusUpdateResponseDto, 
+    HostUpgradeRequestDto, 
+    UserProfileResponseDto 
+} from "@/dtos/user.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { HttpResponse } from "@/constants/responseMessages.constants";
-import { HostEntity, HostManageInput, HostUpdateInput, UpgradeHostInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { 
+    HostEntity, 
+    HostManageInput, 
+    HostUpdateInput, 
+    UpgradeHostInput, 
+    UserEntity, 
+    UserProfileEntity 
+} from "@/entities/user.entity";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
 import { isHost } from "@/utils/general.utils";
 import { 
@@ -216,7 +228,7 @@ export class HostManagementServices implements IHostManagementServices {
 
             const isHost = existingUser.role === UserRole.HOST;
 
-            if (!existingUser) {
+            if (!isHost) {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_A_HOST);
             }
 

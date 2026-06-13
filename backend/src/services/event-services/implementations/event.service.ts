@@ -27,7 +27,6 @@ import {
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
-import { IPaymentService } from "@/services/payment-services/interfaces/IPaymentService";
 import { 
     EVENT_FORMAT, 
     EVENT_STATUS, 
@@ -55,7 +54,6 @@ import { applyEventStatusFilter } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
-import { redisClient } from "@/config/redis.config";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 

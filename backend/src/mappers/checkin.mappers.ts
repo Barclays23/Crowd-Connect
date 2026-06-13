@@ -1,6 +1,4 @@
 // backend/src/mappers/checkin.mapper.ts
-
-import { Types }         from "mongoose";
 import { BOOKING_STATUS } from "@/types/booking.types";
 import {
   CheckInBookingPopulated,

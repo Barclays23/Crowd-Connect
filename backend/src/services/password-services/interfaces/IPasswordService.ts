@@ -1,6 +1,4 @@
 import { ResetPasswordDto } from "@/dtos/auth.dto";
-import { UserProfileResponseDto } from "@/dtos/user.dto";
-
 
 
 export interface IPasswordService {

@@ -27,8 +27,8 @@ export interface IPayoutRequestModel {
   checkedInCount   : number;
 
   grossAmount      : number;                       // total collected ticket revenue for the event
-  commissionRate   : number;                       // e.g. 0.10 for 10%
-  commissionAmount : number;                       // grossAmount × commissionRate
+  commissionRate   : number;                       // percentage - e.g. 0.10 for 10%
+  commissionAmount : number;                       // grossAmount × commissionRate %
   netAmount        : number;                       // grossAmount − commissionAmount → released to host wallet
   
   status           : PAYOUT_REQUEST_STATUS;

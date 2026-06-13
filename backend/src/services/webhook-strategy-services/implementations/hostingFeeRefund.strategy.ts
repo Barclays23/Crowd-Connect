@@ -3,12 +3,13 @@
 
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
-import { executeWithTransactionRetry } from "@/utils/transaction.utils";
-import { ClientSession } from "mongoose";
-import { PAYMENT_STATUS } from "@/types/booking.types";
-import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
-import { MarkRefundedInput } from "@/entities/booking.entity";
+// import { executeWithTransactionRetry } from "@/utils/transaction.utils";
+// import { ClientSession } from "mongoose";
+// import { PAYMENT_STATUS } from "@/types/booking.types";
+// import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
+// import { MarkRefundedInput } from "@/entities/booking.entity";
 import { IRefundStrategy } from "@/services/webhook-strategy-services/interfaces/IRefundStrategy";
+import { StandardWebhookEvent } from "@/types/webhook.types";
 
 
 
@@ -21,10 +22,11 @@ export class HostingFeeRefundStrategy implements IRefundStrategy {
     ) {}
 
 
-    async executeRefund(refundData: any): Promise<void> {
-        const refundId: string = refundData.id;
-        const paymentId: string = refundData.payment_id;
-        const refundAmount = refundData.amount / 100; 
+    async executeRefund(refundData: StandardWebhookEvent): Promise<void> {
+        console.log('HOSTING FEE refundData :', refundData)
+        // const refundId: string = refundData.id;
+        // const paymentId: string = refundData.payment_id;
+        // const refundAmount = refundData.amount / 100; 
 
         // SAME LIKE BOOKING REFUND BOOKING STRATEGY FUNCTION
 

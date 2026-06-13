@@ -10,7 +10,6 @@ import { IPlatformSettingsService } from "@/services/platform-settings-services/
 import { ClientSession } from "mongoose";
 import { IPayoutService } from "@/services/payout-services/interfaces/IPayoutService";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
-import { PayoutMessages, EventMessages } from "@/constants/responseMessages.constants";
 import { PayoutEntity } from "@/entities/payout.entity";
 import {
    CreatePayoutInput,
@@ -20,11 +19,16 @@ import {
 import { mapPayoutEntityToDTO, mapToEligibleEventDTO } from "@/mappers/payout.mapper";
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { EventEntity } from "@/entities/event.entity";
-import { EVENT_STATUS } from "@/types/event.types";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { IPayoutRepository } from "@/repositories/interfaces/IPayoutRequestRepository";
-import { EligibleEventDTO, GetEligibleEventsResponse, GetPayoutsResponse, PayoutResponseDTO } from "@/dtos/payout.dto";
+import { 
+    EligibleEventDTO, 
+    GetEligibleEventsResponse, 
+    GetPayoutsResponse, 
+    PayoutResponseDTO 
+} from "@/dtos/payout.dto";
 import { uploadToCloudinary } from "@/config/cloudinary";
+import { validatePayoutRequest, validatePayoutReview } from "@/utils/validations/payoutValidations";
 
 
 
@@ -41,67 +45,37 @@ export class PayoutService implements IPayoutService {
 
     // ─── Host: Request for payout ─────────────────────────────────────
     async requestPayout(hostId: string, eventId: string, proofFiles?: Express.Multer.File[]): Promise<PayoutResponseDTO> {
-        // do all the validations with a separate validation utility function
+        const [event, existingPayout, settings]: [EventEntity | null, PayoutEntity | null, PlatformSettingsEntity]
+            = await Promise.all([
+                this._eventRepository.getEventById(eventId),
+                this._payoutRepository.findPayoutByEventId(eventId),
+                this._settingsService.getPlatformSettings()
+            ]);
 
-        const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
-        if (!event) throw createHttpError(HttpStatus.NOT_FOUND, EventMessages.EVENT_NOT_FOUND);
+        const minPercentRequired    = settings?.minPayoutAttendancePercent ?? 30;
+        const hasProofFiles         = !!proofFiles && proofFiles.length > 0;
 
-        if (event.organizer.hostId.toString() !== hostId) {
-            throw createHttpError(HttpStatus.FORBIDDEN, PayoutMessages.NOT_EVENT_HOST);
-        }
+        validatePayoutRequest(event, hostId, existingPayout, minPercentRequired, hasProofFiles);
 
-        // event must be completed
-        const isOfficiallyCompleted : boolean = event.eventStatus === EVENT_STATUS.COMPLETED;
-        const isEventEndTimePast    : boolean = event.eventStatus === EVENT_STATUS.PUBLISHED && new Date() > event.endDateTime;
-
-        if (!isOfficiallyCompleted && !isEventEndTimePast) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, PayoutMessages.EVENT_NOT_COMPLETED);
-        }
-
-        // Must have revenue to pay out
-        const grossAmount = event.grossTicketRevenue ?? 0;
-        if (grossAmount <= 0) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, PayoutMessages.NO_REVENUE);
-        }
-
-        // Check no existing payout for this event
-        const existingPayout = await this._payoutRepository.findPayoutByEventId(eventId);
-        const alreadyAppliedStatuses: PAYOUT_REQUEST_STATUS[] = [
-            PAYOUT_REQUEST_STATUS.PENDING, 
-            PAYOUT_REQUEST_STATUS.APPROVED, 
-            PAYOUT_REQUEST_STATUS.PAID
-        ];
-        if (existingPayout && alreadyAppliedStatuses.includes(existingPayout.status as PAYOUT_REQUEST_STATUS)) {
-            throw createHttpError(HttpStatus.CONFLICT, PayoutMessages.PAYOUT_ALREADY_REQUESTED);
-        }
-
-        const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
+        const grossAmount: number       = event.grossTicketRevenue ?? 0;
         const commissionRate: number    = (settings?.commissionPercent ?? 10) / 100;
         const commissionAmount: number  = Math.round(grossAmount * commissionRate);
         const netAmount: number         = grossAmount - commissionAmount;
 
-        const eventAttendancePercent    = ((event.checkedInCount ?? 0) / (event.soldTickets ?? 1)) * 100;
-        const minPercentRequired        = settings?.minPayoutAttendancePercent ?? 30;
-
-        if (eventAttendancePercent < minPercentRequired && (!proofFiles || proofFiles.length === 0)) {
-            throw createHttpError(
-                HttpStatus.BAD_REQUEST, 
-                `Attendance is ${Math.round(minPercentRequired)}% (below ${minPercentRequired}%). You must attach proof images of the event to request a payout.`
-            );
-        }
-
 
         // --- Handle File Uploads ---
-        const payoutProofUrls: string[] = [];
+        let payoutProofUrls: string[] = [];
+        
         if (proofFiles && proofFiles.length > 0) {
-            for (const file of proofFiles) {
-                const url = await uploadToCloudinary({
-                    fileBuffer: file.buffer,
-                    folderPath: "payout-proofs",
-                    fileType: "image",
-                });
-                payoutProofUrls.push(url);
-            }
+            const uploadPromises = proofFiles.map((file) => 
+                uploadToCloudinary({
+                    fileBuffer  : file.buffer,
+                    folderPath  : "payout-proofs",
+                    fileType    : "image",
+                })
+            );
+            
+            payoutProofUrls = await Promise.all(uploadPromises);
         }
 
         const createPayoutInput: CreatePayoutInput = {
@@ -118,7 +92,7 @@ export class PayoutService implements IPayoutService {
             status        : PAYOUT_REQUEST_STATUS.PENDING,
             proofUrls     : payoutProofUrls,
             requestedAt   : new Date(),
-        };
+        };        
 
         const payout: PayoutEntity = await this._payoutRepository.createPayout(createPayoutInput);
 
@@ -135,62 +109,70 @@ export class PayoutService implements IPayoutService {
     ): Promise<PayoutResponseDTO> {
 
         const payout: PayoutEntity | null = await this._payoutRepository.findPayoutById(payoutId);
-        if (!payout) throw createHttpError(HttpStatus.NOT_FOUND, PayoutMessages.PAYOUT_NOT_FOUND);
 
-        if (payout.status !== PAYOUT_REQUEST_STATUS.PENDING) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, PayoutMessages.PAYOUT_ALREADY_REVIEWED);
+        validatePayoutReview(payout, payoutInput);
+
+        const systemWalletId: string | undefined = process.env.SUPER_ADMIN_ID;
+        if (!systemWalletId) {
+            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "System wallet ID is not configured.");
         }
 
         // ── REJECT ──────
         if (payoutInput.action === "reject") {
-            if (!payoutInput.rejectionReason?.trim()) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, PayoutMessages.REJECTION_REASON_REQUIRED);
-            }
-
             const updatedPayout: PayoutEntity | null = await this._payoutRepository.updatePayout(payoutId, {
                 status         : PAYOUT_REQUEST_STATUS.REJECTED,
-                rejectionReason: payoutInput.rejectionReason.trim(),
+                rejectionReason: payoutInput.rejectionReason!.trim(),
                 reviewedBy     : adminId,
                 reviewedAt     : new Date(),
             });
 
+            // TODO: Trigger Email Notification to Host about Rejection here
+
             return mapPayoutEntityToDTO(updatedPayout!);
         }
 
-        // ── APPROVE: inside a transaction ──────
-        const updatedPayout: PayoutEntity | null = await executeWithTransactionRetry(async (session: ClientSession) => {
 
-            // Debit Admin / Credit Host via Double-Entry Transfer
-            await this._walletService.transferFunds({
-                fromUserId          : process.env.SUPER_ADMIN_ID!,
-                toUserId            : payout.hostId,
-                transferAmount      : payout.netAmount,
-                fromTransactionType : TRANSACTION_TYPE.HOST_PAYOUT,
-                toTransactionType   : TRANSACTION_TYPE.HOST_PAYOUT,
-                referenceType       : TRANSACTION_REFERENCE_TYPE.PAYOUT_REQUEST,
-                referenceId         : payout.payoutId,
-                description         : `Payout for event: ${payout.eventTitle}`,
-                metadata            : {
-                    eventId             : payout.eventId,
-                    grossAmount         : payout.grossAmount,
-                    commissionAmount    : payout.commissionAmount
-                }
-            }, { session });
+        // ── APPROVE ──────
+        if (payoutInput.action === "approve") {
+            // inside a transaction
+            const updatedPayout: PayoutEntity | null = await executeWithTransactionRetry(async (session: ClientSession) => {
 
+                await this._walletService.transferFunds({
+                    fromUserId          : systemWalletId,
+                    toUserId            : payout.hostId,
+                    transferAmount      : payout.netAmount,
+                    fromTransactionType : TRANSACTION_TYPE.HOST_PAYOUT,
+                    toTransactionType   : TRANSACTION_TYPE.HOST_PAYOUT,
+                    referenceType       : TRANSACTION_REFERENCE_TYPE.PAYOUT_REQUEST,
+                    referenceId         : payout.payoutId,
+                    description         : `Payout for event: ${payout.eventTitle}`,
+                    metadata            : {
+                        eventId             : payout.eventId,
+                        grossAmount         : payout.grossAmount,
+                        commissionAmount    : payout.commissionAmount
+                    }
+                }, { session });
 
-            // Mark payout as PAID
-            return this._payoutRepository.updatePayout(
-                payoutId,
-                {
-                    status      : PAYOUT_REQUEST_STATUS.PAID,
-                    reviewedBy  : adminId,
-                    reviewedAt  : new Date(),
-                },
-                { session }
-            );
-        });
+                // Mark payout as PAID
+                return this._payoutRepository.updatePayout(
+                    payoutId,
+                    {
+                        status      : PAYOUT_REQUEST_STATUS.PAID,
+                        reviewedBy  : adminId,
+                        reviewedAt  : new Date(),
+                    },
+                    { session }
+                );
+            });
 
-        return mapPayoutEntityToDTO(updatedPayout!);
+            // TODO: Trigger Email Notification to Host about Approval/Payment here
+
+            return mapPayoutEntityToDTO(updatedPayout!);
+        }
+
+        // Failsafe return if action somehow bypassed checks
+        throw createHttpError(HttpStatus.BAD_REQUEST, "Invalid action processing.");
+
     }
 
 
@@ -241,7 +223,6 @@ export class PayoutService implements IPayoutService {
         
         // fetch if existing payout requests for these events
         const eventIds: string[] = eligibleEvents.map((evt) => evt.id);
-
         const existingPayouts: PayoutEntity[] = await this._payoutRepository.findPayoutByEventIds(eventIds);
 
         const payoutMap = new Map<string, PayoutEntity>(existingPayouts.map(
@@ -251,13 +232,40 @@ export class PayoutService implements IPayoutService {
         // Fetch live platform settings for the frontend UI
         const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
 
+        // Check which statuses mean the payout is "locked" and shouldn't be applied for again
+        const activePayoutStatuses = [
+            PAYOUT_REQUEST_STATUS.PENDING, 
+            PAYOUT_REQUEST_STATUS.APPROVED, 
+            PAYOUT_REQUEST_STATUS.PAID
+        ];
+
+        // Process and filter the events
+        const processedEvents: EligibleEventDTO[] = [];
+
+        for (const evnt of eligibleEvents) {
+            const payout = payoutMap.get(evnt.id);
+
+            // If the event already has an active payout, skip it entirely
+            if (payout && activePayoutStatuses.includes(payout.status as PAYOUT_REQUEST_STATUS)) {
+                continue; 
+            }
+
+            const eligibleEventDTO: EligibleEventDTO = mapToEligibleEventDTO(evnt, payout);
+            
+            // If the payout is rejected, we can treat it as "eligible again" 
+            // but pass the rejection reason to the frontend to warn the user.
+            if (payout?.status === PAYOUT_REQUEST_STATUS.REJECTED) {
+                eligibleEventDTO.previousRejectionReason    = payout.rejectionReason;
+                eligibleEventDTO.canReapply                 = true; 
+            }
+            
+            processedEvents.push(eligibleEventDTO);
+        }
+
         return {
             commissionRate          : (settings?.commissionPercent ?? 10) / 100,
             minAttendancePercent    : settings?.minPayoutAttendancePercent ?? 30,
-            events                  : eligibleEvents.map((evnt) => {
-                const payout: PayoutEntity | undefined = payoutMap.get(evnt.id);
-                return mapToEligibleEventDTO(evnt, payout);
-            }),
+            events                  : processedEvents,
         };
 
     }

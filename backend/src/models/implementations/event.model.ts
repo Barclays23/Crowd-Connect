@@ -1,6 +1,12 @@
 // src/models/implementations/event.model.ts
 
-import { ALL_EVENT_CATEGORIES, EVENT_FORMAT, EVENT_STATUS, IEventModel, TICKET_TYPE } from "@/types/event.types";
+import { 
+   ALL_EVENT_CATEGORIES, 
+   EVENT_FORMAT, 
+   EVENT_STATUS, 
+   IEventModel, 
+   TICKET_TYPE 
+} from "@/types/event.types";
 import { model, Model, Schema, HydratedDocument } from "mongoose";
 
 
@@ -167,7 +173,7 @@ eventSchema.index({ eventStatus: 1, startDateTime: 1 });    // filter by eventSt
 
 
 // --- PRE-SAVE HOOKS ---
-eventSchema.pre('save', async function (this: HydratedDocument<IEventModel>, next) {
+eventSchema.pre('save', async function (this: HydratedDocument<IEventModel>) {
    // Capacity validation
    if (this.isModified('capacity') && this.capacity < this.soldTickets) {
       throw new Error('Cannot reduce capacity below current sold tickets');

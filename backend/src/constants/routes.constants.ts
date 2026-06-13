@@ -85,7 +85,7 @@ export const SETTINGS_ROUTES = {
 
 export const PAYOUT_ROUTES = {
     ELIGIBLE_EVENTS : '/eligible-events',
-    REQUEST_PAYOUT  : '/request',
+    REQUEST_PAYOUT  : '/events/:eventId/request',
     MY_PAYOUTS      : '/my-payouts'
 }
 

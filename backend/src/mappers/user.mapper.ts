@@ -300,7 +300,7 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
 
 
 export const mapToHostManageInput = (
-  {hostId, action, reason}: HostManageRequestDto
+  {action, reason}: HostManageRequestDto
 ): HostManageInput => {
 
    switch (action) {

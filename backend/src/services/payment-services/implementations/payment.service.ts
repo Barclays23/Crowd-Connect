@@ -33,12 +33,12 @@ export class PaymentService implements IPaymentService {
     }
 
 
-    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, any>): boolean {
+    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean {
         return this._provider.verifyWebhookSignature(rawBody, headers);
     }
 
 
-    normalizeWebhookPayload(rawPayload: any): StandardWebhookEvent | null {
+    normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null {
         return this._provider.normalizeWebhookPayload(rawPayload);
     }
 

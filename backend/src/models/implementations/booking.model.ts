@@ -1,5 +1,5 @@
 
-import { BOOKING_STATUS, IBookingModel, IBookingVirtuals, PAYMENT_STATUS } from '@/types/booking.types';
+import { BOOKING_STATUS, IBookingModel, PAYMENT_STATUS } from '@/types/booking.types';
 import { IEventModel } from '@/types/event.types';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
@@ -117,12 +117,6 @@ bookingSchema.virtual("isGraceRefundActive").get(function (this: IBookingModel) 
   return !!this.gracePeriodEnd && new Date() <= this.gracePeriodEnd;
 });
 
-
-
-
-function isPopulatedEvent(event: unknown): event is IEventModel {
-   return typeof event === "object" && event !== null && "startDateTime" in event;
-}
 
 
 

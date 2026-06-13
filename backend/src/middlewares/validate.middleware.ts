@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodType, ZodError } from 'zod';
+import { ZodType, ZodError } from 'zod';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import { HttpStatus } from '@/constants/statusCodes.constants';
@@ -8,9 +8,9 @@ import { formatZodErrorMessages } from '@/utils/formatZodErrors';
 
 
 export interface ValidationSchemas {
-    body?: ZodType; // Replaced ZodSchema with ZodType
-    query?: ZodType; // Replaced ZodSchema with ZodType
-    params?: ZodType; // Replaced ZodSchema with ZodType
+  body?: ZodType;
+  query?: ZodType;
+  params?: ZodType;
 }
 
 

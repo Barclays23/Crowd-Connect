@@ -25,7 +25,7 @@ interface RefreshTokenPayload extends jwt.JwtPayload {
 
 const ACCESS_SECRET         = process.env.JWT_ACCESS_SECRET as string;
 const REFRESH_SECRET        = process.env.JWT_REFRESH_SECRET as string;
-const QRCODE_SECRET             = process.env.JWT_QRCODE_SECRET as string;
+const QRCODE_SECRET         = process.env.JWT_QRCODE_SECRET as string;
 const ACCESS_TOKEN_EXPIRY   = "15m";  // 5 minutes
 // const REFRESH_TOKEN_EXPIRY  = "7d";  // 7 days  (also check in refreshCookie.utils.ts)
 const REFRESH_TOKEN_EXPIRY  = "10h";  // 30 minutes (also check in refreshCookie.utils.ts)
@@ -60,7 +60,7 @@ function createRefreshToken(payload: object): string {
 function verifyAccessToken(token: string): AccessTokenPayload {
   try {
     return jwt.verify(token, ACCESS_SECRET) as AccessTokenPayload;
-  } catch (err) {
+  } catch {
     throw new Error("Invalid or expired access token");
   }
 }
@@ -116,7 +116,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
 // JWT logic stays in jwt.utils — service never imports `jwt` directly
 function verifyQrToken(token: string): QRTokenPayload {
   try {
-    return jwt.verify(token, QRCODE_SECRET) as QRTokenPayload;
+    const decoded: QRTokenPayload = jwt.verify(token, QRCODE_SECRET) as QRTokenPayload;
+    return decoded;
 
   } catch (err) {
     if (err instanceof JsonWebTokenError) {

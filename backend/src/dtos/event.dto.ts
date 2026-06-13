@@ -108,11 +108,3 @@ export interface GetDiscoveryEventsResult {
   pagination: IPagination;
 }
 
-
-
-export interface EventStatusUpdateResponseDto {
-  updatedStatus: EVENT_STATUS;
-  // cancelledAt?: string;
-  // reason?: string;
-  // actedBy: "ADMIN" | "HOST";
-}

@@ -4,7 +4,11 @@ import { HttpStatus } from "@/constants/statusCodes.constants";
 import { PayoutMessages } from "@/constants/responseMessages.constants";
 import { IPayoutService } from "@/services/payout-services/interfaces/IPayoutService";
 import { IPayoutController } from "@/controllers/interfaces/IPayoutController";
-import { GetEligibleEventsResponse, GetPayoutsResponse, PayoutResponseDTO } from "@/dtos/payout.dto";
+import { 
+    GetEligibleEventsResponse, 
+    GetPayoutsResponse, 
+    PayoutResponseDTO 
+} from "@/dtos/payout.dto";
 import { GetPayoutsFilter, ReviewPayoutInput } from "@/types/payout.types";
 
 
@@ -19,7 +23,7 @@ export class PayoutController implements IPayoutController {
             const hostId: string = req.user!.userId;
 
             const result: GetEligibleEventsResponse = await this._payoutServices.getEligibleEvents(hostId);
-            console.log('getEligibleEvents result :', result)
+            // console.log('getEligibleEvents result :', result);
 
             res.status(HttpStatus.OK).json(result);
 
@@ -31,13 +35,11 @@ export class PayoutController implements IPayoutController {
 
     async requestPayout(req: Request, res: Response, next: NextFunction) {
         try {
-            const hostId: string    = req.user!.userId;
-            const { eventId }       = req.body;
-            const files             = req.files as Express.Multer.File[];
+            const hostId: string                = req.user!.userId;
+            const eventId: string               = req.params.eventId as string;
+            const files: Express.Multer.File[]  = req.files as Express.Multer.File[];
 
-            const payout = await this._payoutServices.requestPayout(hostId, eventId, files);
-
-            const payoutData: PayoutResponseDTO  = await this._payoutServices.requestPayout(hostId, eventId);
+            const payoutData: PayoutResponseDTO = await this._payoutServices.requestPayout(hostId, eventId, files);
 
             res.status(HttpStatus.CREATED).json({
                 message : PayoutMessages.PAYOUT_REQUEST_SUBMITTED,

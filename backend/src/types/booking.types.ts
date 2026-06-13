@@ -176,6 +176,7 @@ export interface GetBookingsFilter {
 }
 
 
+// not used
 export interface BookingFilterQuery {
   bookingStatus?: BOOKING_STATUS;
   userRef?:       Types.ObjectId;

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   User,
@@ -17,8 +17,10 @@ import UserBookings from '@/components/user/UserBookings';
 import UserWishlist from '@/components/user/UserWishlist';
 import UserWallet from '@/components/user/UserWallet';
 import UserPayouts from '@/components/user/UserPayouts';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
-const tabs = [
+const ALL_TABS = [
   { id: 'profile',    label: 'My Profile',  icon: User,             path: '/my-account' },
   { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard,  path: '/dashboard' },
   { id: 'events',     label: 'My Events',   icon: Calendar,         path: '/my-events' },
@@ -28,7 +30,7 @@ const tabs = [
   { id: 'payouts',    label: "Payouts",     icon: IndianRupee,      path: "/my-payouts" }
 ] as const;
 
-type TabId = (typeof tabs)[number]['id'];
+type TabId = (typeof ALL_TABS)[number]['id'];
 
 const pathToTab: Record<string, TabId> = {
   '/my-account'   : 'profile',
@@ -43,18 +45,40 @@ const pathToTab: Record<string, TabId> = {
 
 
 
-const UserAccount = () => {
+const UserAccountTabs = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isHost = user?.role === 'host';
 
   const currentTab = pathToTab[location.pathname] || 'profile';
 
-  // Redirect to profile if invalid path
+  const visibleTabs = useMemo(() => {
+    return ALL_TABS.filter(tab => {
+      if (!isHost && 
+        (
+          tab.id === 'events' || 
+          tab.id === 'payouts'
+        )) {
+        return false;
+      }
+      return true;
+    });
+  }, [isHost]);
+
+
+  // Prevent direct URL access to restricted tabs (redirect to Profile)
   useEffect(() => {
-    if (!Object.keys(pathToTab).includes(location.pathname)) {
+    const isValidPath = Object.keys(pathToTab).includes(location.pathname);
+    const targetTabId = pathToTab[location.pathname];
+    const isRestrictedTab = targetTabId === 'events' || targetTabId === 'payouts';
+
+    // If path is invalid OR user tries to access a host tab without being a host
+    if (!isValidPath || (isRestrictedTab && !isHost)) {
       navigate('/my-account', { replace: true });
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, isHost]);
 
 
   const renderContent = () => {
@@ -64,7 +88,7 @@ const UserAccount = () => {
       case 'dashboard':
         return <UserDashboard />;
       case 'events':
-        return <UserEvents />;
+        return isHost ? <UserEvents /> : <UserProfile />;
       case 'bookings':
         return <UserBookings />;
       case 'wishlist':
@@ -72,7 +96,7 @@ const UserAccount = () => {
       case 'wallet':
         return <UserWallet />;
       case 'payouts':
-        return <UserPayouts />;
+        return isHost ? <UserPayouts /> : <UserProfile />;
       default:
         return <UserProfile />;
     }
@@ -85,20 +109,20 @@ const UserAccount = () => {
         {/* Tabs - horizontal scroll on mobile */}
         <div className="overflow-x-auto pb-2 scrollbar-thin">
           <div className="flex rounded-full p-1.5 bg-(--bg-secondary) min-w-max lg:min-w-0">
-            {tabs.map((tab) => (
-              <button
+            {visibleTabs.map((tab) => (
+              <Button
                 key={tab.id}
                 onClick={() => navigate(tab.path)}
-                className={`flex flex-1 lg:flex-auto items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap cursor-pointer
-                  ${
-                    currentTab === tab.id
-                      ? 'bg-(--brand-primary) text-(--btn-primary-text) shadow-sm'
-                      : 'text-(--text-primary) hover:bg-(--bg-tertiary) hover:text-(--brand-primary-light) hover:border hover: border-(--brand-primary-light)'
-                  }`}
+                variant={currentTab === tab.id ? "default" : "ghost"}
+                className={`flex-1 lg:flex-auto rounded-full h-auto px-5 py-2.5 ${
+                  currentTab === tab.id
+                    ? "bg-(--brand-primary) shadow-sm"
+                    : "text-(--text-primary) border border-transparent hover:bg-(--bg-tertiary) hover:text-(--brand-primary-light) hover:border-(--brand-primary-light)"
+                }`}
               >
                 <tab.icon size={18} />
                 {tab.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -112,4 +136,4 @@ const UserAccount = () => {
   );
 };
 
-export default UserAccount;
+export default UserAccountTabs;

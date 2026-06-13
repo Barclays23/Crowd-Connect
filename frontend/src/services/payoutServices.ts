@@ -23,8 +23,8 @@ export const payoutServices = {
 
 
     // host submits a payout request for an event
-    requestPayout: async (formData: FormData): Promise<{ message: string }> => {
-        const res = await axiosInstance.post("/api/payouts/request", formData, {
+    requestPayout: async (eventId: string, formData: FormData): Promise<{ message: string }> => {
+        const res = await axiosInstance.post(`/api/payout/events/${eventId}/request`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
         return res.data;
@@ -49,7 +49,7 @@ export const payoutServices = {
 
     // admin review payouts — approve or reject
     reviewPayout: async (payoutId: string, body: ReviewPayoutBody): Promise<{ message: string }> => {
-        const res = await axiosInstance.put(`api/admin/payouts/${payoutId}/review`, body);
+        const res = await axiosInstance.put(`/api/admin/payouts/${payoutId}/review`, body);
         return res.data;
     },
 };

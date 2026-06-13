@@ -31,3 +31,8 @@ export const BookingIdParamSchema = z.object({
   bookingId: MongoIdBase
 });
 
+
+export const PayoutIdParamSchema = z.object({
+  payoutId: MongoIdBase
+});
+

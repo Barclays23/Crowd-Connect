@@ -7,17 +7,17 @@ import { ITransactionRepository } from "@/repositories/interfaces/ITransactionRe
 import {
    WalletCreditInput,
    WalletDebitInput,
-   CreateWithdrawalRequestInput,
    TransactionsFilterQuery,
-   GetWithdrawalRequestsFilter,
+   // CreateWithdrawalRequestInput,
+   // GetWithdrawalRequestsFilter,
    TRANSACTION_DIRECTION,
    WalletTransferInput,
 } from "@/types/wallet.types";
 import {
    GetTransactionsResponse,
-   GetWithdrawalRequestsResponse,
    WalletOverviewResponse,
-   WithdrawalRequestResponseDTO,
+   // GetWithdrawalRequestsResponse,
+   // WithdrawalRequestResponseDTO,
 } from "@/dtos/wallet.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";

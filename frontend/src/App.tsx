@@ -89,8 +89,6 @@ function App() {
                               {/* ----------- Protected User Routes ---------- */}
                               <Route element={<ProtectedRoute />} >
                                  <Route path="/my-account" element={<UserAccountTabs />} />
-                                 {/* <Route path="/dashboard" element={<UserDashboard />} /> */}
-                                 <Route path="/my-account" element={<UserAccountTabs />} />
                                  <Route path="/dashboard" element={<UserAccountTabs />} />
                                  <Route path="/my-events" element={<UserAccountTabs />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />

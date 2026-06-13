@@ -34,16 +34,16 @@ export interface ScanQRInput {
 
 // ─── Service → Controller ─────────────────────────────────────────────
 export interface CheckInResultDTO {
-    bookingId:        string;
-    ticketNo:         string;
-    attendeeName:     string;
-    attendeeEmail:    string;
-    quantity:         number;   // total tickets on this booking
-    entriesThisScan:  number;   // how many entered just now
-    remainingEntries: number;   // after this scan
-    isFullyUsed:      boolean;  // remainingEntries === 0
-    bookingStatus:    BOOKING_STATUS;
-    checkedInAt:      Date;
+  bookingId:        string;
+  ticketNo:         string;
+  attendeeName:     string;
+  attendeeEmail:    string;
+  quantity:         number;   // total tickets on this booking
+  entriesThisScan:  number;   // how many entered just now
+  remainingEntries: number;   // after this scan
+  isFullyUsed:      boolean;  // remainingEntries === 0
+  bookingStatus:    BOOKING_STATUS;
+  checkedInAt:      Date;
 }
 
 

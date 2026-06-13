@@ -17,11 +17,11 @@ export enum StandardWebhookEventType {
 
 
 export interface StandardWebhookEvent {
-    eventType: StandardWebhookEventType;
-    paymentId: string;
-    refundId?: string;
-    amount: number; // Normalized to Rupees (not paise or cents)
-    paymentPurpose: PaymentPurpose; // Extracted from notes or metadata
-    timestamp: number;
-    rawPayload: any; // Keep the original just in case the strategy needs it
+    eventType       : StandardWebhookEventType;
+    paymentId       : string;
+    refundId?       : string;
+    amount          : number; // Normalized to Rupees (not paise or cents)
+    paymentPurpose  : PaymentPurpose; // Extracted from notes or metadata
+    timestamp       : number;
+    rawPayload      : unknown; // Keep the original just in case the strategy needs it
 }

@@ -1,10 +1,21 @@
 // backend/src/mappers/booking.mapper.ts
 
-import { BookingEntity, BookingEntityPopulated, ConfirmBookingInput, CreateBookingInput } from "@/entities/booking.entity";
+import { 
+  BookingEntity, 
+  BookingEntityPopulated, 
+  ConfirmBookingInput, 
+  CreateBookingInput 
+} from "@/entities/booking.entity";
 import { BookingResponseDTO } from "@/dtos/booking.dto";
-import { BOOKING_STATUS, IBookingModel, IBookingPopulatedUserAndEvent, MapBookingParams, PAYMENT_STATUS } from "@/types/booking.types";
+import { 
+  BOOKING_STATUS, 
+  IBookingModel, 
+  IBookingPopulatedUserAndEvent, 
+  MapBookingParams, 
+  PAYMENT_STATUS 
+} from "@/types/booking.types";
 import { Types } from "mongoose";
-import { EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
+import { TICKET_TYPE } from "@/types/event.types";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { getRefundPercentage } from "@/utils/refundCalculator";
 

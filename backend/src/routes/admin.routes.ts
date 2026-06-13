@@ -15,9 +15,9 @@ import { UserController } from '@/controllers/implementations/user.controller';
 import { HostController } from '@/controllers/implementations/host.controller';
 
 
-import { validateRequest } from '@/middlewares/validate.middleware';
+import { validateParams, validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
-import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema } from '@/schemas/mongo.schema';
+import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema, MongoIdParamSchema, PayoutIdParamSchema } from '@/schemas/mongo.schema';
 import { ADMIN_ROUTES } from '@/constants/routes.constants';
 import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/event.service';
@@ -41,6 +41,7 @@ import { PlatformSettingsRepository } from '@/repositories/implementations/platf
 import { PayoutService } from '@/services/payout-services/implementations/payout.service';
 import { PayoutRepository } from '@/repositories/implementations/payout.repository';
 import { PayoutController } from '@/controllers/implementations/payout.controller';
+import { ReviewPayoutBodySchema } from '@/schemas/payout.schema';
 
 
 
@@ -147,9 +148,10 @@ adminRouter.put(ADMIN_ROUTES.CANCEL_BOOKING, validateRequest({body: cancelBookin
 
 // payout request management
 adminRouter.get(ADMIN_ROUTES.GET_PAYOUTS, payoutController.getAllPayouts.bind(payoutController));
-adminRouter.put(ADMIN_ROUTES.REVIEW_PAYOUT, payoutController.reviewPayout.bind(payoutController));
-
-
+adminRouter.put(ADMIN_ROUTES.REVIEW_PAYOUT, 
+    validateRequest({ body: ReviewPayoutBodySchema, params: PayoutIdParamSchema }), 
+    payoutController.reviewPayout.bind(payoutController)
+);
 
 
 

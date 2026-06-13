@@ -47,7 +47,6 @@ import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
 import { ClientSession, Types } from "mongoose";
 import { UserRole } from "@/constants/roles-and-statuses";
-import { redisClient } from "@/config/redis.config";
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
 import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
 import { BookingMessages } from "@/constants/responseMessages.constants";

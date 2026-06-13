@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc && tsc-alias && copyfiles -u 1 \"src/templates/**/*.html\" dist",
-    "dev": "tsx watch src/server.ts",
+    "dev": "nodemon --watch src --ext ts,json --exec tsx src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
@@ -41,7 +41,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
@@ -57,7 +57,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^17.6.0",
-    "nodemon": "^3.1.10",
+    "nodemon": "^3.1.14",
     "prettier": "^3.6.2",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.17",

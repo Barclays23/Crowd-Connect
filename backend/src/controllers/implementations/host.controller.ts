@@ -8,8 +8,6 @@ import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses
 import { 
     GetHostsFilter, 
     GetHostsResult, 
-    GetUsersFilter, 
-    GetUsersResult 
 } from "@/types/user.types";
 
 import { 
@@ -33,12 +31,6 @@ export class HostController implements IHostController {
             const userId = req.user?.userId;
             const upgradeDto: HostUpgradeRequestDto = req.body;
             const documentFile: Express.Multer.File | undefined = req.file;
-
-            console.log("✅✅✅✅✅ received data in hostController.applyHostUpgrade ----");
-            console.log("userId:", userId);
-            console.log("upgradeDto:", upgradeDto);
-            console.log("fileName:", documentFile?.originalname);
-
 
             const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile});
 
@@ -89,19 +81,6 @@ export class HostController implements IHostController {
                     totalPages: Math.ceil(result.total / result.limit),
                 },
             });
-
-                        res.status(HttpStatus.OK).json({
-                success: true,
-                message: HttpResponse.SUCCESS_GET_HOSTS,
-                hostsData: result.hosts,
-                pagination: {
-                    page: result.page,
-                    limit: result.limit,
-                    total: result.total,
-                    totalPages: Math.ceil(result.total / result.limit),
-                },
-            });
-
 
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown Error';

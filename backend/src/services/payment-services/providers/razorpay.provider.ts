@@ -49,7 +49,7 @@ export class RazorpayProvider implements IPaymentProvider {
                 currency    : "INR",
                 receipt     : receiptId,
                 notes       : {
-                    payment_purpose: purpose  // "EVENT_BOOKING", "ROLE_UPGRADE"
+                    payment_purpose : purpose  // "EVENT_BOOKING", "ROLE_UPGRADE"
                 }
             };
 
@@ -65,14 +65,13 @@ export class RazorpayProvider implements IPaymentProvider {
             let errorMessage = "Payment gateway failed to initialize.";
 
             if (typeof error === "object" && error !== null && "error" in error) {
-                const rzpError = error as any;
+                const rzpError = error as { error?: { description?: string } };
                 errorMessage = rzpError.error?.description || errorMessage;
             } else if (error instanceof Error) {
                 errorMessage = error.message;
             }
 
             console.error(`[CRITICAL] Razorpay Create Order Error: ${errorMessage}`);
-            // throw error;
             
             throw createHttpError(HttpStatus.BAD_GATEWAY, PaymentMessages.PAYMENT_SETUP_FAILED);
         }
@@ -96,8 +95,11 @@ export class RazorpayProvider implements IPaymentProvider {
 
 
     // not async function ??
-    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, any>): boolean {
-        const signature: string = headers['x-razorpay-signature'] as string;
+    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean {
+        const sigHeader = headers['x-razorpay-signature'];
+
+        const signature: string | undefined = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
+
         if (!signature) return false;
 
         const webhookSecret: string = process.env.RAZORPAY_WEBHOOK_SECRET!;

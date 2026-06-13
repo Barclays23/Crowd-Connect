@@ -63,6 +63,8 @@ export function mapPayoutEntityToDTO(entity: PayoutEntity): PayoutResponseDTO {
         reviewedAt          : entity.reviewedAt,
         rejectionReason     : entity.rejectionReason,
 
+        proofUrls           : entity.proofUrls,
+
         createdAt           : entity.createdAt
     };
 }
@@ -78,6 +80,7 @@ export function mapToEligibleEventDTO(event: EventEntity, payout?: PayoutEntity)
         grossTicketRevenue: event.grossTicketRevenue ?? 0,
         soldTickets       : event.soldTickets ?? 0,
         ticketPrice       : event.ticketPrice ?? 0,
+        checkedInCount    : event.checkedInCount ?? 0,
         payoutRequested   : !!payout,
         payoutStatus      : payout?.status,
     };

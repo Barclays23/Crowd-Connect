@@ -1,7 +1,19 @@
 // backend/src/repositories/interfaces/IBookingRepository.ts
 
-import { CancelBookingInput, BookingEntity, BookingEntityPopulated, BulkCancelBookingsInput, ConfirmBookingInput, CreateBookingInput, MarkRefundedInput } from "@/entities/booking.entity";
-import { BOOKING_STATUS, BookingCheckinUpdate, GetBookingsFilter, GetBookingsResult, MajorEventChange } from "@/types/booking.types";
+import { 
+  CancelBookingInput, 
+  BookingEntity, 
+  BookingEntityPopulated, 
+  BulkCancelBookingsInput, 
+  ConfirmBookingInput, 
+  CreateBookingInput, 
+  MarkRefundedInput 
+} from "@/entities/booking.entity";
+import {
+  GetBookingsFilter, 
+  GetBookingsResult, 
+  MajorEventChange 
+} from "@/types/booking.types";
 import { ClientSession } from "mongoose";
 
 

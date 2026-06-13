@@ -36,6 +36,8 @@ export interface IPayoutRequest {
    reviewedBy?    : string;       // Admin who reviewed
    reviewedAt?    : string;
    rejectionReason?: string;
+
+   proofUrls?     : string[];
 }
 
 export interface IPayoutEligibleEvent {
@@ -44,8 +46,12 @@ export interface IPayoutEligibleEvent {
    endDateTime    : string;
    grossTicketRevenue: number;
    soldTickets    : number;
-   payoutRequested: boolean;      // Whether a payout has already been requested
+   checkedInCount : number;
+   
+   payoutRequested: boolean;
    payoutStatus?  : PayoutRequestStatus;
+   previousRejectionReason?: string;
+   canReapply?    : boolean;
 }
 
 export interface GetPayoutsApiResponse {

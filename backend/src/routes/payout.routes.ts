@@ -12,7 +12,9 @@ import { PlatformSettingsRepository } from "@/repositories/implementations/platf
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
 import { PAYOUT_ROUTES } from "@/constants/routes.constants";
-import { uploadImage } from "@/middlewares/file-upload.middleware";
+import { uploadImage, uploadPayoutProof } from "@/middlewares/file-upload.middleware";
+import { EventIdParamSchema } from "@/schemas/mongo.schema";
+import { validateParams } from "@/middlewares/validate.middleware";
 
 
 
@@ -43,13 +45,16 @@ const payoutRouter = Router();
 payoutRouter.use(authenticate, authorize(UserRole.HOST));
 
 
-// completed events available for payout request
+
 payoutRouter.get(PAYOUT_ROUTES.ELIGIBLE_EVENTS, payoutController.getEligibleEvents.bind(payoutController));
 
-// submit a payout request for a completed event
-payoutRouter.post(PAYOUT_ROUTES.REQUEST_PAYOUT, uploadImage.array("payout-proofs", 3), payoutController.requestPayout.bind(payoutController));
+payoutRouter.post(
+    PAYOUT_ROUTES.REQUEST_PAYOUT, 
+    uploadPayoutProof.array("payout-proofs", 3),
+    validateParams(EventIdParamSchema), 
+    payoutController.requestPayout.bind(payoutController)  
+);
 
-// host's own payout history
 payoutRouter.get(PAYOUT_ROUTES.MY_PAYOUTS, payoutController.getMyPayouts.bind(payoutController));
 
 

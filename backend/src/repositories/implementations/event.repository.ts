@@ -1,11 +1,22 @@
 // // backend/src/repositories/implementations/event.repository.ts
 
-import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
+import { 
+   CreateEventInput, 
+   EventEntity, 
+   EventStatusUpdateInput, 
+   UpdateEventInput 
+} from "@/entities/event.entity";
 import { mapEventModelToEventEntity } from "@/mappers/event.mapper";
 import Event from "@/models/implementations/event.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
-import { EVENT_STATUS, EventFilterQuery, IEventModel, IEventModelPopulatedHost, SortQuery } from "@/types/event.types";
+import { 
+   EVENT_STATUS, 
+   EventFilterQuery, 
+   IEventModel, 
+   IEventModelPopulatedHost, 
+   SortQuery 
+} from "@/types/event.types";
 import { isGeoNearQuery } from "@/utils/general.utils";
 import { ClientSession } from "mongoose";
 

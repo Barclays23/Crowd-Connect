@@ -12,7 +12,7 @@ export interface IPaymentProvider {
 
   verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
   
-  verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, any>): boolean;
+  verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean;
 
   normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null
   

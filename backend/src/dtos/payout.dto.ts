@@ -31,6 +31,8 @@ export interface PayoutResponseDTO {
   rejectionReason ?: string;
   notes           ?: string;
 
+  proofUrls        : string[];
+
   createdAt        : string;
 }
 
@@ -43,8 +45,11 @@ export interface EligibleEventDTO {
   grossTicketRevenue: number;
   soldTickets       : number;
   ticketPrice       : number;
+  checkedInCount    : number;
   payoutRequested   : boolean;
   payoutStatus     ?: string;
+  previousRejectionReason?: string;
+  canReapply?       : boolean;
 }
 
 

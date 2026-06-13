@@ -1,8 +1,5 @@
 // backend/src/services/implementations/checkin.service.ts
-
-import jwt                  from "jsonwebtoken";
 import { BOOKING_STATUS, BookingCheckinUpdate }   from "@/types/booking.types";
-import { EVENT_STATUS }     from "@/types/event.types";
 import {
   ICheckinRepository,
 } from "@/repositories/interfaces/ICheckinRepository";
@@ -11,18 +8,19 @@ import {
   CheckInResultDTO,
   GetAttendanceResult,
   AttendanceRecord,
-  EARLY_CHECKIN_BUFFER_MS,
   CheckInBookingPopulated,
-  ENTERABLE_STATUSES,
-  SCANNABLE_EVENT_STATUSES,
 } from "@/types/checkin.types";
 import { QRTokenPayload } from "@/types/ticket.types";
 import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckinService";
-import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { validateBookingForCheckIn, validateEventForCheckIn, validateQrEventMatch, validateScanQRInput } from "@/utils/validations/checkinValidations";
+import { 
+    validateBookingForCheckIn, 
+    validateEventForCheckIn, 
+    validateQrEventMatch, 
+    validateScanQRInput 
+} from "@/utils/validations/checkinValidations";
 import { verifyQrToken } from "@/utils/jwt.utils";
 import { mapToCheckInResultDTO } from "@/mappers/checkin.mappers";
 

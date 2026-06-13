@@ -1,9 +1,16 @@
 // backend/src/services/event-services/interfaces/IEventServices.ts
-
-import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
-import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
-import { GetBookingsFilter } from "@/types/booking.types";
-import { EVENT_STATUS, GetEventsFilter, GetAllEventsResult, GetPublicEventsFilter } from "@/types/event.types";
+import { 
+    CreateEventRequestDTO, 
+    EventResponseDTO, 
+    GetDiscoveryEventsResult, 
+    UpdateEventRequestDTO 
+} from "@/dtos/event.dto";
+import { 
+    EVENT_STATUS, 
+    GetEventsFilter, 
+    GetAllEventsResult, 
+    GetPublicEventsFilter 
+} from "@/types/event.types";
 
 
 export interface IEventServices {

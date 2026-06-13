@@ -6,6 +6,7 @@ import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckin
 import { ICheckinController } from "@/controllers/interfaces/ICheckinController";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
+import { number } from "zod";
 
 
 
@@ -16,11 +17,11 @@ export class CheckinController implements ICheckinController {
     ) {}
 
 
-    // POST /api/events/:eventId/checkin
+    // POST /api/event/:eventId/checkin
     async scanQRCode(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const eventId = req.params.eventId as string;
-            const { qrToken, entryCount } = req.body;
+            const { qrToken, entryCount } = req.body as ScanQRInput;
 
             if (!qrToken) {
                 throw createHttpError(HttpStatus.BAD_REQUEST, "QR token is required.");
@@ -28,12 +29,12 @@ export class CheckinController implements ICheckinController {
             
             const parsedEntryCount: number = entryCount !== undefined ? Number(entryCount) : 1;
 
-            const input: ScanQRInput = {
+            const scanQRInput: ScanQRInput = {
                 qrToken     : qrToken,
                 entryCount  : parsedEntryCount
             };
 
-            const checkinResult: CheckInResultDTO = await this._checkinService.scanQRCode(input, eventId);
+            const checkinResult: CheckInResultDTO = await this._checkinService.scanQRCode(scanQRInput, eventId);
 
             res.status(200).json({
                 success: true,
