@@ -1,5 +1,14 @@
 // ============================= FOR STORING IN CLOUDINARY / S3 ===============================
 import multer from 'multer';
+import { 
+   DOCUMENT_MIME_TYPES,
+   IMAGE_MIME_TYPES,
+   MAX_DOCUMENT_SIZE, 
+   MAX_IMAGE_SIZE, 
+   MAX_PAYOUT_PROOF_SIZE, 
+   MAX_POSTER_SIZE 
+} from '@/constants/files.constants';
+
 
 
 
@@ -7,26 +16,8 @@ import multer from 'multer';
 const memoryStorage = multer.memoryStorage(); // Use memory storage since we'll upload to Cloudinary
 
 
-const IMAGE_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-];
-
-const DOCUMENT_MIME_TYPES = [
-  ...IMAGE_MIME_TYPES,
-  'application/pdf',
-];
-// const POSTER_IMAGE_TYPES = IMAGE_MIME_TYPES;
 
 
- 
-// ─── file size ───────────────────────────────────
-const MAX_IMAGE_SIZE          = 2 * 1024 * 1024; // 2MB (for profile pic)
-const MAX_DOCUMENT_SIZE       = 5 * 1024 * 1024; // 5MB (for host organization document)
-const MAX_POSTER_SIZE         = 5 * 1024 * 1024; // 5MB (for event poster)
-const MAX_PAYOUT_PROOF_SIZE   = 5 * 1024 * 1024; // 5MB (for payouts proofs)
 
 
 // ─── file type checkers ───────────────────────────────────

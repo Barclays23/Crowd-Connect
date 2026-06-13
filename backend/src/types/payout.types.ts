@@ -8,7 +8,7 @@ import { Types } from "mongoose";
 export enum PAYOUT_REQUEST_STATUS {
   PENDING    = "pending",
   // REQUESTED  = 'requested',   // Host clicked "Request Payout"
-  APPROVED   = 'approved',    // Admin reviewed & approved
+  APPROVED   = 'approved',    // Admin reviewed & approved (only need if using payment gateways/webhooks)
   REJECTED   = 'rejected',    // Admin denied (fraud, low attendance, policy violation)
   // PROCESSED  = 'processed',   // Razorpay transfer succeeded
   // FAILED     = 'failed',      // Transfer failed (e.g. invalid account, insufficient balance)

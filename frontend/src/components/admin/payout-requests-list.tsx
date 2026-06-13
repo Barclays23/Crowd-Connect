@@ -81,6 +81,7 @@ export function PayoutRequestsList() {
     const fetchPayouts = useCallback(async () => {
         setLoading(true);
         setError(null);
+
         try {
             const params = new URLSearchParams({
                 page     : currentPage.toString(),
@@ -196,16 +197,16 @@ export function PayoutRequestsList() {
                 />
                 </div>
                 <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
-                <SelectTrigger className="w-44 h-10 border-(--form-border) bg-(--form-bg)">
-                    <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
+                    <SelectTrigger className="w-44 h-10 border-(--form-border) bg-(--form-bg)">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All statuses</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
                 </Select>
             </div>
 

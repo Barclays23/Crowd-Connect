@@ -5,7 +5,7 @@ import type { IPagination } from "@/types/common.types";
 
 export const PAYOUT_REQUEST_STATUSES = {
   PENDING   : "pending",
-  APPROVED  : "approved",
+  APPROVED  : "approved",  // only need if using payment gateways/webhooks
   REJECTED  : "rejected",
   PAID      : "paid",
 } as const;

@@ -3,7 +3,27 @@
 
 
 // ─── file types ───────────────────────────────────
-export const ACCEPTED_PAYOUT_PROOF_TYPES   = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+export const IMAGE_MIME_TYPES = [
+    'image/jpg',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+];
+
+export const DOCUMENT_MIME_TYPES = [
+  ...IMAGE_MIME_TYPES,
+  'application/pdf',
+];
+
+// const POSTER_IMAGE_TYPES = IMAGE_MIME_TYPES;
+
+export const ACCEPTED_PAYOUT_PROOF_TYPES = [
+    "image/jpeg", 
+    "image/jpg", 
+    "image/png", 
+    "image/webp"
+];
 
 
 
