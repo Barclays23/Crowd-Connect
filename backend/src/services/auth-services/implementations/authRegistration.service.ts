@@ -10,7 +10,6 @@ import { HttpResponse } from "@/constants/responseMessages.constants";
 import { generateOTP } from "@/utils/generateOTP.utils";
 import { renderTemplate } from "@/utils/templateLoader2";
 import { hashPassword } from "@/utils/bcrypt.utils";
-import { REDIS_DATA_TTL_SECONDS, redisClient } from "@/config/redis.config";
 import { AuthResult } from "@/types/auth.types";
 import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken } from "@/utils/jwt.utils";
@@ -71,13 +70,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             };
 
             // store temp data in redis for expiryMinutes minutes
-            // const response = await redisClient.setEx(
-            //     signUpDto.email,
-            //     REDIS_DATA_TTL_SECONDS,
-            //     JSON.stringify(redisData)
-            // );
-
-            // store temp data in redis for expiryMinutes minutes
             const response: string | null = await this._cacheService.setKeyValue(
                 signUpDto.email, 
                 JSON.stringify(redisData), 
@@ -134,7 +126,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             }
 
             // Delete temp data from Redis
-            // await redisClient.del(email);
             await this._cacheService.deleteKeyValue(email);
 
             const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
@@ -200,7 +191,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             };
 
             // Update OTP and expiry in Redis (Redis TTL will remain the same as when requested first otp)
-            // const response = await redisClient.set(email, JSON.stringify(updatedRedisData));
             const response: string | null = await this._cacheService.setKeyValue(email, JSON.stringify(updatedRedisData))
             if (!response) {
                 throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);

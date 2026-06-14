@@ -11,7 +11,6 @@ import { UserStatus } from "@/constants/roles-and-statuses";
 import { comparePassword } from "@/utils/bcrypt.utils";
 import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/utils/jwt.utils";
-import { redisClient } from "@/config/redis.config";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 
@@ -79,7 +78,6 @@ export class AuthSessionService implements IAuthSessionService {
             }
 
             // Check the blacklist. If the JTI exists in the store, it means the token was logged out/revoked.
-            // const isBlacklisted = await redisClient.get(decoded.jti);
             const isBlacklisted: string | null = await this._cacheService.getKeyValue(decoded.jti);
             if (isBlacklisted) {
                 throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_REVOKED);
@@ -114,7 +112,6 @@ export class AuthSessionService implements IAuthSessionService {
             if (typeof decoded.exp === "number") {
                 const timeToLive = decoded.exp - Math.floor(Date.now() / 1000);
                 if (timeToLive > 0) {
-                    // await redisClient.set(decoded.jti, 'revoked', { EX: timeToLive });
                     await this._cacheService.setKeyValue(decoded.jti, 'revoked', timeToLive);
                     console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
                 }
