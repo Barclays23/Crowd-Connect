@@ -17,6 +17,7 @@ import { IAuthSessionService } from "@/services/auth-services/interfaces/IAuthSe
 import { IAuthRecoveryService } from "@/services/auth-services/interfaces/IAuthRecovery";
 import winstonLogger from "@/config/winston-logger.config";
 import { IPasswordService } from "@/services/password-services/interfaces/IPasswordService";
+import { AuthResult } from "@/types/auth.types";
 
 
 
@@ -80,6 +81,33 @@ export class AuthController implements IAuthController {
     }
 
 
+    async googleAuthCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const authResult: AuthResult = req.user as unknown as AuthResult;
+            
+            if (!authResult) {
+                throw createHttpError(HttpStatus.UNAUTHORIZED, "Google authentication failed");
+            }
+
+            setRefreshTokenCookie(res, authResult.refreshToken);
+
+            // Fallback added in case FRONTEND_URL is undefined in the environment
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            console.log('googleAuthCallback frontendUrl :', frontendUrl);
+            
+            // Redirect to frontend with access token
+            res.redirect(`${frontendUrl}/auth/success?token=${authResult.accessToken}`);
+
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Unknown Error';
+            console.error('Error in AuthController.googleAuthCallback:', msg);
+            
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            res.redirect(`${frontendUrl}/login?error=GoogleAuthFailed`);
+        }
+    }
+
+
     async requestPasswordReset(req: Request, res: Response, next: NextFunction): Promise<void>{
         try {
             const email: string = req.body.email;
@@ -137,8 +165,12 @@ export class AuthController implements IAuthController {
 
     async requestAuthenticateEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const currentUserEmail = req.user.email;
-            const requestedEmail = req.body.email;
+            if (!req.user) {
+                throw createHttpError(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            }
+            
+            const currentUserEmail: string  = req.user.email;
+            const requestedEmail: string    = req.body.email;
 
             const userEmail: string = await this._recoveryService.requestAuthenticateEmail({currentUserEmail, requestedEmail});
 
@@ -159,9 +191,14 @@ export class AuthController implements IAuthController {
 
     async updateVerifiedEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const currentUserEmail = req.user.email;
-            const requestedEmail = req.body.email;
-            const otpCode = req.body.otpCode;
+            if (!req.user) {
+                throw createHttpError(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            }
+            
+            const currentUserEmail: string  = req.user.email;
+            const requestedEmail: string    = req.body.email;
+
+            const otpCode: string = req.body.otpCode;
 
             const userEmail: string = await this._recoveryService.updateVerifiedEmail({
                 currentUserEmail,

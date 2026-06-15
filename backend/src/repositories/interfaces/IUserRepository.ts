@@ -13,6 +13,7 @@ import {
     UserProfileEntity,
     HostManageInput,
     UpdateProfilePicInput,
+    CreateGoogleAuthUserInput,
 } from '@/entities/user.entity';
 
 import { UserFilterQuery } from '@/types/user.types';
@@ -49,6 +50,8 @@ export interface IUserRepository {
 
     // register by user himself after verifying otp
     createUser(user: SignUpUserInput) : Promise<UserEntity>;
+
+    createGoogleAuthUser(userInput: CreateGoogleAuthUserInput): Promise<UserEntity>;
 
     createUserByAdmin(userInput: CreateUserInput): Promise<UserEntity>;
 

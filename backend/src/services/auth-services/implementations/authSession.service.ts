@@ -10,9 +10,16 @@ import { HttpResponse } from "@/constants/responseMessages.constants";
 import { UserStatus } from "@/constants/roles-and-statuses";
 import { comparePassword } from "@/utils/bcrypt.utils";
 import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/utils/jwt.utils";
-import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
+import { 
+    createAccessToken, 
+    createRefreshToken, 
+    verifyRefreshToken 
+} from "@/utils/jwt.utils";
+import { SensitiveUserEntity, UpdateUserInput, UserEntity } from "@/entities/user.entity";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
+import { Profile } from "passport-google-oauth20";
+import { AuthProvider } from "@/types/user.types";
+import { BaseUserResponseDto } from "@/dtos/user.dto";
 
 
 
@@ -33,6 +40,15 @@ export class AuthSessionService implements IAuthSessionService {
                 throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
             }
 
+            // if user already have an account created with Google Auth, but no password
+            if (!userData.password) {
+                throw createHttpError(
+                    HttpStatus.BAD_REQUEST, 
+                    "Please use Google to log into this account.", 
+                    "OAUTH_USER_LOGIN"
+                );
+            }
+
             const isMatch: boolean = await comparePassword(signInDto.password, userData.password);
             if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
             
@@ -42,9 +58,9 @@ export class AuthSessionService implements IAuthSessionService {
                 // console.log(`✅ User status updated to '${updatedStatus}' upon sign-in.`);
             }
 
-            const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
-            const accessToken = createAccessToken(tokenPayload);
-            const refreshToken = createRefreshToken(tokenPayload);
+            const tokenPayload  = { userId: userData.id.toString() }; // keep payload minimal
+            const accessToken   = createAccessToken(tokenPayload);
+            const refreshToken  = createRefreshToken(tokenPayload);
 
             const safeUser: AuthUserResponseDto = mapUserEntityToAuthUserDto(userData);
 
@@ -57,6 +73,80 @@ export class AuthSessionService implements IAuthSessionService {
         } catch (error: unknown) {
             // const msg = error instanceof Error ? error.message : 'Unknown error';
             // winstonLogger.error("Error in AuthSessionService.signIn", { error: msg });
+            throw error;
+        }
+    }
+
+
+    async handleGoogleAuth(googleProfile: Profile): Promise<AuthResult> {
+        try {
+            console.log('handleGoogleAuth googleProfile :', googleProfile)
+            const email: string | undefined = googleProfile.emails?.[0].value;
+            if (!email) throw createHttpError(HttpStatus.BAD_REQUEST, "No email found in Google profile");
+    
+            let user: SensitiveUserEntity | null = await this._userRepository.getUserByEmail(email);
+
+            if (!user) {
+                // Create new user: applying the Profile Picture & User Name (Golden Rule)
+                user = await this._userRepository.createGoogleAuthUser({
+                    name            : googleProfile.displayName,
+                    email           : email,
+                    isEmailVerified : true,
+                    authProvider    : AuthProvider.GOOGLE,
+                    googleId        : googleProfile.id,
+                    profilePic      : googleProfile.photos?.[0].value, 
+                });
+
+            } else {
+                // User exists (either local or already Google)
+                const updateData: Partial<UpdateUserInput> = {};
+                let needsUpdate = false;
+
+                // 1. Check if we need to link the account
+                if (!user.googleId) {
+                    updateData.googleId     = googleProfile.id;
+                    updateData.authProvider = AuthProvider.GOOGLE;
+                    needsUpdate     = true;
+                }
+
+                // 2. Smart Picture Sync
+                const latestGooglePic = googleProfile.photos?.[0].value;
+
+                if (latestGooglePic) {
+                    const hasNoPic      = !user.profilePic || user.profilePic === "";
+                    const isGooglePic   = user.profilePic && user.profilePic.includes("googleusercontent.com");
+
+                    if (hasNoPic || isGooglePic) {
+                        // NOT overwriting a Cloudinary/S3 pic
+                        if (user.profilePic !== latestGooglePic) {
+                            updateData.profilePic = latestGooglePic;
+                            needsUpdate = true;
+                        }
+                    }
+                }
+
+                if (needsUpdate) {
+                    const updatedUser = await this._userRepository.updateUserByAdmin(user.id, updateData);
+                    if (updatedUser) user = updatedUser;
+                }
+
+            }
+    
+            if (!user) throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to authenticate with Google");
+    
+            const tokenPayload  = { userId: user.id.toString() };
+            const accessToken   = createAccessToken(tokenPayload);
+            const refreshToken  = createRefreshToken(tokenPayload);
+    
+            const safeUser: BaseUserResponseDto = mapUserEntityToAuthUserDto(user as UserEntity);
+    
+            return { 
+                safeUser, 
+                accessToken, 
+                refreshToken 
+            };
+            
+        } catch (error: unknown) {
             throw error;
         }
     }

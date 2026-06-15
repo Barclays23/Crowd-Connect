@@ -1,5 +1,5 @@
 // backend/src/repositories/implementations/user.repository.ts
-import User, { IUserModel } from "@/models/implementations/user.model";
+import User from "@/models/implementations/user.model";
 import { BaseRepository } from "../base.repository";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { 
@@ -14,7 +14,8 @@ import {
     HostUpdateInput,
     UserProfileEntity,
     HostManageInput,
-    UpdateProfilePicInput, 
+    UpdateProfilePicInput,
+    CreateGoogleAuthUserInput, 
 } from "@/entities/user.entity";
 
 import { 
@@ -27,7 +28,7 @@ import { UserStatus } from "@/constants/roles-and-statuses";
 import { UpdateEmailDto } from "@/dtos/auth.dto";
 
 
-import { UserFilterQuery } from '@/types/user.types';
+import { IUserModel, UserFilterQuery } from '@/types/user.types';
 import { ClientSession } from "mongoose";
 
 
@@ -122,6 +123,12 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         const userData: IUserModel = await this.createOne(userInput);
         const userEntity: UserEntity = mapUserModelToUserEntity(userData);
         return userEntity;
+    }
+
+
+    async createGoogleAuthUser(userInput: CreateGoogleAuthUserInput): Promise<UserEntity> {
+        const userData: IUserModel = await this.createOne(userInput);
+        return mapUserModelToUserEntity(userData);
     }
 
     

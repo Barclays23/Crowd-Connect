@@ -21,6 +21,8 @@ import morganMiddleware from '@/config/morgan.config';
 import webhookRouter from '@/routes/webhook.routes';
 import checkinRouter from '@/routes/checkin.routes';
 import payoutRouter from '@/routes/payout.routes';
+import { configurePassport } from '@/config/passport.config';
+import passport from 'passport';
 
 
 const app = express();
@@ -48,6 +50,11 @@ app.use(cookieParser());
 app.use(morganMiddleware);
 // app.use(helmet());
 // app.use(morgan('dev'));
+
+
+// Initialize Passport
+configurePassport();
+app.use(passport.initialize());
 
 
 // Routes

@@ -14,11 +14,11 @@ import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
 declare global {
    namespace Express {
       interface Request {
-         user: {
-            userId: string;
-            email: string;
-            role: UserRole;
-            status: UserStatus;
+         user?: {
+            userId   : string;
+            email    : string;
+            role     : UserRole;
+            status   : UserStatus;
          };
       }
    }

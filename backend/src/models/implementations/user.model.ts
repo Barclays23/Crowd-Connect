@@ -1,56 +1,20 @@
 // src/models/implementations/user.model.ts
 
-import { model, Schema, Types } from "mongoose";
-import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
-
-
-
-// export interface IUser {
-export interface IUserModel {
-  _id: Types.ObjectId | string;
-
-  name : string;
-  email : string;
-  mobile : string;
-  password : string;
-  profilePic? : string;
-
-  walletBalance: number;
-
-  isEmailVerified : boolean;
-  isMobileVerified : boolean;
-
-  role : UserRole;
-  status : UserStatus;      // ( "inactive" or "pending" if admin creates user and verify/login later)
-  isSuperAdmin: boolean;
-
-  // Host application fields
-  organizationName? : string;
-  registrationNumber? : string;
-  businessAddress? : string;
-  certificateUrl? : string;
-  hostStatus? : HostStatus;
-  hostAppliedAt?: Date;
-  hostReviewedAt?: Date;
-  hostReviewedBy?: Types.ObjectId;
-  hostRejectionReason?: string;
-
-  createdAt : Date;
-  updatedAt : Date;
-}
-
-
-// export interface IUserModel extends Document, Omit<IUser, "_id"> { }
-
-
+import { model, Schema } from "mongoose";
+import { 
+  HostStatus, 
+  UserRole, 
+  UserStatus 
+} from "@/constants/roles-and-statuses";
+import { AuthProvider, IUserModel } from "@/types/user.types";
 
 
 
 
 const userSchema = new Schema<IUserModel>(
-// const userSchema = new Schema<IUser>(
   {
     // _id: Types.ObjectId,
+
     name: {
       type: String,
     },
@@ -67,7 +31,17 @@ const userSchema = new Schema<IUserModel>(
     },
     password: {
       type: String,
-      // select: false,  // This prevents the password hash from being sent out accidentally when using standard Mongoose queries (.find(), .findOne(), etc.).
+      required: false, // false for Google Auth users
+    },
+    authProvider: {
+      type: String,
+      enum: Object.values(AuthProvider),
+      default: AuthProvider.LOCAL,
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
     },
     profilePic: {
       type: String,

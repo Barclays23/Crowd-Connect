@@ -8,9 +8,9 @@ import { toast } from 'react-toastify';
 
 // AXIOS INSTANCE CREATION & CONFIGURATION
 const axiosInstance: AxiosInstance = axios.create({
-   baseURL: import.meta.env.VITE_API_BASE_URL,
-   withCredentials: true,
-   // headers: {
+   baseURL           : import.meta.env.VITE_API_BASE_URL,
+   withCredentials   : true,
+   // headers           : {
    //    "Content-Type": "application/json",
    // },
 });

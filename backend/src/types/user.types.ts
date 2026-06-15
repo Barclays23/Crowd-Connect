@@ -1,8 +1,49 @@
 // backend/src/types/user.types.ts
-
-import { IUserModel } from "@/models/implementations/user.model";
 import { UserProfileResponseDto } from "@/dtos/user.dto";
 import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { Types } from "mongoose";
+
+
+export enum AuthProvider {
+  LOCAL = 'local',
+  GOOGLE = 'google'
+}
+
+export interface IUserModel {
+  _id: Types.ObjectId | string;
+
+  name          : string;
+  email         : string;
+  mobile        : string;
+  profilePic?   : string;
+  password?     : string;  // optional for google auth user
+  authProvider  : AuthProvider;
+  googleId?     : string;
+
+  walletBalance : number;
+
+  isEmailVerified   : boolean;
+  isMobileVerified  : boolean;
+
+  role        : UserRole;
+  status      : UserStatus;      // ( "inactive" or "pending" if admin creates user and verify/login later)
+  isSuperAdmin: boolean;
+
+  // Host application fields
+  organizationName?   : string;
+  registrationNumber? : string;
+  businessAddress?    : string;
+  certificateUrl?     : string;
+  hostStatus?         : HostStatus;
+  hostAppliedAt?      : Date;
+  hostReviewedAt?     : Date;
+  hostReviewedBy?     : Types.ObjectId;
+  hostRejectionReason?: string;
+
+  createdAt : Date;
+  updatedAt : Date;
+}
+
 
 
 export type UserFilterQuery = Partial<IUserModel> & Record<string, unknown>;

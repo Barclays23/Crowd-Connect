@@ -52,6 +52,7 @@ import AdminEventList from "@/pages/admin/AdminEventsList";
 import AdminBookingsList from "@/pages/admin/AdminBookingsList";
 import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
 import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
+import GoogleAuthSuccess from "@/components/auth/GoogleAuthSuccess";
 
 
 
@@ -79,6 +80,8 @@ function App() {
                               <Route path="/host" element={<HostPage />} />
                               <Route path="/otp-verification" element={<OTPVerification />} />
                               <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                              <Route path="/auth/success" element={<GoogleAuthSuccess />} />
                               
                               <Route element={<PublicRoute />}>
                                  <Route path="/login" element={<Login />} />

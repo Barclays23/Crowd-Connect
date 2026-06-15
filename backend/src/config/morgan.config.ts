@@ -1,4 +1,4 @@
-// backend/src/config/morgan.ts
+// backend/src/config/morgan.config.ts
 
 import morgan, { StreamOptions } from "morgan";
 import { Request, Response } from "express";

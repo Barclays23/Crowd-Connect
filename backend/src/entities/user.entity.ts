@@ -1,6 +1,7 @@
 // // backend/src/entities/user.entity.ts
 
 import { UserRole, UserStatus, HostStatus } from "@/constants/roles-and-statuses";
+import { AuthProvider } from "@/types/user.types";
 
 
 
@@ -39,37 +40,43 @@ import { UserRole, UserStatus, HostStatus } from "@/constants/roles-and-statuses
 
 // BaseUserEntity
 export interface UserEntity {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: UserStatus;
-  mobile?: string;
-  profilePic?: string;
-  walletBalance: number;
-  isEmailVerified: boolean;
+  id            : string;
+  name          : string;
+  email         : string;
+  role          : UserRole;
+  status        : UserStatus;
+
+  mobile?       : string;
+  profilePic?   : string;
+  authProvider? : AuthProvider;
+  googleId?     : string;
+
+  walletBalance : number;
+
+  isEmailVerified : boolean;
   isMobileVerified: boolean;
-  isSuperAdmin: boolean;
-  createdAt?: Date;
+  isSuperAdmin    : boolean;
+
+  createdAt?    : Date;
 }
 
 
 // for internal auth use (with password)
 export interface SensitiveUserEntity extends UserEntity {
-  password: string;
+  password?     : string;
 }
 
 
 // ExtendedUserEntity
 export interface HostEntity extends UserEntity {
-  organizationName: string;
-  registrationNumber: string;
-  businessAddress: string;
-  hostStatus: HostStatus;
-  certificateUrl?: string;
+  organizationName    : string;
+  registrationNumber  : string;
+  businessAddress     : string;
+  hostStatus          : HostStatus;
+  certificateUrl?     : string;
   hostRejectionReason?: string;
-  appliedAt?: Date;
-  reviewedAt?: Date;
+  appliedAt?          : Date;
+  reviewedAt?         : Date;
 }
 
 export interface UserProfileEntity extends HostEntity, UserEntity {}
@@ -112,6 +119,17 @@ export interface CreateUserInput {
 }
 
 
+
+export interface CreateGoogleAuthUserInput {
+  name: string;
+  email: string;
+  isEmailVerified: boolean;
+  authProvider: AuthProvider;
+  googleId: string;
+  profilePic?: string;
+}
+
+
 export interface UpdateUserInput {
   name?: string;
   email?: string;
@@ -119,6 +137,8 @@ export interface UpdateUserInput {
   status?: UserStatus;
   mobile?: string | null;
   profilePic?: string;
+  authProvider?: AuthProvider;
+  googleId?: string;
 }
 
 export interface UpdateProfilePicInput {
