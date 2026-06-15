@@ -4,9 +4,11 @@
     // "composite": true,
     "target": "ES2020",
     "module": "CommonJS",       // Compiles imports to 'require'  // Changed from NodeNext
-    "moduleResolution": "Node", // Allow imports without .js      // Changed from NodeNext
+    "moduleResolution": "bundler",
+    // "moduleResolution": "Node", // Allow imports without .js      // Changed from NodeNext
     // deleted "type": "module" from backend package.json file for render deployment
-    "ignoreDeprecations": "6.0",  // Silences the deprecated moduleResolution warning
+    // "ignoreDeprecations": "6.0",  // Silences the deprecated moduleResolution warning
+
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
@@ -15,9 +17,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
+    // "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      // "@/*": ["src/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],
