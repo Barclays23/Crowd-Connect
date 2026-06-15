@@ -33,8 +33,6 @@ const UserProfile = () => {
 
         const response = await userServices.getUserProfile();
 
-        console.log('response.userProfile :', response.userProfile);
-        
         setProfile(response.userProfile);
         setUser(response.userProfile);
 
