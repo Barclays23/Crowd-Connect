@@ -29,6 +29,11 @@ export class PlatformSettingsController implements ISettingsController {
 
     updateSettings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
+            
             const adminId: string = req.user.userId;
             const updated: PlatformSettingsEntity = await this._settingsService.updatePlatformSettings(req.body, adminId);
 

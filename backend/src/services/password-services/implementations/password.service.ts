@@ -52,7 +52,7 @@ export class PasswordService implements IPasswordService {
 
 
     // for user updating password when he need
-    async changeUserPassword(userEmail: string, data: { currentPassword: string; newPassword: string; }): Promise<void> {
+    async changeUserPassword(userEmail: string, data: { currentPassword?: string; newPassword: string; }): Promise<void> {
         try {
             const currentUser: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: userEmail});
 
@@ -62,11 +62,20 @@ export class PasswordService implements IPasswordService {
                 throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
             }
 
-            const isCurrentPasswordValid =  await comparePassword(data.currentPassword, currentUser.password)
+            if (currentUser.password) {
+                if (!data.currentPassword) {
+                    throw createHttpError(HttpStatus.BAD_REQUEST, "Current password is required.");
+                }
 
-            if (!isCurrentPasswordValid) {
-                throw createHttpError(HttpStatus.UNAUTHORIZED, AuthMessages.PASSWORD_CURRENT_INCORRECT);
+                const isCurrentPasswordValid = await comparePassword(data.currentPassword, currentUser.password);
+
+                if (!isCurrentPasswordValid) {
+                    throw createHttpError(HttpStatus.UNAUTHORIZED, AuthMessages.PASSWORD_CURRENT_INCORRECT);
+                }
             }
+
+            // if user has no password exist in DB means he may created account using Google Auth.
+            // so, no need to comparePassword
 
             const hashedPassword = await hashPassword(data.newPassword);
 
@@ -78,7 +87,6 @@ export class PasswordService implements IPasswordService {
 
             return;
 
-            
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error('Error in PasswordService.changeUserPassword:', msg);

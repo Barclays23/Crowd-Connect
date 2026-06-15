@@ -28,6 +28,11 @@ export class HostController implements IHostController {
 
     async applyHostUpgrade (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
             const userId = req.user?.userId;
             const upgradeDto: HostUpgradeRequestDto = req.body;
             const documentFile: Express.Multer.File | undefined = req.file;
