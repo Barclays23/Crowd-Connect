@@ -4,7 +4,7 @@
     // "composite": true,
     "target": "ES2020",
     "module": "CommonJS",       // Compiles imports to 'require'  // Changed from NodeNext
-    "moduleResolution": "bundler",
+    // "moduleResolution": "bundler",  // removed to fix the bug in render.com
     // "moduleResolution": "Node", // Allow imports without .js      // Changed from NodeNext
     // deleted "type": "module" from backend package.json file for render deployment
     // "ignoreDeprecations": "6.0",  // Silences the deprecated moduleResolution warning
