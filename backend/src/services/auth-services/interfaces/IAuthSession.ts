@@ -4,11 +4,13 @@ import {
     AuthUserResponseDto, 
     SignInRequestDto, 
 } from "@/dtos/auth.dto";
+import { Profile } from "passport-google-oauth20";
 
 
 
 export interface IAuthSessionService {
     signIn(signInDto: SignInRequestDto): Promise<AuthResult>
+    handleGoogleAuth(googleProfile: Profile): Promise<AuthResult>
 
     refreshAccessToken(refreshToken: string): Promise<string>
     revokeRefreshToken(refreshToken: string): Promise<void>

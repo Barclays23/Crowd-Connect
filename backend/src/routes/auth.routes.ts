@@ -24,6 +24,8 @@ import { AUTH_ROUTES } from '@/constants/routes.constants';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 import { mailDispatcher } from '@/services/mail-services/implementations/MailServiceFactory';
+import passport from 'passport';
+import { AuthProvider } from '@/types/user.types';
 
 
 
@@ -57,6 +59,19 @@ const authRouter = Router();
 
 authRouter.post(AUTH_ROUTES.LOGIN, validateRequest({body: LoginSchema}), authController.signIn.bind(authController));
 authRouter.post(AUTH_ROUTES.REGISTER, validateRequest({body: RegisterSchema}), authController.signUp.bind(authController));
+
+// 1. Route to initiate Google Auth
+authRouter.get(
+    AUTH_ROUTES.GOOGLE_LOGIN,
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// 2. Callback route that Google hits
+authRouter.get(
+    AUTH_ROUTES.GOOGLE_CALLBACK,
+    passport.authenticate(AuthProvider.GOOGLE, { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login` }),
+    authController.googleAuthCallback.bind(authController)
+);
 
 authRouter.post(AUTH_ROUTES.FORGOT_PASSWORD, validateRequest({body: ForgotPasswordSchema}), authController.requestPasswordReset.bind(authController));
 authRouter.get(AUTH_ROUTES.RESET_PASSWORD_VALIDATE, validateRequest({params: ResetLinkSchema}), authController.validateResetLink.bind(authController));

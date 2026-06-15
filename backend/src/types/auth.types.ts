@@ -9,9 +9,9 @@ export interface AuthSignUpResult {  // for signUp
 }
 
 
-export interface AuthResult {  // (for both signIn and verifyOtp)
+export interface AuthResult {  // (for signIn, googleAuth and verifyOtp)
 //   verifiedUser: UserEntity;
-  safeUser: AuthUserResponseDto;
-  accessToken: string;
+  safeUser    : AuthUserResponseDto;
+  accessToken : string;
   refreshToken: string;
 }

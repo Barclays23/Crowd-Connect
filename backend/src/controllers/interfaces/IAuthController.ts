@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 export interface IAuthController {
     signIn(req: Request, res: Response, next: NextFunction): Promise<void>
     signUp(req: Request, res: Response, next: NextFunction): Promise<void>
+    googleAuthCallback(req: Request, res: Response, next: NextFunction): Promise<void>
 
     requestPasswordReset(req: Request, res: Response, next: NextFunction): Promise<void>
     validateResetLink(req: Request, res: Response, next: NextFunction): Promise<void>
