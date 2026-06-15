@@ -91,9 +91,8 @@ export class AuthController implements IAuthController {
 
             setRefreshTokenCookie(res, authResult.refreshToken);
 
-            // Fallback added in case FRONTEND_URL is undefined in the environment
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-            console.log('googleAuthCallback frontendUrl :', frontendUrl);
+            const frontendUrl = process.env.FRONTEND_URL as string;
+            console.log('googleAuthCallback frontendUrl for redirecting :', frontendUrl);
             
             // Redirect to frontend with access token
             res.redirect(`${frontendUrl}/auth/success?token=${authResult.accessToken}`);
@@ -102,7 +101,7 @@ export class AuthController implements IAuthController {
             const msg = err instanceof Error ? err.message : 'Unknown Error';
             console.error('Error in AuthController.googleAuthCallback:', msg);
             
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const frontendUrl = process.env.FRONTEND_URL as string;
             res.redirect(`${frontendUrl}/login?error=GoogleAuthFailed`);
         }
     }

@@ -3,9 +3,8 @@ import { UserEntity } from "@/entities/user.entity";
 import { IAuthRecoveryService } from "../interfaces/IAuthRecovery";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { generateCryptoToken } from "@/utils/crypto.utils";
-import { renderTemplate } from "@/utils/templateLoader2";
 import { normalizeEmail } from "@/utils/email.utils";
-import { REDIS_TOKEN_PREFIX, redisClient } from "@/config/redis.config";
+import { REDIS_TOKEN_PREFIX } from "@/config/redis.config";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { HttpResponse } from "@/constants/responseMessages.constants";
@@ -40,13 +39,13 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             } else {
                 const { cryptoToken, expiryDate, expiryMinutes } = generateCryptoToken();
                 
-                const baseUrl = process.env.FRONTEND_URL;
+                const baseUrl   = process.env.FRONTEND_URL;
                 const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
                 
                 const templatePayload: PasswordResetPayload = {
-                    USER_NAME: existingUser?.name || 'User',
-                    RESET_LINK: resetLink,
-                    EXPIRY_MINUTES: expiryMinutes
+                    USER_NAME       : existingUser?.name || 'User',
+                    RESET_LINK      : resetLink,
+                    EXPIRY_MINUTES  : expiryMinutes
                 };
                 
                 // const htmlTemplate = await renderTemplate('passwordReset.html', templatePayload);
@@ -61,24 +60,12 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                     htmlTemplate,
                 })
                 
-                // await sendEmail({
-                //     toAddress: email,
-                //     mailSubject,
-                //     text,
-                //     htmlTemplate,
-                // });
-                
-                const redisKey = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
+                const redisKey  = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
                 const redisData = {
                     email,
                     createdAt: Date.now(),
                 };
                 
-                // await redisClient.setEx(
-                //     redisKey,
-                //     expiryMinutes * 60, // expiry in seconds
-                //     JSON.stringify(redisData)
-                // );
                 await this._cacheService.setKeyValue(redisKey, JSON.stringify(redisData), expiryMinutes * 60);
             }
             
@@ -94,7 +81,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
     async validateResetLink(token: string): Promise<boolean> {
         const redisKey = `${REDIS_TOKEN_PREFIX}${token}`;
-        // const exists = await redisClient.get(redisKey);
         const exists = await this._cacheService.getKeyValue(redisKey);
 
         if (!exists) {
@@ -141,20 +127,14 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
 
             const redisData = {
-                userId: currentUser.id,
-                currentEmail: normalizedCurrentEmail,
-                requestedEmail: normalizedRequestedEmail,
-                isChangingEmail: isChangingEmail,
-                otp: otpNumber,
-                otpExpiry: expiryDate.getTime(),
-                createdAt: Date.now(),
+                userId          : currentUser.id,
+                currentEmail    : normalizedCurrentEmail,
+                requestedEmail  : normalizedRequestedEmail,
+                isChangingEmail : isChangingEmail,
+                otp             : otpNumber,
+                otpExpiry       : expiryDate.getTime(),
+                createdAt       : Date.now(),
             };
-
-            // const response = await redisClient.setEx(
-            //     redisKey,
-            //     expiryMinutes * 60,
-            //     JSON.stringify(redisData)
-            // );
 
             const response = await this._cacheService.setKeyValue(
                 redisKey, 
@@ -187,13 +167,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 htmlTemplate,
             })
 
-            // await sendEmail({
-            //     toAddress: normalizedRequestedEmail,
-            //     mailSubject,
-            //     text,
-            //     htmlTemplate,
-            // });
-
             return normalizedRequestedEmail;
 
         } catch (error: unknown) {
@@ -219,8 +192,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
             }
 
-            const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
-            // const redisRawValue = await redisClient.get(redisKey);
+            const redisKey      = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
             const redisRawValue = await this._cacheService.getKeyValue(redisKey);
 
             if (!redisRawValue) {
@@ -234,9 +206,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             }
 
             if (Date.now() > redisData.otpExpiry) {
-                // await redisClient.del(redisKey);
                 await this._cacheService.deleteKeyValue(redisKey);
-
                 throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
             }
 
@@ -261,7 +231,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
             }
 
-            // await redisClient.del(redisKey);
             await this._cacheService.deleteKeyValue(redisKey);
 
             return updatedUser.email;
