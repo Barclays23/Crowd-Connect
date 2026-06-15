@@ -32,6 +32,7 @@ const UserProfile = () => {
         setError(null);
 
         const response = await userServices.getUserProfile();
+
         setProfile(response.userProfile);
         setUser(response.userProfile);
 

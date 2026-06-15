@@ -210,6 +210,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               <img
                                  src={profile.profilePic}
                                  alt={profile.name || "User"}
+                                 referrerPolicy="no-referrer"
                                  className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
                                     object-cover border-4 border-(--bg-primary)
                                     shadow-xl"
