@@ -12,6 +12,8 @@ import type {
     LogoutResponse
 } from '@/types/auth.types';
 import { setAuthInterceptors } from '@/config/axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 // import { toast } from 'react-toastify';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
@@ -39,6 +41,7 @@ export const useAuth = () => {
     if (!context) throw new Error('useAuth must be used within AuthProvider');
     return context;
 };
+
 
 
 
@@ -212,7 +215,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const loginWithGoogle = async () => {
-        window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+        const backendBaseUrl    = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const authPath          = '/api/auth';
+        const OAuthRoute        = '/google';  // make this url constant
+        // const OAuthRoute        = AUTH_ROUTES.GOOGLE_LOGIN;  // make this url constant
+
+        const googleLoginURL = `${backendBaseUrl}${authPath}${OAuthRoute}`;
+        toast.warn('loginWithGoogle googleLoginURL: '+googleLoginURL)
+
+        console.log('configurePassport callbackURL :', 
+            '\n backendBaseUrl  :', backendBaseUrl,
+            '\n authPath        :', authPath,
+            '\n OAuthRoute      :', OAuthRoute,
+        )
+
+        // Navigate to the backend google login route
+        window.location.href = googleLoginURL;
     };
 
 

@@ -5,21 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
-import type { LoginPayload } from '@/types/auth.types';
+import type { LoginPayload, RouterLocationState } from '@/types/auth.types';
 import { logger } from '@/utils/logger';
-
-
-
-// Define a type for the 'from' location object
-type LocationState = {
-  from?: {
-    pathname: string; // The path (e.g., /settings/profile)
-    search: string; // The query string (e.g., ?tab=info)
-    hash: string; // The fragment identifier (e.g., #details)
-  };
-  openForgotPassword?: boolean;
-  openBooking?: boolean;
-};
+import { isAxiosError } from 'axios';
 
 
 
@@ -29,7 +17,7 @@ function Login() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const state = location.state as LocationState | null;
+  const state = location.state as RouterLocationState | null;
   // navigate back to original path || or home
   // const fromPath = (state?.from?.pathname ?? '') + (state?.from?.search ?? '') || '/';
   const fromPath = state?.from 
@@ -63,8 +51,23 @@ function Login() {
 
       } catch (err: unknown) {
         logger.error('Error in handleLogin:', err);
-        const errorMessage = getApiErrorMessage(err);
-        if (errorMessage) toast.error(errorMessage);
+
+        let errorCode: string | undefined;
+        
+        if (isAxiosError(err)) {
+          errorCode = err.response?.data?.code;
+        }
+        
+        // check if the backend sent custom OAuth code
+        if (errorCode === 'OAUTH_USER_LOGIN') {
+          toast.info("Looks like you signed up with Google! Please click 'Continue with Google' below.", {
+            icon: <span>👋</span>,
+            autoClose: 6000,
+          });
+        } else {
+          const errorMessage = getApiErrorMessage(err);
+          if (errorMessage) toast.error(errorMessage);
+        }
 
       } finally {
         setIsLoading(false);
