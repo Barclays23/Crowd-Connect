@@ -24,9 +24,9 @@ import {
    UserProfileEntity,
    HostManageInput,
 } from "@/entities/user.entity";
-
-import { IUserModel } from "@/models/implementations/user.model";
+import { IUserModel } from "@/types/user.types";
 import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
+
 
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 

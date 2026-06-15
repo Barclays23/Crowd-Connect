@@ -3,13 +3,35 @@
 import { Request, Response, NextFunction } from "express";
 import { IEventController } from "../interfaces/IEventController";
 import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
-import { CreateEventRequestDTO, EventResponseDTO, GetDiscoveryEventsResult, UpdateEventRequestDTO } from "@/dtos/event.dto";
+import { 
+    CreateEventRequestDTO, 
+    EventResponseDTO, 
+    GetDiscoveryEventsResult, 
+    UpdateEventRequestDTO 
+} from "@/dtos/event.dto";
 import { HttpResponse } from "@/constants/responseMessages.constants";
 import { HttpStatus } from "@/constants/statusCodes.constants";
-import { mapCreateEventRequestToDto, mapEventDiscoveryQueryToFilters } from "@/mappers/event.mapper";
-import { allowedEventSortFields, EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, GetAllEventsResult, GetEventsFilter, GetPublicEventsFilter, TICKET_TYPE } from "@/types/event.types";
+import { 
+    mapCreateEventRequestToDto, 
+    mapEventDiscoveryQueryToFilters 
+} from "@/mappers/event.mapper";
+import { 
+    allowedEventSortFields, 
+    EVENT_CATEGORY, 
+    EVENT_FORMAT, 
+    EVENT_STATUS, 
+    GetAllEventsResult, 
+    GetEventsFilter, 
+    GetPublicEventsFilter, 
+    TICKET_TYPE 
+} from "@/types/event.types";
 import { SortOrder } from "mongoose";
-import { ALLOWED_BOOKING_SORT_FIELDS, BOOKING_STATUS, BookingSortField, GetBookingsFilter } from "@/types/booking.types";
+import { 
+    ALLOWED_BOOKING_SORT_FIELDS, 
+    BOOKING_STATUS, 
+    BookingSortField, 
+    GetBookingsFilter 
+} from "@/types/booking.types";
 import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 
@@ -21,17 +43,21 @@ export class EventController implements IEventController {
     constructor(
         private _eventServices: IEventServices,
         private _bookingServices: IBookingService,
-    ) {
-        
-    }
+    ) {}
+
 
     async createEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const body = req.body;
-            const imageFile: Express.Multer.File | undefined = req.file;
-            const currentUserId: string = req.user.userId;
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
 
-            const createDto: CreateEventRequestDTO = mapCreateEventRequestToDto(req);
+            const body = req.body;
+            const currentUserId: string = req.user.userId;
+            const imageFile: Express.Multer.File | undefined = req.file;
+
+            const createDto: CreateEventRequestDTO = mapCreateEventRequestToDto(req, currentUserId);
 
             const createdEvent: EventResponseDTO = await this._eventServices.createEvent({
                 createDto,
@@ -54,16 +80,21 @@ export class EventController implements IEventController {
     
     async updateEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const body = req.body;
-            const imageFile: Express.Multer.File | undefined = req.file;
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
+            const body                  = req.body;
             const currentUserId: string = req.user.userId;
-            const eventId = req.params.eventId as string;
+            const eventId: string       = req.params.eventId as string;
+            const imageFile: Express.Multer.File | undefined = req.file;
             console.log('body :', body);
             console.log('imageFile :', imageFile);
             console.log('currentUserId :', currentUserId);
             console.log('eventId :', eventId);
 
-            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req);
+            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, currentUserId);
 
             const updatedEvent: EventResponseDTO = await this._eventServices.updateEventByHost({
                 currentUserId,
@@ -88,14 +119,20 @@ export class EventController implements IEventController {
 
     async updateEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const body = req.body;
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
+            
+            const body                  = req.body;
+            const eventId: string       = req.params.eventId as string;
+            const currentAdminId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
-            const eventId = req.params.eventId as string;
             console.log('body :', body);
             console.log('imageFile :', imageFile);
             console.log('eventId :', eventId);
 
-            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req);
+            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, currentAdminId);
 
             const updatedEvent: EventResponseDTO = await this._eventServices.updateEventByAdmin({
                 eventId,
@@ -164,6 +201,11 @@ export class EventController implements IEventController {
 
     async cancelEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
             const { cancelReason } = req.body;
             const eventId = req.params.eventId as string; 
             const userId = req.user.userId as string; 
@@ -212,7 +254,12 @@ export class EventController implements IEventController {
 
 
     async publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>{
-        try {            
+        try {     
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
             const eventId = req.params.eventId as string;
             const userId = req.user.userId;
     
@@ -253,6 +300,10 @@ export class EventController implements IEventController {
  
     async getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
             const userId = req.user.userId;
 
             const page = parseInt(req.query.page as string) || 1;

@@ -30,33 +30,33 @@ import { Types } from "mongoose";
 /* ────────────────────────────────── HTTP REQUEST → DTO / FILTER ────────────────────────────────── */
 
 export const mapCreateEventRequestToDto = (
-   req: Request
+   req: Request,
+   userId: string
 ): CreateEventRequestDTO => {
    const body = req.body;
-   const currentUserId = req.user.userId;
 
    return {
-      hostRef: currentUserId,
+      hostRef        : userId,
 
-      title: body.title,
-      description: body.description,
-      category: body.category,
+      title          : body.title,
+      description    : body.description,
+      category       : body.category,
 
-      format: body.format,
-      ticketType: body.ticketType,
+      format         : body.format,
+      ticketType     : body.ticketType,
 
-      ticketPrice: Number(body.ticketPrice),
-      capacity: Number(body.capacity),
+      ticketPrice    : Number(body.ticketPrice),
+      capacity       : Number(body.capacity),
 
-      startDateTime: new Date(body.startDateTime),
-      endDateTime: new Date(body.endDateTime),
+      startDateTime  : new Date(body.startDateTime),
+      endDateTime    : new Date(body.endDateTime),
 
-      locationName: body.locationName,
-      location: typeof body.location === "string"
+      locationName   : body.locationName,
+      location       : typeof body.location === "string"
         ? JSON.parse(body.location) // if not already parsed from zod validation (validateRequest)
         : body.location,
 
-      onlineLink: body.onlineLink,
+      onlineLink     : body.onlineLink,
    };
 };
 

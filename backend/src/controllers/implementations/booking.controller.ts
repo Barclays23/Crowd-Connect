@@ -21,6 +21,11 @@ export class BookingController implements IBookingController{
 
   async initiateBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user || !req.user.userId) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        return;
+      }
+
       const bookingReqDto: BookingOrderRequestDTO = {
         ...req.body,
         eventId: req.params.eventId,
@@ -44,6 +49,11 @@ export class BookingController implements IBookingController{
   
   async verifyAndConfirmPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user || !req.user.userId) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        return;
+      }
+      
       const userId = req.user.userId;
       const dto: VerifyPaymentRequestDTO = req.body;
 
@@ -66,6 +76,10 @@ export class BookingController implements IBookingController{
 
   async getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user || !req.user.userId) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        return;
+      }
       const userId = req.user.userId;
 
       const page  = parseInt(req.query.page  as string) || 1;
@@ -162,6 +176,10 @@ export class BookingController implements IBookingController{
 
   async getBookingById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user || !req.user.userId || !req.user.role) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User or Role missing" });
+        return;
+      }
       const requestingUserId = req.user.userId;
       const role             = req.user.role as UserRole;
       const bookingId        = req.params.bookingId as string;
@@ -182,6 +200,11 @@ export class BookingController implements IBookingController{
 
   async cancelBookingByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user || !req.user.userId) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        return;
+      }
+      
       const userId    = req.user.userId as string;
       const bookingId = req.params.bookingId as string;
       const { cancelReason } = req.body;

@@ -5,7 +5,12 @@ import { IUserController } from '../interfaces/IUserController';
 import { HttpStatus } from '@/constants/statusCodes.constants';
 import { AuthMessages, HttpResponse } from '@/constants/responseMessages.constants';
 import { GetUsersFilter, GetUsersResult } from '@/types/user.types';
-import { CreateUserRequestDto, UpdateUserRequestDto, UserBasicInfoUpdateDTO, UserProfileResponseDto } from '@/dtos/user.dto';
+import { 
+    CreateUserRequestDto, 
+    UpdateUserRequestDto, 
+    UserBasicInfoUpdateDTO, 
+    UserProfileResponseDto 
+} from '@/dtos/user.dto';
 import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
 import { IUserProfileService } from '@/services/user-services/interfaces/IUserProfileService';
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
@@ -24,7 +29,11 @@ export class UserController implements IUserController {
 
     async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId = req.user?.userId;
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+            const userId = req.user.userId;
             const userProfile: UserProfileResponseDto = await this._userProfileServices.getUserProfile(userId);
 
             res.status(HttpStatus.OK).json({
@@ -43,8 +52,13 @@ export class UserController implements IUserController {
 
     async editUserBasicInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const basicInfoDto: UserBasicInfoUpdateDTO = req.body;
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
             const userId: string = req.user.userId;
+            const basicInfoDto: UserBasicInfoUpdateDTO = req.body;
 
             const updatedUser: UserProfileResponseDto = await this._userProfileServices.editUserBasicInfo(userId, basicInfoDto);
 
@@ -71,6 +85,11 @@ export class UserController implements IUserController {
 
     async changeUserPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.email) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User email missing" });
+                return;
+            }
+
             const {currentPassword, newPassword} = req.body;
             const userEmail: string = req.user.email;
 
@@ -95,6 +114,11 @@ export class UserController implements IUserController {
 
     async updateProfilePicture(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
             const userId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
 
@@ -164,8 +188,10 @@ export class UserController implements IUserController {
 
     async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            console.log('✅ body received in userController.createUserByAdmin:', req.body);
-            console.log('✅ file received in userController.createUserByAdmin:', req.file);
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
             const createDto: CreateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentAdminId: string = req.user.userId;
@@ -194,9 +220,10 @@ export class UserController implements IUserController {
 
     async editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // console.log('✅ params received in userController.editUserByAdmin:', req.params);
-            // console.log('✅ body received in userController.editUserByAdmin:', req.body);
-            // console.log('✅ file received in userController.editUserByAdmin:', req.file);
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
 
             const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
@@ -229,6 +256,11 @@ export class UserController implements IUserController {
 
     async toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
+
             const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
 
@@ -257,6 +289,11 @@ export class UserController implements IUserController {
 
     async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                return;
+            }
+            
             const targetUserId = req.params.id as string;
             const currentAdminId: string = req.user.userId;
 
