@@ -60,13 +60,13 @@ const authRouter = Router();
 authRouter.post(AUTH_ROUTES.LOGIN, validateRequest({body: LoginSchema}), authController.signIn.bind(authController));
 authRouter.post(AUTH_ROUTES.REGISTER, validateRequest({body: RegisterSchema}), authController.signUp.bind(authController));
 
-// 1. Route to initiate Google Auth
+// initiate Google Auth
 authRouter.get(
     AUTH_ROUTES.GOOGLE_LOGIN,
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    passport.authenticate(AuthProvider.GOOGLE, { scope: ['profile', 'email'] })
 );
 
-// 2. Callback route that Google hits
+// callback route that Google hits
 authRouter.get(
     AUTH_ROUTES.GOOGLE_CALLBACK,
     passport.authenticate(AuthProvider.GOOGLE, { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login` }),

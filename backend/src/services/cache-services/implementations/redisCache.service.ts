@@ -1,6 +1,6 @@
 // backend/src/services/cache-services/implementations/redisCache.service.ts
 import { ICacheService } from "../interfaces/ICacheService";
-import { redisClient } from "@/config/redis.config";
+import { redisClient } from "@/config/redis-cache.config";
 
 
 

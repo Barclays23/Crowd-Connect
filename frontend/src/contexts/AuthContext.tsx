@@ -216,7 +216,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const loginWithGoogle = async () => {
-        toast.warn('loginWithGoogle URL: '+API_ENDPOINTS.AUTH.GOOGLE_LOGIN_URL)
         // Navigate to the backend google login route
         window.location.href = API_ENDPOINTS.AUTH.GOOGLE_LOGIN_URL;
     };

@@ -42,6 +42,7 @@ import { PayoutService } from '@/services/payout-services/implementations/payout
 import { PayoutRepository } from '@/repositories/implementations/payout.repository';
 import { PayoutController } from '@/controllers/implementations/payout.controller';
 import { ReviewPayoutBodySchema } from '@/schemas/payout.schema';
+import { EventQueueService } from '@/services/queue-services/implementaions/eventQueue.service';
 
 
 
@@ -72,10 +73,13 @@ const userProfileServices       = new UserProfileService(userRepo);
 const hostManagementServices    = new HostManagementServices(userRepo);
 const walletService             = new WalletService(userRepo, transactionRepo);
 const cacheService              = new RedisCacheService();
+const eventQueueService         = new EventQueueService();
 const settingsService           = new PlatformSettingsService(settingsRepo);
 
+
+
 const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
-const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService);
+const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService, eventQueueService);
 const passwordService           = new PasswordService(userRepo, cacheService);
 const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
 

@@ -126,8 +126,6 @@ export function AuthForm(props: AuthFormProps) {
       // save it to sessionStorage so it survives the Google redirect
       sessionStorage.setItem('oauth_return_path', fromPath);
 
-      toast.info('google auth fromPath: '+fromPath);
-
       // trigger the redirect
       loginWithGoogle();
    };

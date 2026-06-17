@@ -1,15 +1,28 @@
+// backend/src/config/redis-cache.config.ts
+
 import { createClient } from 'redis';
 import 'dotenv/config';
 
-const redisUrl = process.env.REDIS_URL as string;
 
 // rename to CACHE_DATA_TTL_SECONDS, CACHE_TOKEN_PREFIX and move to constants file
 const REDIS_DATA_TTL_SECONDS: number    = 30 * 60; // TTL expiry: 30 minutes in seconds
 const REDIS_TOKEN_PREFIX: string        = 'auth-token:';
 
+const redisUrl = process.env.REDIS_URL as string;
 
-const redisClient = createClient({ url: redisUrl });
-if (!redisUrl) throw new Error('REDIS_URL is required');
+if (!redisUrl) {
+    throw new Error('REDIS_URL is required in environment variables');
+}
+
+
+const redisClient = createClient({ 
+    url: redisUrl,
+    // socket: {
+    //     tls: true,
+    //     rejectUnauthorized: false // Matches the ioredis setup
+    // }
+});
+
 
 
 
@@ -46,7 +59,13 @@ async function disconnectRedis() {
 
 
 
-export { redisClient, connectRedis, disconnectRedis, REDIS_DATA_TTL_SECONDS, REDIS_TOKEN_PREFIX };
+export { 
+    redisClient, 
+    connectRedis, 
+    disconnectRedis, 
+    REDIS_DATA_TTL_SECONDS, 
+    REDIS_TOKEN_PREFIX 
+};
 
 // run as administrator command prompt to flush dns
 // ipconfig /flushdns

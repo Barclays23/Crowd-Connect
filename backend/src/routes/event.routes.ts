@@ -19,6 +19,7 @@ import { EventManagementServices } from "@/services/event-services/implementatio
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
 import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
 import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
+import { EventQueueService } from "@/services/queue-services/implementaions/eventQueue.service";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
@@ -36,13 +37,14 @@ const razorPayProvider = new RazorpayProvider();
 
 
 // SERVICES
-const ticketService    = new TicketService(bookingRepo, eventRepo);
-const paymentService   = new PaymentService(razorPayProvider);
-const walletService    = new WalletService(userRepo, transactionRepo);
-const cacheService     = new RedisCacheService();
-const settingsService  = new PlatformSettingsService(settingsRepo);
-const bookingService   = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService     = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService);
+const ticketService     = new TicketService(bookingRepo, eventRepo);
+const paymentService    = new PaymentService(razorPayProvider);
+const walletService     = new WalletService(userRepo, transactionRepo);
+const cacheService      = new RedisCacheService();
+const eventQueueService = new EventQueueService();
+const settingsService   = new PlatformSettingsService(settingsRepo);
+const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
+const eventService      = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService, eventQueueService);
 
 
 // CONTROLLER

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 
 
 
@@ -41,13 +42,11 @@ export function GoogleAuthSuccess() {
 
    return (
       <div className="flex h-screen w-full items-center justify-center">
-         <div className="flex flex-col items-center space-y-4">
-            {/* You can replace this with your project's standard loading spinner */}
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p className="text-sm font-medium text-auth-text-muted">
-               Completing authentication...
-            </p>
-         </div>
+         <LoadingSpinner1 
+            size="lg" 
+            message="Completing authentication" 
+            subMessage="Securely logging you in"
+         />
       </div>
    );
 }

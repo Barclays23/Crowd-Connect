@@ -15,19 +15,14 @@ const sessionService    = new AuthSessionService(userRepository, cacheService);
 
 
 export const configurePassport = () => {
-    const backendBaseUrl    = process.env.BACKEND_URL;
-    const authPath          = '/api/auth';
-    const callBackRoute     = AUTH_ROUTES.GOOGLE_CALLBACK;
-
-    console.log('configurePassport callbackURL :', 
-        '\n backendBaseUrl  :', backendBaseUrl,
-        '\n authPath        :', authPath,
-        '\n callBackRoute   :', callBackRoute,
-    )
+    // const backendBaseUrl    = process.env.BACKEND_URL;
+    // const authPath          = '/api/auth';
+    // const callBackRoute     = AUTH_ROUTES.GOOGLE_CALLBACK;
     // const callbackURL       = `${backendBaseUrl}${authPath}${callBackRoute}`
-    const callbackURL = process.env.GOOGLE_AUTH_CALLBACK_URL as string;
 
-    console.log('callbackURL :', callbackURL)
+    const callbackURL = process.env.GOOGLE_AUTH_CALLBACK_URL as string;
+    
+    // console.log('callbackURL :', callbackURL)
     
     passport.use(new GoogleStrategy({
         clientID    : process.env.GOOGLE_CLIENT_ID as string,

@@ -33,7 +33,6 @@ import {
     EventFilterQuery, 
     GetEventsFilter, 
     GetAllEventsResult, 
-    TICKET_TYPE, 
     GetPublicEventsFilter 
 } from "@/types/event.types";
 import { 
@@ -56,6 +55,7 @@ import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
+import { IEventQueueService } from "@/services/queue-services/interfaces/IEventQueueService";
 
 
 
@@ -67,6 +67,7 @@ export class EventManagementServices implements IEventServices {
         private readonly _bookingService    : IBookingService,
         private readonly _cacheService      : ICacheService,
         private readonly _settingsService   : IPlatformSettingsService,
+        private readonly _eventQueueService : IEventQueueService,
         // private _paymentService:    IPaymentService,
         // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
@@ -139,7 +140,7 @@ export class EventManagementServices implements IEventServices {
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";
-            console.error("Error in EventManagementServices.updateEvent:", msg);
+            console.error("Error in EventManagementServices.updateEventByHost:", msg);
             throw error;
         }
     }
@@ -159,7 +160,7 @@ export class EventManagementServices implements IEventServices {
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";
-            console.error("Error in EventManagementServices.updateEvent:", msg);
+            console.error("Error in EventManagementServices.updateEventByAdmin:", msg);
             throw error;
         }
     }
@@ -310,6 +311,10 @@ export class EventManagementServices implements IEventServices {
             
             const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
+            // Remove the event queque schedule for marking the event status as 'COMPLETED' since the event is suspended
+            await this._eventQueueService.removeEventCompletionSchedule(eventId);
+
+
             // Cancel + refund all confirmed bookings (batched process)
             await this._bookingService.cancelAllBookingsForEvent(
                 eventId,
@@ -356,6 +361,9 @@ export class EventManagementServices implements IEventServices {
             });
             
             const updatedStatus = await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
+
+            // Remove the event queque schedule for marking the event status as 'COMPLETED' since the event is cancelled
+            await this._eventQueueService.removeEventCompletionSchedule(eventId);
             
             // Cancel + refund all confirmed bookings (batched process)
             await this._bookingService.cancelAllBookingsForEvent(
@@ -405,7 +413,9 @@ export class EventManagementServices implements IEventServices {
 
             await this._eventRepository.updateEventStatus(eventId, eventStatusUpdateInput);
 
-            // await redisClient.del("trending_events");
+            // update event status as 'COMPLETED' when the event finish (using BullMQ background job)
+            await this._eventQueueService.scheduleEventCompletion(eventId, eventEntity.endDateTime);
+
             await this._cacheService.deleteKeyValue("trending_events");
 
         } catch (error: unknown) {
@@ -430,6 +440,9 @@ export class EventManagementServices implements IEventServices {
                     console.warn("Failed to delete event poster from Cloudinary:", cleanupErr);
                 }
             }
+
+            // Remove the event queque schedule for marking the event status as 'COMPLETED' since the event is suspended
+            await this._eventQueueService.removeEventCompletionSchedule(eventId);
 
             await this._eventRepository.deleteEvent(eventId);
             
@@ -547,7 +560,6 @@ export class EventManagementServices implements IEventServices {
         const CACHE_KEY = "trending_events";
         const TTL = 60 * 20; // 20 minutes
 
-        // const cached = await redisClient.get(CACHE_KEY);
         const cached: string | null = await this._cacheService.getKeyValue(CACHE_KEY);
 
         if (cached) {
@@ -558,7 +570,6 @@ export class EventManagementServices implements IEventServices {
         const events: EventEntity[] = await this._eventRepository.getTrendingEvents(limit);
         const trendingEvents: EventResponseDTO[] = events.map(mapEventEntityToEventResponseDto);
 
-        // await redisClient.setEx(CACHE_KEY, TTL, JSON.stringify(trendingEvents));
         await this._cacheService.setKeyValue(CACHE_KEY, JSON.stringify(trendingEvents), TTL);
 
         return trendingEvents;
@@ -630,6 +641,18 @@ export class EventManagementServices implements IEventServices {
 
         if (!updatedEvent) {
             throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
+        }
+
+
+        // Reschedule queque for marking the event status as 'COMPLETED' if endDateTime changed AND event is published
+        if (updatedEvent.eventStatus === EVENT_STATUS.PUBLISHED) {
+            const endDateTimeChanged = 
+                updateEventDto.endDateTime && 
+                new Date(updateEventDto.endDateTime).getTime() !== existingEvent.endDateTime.getTime();
+
+            if (endDateTimeChanged) {
+                await this._eventQueueService.rescheduleEventCompletion(updatedEvent.id, updatedEvent.endDateTime);
+            }
         }
 
         // ── Major change detection → grace period implememtation ────────────────────────────

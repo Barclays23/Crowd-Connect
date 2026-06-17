@@ -111,7 +111,7 @@ export class EventController implements IEventController {
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.updateEvent:', msg);
+            console.error('Error in eventController.updateEventByHost:', msg);
             next(error);
         };
     }
@@ -148,7 +148,7 @@ export class EventController implements IEventController {
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.updateEvent:', msg);
+            console.error('Error in eventController.updateEventByAdmin:', msg);
             next(error);
         };
     }

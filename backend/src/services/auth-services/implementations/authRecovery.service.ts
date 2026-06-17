@@ -4,7 +4,7 @@ import { IAuthRecoveryService } from "../interfaces/IAuthRecovery";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { generateCryptoToken } from "@/utils/crypto.utils";
 import { normalizeEmail } from "@/utils/email.utils";
-import { REDIS_TOKEN_PREFIX } from "@/config/redis.config";
+import { REDIS_TOKEN_PREFIX } from "@/config/redis-cache.config";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HttpStatus } from "@/constants/statusCodes.constants";
 import { HttpResponse } from "@/constants/responseMessages.constants";
