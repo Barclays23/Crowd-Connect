@@ -3,14 +3,17 @@
 import { IPagination } from "@/types/common.types";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
 import { EVENT_CATEGORY, EVENT_FORMAT } from "@/types/event.types";
+import { PaymentMethod } from "@/types/payment.types";
+
 
 
 // ─── Request DTOs ─────────────────────────────────────────────────────────────
 
 export interface BookingOrderRequestDTO {
-  eventId:  string;
-  userId: string;
-  quantity: number;  // 1 for online events, max 5 for offline events
+  eventId       :  string;
+  userId        : string;
+  quantity      : number;  // 1 for online events, max 5 for offline events
+  paymentMethod : PaymentMethod;
 }
 
 

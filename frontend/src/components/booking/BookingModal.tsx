@@ -117,7 +117,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
 
    return (
       // Overlay — flex-col on mobile (bottom sheet), centered on sm+
-      <div className="fixed inset-0 z-[1000] flex flex-col items-stretch sm:items-center sm:justify-center sm:p-4">
+      <div className="fixed inset-0 z-1000 flex flex-col items-stretch sm:items-center sm:justify-center sm:p-4">
          {/* Backdrop */}
          <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -164,7 +164,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
                {/* Loading overlay */}
                {isLoading && step === 2 ? (
-                  <div className="flex items-center justify-center min-h-[200px]">
+                  <div className="flex items-center justify-center min-h-50">
                      <LoadingSpinner1
                         message="Processing your booking..."
                         subMessage="Please don't close this window"

@@ -75,26 +75,26 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
 
                 await new Promise<void>((resolve, reject) => {
                     const rzp = new window.Razorpay({
-                        key:         order.keyId,
-                        amount:      order.amount,
-                        currency:    order.currency,
-                        name:        "CrowdConnect",
-                        description: `Booking for ${eventTitle}`,
-                        order_id:    order.orderId,
-                        prefill: {
-                            name:    userName,
-                            email:   userEmail,
+                        key         : order.keyId,
+                        amount      : order.amount,
+                        currency    : order.currency,
+                        name        : "CrowdConnect",
+                        description : `Booking for ${eventTitle}`,
+                        order_id    : order.orderId,
+                        prefill     : {
+                            name  : userName,
+                            email : userEmail,
                             ...(userPhone && { contact: userPhone })
                         },
-                        theme: { color: "var(--brand-primary, #6C63FF)" },
+                        theme       : { color: "var(--brand-primary, #6C63FF)" },
     
-                        handler: async (response: RazorpayPaymentSuccessResponse) => {
+                        handler     : async (response: RazorpayPaymentSuccessResponse) => {
                             try {
                                 const booking: IBookingState = await bookingServices.verifyBookingPayment({
-                                    bookingId: order.bookingId,
-                                    paymentOrderId:   response.razorpay_order_id,
-                                    paymentId: response.razorpay_payment_id,
-                                    signature: response.razorpay_signature,
+                                    bookingId       : order.bookingId,
+                                    paymentOrderId  : response.razorpay_order_id,
+                                    paymentId       : response.razorpay_payment_id,
+                                    signature       : response.razorpay_signature,
                                 });
     
                                 setConfirmedBooking(booking);

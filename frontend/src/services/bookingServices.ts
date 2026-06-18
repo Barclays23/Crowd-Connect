@@ -29,7 +29,7 @@ export const bookingServices = {
       signature: string;
    }): Promise<IBookingState> => {
       const response = await axiosInstance.post(
-         `api/booking/${payload.bookingId}/verify-payment`, payload,
+         `/api/booking/${payload.bookingId}/verify-payment`, payload,
          { withCredentials: true }
       );
 

@@ -1,6 +1,9 @@
 // backend/src/types/payment.types.ts
 
 
+export type PaymentMethod = 'ONLINE_PAYMENT' | 'WALLET_PAYMENT';
+
+
 export interface CreateOrderResult {
   orderId:  string;
   amount:   number;   // paise

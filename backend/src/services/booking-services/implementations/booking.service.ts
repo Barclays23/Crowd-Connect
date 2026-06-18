@@ -56,7 +56,6 @@ import { RefundResult } from "@/types/payment.types";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { QRTokenPayload } from "@/types/ticket.types";
-// import { IPlatformSettings } from "@/models/implementations/platformSettings.model";
 
 
 
@@ -122,7 +121,6 @@ export class BookingService implements IBookingService {
 
             await this._eventRepository.incrementEventTicketAndRevenueStats(eventId, newBookingQty, totalAmount);
             
-            // await redisClient.del("trending_events");
             await this._cacheService.deleteKeyValue("trending_events");
 
             const [populated, settings] = await Promise.all([
@@ -457,7 +455,6 @@ export class BookingService implements IBookingService {
 
          await session.commitTransaction();
 
-         // await redisClient.del("trending_events");
          await this._cacheService.deleteKeyValue("trending_events");
 
          const [confirmedBooking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
@@ -498,7 +495,6 @@ export class BookingService implements IBookingService {
 
             console.log('initiating booking refund....');
             
-            
             const refundResult: RefundResult = await this._paymentService.initiateBookingRefund({
                paymentId: booking.payment.paymentId,
                bookingId: booking.bookingId,
@@ -511,28 +507,11 @@ export class BookingService implements IBookingService {
 
          // Execute Database Updates with Retry Logic ──
          // Now that Razorpay is done, 
-         // Update DB sequentially (No Wallet Transfer Here!)
+         // Update DB sequentially
+         // (No Wallet Transfer Here! wallet transfer of refund will do by webhook and refund strategy)
          console.log('executing transaction with retry...');
          
          await executeWithTransactionRetry(async (session: ClientSession) => {
-            // const superAdminId = process.env.SUPER_ADMIN_ID!;
-
-            // Wallet Transfer
-            // if (refundAmount > 0) {
-            //    // ── Double-Entry Transfer (Debit Admin Wallet-> Credit User Wallet) ───────────────────
-            //    await this._walletService.transferFunds({
-            //       fromUserId          : superAdminId,
-            //       toUserId            : booking.user.userId.toString(),
-            //       transferAmount      : refundAmount,
-            //       fromTransactionType : TRANSACTION_TYPE.REFUND_ISSUED, // Admin side (debit)
-            //       toTransactionType   : TRANSACTION_TYPE.BOOKING_REFUND,  // User side (credit)
-            //       referenceType       : TRANSACTION_REFERENCE_TYPE.BOOKING,
-            //       referenceId         : booking.bookingId,
-            //       description         : `Refund for cancelled booking - ${booking.event.title}. Ticket No.${booking.ticketNo}`,
-            //       metadata            : { refundId: refundId }, 
-            //    }, { session });
-            // }
-
             // Cancel Booking Document
             const cancellationInput: CancelBookingInput = {
                bookingStatus:  BOOKING_STATUS.CANCELLED,
@@ -543,7 +522,7 @@ export class BookingService implements IBookingService {
                   reason: cancelReason,
                   ...(refundId && { refundId: refundId }),
                   // refundedAt: refundAmount > 0 ? new Date() : undefined, // Razorpay sends seconds, JS needs ms or send in ms
-                  // Do NOT set refundedAt here. Wait for the webhook.
+                  // Do NOT set refundedAt timestamp here. Wait for the webhook.
                },
                // qrToken: "",
             };

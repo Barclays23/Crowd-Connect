@@ -58,60 +58,61 @@ export interface MajorEventChange {
 // ─── Core Model Interface ─────────────────────────────────────────────────────
 
 export interface IBookingModel {
-  _id: Types.ObjectId;
+  _id               : Types.ObjectId;
 
   // Relations
-  userRef:  Types.ObjectId;  // The attendee
-  eventRef: Types.ObjectId;  // The event (use IBookingPopulatedEvent when populated)
+  userRef           : Types.ObjectId;  // The attendee
+  eventRef          : Types.ObjectId;  // The event (use IBookingPopulatedEvent when populated)
 
   // Ticket details — snapshot at booking time.
   // ticketRate stored here because event.ticketPrice can change after booking.
-  quantity:    number;  // 1 for online; 1–10 for offline
-  ticketRate:  number;  // Price per ticket at moment of booking
-  totalAmount: number;  // quantity × ticketRate (kept in sync by pre-save hook)
-  ticketNo:    string;
+  quantity          : number;  // 1 for online; 1–10 for offline
+  ticketRate        : number;  // Price per ticket at moment of booking
+  totalAmount       : number;  // quantity × ticketRate (kept in sync by pre-save hook)
+  ticketNo          : string;
 
   // Status & event format
-  bookingStatus: BOOKING_STATUS;
-  eventFormat: EVENT_FORMAT;
+  bookingStatus     : BOOKING_STATUS;
+  eventFormat       : EVENT_FORMAT;
 
   // Payment — embedded (not a separate model).
-  payment: {
-    orderId:    string;
-    paymentId?: string;    // undefined until Razorpay captures the charge
-    signature?: string;    // undefined until verified on backend
-    status:  PAYMENT_STATUS;
-    paidAt?: Date;
+  payment           : {
+    orderId     : string;
+    paymentId?  : string;    // undefined until Razorpay captures the charge
+    signature?  : string;    // undefined until verified on backend
+    status      : PAYMENT_STATUS;
+    paidAt?     : Date;
   }
 
   // QR / Entry
   // One signed JWT per booking (not per ticket). Payload: { bookingId, eventId, userId }.
   // Verified live from DB at scan time. Frontend renders via react-qr-code.
-  qrToken:          string;  // Empty string on PENDING; populated after payment confirmed
-  remainingEntries: number;  // Starts at quantity; decremented on each partial scan
-  checkedInAt?:     Date;    // Timestamp of the FIRST scan only
+  qrToken           : string;  // Empty string on PENDING; populated after payment confirmed
+  remainingEntries  : number;  // Starts at quantity; decremented on each partial scan
+  checkedInAt?      : Date;    // Timestamp of the FIRST scan only
 
   // Cancellation
-  cancellation?: {
-    reason?:     string;
-    cancelledAt: Date;
-    refundId?:   string;  // Razorpay refund ID; set when refund is initiated
-    refundedAt?: Date;    // Set when Razorpay refund webhook confirms settlement
+  cancellation?     : {
+    reason?     : string;
+    cancelledAt : Date;
+    refundId?   : string;  // Razorpay refund ID; set when refund is initiated
+    refundedAt? : Date;    // Set when refund webhook confirms settlement
   };
 
   // Major event change (host changes date/venue/price etc. after tickets are sold)
-  // Stored on booking (not event) because each booking may have a different grace
-  // window depending on when it was created relative to the change.
-  majorEventChange?: MajorEventChange;
+  majorEventChange? : MajorEventChange;
 
   // Full refund allowed until this deadline regardless of normal cancellation policy.
-  // Null = no active grace period.
-  gracePeriodEnd?: Date | null;
+  gracePeriodEnd?   : Date | null;
 
   // Timestamps (auto-managed by Mongoose { timestamps: true })
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt         : Date;
+  updatedAt         : Date;
 }
+
+
+
+
 
 
 // ─── Virtuals Interface ───────────────────────────────────────────────────────

@@ -62,6 +62,7 @@ export class WalletService implements IWalletService {
 
       const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
       
+      // return newBalance or transactionData.balanceAfter ?? which is correct?
       return newBalance;
 
       //  ## One architectural note on timing
@@ -89,6 +90,7 @@ export class WalletService implements IWalletService {
 
       const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
 
+      // return newBalance or transactionData.balanceAfter ?? which is correct?
       return newBalance;
    }
 
@@ -152,10 +154,10 @@ export class WalletService implements IWalletService {
       return {
          transactions : transactionResults.map(mapTransactionEntityToResponseDTO),
          pagination: {
-            totalCount: totalCount,
-            limit: filters.limit,
-            currentPage: filters.page,
-            totalPages: Math.ceil(totalCount / filters.limit)
+            totalCount  : totalCount,
+            limit       : filters.limit,
+            currentPage : filters.page,
+            totalPages  : Math.ceil(totalCount / filters.limit)
          }
       };
    }
