@@ -1,16 +1,7 @@
 // frontend/src/components/admin/bookings-list.tsx
 import { useState, useEffect, useCallback } from "react";
-import {
-  Search,
-  Download,
-  Eye,
-  Ban,
-  Loader2,
-  Trash2,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Hash,
+import { Search, Download, Eye, Ban, Loader2, Trash2, 
+   ArrowUpDown, ArrowUp, ArrowDown, Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,19 +32,19 @@ import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
-  BOOKING_STATUS,
   type IBookingState,
   type BookingSortField,
   type GetBookingsApiResponse,
 } from "@/types/booking.types";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
-import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
 import { capitalize } from "@/utils/namingConventions";
 import BookingDetails from "@/components/booking/BookingDetails";
 import { cancelReasonBase } from "@/schemas/booking.schema";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/ui/FieldError";
 import { canCancelBooking } from "@/utils/booking.utils";
+import { BOOKING_STATUS } from "@/constants/booking.constants";
+import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 
 
 
@@ -61,8 +52,8 @@ import { canCancelBooking } from "@/utils/booking.utils";
 export function BookingsList() {
    // Filters & UI state
    const [searchTerm, setSearchTerm] = useState("");
-   const [statusFilter, setStatusFilter] = useState<"all" | BOOKING_STATUS>("all");
-   const [formatFilter, setFormatFilter] = useState<"all" | EVENT_FORMAT>("all");
+   const [statusFilter, setStatusFilter] = useState<"all" | EventFormat>("all");
+   const [formatFilter, setFormatFilter] = useState<"all" | EventFormat>("all");
    const [currentPage, setCurrentPage] = useState(1);
    const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
 
@@ -234,7 +225,7 @@ export function BookingsList() {
 
                <Select
                   value={statusFilter}
-                  onValueChange={(v: "all" | BOOKING_STATUS) => {
+                  onValueChange={(v: "all" | EventFormat) => {
                      setStatusFilter(v);
                      setCurrentPage(1);
                   }}
@@ -254,7 +245,7 @@ export function BookingsList() {
 
                <Select
                   value={formatFilter}
-                  onValueChange={(v: "all" | EVENT_FORMAT) => {
+                  onValueChange={(v: "all" | EventFormat) => {
                      setFormatFilter(v);
                      setCurrentPage(1);
                   }}

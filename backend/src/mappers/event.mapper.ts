@@ -1,3 +1,4 @@
+import { DEFAULT_RADIUS_KM, EVENT_STATUSES, EventCategory, EventFormat, TicketType } from "@/constants/event.constants";
 import { 
    CreateEventRequestDTO, 
    EventResponseDTO, 
@@ -11,15 +12,10 @@ import {
    UpdateEventInput 
 } from "@/entities/event.entity";
 import { 
-   DEFAULT_RADIUS_KM, 
-   EVENT_CATEGORY, 
-   EVENT_FORMAT, 
-   EVENT_STATUS, 
    GetPublicEventsFilter, 
    IEventModel, 
    IEventModelPopulatedHost, 
    IHostPopulatedFromEvent, 
-   TICKET_TYPE 
 } from "@/types/event.types";
 import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { capitalize, toTitleCase } from "@/utils/string.utils";
@@ -69,9 +65,9 @@ export const mapEventDiscoveryQueryToFilters = (req: Request): GetPublicEventsFi
       search: (req.query.search as string)?.trim(),
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
-      category: (req.query.category as string)?.trim() as EVENT_CATEGORY,
-      format: (req.query.format as string)?.trim() as EVENT_FORMAT,
-      ticketType: (req.query.ticketType as string)?.trim() as TICKET_TYPE,
+      category: (req.query.category as string)?.trim() as EventCategory,
+      format: (req.query.format as string)?.trim() as EventFormat,
+      ticketType: (req.query.ticketType as string)?.trim() as TicketType,
       lat: req.query.lat ? parseFloat(req.query.lat as string) : undefined,
       lng: req.query.lng ? parseFloat(req.query.lng as string) : undefined,
       radiusKm: req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : DEFAULT_RADIUS_KM,
@@ -114,7 +110,7 @@ export const mapEventModelToEventEntity = (
       : { _id: doc.hostRef as Types.ObjectId, name: '', organizationName: undefined };
 
    return {
-      id: doc._id.toString(),
+      eventId: doc._id.toString(),
       // hostRef: doc.hostRef.toString(),
 
       organizer: {
@@ -169,7 +165,7 @@ export const mapEventEntityToEventResponseDto = (
   entity: EventEntity
 ): EventResponseDTO => ({
    
-   eventId: entity.id,
+   eventId: entity.eventId,
    // hostRef: entity.hostRef,
    organizer: {
       hostId: entity.organizer.hostId,
@@ -257,7 +253,7 @@ export const mapCreateEventRequestDtoToInput = ({
       // checkedInCount: 0,
       // grossTicketRevenue: 0,
       
-      eventStatus: EVENT_STATUS.DRAFT,
+      eventStatus: EVENT_STATUSES.DRAFT,
    };
 };
 
@@ -353,12 +349,12 @@ export const mapToEventStatusUpdateInput = (
    switch (newStatus) {
       case "completed":
          return {
-            eventStatus: EVENT_STATUS.COMPLETED,
+            eventStatus: EVENT_STATUSES.COMPLETED,
          };
 
       case "cancelled":
          return {
-            eventStatus: EVENT_STATUS.CANCELLED,
+            eventStatus: EVENT_STATUSES.CANCELLED,
             cancellation: {
                reason: `CANCELLED: ${reason}`,
                cancelledBy: "HOST",
@@ -368,7 +364,7 @@ export const mapToEventStatusUpdateInput = (
 
       case "suspended":
          return {
-            eventStatus: EVENT_STATUS.SUSPENDED,
+            eventStatus: EVENT_STATUSES.SUSPENDED,
             cancellation: {
                reason: `SUSPENDED: ${reason}`,
                cancelledBy: "ADMIN",

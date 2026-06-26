@@ -1,11 +1,7 @@
 // backend/src/services/payout-services/implementations/payout.service.ts
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
-import { TRANSACTION_TYPE, TRANSACTION_REFERENCE_TYPE } from "@/types/wallet.types";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { 
-    PAYOUT_REQUEST_STATUS, 
-} from "@/types/payout.types";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 import { ClientSession } from "mongoose";
 import { IPayoutService } from "@/services/payout-services/interfaces/IPayoutService";
@@ -29,6 +25,8 @@ import {
 } from "@/dtos/payout.dto";
 import { uploadToCloudinary } from "@/config/cloudinary";
 import { validatePayoutRequest, validatePayoutReview } from "@/utils/validations/payoutValidations";
+import { PAYOUT_REQUEST_STATUSES, PayoutRequestStatus } from "@/constants/payout.constants";
+import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 
 
 
@@ -89,7 +87,7 @@ export class PayoutService implements IPayoutService {
             netAmount,
             ticketsSold   : event.soldTickets ?? 0,
             checkedInCount: event.checkedInCount ?? 0,
-            status        : PAYOUT_REQUEST_STATUS.PENDING,
+            status        : PAYOUT_REQUEST_STATUSES.PENDING,
             proofUrls     : payoutProofUrls,
             requestedAt   : new Date(),
         };        
@@ -114,13 +112,13 @@ export class PayoutService implements IPayoutService {
 
         const systemWalletId: string | undefined = process.env.SUPER_ADMIN_ID;
         if (!systemWalletId) {
-            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "System wallet ID is not configured.");
+            throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "System wallet ID is not configured.");
         }
 
         // ── REJECT ──────
         if (payoutInput.action === "reject") {
             const updatedPayout: PayoutEntity | null = await this._payoutRepository.updatePayout(payoutId, {
-                status         : PAYOUT_REQUEST_STATUS.REJECTED,
+                status         : PAYOUT_REQUEST_STATUSES.REJECTED,
                 rejectionReason: payoutInput.rejectionReason!.trim(),
                 reviewedBy     : adminId,
                 reviewedAt     : new Date(),
@@ -141,9 +139,9 @@ export class PayoutService implements IPayoutService {
                     fromUserId          : systemWalletId,
                     toUserId            : payout.hostId,
                     transferAmount      : payout.netAmount,
-                    fromTransactionType : TRANSACTION_TYPE.HOST_PAYOUT,
-                    toTransactionType   : TRANSACTION_TYPE.HOST_PAYOUT,
-                    referenceType       : TRANSACTION_REFERENCE_TYPE.PAYOUT_REQUEST,
+                    fromTransactionType : TRANSACTION_TYPES.HOST_PAYOUT,
+                    toTransactionType   : TRANSACTION_TYPES.HOST_PAYOUT,
+                    referenceType       : TRANSACTION_REFERENCE_TYPES.PAYOUT_REQUEST,
                     referenceId         : payout.payoutId,
                     description         : `Payout for event: ${payout.eventTitle}`,
                     metadata            : {
@@ -157,7 +155,7 @@ export class PayoutService implements IPayoutService {
                 return this._payoutRepository.updatePayout(
                     payoutId,
                     {
-                        status      : PAYOUT_REQUEST_STATUS.PAID,
+                        status      : PAYOUT_REQUEST_STATUSES.PAID,
                         reviewedBy  : adminId,
                         reviewedAt  : new Date(),
                     },
@@ -171,7 +169,7 @@ export class PayoutService implements IPayoutService {
         }
 
         // Failsafe return if action somehow bypassed checks
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Invalid action processing.");
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Invalid action processing.");
 
     }
 
@@ -222,7 +220,7 @@ export class PayoutService implements IPayoutService {
         eligibleEvents = eligibleEvents.filter(ev => (ev.soldTickets ?? 0) > 0 && (ev.grossTicketRevenue ?? 0) > 0);
         
         // fetch if existing payout requests for these events
-        const eventIds: string[] = eligibleEvents.map((evt) => evt.id);
+        const eventIds: string[] = eligibleEvents.map((evt) => evt.eventId);
         const existingPayouts: PayoutEntity[] = await this._payoutRepository.findPayoutByEventIds(eventIds);
 
         const payoutMap = new Map<string, PayoutEntity>(existingPayouts.map(
@@ -234,19 +232,19 @@ export class PayoutService implements IPayoutService {
 
         // Check which statuses mean the payout is "locked" and shouldn't be applied for again
         const activePayoutStatuses = [
-            PAYOUT_REQUEST_STATUS.PENDING, 
-            PAYOUT_REQUEST_STATUS.APPROVED, 
-            PAYOUT_REQUEST_STATUS.PAID
+            PAYOUT_REQUEST_STATUSES.PENDING, 
+            PAYOUT_REQUEST_STATUSES.APPROVED, 
+            PAYOUT_REQUEST_STATUSES.PAID
         ];
 
         // Process and filter the events
         const processedEvents: EligibleEventDTO[] = [];
 
         for (const evnt of eligibleEvents) {
-            const payout = payoutMap.get(evnt.id);
+            const payout = payoutMap.get(evnt.eventId);
 
             // If the event already has an active payout, skip it entirely
-            if (payout && activePayoutStatuses.includes(payout.status as PAYOUT_REQUEST_STATUS)) {
+            if (payout && activePayoutStatuses.includes(payout.status as PayoutRequestStatus)) {
                 continue; 
             }
 
@@ -254,7 +252,7 @@ export class PayoutService implements IPayoutService {
             
             // If the payout is rejected, we can treat it as "eligible again" 
             // but pass the rejection reason to the frontend to warn the user.
-            if (payout?.status === PAYOUT_REQUEST_STATUS.REJECTED) {
+            if (payout?.status === PAYOUT_REQUEST_STATUSES.REJECTED) {
                 eligibleEventDTO.previousRejectionReason    = payout.rejectionReason;
                 eligibleEventDTO.canReapply                 = true; 
             }

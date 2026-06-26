@@ -1,5 +1,5 @@
 // backend/src/mappers/checkin.mapper.ts
-import { BOOKING_STATUS } from "@/types/booking.types";
+import { BookingStatus } from "@/constants/booking.constants";
 import {
   CheckInBookingPopulated,
   CheckInResultDTO,
@@ -64,7 +64,7 @@ export function mapToCheckInResultDTO(
     booking:              CheckInBookingPopulated,
     entriesThisScan:      number,
     newRemainingEntries:  number,
-    newBookingStatus:     BOOKING_STATUS,
+    newBookingStatus:     BookingStatus,
     checkedInAt:          Date,
 ): CheckInResultDTO {
     return {

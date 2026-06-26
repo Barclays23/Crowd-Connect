@@ -1,12 +1,7 @@
 // src/models/implementations/event.model.ts
 
-import { 
-   ALL_EVENT_CATEGORIES, 
-   EVENT_FORMAT, 
-   EVENT_STATUS, 
-   IEventModel, 
-   TICKET_TYPE 
-} from "@/types/event.types";
+import { ALL_EVENT_CATEGORIES, EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
+import { IEventModel } from "@/types/event.types";
 import { model, Model, Schema, HydratedDocument } from "mongoose";
 
 
@@ -42,7 +37,7 @@ const eventSchema = new Schema<IEventModel>(
       // --- Event Format (Online vs In-Person) ---
       format: {
          type: String,
-         enum: Object.values(EVENT_FORMAT),
+         enum: Object.values(EVENT_FORMATS),
          required: true,
       },
       // --- Location (Hybrid Approach) ---
@@ -80,7 +75,7 @@ const eventSchema = new Schema<IEventModel>(
       // --- Ticket Type & Pricing ---
       ticketType: {
          type: String,
-         enum: Object.values(TICKET_TYPE),
+         enum: Object.values(TICKET_TYPES),
          required: true,
       },
       ticketPrice: {
@@ -112,8 +107,8 @@ const eventSchema = new Schema<IEventModel>(
       // --- Management Fields ---
       eventStatus: {
          type: String,
-         enum: Object.values(EVENT_STATUS),
-         default: EVENT_STATUS.DRAFT,
+         enum: Object.values(EVENT_STATUSES),
+         default: EVENT_STATUSES.DRAFT,
          required: true
       },
       views: {
@@ -180,10 +175,10 @@ eventSchema.pre('save', async function (this: HydratedDocument<IEventModel>) {
    }
 
    // ticketType & ticketPrice validation
-   if (this.ticketType === TICKET_TYPE.FREE && this.ticketPrice > 0) {
+   if (this.ticketType === TICKET_TYPES.FREE && this.ticketPrice > 0) {
       throw new Error("Free events cannot have price > 0");
    }
-   if (this.ticketType === TICKET_TYPE.PAID && this.ticketPrice <= 0) {
+   if (this.ticketType === TICKET_TYPES.PAID && this.ticketPrice <= 0) {
       throw new Error("Paid events must have ticket price > 0");
    }
 

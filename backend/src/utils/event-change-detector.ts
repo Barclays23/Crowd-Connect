@@ -1,12 +1,11 @@
 // backend/src/utils/event-change-detector.ts
 
+import { EVENT_CHANGE_TYPES, EventChangeType } from "@/constants/event.constants";
 import { UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { EventEntity } from "@/entities/event.entity";
 
 export interface DetectedChange {
-    field: "STARTDATETIME" | "ENDDATETIME" | "VENUE" | "LOCATION" | "TICKETPRICE";
-    // ↑ Removed FORMAT — format switch is BLOCKED entirely, not grace-period eligible.
-    // bcoz: if once anyone booked the event, cannot switch format (ONLINE/OFFLINE). So, wont affect users.
+    field: EventChangeType
     oldValue: string;
     newValue: string;
 }
@@ -43,7 +42,7 @@ export const detectMajorEventChanges = (
         const newStart = new Date(updateEventDto.startDateTime).getTime();
         if (oldStart !== newStart) {
             changes.push({
-                field:    "STARTDATETIME",
+                field   : EVENT_CHANGE_TYPES.START_DATE_TIME,
                 oldValue: formatDateTime(existingEvent.startDateTime),
                 newValue: formatDateTime(new Date(updateEventDto.startDateTime)),
             });
@@ -56,7 +55,7 @@ export const detectMajorEventChanges = (
         const newEnd = new Date(updateEventDto.endDateTime).getTime();
         if (oldEnd !== newEnd) {
             changes.push({
-                field:    "ENDDATETIME",
+                field   : EVENT_CHANGE_TYPES.END_DATE_TIME,
                 oldValue: formatDateTime(existingEvent.endDateTime),
                 newValue: formatDateTime(new Date(updateEventDto.endDateTime)),
             });
@@ -69,7 +68,7 @@ export const detectMajorEventChanges = (
         updateEventDto.locationName !== existingEvent.locationName
     ) {
         changes.push({
-            field:    "VENUE",
+            field   : EVENT_CHANGE_TYPES.VENUE,
             oldValue: existingEvent.locationName || "—",
             newValue: updateEventDto.locationName,
         });
@@ -91,7 +90,7 @@ export const detectMajorEventChanges = (
         );
         if (distanceKm > LOCATION_CHANGE_DISTANCE_KM) {
             changes.push({
-                field:    "LOCATION",
+                field   : EVENT_CHANGE_TYPES.LOCATION,
                 oldValue: `${existingEvent.location.coordinates[1]}, ${existingEvent.location.coordinates[0]}`,
                 newValue: `${updateEventDto.location.coordinates[1]}, ${updateEventDto.location.coordinates[0]}`,
             });
@@ -111,7 +110,7 @@ export const detectMajorEventChanges = (
             type === "free" ? "Free" : `₹${price}`;
 
         changes.push({
-            field:    "TICKETPRICE",
+            field   : EVENT_CHANGE_TYPES.TICKET_PRICE,
             oldValue: fmtPrice(existingEvent.ticketType, existingEvent.ticketPrice),
             newValue: fmtPrice(
                 updateEventDto.ticketType ?? existingEvent.ticketType,
@@ -126,12 +125,13 @@ export const detectMajorEventChanges = (
 export const buildChangeSummary = (changes: DetectedChange[]): string => {
     const parts = changes.map((c) => {
         switch (c.field) {
-            case "STARTDATETIME": return `start time changed to ${c.newValue}`;
-            case "ENDDATETIME":   return `end time changed to ${c.newValue}`;
-            case "VENUE":         return `venue changed to "${c.newValue}"`;
-            case "LOCATION":      return `event location moved significantly`;
-            case "TICKETPRICE":   return `ticket price reduced from ${c.oldValue} to ${c.newValue}`;
-            default:              return "other details updated";
+            case EVENT_CHANGE_TYPES.START_DATE_TIME: return `start time changed to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.END_DATE_TIME:   return `end time changed to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.VENUE:           return `venue changed to "${c.newValue}"`;
+            case EVENT_CHANGE_TYPES.LOCATION:        return `event location moved significantly`;
+            case EVENT_CHANGE_TYPES.TICKET_PRICE:    return `ticket price reduced from ${c.oldValue} to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.CAPACITY:        return `event capacity reduced to ${c.newValue}`;
+            default:                                 return "other details updated";
         }
     });
     return `Event updated: ${parts.join(", ")}.`;

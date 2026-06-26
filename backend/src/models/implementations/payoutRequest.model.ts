@@ -1,6 +1,7 @@
 // src/models/implementations/PayoutRequest.model.ts
 
-import { IPayoutRequestModel, PAYOUT_REQUEST_STATUS } from '@/types/payout.types';
+import { PAYOUT_REQUEST_STATUSES } from '@/constants/payout.constants';
+import { IPayoutRequestModel } from '@/types/payout.types';
 import { Schema, model, Types, Model } from 'mongoose';
 
 
@@ -63,8 +64,8 @@ const payoutRequestSchema = new Schema<IPayoutRequestModel>({
 
    status: { 
       type     : String, 
-      enum     : Object.values(PAYOUT_REQUEST_STATUS), 
-      default  : PAYOUT_REQUEST_STATUS.PENDING,
+      enum     : Object.values(PAYOUT_REQUEST_STATUSES), 
+      default  : PAYOUT_REQUEST_STATUSES.PENDING,
       required : true,
       index    : true,  // Fast filtering for admin queue
    },
@@ -107,9 +108,9 @@ payoutRequestSchema.index(
       unique: true, 
       partialFilterExpression: { 
          status: { $in: [
-            PAYOUT_REQUEST_STATUS.PENDING, 
-            PAYOUT_REQUEST_STATUS.APPROVED, 
-            PAYOUT_REQUEST_STATUS.PAID
+            PAYOUT_REQUEST_STATUSES.PENDING, 
+            PAYOUT_REQUEST_STATUSES.APPROVED, 
+            PAYOUT_REQUEST_STATUSES.PAID
          ] } 
       } 
    }

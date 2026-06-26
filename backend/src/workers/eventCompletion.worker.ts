@@ -3,7 +3,7 @@
 import { Worker, Job } from "bullmq";
 import { queueConnection } from "@/config/redis-queue.config";
 import Event from "@/models/implementations/event.model";
-import { EVENT_STATUS } from "@/types/event.types";
+import { EVENT_STATUSES } from "@/constants/event.constants";
 
 
 
@@ -19,7 +19,7 @@ export const startEventWorker = () => {
                 // Find the event. Only proceed if it is currently PUBLISHED.
                 const event = await Event.findOne({
                     _id         : eventId,
-                    eventStatus : EVENT_STATUS.PUBLISHED
+                    eventStatus : EVENT_STATUSES.PUBLISHED
                 });
 
                 if (!event) {
@@ -29,7 +29,7 @@ export const startEventWorker = () => {
 
                 // Safety check: verify time has actually passed
                 if (event.endDateTime <= new Date()) {
-                    event.eventStatus = EVENT_STATUS.COMPLETED;
+                    event.eventStatus = EVENT_STATUSES.COMPLETED;
                     await event.save();
                     
                     console.log(`[Worker] Successfully marked event ${eventId} as COMPLETED.`);

@@ -92,6 +92,47 @@
 
 
 
+
+        // normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null {
+        //     // Stripe payload type casting
+        //     const stripeData = rawPayload as { type: string; data: { object: any } };
+        //     const eventName = stripeData.type; 
+        //     const entity = stripeData.data.object; 
+
+        //     let type: StandardWebhookEventType;
+
+        //     switch (eventName) {
+        //         case 'payment_intent.succeeded': 
+        //             type = StandardWebhookEventType.PAYMENT_SUCCESS; 
+        //             break;
+        //         case 'payment_intent.payment_failed': 
+        //             type = StandardWebhookEventType.PAYMENT_FAILED; 
+        //             break;
+        //         case 'charge.refunded': 
+        //             type = StandardWebhookEventType.REFUND_SUCCESS; 
+        //             break;
+        //         case 'charge.refund.updated': 
+        //             type = StandardWebhookEventType.REFUND_FAILED; 
+        //             break;
+        //         default: 
+        //             return null; 
+        //     }
+
+        //     return {
+        //         eventType: type,
+        //         // In Stripe, the PaymentIntent ID acts as the Order ID
+        //         orderId: entity.payment_intent || entity.id, 
+        //         paymentId: entity.payment_intent || entity.id, 
+        //         refundId: eventName.includes('refund') ? entity.id : undefined, 
+        //         amount: entity.amount / 100, 
+        //         paymentPurpose: entity.metadata?.payment_purpose as PaymentPurpose || PaymentPurpose.EVENT_BOOKING, 
+        //         timestamp: entity.created ? entity.created * 1000 : Date.now(),
+        //         rawPayload: rawPayload
+        //     };
+        // }
+
+
+
 //     async initiateRefund(paymentId: string, amount: number): Promise<RefundResult> {
 //         const refund = await this._client.refunds.create({
 //             payment_intent: paymentId,

@@ -1,6 +1,6 @@
 // frontend/src/types/checkin.types.ts
 
-import { BOOKING_STATUS } from "@/types/booking.types";
+import type { BookingStatus } from "@/constants/booking.constants";
 
 
 export interface CheckInResult {
@@ -12,7 +12,7 @@ export interface CheckInResult {
   entriesThisScan:  number;
   remainingEntries: number;
   isFullyUsed:      boolean;
-  bookingStatus:    BOOKING_STATUS;
+  bookingStatus:    BookingStatus;
   checkedInAt:      string; // ISO string from JSON
 }
 
@@ -28,7 +28,7 @@ export interface AttendanceRecord {
   remainingEntries: number;
   isFullyUsed:      boolean;
   checkedInAt:      string;
-  bookingStatus:    BOOKING_STATUS;
+  bookingStatus:    BookingStatus;
 }
 
 

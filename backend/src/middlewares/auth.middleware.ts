@@ -2,10 +2,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '@/utils/jwt.utils';
 import { createHttpError } from '@/utils/httpError.utils';
-import { HttpStatus } from '@/constants/statusCodes.constants';
-import { HttpResponse } from '@/constants/responseMessages.constants';
+import { HTTP_STATUS } from '@/constants/http-status.constants';
 import { UserRepository } from '@/repositories/implementations/user.repository';
-import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
+import { USER_STATUS, UserRole, UserStatus } from '@/constants/user-system.constants';
+import { AUTH_MESSAGES, USER_MESSAGES } from '@/constants/messages.constants';
 
 
 
@@ -35,7 +35,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
    const authHeader = req.headers.authorization;
 
    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_MISSING);
+      throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.TOKEN_MISSING);
    }
 
    const token = authHeader.split(" ")[1];
@@ -45,30 +45,30 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
       decoded = verifyAccessToken(token);
    } catch (err) {
       console.log('Token verification failed:', err);
-      throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_INVALID_OR_EXPIRED);
+      throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.TOKEN_INVALID_OR_EXPIRED);
    }
 
    if (!decoded?.userId) {
-      throw createHttpError(HttpStatus.UNAUTHORIZED, "Invalid token payload");
+      throw createHttpError(HTTP_STATUS.UNAUTHORIZED, "Invalid token payload");
    }
 
    const userRepo = new UserRepository();  // can directly use UserRepository here ??
    const user = await userRepo.getUserById(decoded.userId);
 
    if (!user) {
-      throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.USER_ACCOUNT_NOT_EXIST);
+      throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_ACCOUNT_NOT_EXIST);
    }
 
-   if (user.status === UserStatus.BLOCKED) {
+   if (user.status === USER_STATUS.BLOCKED) {
       throw createHttpError(
-         HttpStatus.FORBIDDEN,
-         HttpResponse.USER_ACCOUNT_BLOCKED,
+         HTTP_STATUS.FORBIDDEN,
+         USER_MESSAGES.USER_ACCOUNT_BLOCKED,
          "USER_ACCOUNT_BLOCKED"  // for axios intercepter
       );
    }
 
    req.user = {
-      userId: user.id,
+      userId: user.userId,
       email: user.email,
       role: user.role,
       status: user.status
@@ -86,11 +86,11 @@ export const authorize = (...allowedRoles: Array<UserRole>) => {
       const user = req.user;
 
       if (!user?.role) {
-         throw createHttpError(HttpStatus.UNAUTHORIZED, "Authentication required");
+         throw createHttpError(HTTP_STATUS.UNAUTHORIZED, "Authentication required");
       }
 
       if (!allowedRoles.includes(user.role)) {
-         throw createHttpError(HttpStatus.FORBIDDEN, "You don’t have permission to access this feature");
+         throw createHttpError(HTTP_STATUS.FORBIDDEN, "You don’t have permission to access this feature");
       }
 
       next();

@@ -1,7 +1,7 @@
 // src/utils/payload-utils/eventPayload.utils.ts
 
+import { EVENT_FORMATS } from "@/constants/event.constants";
 import type { EventFormValues } from "@/schemas/event.schema";
-import { EVENT_FORMATS } from "@/types/event.types";
 import { combineDateAndTime } from "@/utils/dateAndTimeFormats";
 
 // FOR CREATING AND UPDATING EVENTS (BY HOST AND ADMIN DASHBOARDS)

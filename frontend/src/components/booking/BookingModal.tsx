@@ -6,51 +6,80 @@ import {
 } from "lucide-react";
 import { useBooking } from "@/hooks/useBooking";
 import { toast } from "react-toastify";
-import { BOOKING_CONSTRAINTS, type IBookingState } from "@/types/booking.types";
+import { type IBookingState } from "@/types/booking.types";
 import type { UserState } from "@/types/user.types";
-import { EVENT_FORMATS, TICKET_TYPES, type IEventState } from "@/types/event.types";
+import { type IEventState } from "@/types/event.types";
 import { formatDate3 } from "@/utils/dateAndTimeFormats";
 import { BookingSteps } from "@/components/booking/BookingSteps";
 import { BookingConfirmationScreen } from "@/components/booking/BookingConfirmationScreen";
 import { getMaxBookingQuantity } from "@/utils/booking.utils";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { Button } from "@/components/ui/button";
+import { BOOKING_CONSTRAINTS } from "@/constants/booking.constants";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/constants/payment.constants";
+import { EVENT_FORMATS, TICKET_TYPES, type EventFormat } from "@/constants/event.constants";
+
+
+type EmbeddedEventSnapshot = IBookingState["event"];
+
 
 interface BookingModalProps {
-   event: IEventState;
-   user: UserState;
-   isOpen: boolean;
-   onClose: () => void;
-   onBooked?: (populatedBooking: IBookingState) => void;
+   event       : IEventState | EmbeddedEventSnapshot;
+   user        : UserState;
+   isOpen      : boolean;
+   onClose     : () => void;
+   onBooked?   : (populatedBooking: IBookingState) => void;
+   retryBooking?: IBookingState;
 }
 
 
 
-export function BookingModal({ event, user, isOpen, onClose, onBooked }: BookingModalProps) {
-   const isOnline = event.format === EVENT_FORMATS.ONLINE;
-   const isFree = event.ticketType === TICKET_TYPES.FREE;
-   const ticketsLeft = event.capacity - (event.soldTickets ?? 0);
-   const maxBookingQty = getMaxBookingQuantity(event.format, ticketsLeft);
 
-   const [step, setStep] = useState<1 | 2>(1);
-   const [selectedQuantity, setSelectedQuantity] = useState(1);
-   const [error, setError] = useState<string | null>(null);
+export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBooking }: BookingModalProps) {
+   const fullEvent = event as Partial<IEventState>;
+   const isOnlineEvent: boolean  = event.format === EVENT_FORMATS.ONLINE;
+   const ticketPrice: number = fullEvent.ticketPrice || 0;
+
+   const isFree: boolean = retryBooking 
+      ? retryBooking.totalAmount === 0 
+      : fullEvent.ticketType === TICKET_TYPES.FREE;
+
+   // If retrying, pretend we have exactly the right amount of tickets left
+   const ticketsLeft: number = retryBooking 
+      ? retryBooking.quantity 
+      : (fullEvent.capacity || 0) - (fullEvent.soldTickets || 0);
+
+   // If retrying, lock the max quantity to the retry quantity so the useEffect doesn't crash the state
+   const maxBookingQty: number = retryBooking
+      ? retryBooking.quantity
+      : getMaxBookingQuantity(event.format as EventFormat, ticketsLeft);
+
+   console.log('fullEvent.capacity :', fullEvent.capacity)
+   console.log('fullEvent.soldTickets :', fullEvent.soldTickets)
+   console.log('ticketsLeft :', ticketsLeft)
+
+   const [step, setStep]                           = useState<1 | 2>(1);
+   const [selectedQuantity, setSelectedQuantity]   = useState(1);
+   const [error, setError]                         = useState<string | null>(null);
+   const [paymentMethod, setPaymentMethod]         = useState<PaymentMethod>(isFree ? PAYMENT_METHODS.NONE : PAYMENT_METHODS.ONLINE);
+
+
 
    const totalPrice = useMemo(
-      () => (isFree ? 0 : event.ticketPrice * selectedQuantity),
-      [isFree, event.ticketPrice, selectedQuantity]
+      () => {
+         if (retryBooking) return retryBooking.totalAmount;
+         return isFree ? 0 : ticketPrice * selectedQuantity;
+      },
+      [isFree, ticketPrice, selectedQuantity, retryBooking]
    );
+   
+   const hasSufficientWalletBalance = user.walletBalance ? user.walletBalance >= totalPrice : false;
 
    const constraintMessage = event.format === EVENT_FORMATS.ONLINE
       ? BOOKING_CONSTRAINTS.ONLINE.MESSAGE
       : BOOKING_CONSTRAINTS.OFFLINE.MESSAGE;
 
-   const {
-      bookEvent,
-      isLoading,
-      confirmedBooking,
-      reset
-   } = useBooking({
+   const { bookEvent, retryBookingPayment, isLoading, confirmedBooking, reset } = useBooking({
       onSuccess: (populatedBooking) => {
          onBooked?.(populatedBooking);
          // pass the success message from backend if available, else show generic success message
@@ -64,23 +93,44 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
       },
    });
 
+
+   // Auto-switch payment method if wallet becomes insufficient after increasing quantity
+   useEffect(() => {
+      if (paymentMethod === PAYMENT_METHODS.WALLET && !hasSufficientWalletBalance) {
+          setPaymentMethod(PAYMENT_METHODS.ONLINE);
+      }
+   }, [totalPrice, hasSufficientWalletBalance, paymentMethod]);
+
+
    useEffect(() => {
       if (selectedQuantity > maxBookingQty) {
          setSelectedQuantity(maxBookingQty > 0 ? 1 : 0);
       }
    }, [maxBookingQty]);
 
-   // prevent background scroll
+
+   // prevent background scroll AND set initial step
    useEffect(() => {
       if (isOpen) {
          document.body.style.overflow = "hidden";
+
+         // If retrying, skip Step 1 and jump straight to the Payment Summary
+         if (retryBooking) {
+            setStep(2);
+            setSelectedQuantity(retryBooking.quantity);
+         } else {
+            setStep(1);
+            setSelectedQuantity(1);
+         }
       } else {
          document.body.style.overflow = "";
       }
+
       return () => {
          document.body.style.overflow = "";
       };
-   }, [isOpen]);
+   }, [isOpen, retryBooking]);
+
 
    const handleClose = () => {
       if (isLoading) return;
@@ -91,6 +141,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
       onClose();
    };
 
+
    const handleContinue = () => {
       if (ticketsLeft <= 0) return;
       if (selectedQuantity > maxBookingQty) {
@@ -100,17 +151,35 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
       setStep(2);
    };
 
+
    const handleConfirm = () => {
       setError(null);
+      
+      // retry Payment for Pending Booking
+      if (retryBooking) {
+         retryBookingPayment({
+            bookingId     : retryBooking.bookingId,
+            paymentMethod : paymentMethod,
+            eventTitle    : event.title,
+            userName      : user.name,
+            userEmail     : user.email,
+            userPhone     : user.mobile || "",
+         });
+         return;
+      }
+
+      // New Booking
       bookEvent({
-         eventId: event.eventId,
-         eventTitle: event.title,
-         selectedQuantity: selectedQuantity,
-         userName: user.name,
-         userEmail: user.email,
-         userPhone: user.mobile || "",
+         eventId          : event.eventId,
+         eventTitle       : event.title,
+         selectedQuantity : selectedQuantity,
+         paymentMethod    : paymentMethod,
+         userName         : user.name,
+         userEmail        : user.email,
+         userPhone        : user.mobile || "",
       });
    };
+
 
    if (!isOpen) return null;
 
@@ -202,7 +271,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                                     {formatDate3(event.startDateTime)}
                                  </p>
                                  <p className="text-xs text-(--text-secondary) mt-0.5 flex items-center gap-1">
-                                    {isOnline ? (
+                                    {isOnlineEvent ? (
                                        <><Globe size={11} /> Online event</>
                                     ) : (
                                        <><MapPin size={11} /> {event.locationName}</>
@@ -232,7 +301,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                            </div>
 
                            {/* Quantity selector */}
-                           {isOnline ? (
+                           {isOnlineEvent ? (
                               <div className="p-3 rounded-xl bg-(--badge-info-bg) border border-(--badge-info-border) text-sm text-(--badge-info-text)">
                                  {constraintMessage}
                               </div>
@@ -274,7 +343,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                            <div className="rounded-2xl bg-(--bg-tertiary) border border-(--card-border) divide-y divide-(--border-muted) text-sm">
                               <div className="flex justify-between px-4 py-3 text-(--text-secondary)">
                                  <span>Price per ticket</span>
-                                 <span>{isFree ? "Free" : `₹${event.ticketPrice.toLocaleString("en-IN")}`}</span>
+                                 <span>{isFree ? "Free" : `₹${ticketPrice.toLocaleString("en-IN")}`}</span>
                               </div>
                               <div className="flex justify-between px-4 py-3 text-(--text-secondary)">
                                  <span>Quantity</span>
@@ -302,8 +371,8 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                               </div>
                            )}
 
+                           {/* Order Summary */}
                            <h3 className="font-semibold text-(--heading-primary)">Order Summary</h3>
-
                            <div className="rounded-2xl bg-(--bg-tertiary) border border-(--card-border) divide-y divide-(--border-muted) text-sm">
                               <div className="flex justify-between px-4 py-3 text-(--text-secondary)">
                                  <span>Event</span>
@@ -319,7 +388,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                                  <span>Tickets</span>
                                  <span>
                                     {selectedQuantity} ×{" "}
-                                    {isFree ? "Free" : `₹${event.ticketPrice.toLocaleString("en-IN")}`}
+                                    {isFree ? "Free" : `₹${ticketPrice.toLocaleString("en-IN")}`}
                                  </span>
                               </div>
                               <div className="flex justify-between px-4 py-3 font-bold text-(--heading-primary)">
@@ -328,7 +397,132 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                               </div>
                            </div>
 
-                           {/* Attendee */}
+                           {/* ── Payment Method Selector (Only for Paid Events) ── */}
+                           {!isFree && (
+                              <div className="space-y-3 mt-5">
+                                 <h3 className="font-semibold text-sm text-(--text-tertiary) uppercase tracking-wide">
+                                    Select Payment Method
+                                 </h3>
+                                 
+                                 {/* Option 1: Pay Online */}
+                                 <div 
+                                    role="radio"
+                                    aria-checked={paymentMethod === PAYMENT_METHODS.ONLINE}
+                                    onClick={() => setPaymentMethod(PAYMENT_METHODS.ONLINE)}
+                                    className={`flex items-start p-4 rounded-xl border cursor-pointer transition-all ${
+                                       paymentMethod === PAYMENT_METHODS.ONLINE 
+                                          ? 'border-(--brand-primary) bg-(--brand-primary)/5' 
+                                          : 'border-(--card-border) bg-(--bg-secondary)'
+                                    }`}
+                                 >
+                                    {/* Radio Icon (Pinned to top) */}
+                                    <div className={`mt-0.5 w-4 h-4 rounded-full border shrink-0 flex items-center justify-center ${
+                                       paymentMethod === PAYMENT_METHODS.ONLINE ? 'border-(--brand-primary)' : 'border-(--text-tertiary)'
+                                    }`}>
+                                       {paymentMethod === PAYMENT_METHODS.ONLINE && (
+                                          <div className="w-2 h-2 rounded-full bg-(--brand-primary)" />
+                                       )}
+                                    </div>
+                                    
+                                    {/* Content Stacked */}
+                                    <div className="ml-3 flex flex-col gap-3 w-full">
+                                       <span className="text-sm font-medium text-(--heading-primary) leading-none mt-0.5">
+                                          Pay Online (Cards, UPI, NetBanking)
+                                       </span>
+                                       
+                                       {/* Trust Icons Below Text */}
+                                       <div className="flex items-center gap-2.5">
+                                          <img 
+                                             src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" 
+                                             alt="UPI" 
+                                             className="h-4 w-auto object-contain opacity-80 mix-blend-multiply dark:mix-blend-normal"
+                                          />
+                                          <img 
+                                             src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" 
+                                             alt="GPay" 
+                                             className="h-4 w-auto object-contain opacity-80 mix-blend-multiply"
+                                          />
+                                          <img 
+                                             src="https://upload.wikimedia.org/wikipedia/commons/9/98/Visa_Inc._logo_%282005%E2%80%932014%29.svg" 
+                                             alt="Visa" 
+                                             className="h-3.5 w-auto object-contain opacity-80"
+                                          />
+                                          <img 
+                                             src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" 
+                                             alt="Mastercard" 
+                                             className="h-5 w-auto object-contain opacity-80"
+                                          />
+                                       </div>
+                                    </div>
+                                 </div>
+
+                                 {/* Option 2: Pay via Wallet */}
+                                 <div 
+                                    role="radio"
+                                    aria-checked={paymentMethod === PAYMENT_METHODS.WALLET}
+                                    aria-disabled={!hasSufficientWalletBalance}
+                                    onClick={() => {
+                                       if (hasSufficientWalletBalance) {
+                                          setPaymentMethod(PAYMENT_METHODS.WALLET);
+                                       }
+                                    }}
+                                    className={`flex items-start p-4 rounded-xl border transition-all ${
+                                       !hasSufficientWalletBalance 
+                                          ? 'opacity-60 cursor-not-allowed border-(--card-border) bg-(--bg-tertiary)' 
+                                          : 'cursor-pointer ' + (
+                                             paymentMethod === PAYMENT_METHODS.WALLET 
+                                                ? 'border-(--brand-primary) bg-(--brand-primary)/5' 
+                                                : 'border-(--card-border) bg-(--bg-secondary)'
+                                          )
+                                    }`}
+                                 >
+                                    {/* Radio Icon (Pinned to top) */}
+                                    <div className={`mt-0.5 w-4 h-4 rounded-full border shrink-0 flex items-center justify-center ${
+                                       paymentMethod === PAYMENT_METHODS.WALLET ? 'border-(--brand-primary)' : 'border-(--text-tertiary)'
+                                    }`}>
+                                       {paymentMethod === PAYMENT_METHODS.WALLET && (
+                                          <div className="w-2 h-2 rounded-full bg-(--brand-primary)" />
+                                       )}
+                                    </div>
+                                    
+                                    {/* Content Stacked */}
+                                    <div className="ml-3 flex flex-col gap-3 w-full">
+                                       <div className="flex flex-col gap-1">
+                                          <span className="text-sm font-medium text-(--heading-primary) leading-none mt-0.5">
+                                             Pay via Wallet
+                                          </span>
+                                          <span className="text-xs text-(--text-secondary)">
+                                             Available Balance: ₹{user.walletBalance?.toLocaleString("en-IN") || 0}
+                                          </span>
+                                       </div>
+
+                                       {/* Wallet Icon Below Text */}
+                                       <div className="flex items-center justify-between w-full">
+                                          <div className="flex items-center gap-2">
+                                             <div className="flex items-center justify-center h-5 w-5 rounded shadow-sm opacity-90">
+                                                <img 
+                                                   src="/logos/crowdconnect-logo-1.png" 
+                                                   alt="CrowdConnect Wallet" 
+                                                   className="h-6 w-6 object-contain"
+                                                />
+                                             </div>
+                                             <span className="text-xs font-medium text-(--text-tertiary)">
+                                                CrowdConnect Wallet
+                                             </span>
+                                          </div>
+
+                                          {!hasSufficientWalletBalance && (
+                                             <span className="text-[10px] uppercase tracking-wider font-bold text-(--status-error) bg-(--badge-error-bg) px-2 py-1 rounded border border-(--badge-error-border)">
+                                                Insufficient
+                                             </span>
+                                          )}
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           )}
+
+                           {/* Attendee Details*/}
                            <div className="rounded-2xl bg-(--bg-tertiary) border border-(--card-border) divide-y divide-(--border-muted) text-sm">
                               <div className="px-4 py-2 text-xs font-semibold text-(--text-tertiary) uppercase tracking-wide">
                                  Booking for
@@ -378,17 +572,20 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked }: Booking
                   )}
                   {step === 2 && (
                      <div className="flex gap-3">
-                        <Button
-                           variant="secondary"
-                           onClick={() => { setStep(1); setError(null); }}
-                           className="flex-1 h-11"
-                        >
-                           Back
-                        </Button>
+                        {/* ONLY show the Back button if this is a NEW booking */}
+                        {!retryBooking && (
+                           <Button
+                              variant="secondary"
+                              onClick={() => { setStep(1); setError(null); }}
+                              className="flex-1 h-11"
+                           >
+                              Back
+                           </Button>
+                        )}
                         <Button
                            variant="default"
                            onClick={handleConfirm}
-                           className="flex-1 h-11"
+                           className={`h-11 ${retryBooking ? "w-full" : "flex-1"}`}
                         >
                            {isFree ? "Confirm Booking" : `Pay ₹${totalPrice.toLocaleString("en-IN")}`}
                         </Button>

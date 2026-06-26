@@ -1,4 +1,5 @@
-import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES, EVENT_CATEGORIES, type EVENT_STATUS } from "@/types/event.types";
+import { EVENT_CATEGORIES, type EventStatus } from "@/constants/event.constants";
+import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES } from "@/types/event.types";
 import { parseISODateTime } from "@/utils/dateAndTimeFormats";
 import { z } from "zod";
 
@@ -193,7 +194,7 @@ export const rejectReasonBase = z
 export const eventFormSchemaFactory = (
    isEditWithExistingImage = false, 
    isEditMode = false, 
-   eventStatus?: EVENT_STATUS
+   eventStatus?: EventStatus
 ) =>
    z.object({
       title: titleBase,

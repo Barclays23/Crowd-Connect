@@ -18,7 +18,7 @@
 // } from "@/types/wallet.types";
 
 // import { createHttpError } from "@/utils/httpError.utils";
-// import { HttpStatus } from "@/constants/statusCodes.constants";
+// import { HTTP_STATUS } from "@/constants/statusCodes.constants";
 // // import Razorpay from 'razorpay'; 
 
 

@@ -3,7 +3,11 @@
 import { Router } from 'express';
 
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
-import { uploadDocument, uploadEventPoster, uploadImage } from '@/middlewares/file-upload.middleware';
+import { 
+    uploadDocument, 
+    uploadEventPoster, 
+    uploadImage 
+} from '@/middlewares/file-upload.middleware';
 
 import { UserRepository } from '@/repositories/implementations/user.repository';
 
@@ -17,9 +21,13 @@ import { HostController } from '@/controllers/implementations/host.controller';
 
 import { validateParams, validateRequest } from '@/middlewares/validate.middleware';
 import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
-import { BookingIdParamSchema, EventIdParamSchema, HostIdParamSchema, MongoIdParamSchema, PayoutIdParamSchema } from '@/schemas/mongo.schema';
+import { 
+    BookingIdParamSchema, 
+    EventIdParamSchema, 
+    HostIdParamSchema, 
+    PayoutIdParamSchema 
+} from '@/schemas/mongo.schema';
 import { ADMIN_ROUTES } from '@/constants/routes.constants';
-import { UserRole } from '@/constants/roles-and-statuses';
 import { EventManagementServices } from '@/services/event-services/implementations/event.service';
 import { EventRepository } from '@/repositories/implementations/event.repository';
 import { EventController } from '@/controllers/implementations/event.controller';
@@ -35,7 +43,6 @@ import { PasswordService } from '@/services/password-services/implementations/pa
 import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
 import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
-import { PlatformSettingsController } from '@/controllers/implementations/platformSettings.controller';
 import { PlatformSettingsService } from '@/services/platform-settings-services/implementations/platformSettings.service';
 import { PlatformSettingsRepository } from '@/repositories/implementations/platformSettings.repository';
 import { PayoutService } from '@/services/payout-services/implementations/payout.service';
@@ -43,6 +50,7 @@ import { PayoutRepository } from '@/repositories/implementations/payout.reposito
 import { PayoutController } from '@/controllers/implementations/payout.controller';
 import { ReviewPayoutBodySchema } from '@/schemas/payout.schema';
 import { EventQueueService } from '@/services/queue-services/implementaions/eventQueue.service';
+import { USER_ROLES } from '@/constants/user-system.constants';
 
 
 
@@ -99,7 +107,7 @@ const adminRouter = Router();
 
 
 adminRouter.use(authenticate);
-adminRouter.use(authorize(UserRole.ADMIN));
+adminRouter.use(authorize(USER_ROLES.ADMIN));
 
 
 

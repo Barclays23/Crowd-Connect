@@ -5,8 +5,6 @@ import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { ClientSession } from "mongoose";
-import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
-import { TRANSACTION_REFERENCE_TYPE, TRANSACTION_TYPE } from "@/types/wallet.types";
 import { 
     BookingEntityPopulated, 
     CancelBookingInput, 
@@ -14,6 +12,9 @@ import {
 } from "@/entities/booking.entity";
 import { IRefundStrategy } from "@/services/webhook-strategy-services/interfaces/IRefundStrategy";
 import { StandardWebhookEvent } from "@/types/webhook.types";
+import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
+import { BOOKING_STATUSES } from "@/constants/booking.constants";
 
 
 
@@ -21,8 +22,8 @@ import { StandardWebhookEvent } from "@/types/webhook.types";
 
 export class BookingRefundStrategy implements IRefundStrategy {
     constructor(
-        private readonly _bookingRepository: IBookingRepository,
-        private readonly _walletService: IWalletService
+        private readonly _bookingRepository : IBookingRepository,
+        private readonly _walletService     : IWalletService
     ) {}
 
 
@@ -41,7 +42,7 @@ export class BookingRefundStrategy implements IRefundStrategy {
         }
 
         
-        if (booking.payment?.status === PAYMENT_STATUS.REFUNDED) {
+        if (booking.payment?.status === PAYMENT_STATUSES.REFUNDED) {
             console.log(`[Webhook] Booking ${booking.bookingId} is already refunded. Ignoring.`);
             return; 
         }
@@ -54,9 +55,9 @@ export class BookingRefundStrategy implements IRefundStrategy {
                 fromUserId          : superAdminId,
                 toUserId            : booking.user.userId, 
                 transferAmount      : refundAmount,
-                fromTransactionType : TRANSACTION_TYPE.REFUND_ISSUED,
-                toTransactionType   : TRANSACTION_TYPE.BOOKING_REFUND,
-                referenceType       : TRANSACTION_REFERENCE_TYPE.BOOKING,
+                fromTransactionType : TRANSACTION_TYPES.REFUND_ISSUED,
+                toTransactionType   : TRANSACTION_TYPES.BOOKING_REFUND,
+                referenceType       : TRANSACTION_REFERENCE_TYPES.BOOKING,
                 referenceId         : booking.bookingId.toString(),
                 description         : `Refund for cancelled booking - ${booking.event?.title || 'Event'}. Ticket No.${booking.ticketNo}`,
                 metadata            : { refundId },
@@ -64,10 +65,10 @@ export class BookingRefundStrategy implements IRefundStrategy {
 
 
             // Mark Booking Cancelled (if not already cancelled, or refund directly from webhook dashboard)
-            if (booking.bookingStatus !== BOOKING_STATUS.CANCELLED) {
+            if (booking.bookingStatus !== BOOKING_STATUSES.CANCELLED) {
                 const cancelDetails: CancelBookingInput = {
-                    bookingStatus   : BOOKING_STATUS.CANCELLED,
-                    paymentStatus   : refundAmount > 0 ? PAYMENT_STATUS.PENDING : PAYMENT_STATUS.COMPLETED,
+                    bookingStatus   : BOOKING_STATUSES.CANCELLED,
+                    paymentStatus   : refundAmount > 0 ? PAYMENT_STATUSES.PENDING : PAYMENT_STATUSES.COMPLETED,
                     cancellation: {
                         cancelledAt : new Date(webhookEvent.timestamp),  // Use the normalized timestamp!
                         reason      : 'Manual refund issued via Payment Gateway Dashboard',
@@ -80,7 +81,7 @@ export class BookingRefundStrategy implements IRefundStrategy {
 
             // 2. Mark Refunded
             const refundDetails: MarkRefundedInput = {
-                paymentStatus   : PAYMENT_STATUS.REFUNDED,
+                paymentStatus   : PAYMENT_STATUSES.REFUNDED,
                 refundId        : refundId,
                 refundedAt      : new Date(webhookEvent.timestamp)  // Use the normalized timestamp!
             };

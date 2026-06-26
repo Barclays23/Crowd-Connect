@@ -24,7 +24,6 @@ import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
-    BOOKING_STATUS,
     type IBookingState,
     type BookingSortField,
     type GetBookingsApiResponse,
@@ -37,6 +36,7 @@ import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/ui/FieldError";
 import { canCancelBooking } from "@/utils/booking.utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constants";
 
 interface EventBookingsListProps {
     eventId: string;
@@ -46,7 +46,7 @@ interface EventBookingsListProps {
 export function EventBookingsList({ eventId }: EventBookingsListProps) {
     const [searchTerm, setSearchTerm]           = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [statusFilter, setStatusFilter]       = useState<"all" | BOOKING_STATUS>("all");
+    const [statusFilter, setStatusFilter]       = useState<"all" | BookingStatus>("all");
     const [currentPage, setCurrentPage]         = useState(1);
     const [sortBy, setSortBy]                   = useState<BookingSortField>("createdAt");
     const [sortOrder, setSortOrder]             = useState<"asc" | "desc">("desc");
@@ -161,7 +161,7 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                         className="pl-10 h-10 rounded-xl border-(--border-muted) bg-(--form-input-bg) text-(--form-input-text)"
                     />
                 </div>
-                <Select value={statusFilter} onValueChange={(v: "all" | BOOKING_STATUS) => { setStatusFilter(v); setCurrentPage(1); }}>
+                <Select value={statusFilter} onValueChange={(v: "all" | BookingStatus) => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-40 h-10 rounded-xl border-(--border-muted)">
                         <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>

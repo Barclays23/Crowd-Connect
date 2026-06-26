@@ -1,6 +1,6 @@
 // src/services/payment-services/implementations/payment.service.ts
 
-import { PaymentPurpose } from "@/constants/payment.constants";
+import { PAYMENT_PURPOSES, PaymentPurpose } from "@/constants/payment.constants";
 import { IPaymentProvider } from "@/services/payment-services/interfaces/IPaymentProvider";
 import { 
     InitiateRefundInput, 
@@ -22,7 +22,7 @@ export class PaymentService implements IPaymentService {
     ) {}
 
     async createBookingOrder(totalAmount: number, userId: string): Promise<CreateOrderResult> {
-        const purpose: PaymentPurpose = PaymentPurpose.EVENT_BOOKING;
+        const purpose: PaymentPurpose = PAYMENT_PURPOSES.EVENT_BOOKING;
         const result: CreateOrderResult = await this._provider.createOrder(purpose, totalAmount, "INR", userId);
         return result;
     }

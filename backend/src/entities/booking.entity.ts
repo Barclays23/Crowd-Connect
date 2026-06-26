@@ -1,8 +1,12 @@
 // backend/src/entities/booking.entity.ts
 
-import { BOOKING_STATUS, MajorEventChange, PAYMENT_STATUS } from "@/types/booking.types";
-import { EVENT_CATEGORY, EVENT_FORMAT } from "@/types/event.types";
+import { BookingStatus } from "@/constants/booking.constants";
+import { EventCategory, EventFormat } from "@/constants/event.constants";
+import { PaymentStatus } from "@/constants/payment.constants";
+import { MajorEventChange } from "@/types/booking.types";
 import { Types } from "mongoose";
+
+
 
 export interface BookingEntity {
   bookingId:    string;
@@ -15,13 +19,13 @@ export interface BookingEntity {
   ticketNo:    string;
   
   // Booking Status & Event Format
-  bookingStatus: BOOKING_STATUS;
+  bookingStatus: BookingStatus;
 
   payment: {
     orderId:    string;
     paymentId?: string;
     signature?: string;
-    status:             PAYMENT_STATUS;
+    status:             PaymentStatus;
     paidAt?:            Date;
   };
 
@@ -49,11 +53,11 @@ export interface BookingEntityPopulated extends Omit<BookingEntity, "eventRef" |
   event: {
     eventId:       string;
     title:         string;
-    category:      EVENT_CATEGORY;
+    category:      EventCategory;
     posterUrl:     string;
     startDateTime: Date;
     endDateTime:   Date;
-    format:        EVENT_FORMAT;
+    format:        EventFormat;
     locationName?: string;
     onlineLink?:   string;
   },
@@ -77,13 +81,13 @@ export interface CreateBookingInput {
   payment: {
     orderId: string;
     paymentId?: string;
-    status:          PAYMENT_STATUS;
+    status:          PaymentStatus;
     paidAt?:         Date;
   };
   qrToken:          string;
   remainingEntries: number;
-  eventFormat: EVENT_FORMAT;
-  bookingStatus:    BOOKING_STATUS;
+  eventFormat: EventFormat;
+  bookingStatus:    BookingStatus;
 }
 
 // 2
@@ -91,11 +95,11 @@ export interface ConfirmBookingInput {
   payment: {
     paymentId: string;
     signature: string;
-    status: PAYMENT_STATUS;
+    status: PaymentStatus;
     paidAt: Date;
   };
   qrToken: string;
-  bookingStatus: BOOKING_STATUS;
+  bookingStatus: BookingStatus;
 }
 
 
@@ -105,8 +109,8 @@ export interface UpdateBookingInput {  // or UpdateBookingRefundInput
 
 
 export interface CancelBookingInput {
-  bookingStatus: BOOKING_STATUS;
-  paymentStatus: PAYMENT_STATUS;
+  bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus;
   // qrToken:       string;
   cancellation: {
     cancelledAt: Date;
@@ -118,7 +122,7 @@ export interface CancelBookingInput {
 
 
 export interface BulkCancelBookingsInput {
-  bookingStatus: BOOKING_STATUS;
+  bookingStatus: BookingStatus;
   cancellation: {
     cancelledAt:  Date;
     reason: string;
@@ -127,7 +131,7 @@ export interface BulkCancelBookingsInput {
 
 
 export interface MarkRefundedInput {
-  paymentStatus: PAYMENT_STATUS;
+  paymentStatus: PaymentStatus;
   refundId: string;
   refundedAt: Date;
 }

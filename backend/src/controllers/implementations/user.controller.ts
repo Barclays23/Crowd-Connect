@@ -2,8 +2,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { IUserController } from '../interfaces/IUserController';
-import { HttpStatus } from '@/constants/statusCodes.constants';
-import { AuthMessages, HttpResponse } from '@/constants/responseMessages.constants';
+import { HTTP_STATUS } from '@/constants/http-status.constants';
+import { AUTH_MESSAGES, USER_MESSAGES } from '@/constants/messages.constants';
 import { GetUsersFilter, GetUsersResult } from '@/types/user.types';
 import { 
     CreateUserRequestDto, 
@@ -11,10 +11,10 @@ import {
     UserBasicInfoUpdateDTO, 
     UserProfileResponseDto 
 } from '@/dtos/user.dto';
-import { UserRole, UserStatus } from '@/constants/roles-and-statuses';
 import { IUserProfileService } from '@/services/user-services/interfaces/IUserProfileService';
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
 import { IPasswordService } from '@/services/password-services/interfaces/IPasswordService';
+import { UserRole, UserStatus } from '@/constants/user-system.constants';
 
 
 
@@ -30,16 +30,16 @@ export class UserController implements IUserController {
     async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
             const userId = req.user.userId;
             const userProfile: UserProfileResponseDto = await this._userProfileServices.getUserProfile(userId);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 userProfile,
-                message: HttpResponse.SUCCESS_GET_USERS,
+                message: USER_MESSAGES.SUCCESS_GET_USERS,
             });
 
         } catch (err: unknown) {
@@ -53,7 +53,7 @@ export class UserController implements IUserController {
     async editUserBasicInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -67,10 +67,10 @@ export class UserController implements IUserController {
                 mobile: updatedUser.mobile
             }
             
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 updatedUser: updatedUserBasicInfo,
-                message: HttpResponse.SUCCESS_UPDATE_PROFILE
+                message: USER_MESSAGES.SUCCESS_UPDATE_PROFILE
             });
 
 
@@ -86,7 +86,7 @@ export class UserController implements IUserController {
     async changeUserPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.email) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User email missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User email missing" });
                 return;
             }
 
@@ -97,9 +97,9 @@ export class UserController implements IUserController {
 
             await this._passwordService.changeUserPassword(userEmail, {currentPassword, newPassword});
             
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: AuthMessages.PASSWORD_CHANGE_SUCCESS
+                message: AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS
             });
 
 
@@ -115,7 +115,7 @@ export class UserController implements IUserController {
     async updateProfilePicture(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -126,10 +126,10 @@ export class UserController implements IUserController {
 
             const updatedUser: UserProfileResponseDto = await this._userProfileServices.updateProfilePicture(userId, imageFile);
             
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 updatedProfilePic: updatedUser.profilePic,
-                message: HttpResponse.PROFILE_PICTURE_CHANGED
+                message: USER_MESSAGES.PROFILE_PICTURE_CHANGED
             });
 
         } catch (err: unknown) {
@@ -163,9 +163,9 @@ export class UserController implements IUserController {
             const result: GetUsersResult = await this._userManagementServices.getAllUsers(filters);
             // console.log('✅ Result in userController.getAllUsers:', result);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_GET_USERS,
+                message: USER_MESSAGES.SUCCESS_GET_USERS,
                 usersData: result.users,
                 pagination: {
                     page: result.page,
@@ -189,7 +189,7 @@ export class UserController implements IUserController {
     async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
                 return;
             }
             const createDto: CreateUserRequestDto = req.body;
@@ -202,9 +202,9 @@ export class UserController implements IUserController {
                 currentAdminId
             });
 
-            res.status(HttpStatus.CREATED).json({
+            res.status(HTTP_STATUS.CREATED).json({
                 success: true,
-                message: HttpResponse.SUCCESS_CREATE_USER,
+                message: USER_MESSAGES.SUCCESS_CREATE_USER,
                 userData: createdUser,
             });
 
@@ -221,7 +221,7 @@ export class UserController implements IUserController {
     async editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
                 return;
             }
 
@@ -239,9 +239,9 @@ export class UserController implements IUserController {
 
             // console.log('✅ updatedUser in userController.editUserByAdmin:', updatedUser);
             
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_UPDATE_USER,
+                message: USER_MESSAGES.SUCCESS_UPDATE_USER,
                 userData: updatedUser,
             });
 
@@ -257,7 +257,7 @@ export class UserController implements IUserController {
     async toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
                 return;
             }
 
@@ -267,12 +267,12 @@ export class UserController implements IUserController {
             const updatedStatus: UserStatus = await this._userManagementServices.toggleUserBlock({ targetUserId, currentAdminId });
 
             const responseMessage = updatedStatus === 'blocked'
-                ? HttpResponse.SUCCESS_BLOCK_USER
-                : HttpResponse.SUCCESS_UNBLOCK_USER;
+                ? USER_MESSAGES.SUCCESS_BLOCK_USER
+                : USER_MESSAGES.SUCCESS_UNBLOCK_USER;
 
             console.log('✅ updatedStatus:', updatedStatus, ', responseMessage:', responseMessage);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: responseMessage,
                 updatedStatus,
@@ -290,7 +290,7 @@ export class UserController implements IUserController {
     async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
                 return;
             }
             
@@ -299,9 +299,9 @@ export class UserController implements IUserController {
 
             await this._userManagementServices.deleteUser({ targetUserId, currentAdminId });
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_DELETE_USER,
+                message: USER_MESSAGES.SUCCESS_DELETE_USER,
             });
 
         } catch (err: unknown) {

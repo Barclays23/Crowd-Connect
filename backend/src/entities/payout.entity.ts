@@ -1,6 +1,6 @@
 // backend/src/entities/payout.entity.ts
 
-import { PAYOUT_REQUEST_STATUS } from "@/types/payout.types";
+import { PayoutRequestStatus } from "@/constants/payout.constants";
 
 
 export interface PayoutEntity {
@@ -19,7 +19,7 @@ export interface PayoutEntity {
     commissionAmount: number,
     netAmount       : number,
     
-    status          : PAYOUT_REQUEST_STATUS,
+    status          : PayoutRequestStatus,
     requestedAt     : string,
     reviewedAt?     : string,
     reviewedBy?     : string,

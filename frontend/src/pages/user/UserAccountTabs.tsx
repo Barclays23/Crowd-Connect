@@ -14,18 +14,18 @@ import UserProfile from '@/components/user/UserProfile';
 import UserDashboard from '@/components/user/UserDashboard';
 import UserEvents from '@/components/user/UserEvents';
 import UserBookings from '@/components/user/UserBookings';
-import UserWishlist from '@/components/user/UserWishlist';
 import UserWallet from '@/components/user/UserWallet';
 import UserPayouts from '@/components/user/UserPayouts';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import UserFavourites from '@/components/user/UserFavourites';
 
 const ALL_TABS = [
   { id: 'profile',    label: 'My Profile',  icon: User,             path: '/my-account' },
   { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard,  path: '/dashboard' },
   { id: 'events',     label: 'My Events',   icon: Calendar,         path: '/my-events' },
   { id: 'bookings',   label: 'My Bookings', icon: BookOpen,         path: '/my-bookings' },
-  { id: 'wishlist',   label: 'Wishlist',    icon: Heart,            path: '/my-wishlist' },
+  { id: 'favourites', label: 'Favourites',    icon: Heart,            path: '/my-favourites' },
   { id: 'wallet',     label: 'Wallet',      icon: Wallet,           path: '/my-wallet' },
   { id: 'payouts',    label: "Payouts",     icon: IndianRupee,      path: "/my-payouts" }
 ] as const;
@@ -33,13 +33,13 @@ const ALL_TABS = [
 type TabId = (typeof ALL_TABS)[number]['id'];
 
 const pathToTab: Record<string, TabId> = {
-  '/my-account'   : 'profile',
-  '/dashboard'    : 'dashboard',
-  '/my-events'    : 'events',
-  '/my-bookings'  : 'bookings',
-  '/my-wishlist'  : 'wishlist',
-  '/my-wallet'    : 'wallet',
-  "/my-payouts"   : 'payouts'
+  '/my-account'     : 'profile',
+  '/dashboard'      : 'dashboard',
+  '/my-events'      : 'events',
+  '/my-bookings'    : 'bookings',
+  '/my-favourites'  : 'favourites',
+  '/my-wallet'      : 'wallet',
+  "/my-payouts"     : 'payouts'
 };
 
 
@@ -91,8 +91,8 @@ const UserAccountTabs = () => {
         return isHost ? <UserEvents /> : <UserProfile />;
       case 'bookings':
         return <UserBookings />;
-      case 'wishlist':
-        return <UserWishlist />;
+      case 'favourites':
+        return <UserFavourites />;
       case 'wallet':
         return <UserWallet />;
       case 'payouts':

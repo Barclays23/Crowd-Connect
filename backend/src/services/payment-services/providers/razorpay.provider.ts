@@ -1,20 +1,26 @@
-// src/services/payment-services/providers/razorpay.provider.ts
+// backend/src/services/payment-services/providers/razorpay.provider.ts
 
 import Razorpay from "razorpay";
 import crypto   from "crypto";
-import { 
-    IPaymentProvider, 
-} from "@/services/payment-services/interfaces/IPaymentProvider";
+import { IPaymentProvider } from "@/services/payment-services/interfaces/IPaymentProvider";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { PaymentMessages } from "@/constants/responseMessages.constants";
-import { PaymentPurpose } from "@/constants/payment.constants";
 import { 
+    STANDARD_WEBHOOK_EVENT_TYPES,
     StandardWebhookEvent, 
     StandardWebhookEventType 
 } from "@/types/webhook.types";
-import { RazorPayOrderOptions, RazorpayWebhookPayload } from "@/types/razorpay.types";
-import { CreateOrderResult, RefundResult } from "@/types/payment.types";
+import { 
+    RazorpayBaseEntity, 
+    RazorPayOrderOptions, 
+    RazorpayWebhookPayload 
+} from "@/types/razorpay.types";
+import { 
+    CreateOrderResult, 
+    RefundResult 
+} from "@/types/payment.types";
+import { PAYMENT_PURPOSES, PaymentPurpose } from "@/constants/payment.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { PAYMENT_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -36,7 +42,7 @@ export class RazorpayProvider implements IPaymentProvider {
         try {
             // Razorpay requires a minimum of ₹1.00 (100 paise)
             if (currency.toUpperCase() === 'INR' && totalAmount < 1.00) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, PaymentMessages.MINIMUM_AMOUNT_REQUIRED);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.MINIMUM_AMOUNT_REQUIRED);
             }
 
             const shortPurpose  = purpose.slice(0, 8); 
@@ -73,7 +79,7 @@ export class RazorpayProvider implements IPaymentProvider {
 
             console.error(`[CRITICAL] Razorpay Create Order Error: ${errorMessage}`);
             
-            throw createHttpError(HttpStatus.BAD_GATEWAY, PaymentMessages.PAYMENT_SETUP_FAILED);
+            throw createHttpError(HTTP_STATUS.BAD_GATEWAY, PAYMENT_MESSAGES.PAYMENT_SETUP_FAILED);
         }
     }
 
@@ -123,67 +129,81 @@ export class RazorpayProvider implements IPaymentProvider {
         const razorpayData = rawPayload as RazorpayWebhookPayload;
         console.log('razorpay webhook rawPayload :', razorpayData)
         
-        const eventName     = razorpayData.event;
-        
-        const paymentEntity = razorpayData.payload?.payment?.entity;
-        const refundEntity  = razorpayData.payload?.refund?.entity;
+        const eventName: string                             = razorpayData.event;
+        const paymentEntity: RazorpayBaseEntity | undefined = razorpayData.payload?.payment?.entity;
+        const refundEntity: RazorpayBaseEntity | undefined  = razorpayData.payload?.refund?.entity;
         console.log('paymentEntity :', paymentEntity)
         console.log('refundEntity :', refundEntity)
 
         if (!paymentEntity && !refundEntity) return null;
 
+        const getPaymentPurpose = (entity: RazorpayBaseEntity | undefined): PaymentPurpose | null => {
+            const purpose = entity?.notes?.payment_purpose;
+            if (!purpose || !Object.values(PAYMENT_PURPOSES).includes(purpose as PaymentPurpose)) {
+                console.error(`[WEBHOOK_ERROR] Webhook entity missing or invalid mandatory 'payment_purpose'`);
+                return null;
+            }
+            return purpose as PaymentPurpose;
+        };
+
+        const purposePayment: PaymentPurpose | null = getPaymentPurpose(paymentEntity);
+        const purposeRefund: PaymentPurpose | null = getPaymentPurpose(refundEntity);
+
         let type: StandardWebhookEventType;
+        let paymentPurpose: PaymentPurpose;
         let amount          = 0;
         let paymentId       = paymentEntity?.id; // payment ID is usually always available
+        let orderId         = paymentEntity?.order_id || "";
         let refundId        = undefined;
         let timestamp       = Date.now();
-        let paymentPurpose  = PaymentPurpose.EVENT_BOOKING;
+
 
         // Translate Razorpay language to Internal Language
         switch (eventName) {
             case 'payment.captured':
-                // (Money successfully deducted from user)
-                // Handle successful payment
-                type            = StandardWebhookEventType.PAYMENT_SUCCESS;
+                // Money successfully deducted from user -> Handle successful payment
+                type            = STANDARD_WEBHOOK_EVENT_TYPES.PAYMENT_SUCCESS;
                 amount          = (paymentEntity?.amount || 0) / 100;
                 timestamp       = paymentEntity?.created_at ? paymentEntity.created_at * 1000 : Date.now();
-                paymentPurpose  = (paymentEntity?.notes?.payment_purpose as PaymentPurpose) || PaymentPurpose.EVENT_BOOKING;
+                if (!purposePayment) return null;
+                paymentPurpose = purposePayment;
                 break;
 
             case 'payment.failed':
-                // (Card declined, wrong OTP)
-                // Handle failed payment
-                type            = StandardWebhookEventType.PAYMENT_FAILED;
+                // Card declined, wrong OTP -> Handle failed payment
+                type            = STANDARD_WEBHOOK_EVENT_TYPES.PAYMENT_FAILED;
                 amount          = (paymentEntity?.amount || 0) / 100;
                 timestamp       = paymentEntity?.created_at ? paymentEntity.created_at * 1000 : Date.now();
-                paymentPurpose  = (paymentEntity?.notes?.payment_purpose as PaymentPurpose) || PaymentPurpose.EVENT_BOOKING; 
+                if (!purposePayment) return null;
+                paymentPurpose = purposePayment;
                 break;
 
             case 'refund.processed': 
                 // (Bank successfully refunded)
-                type            = StandardWebhookEventType.REFUND_SUCCESS;
+                type            = STANDARD_WEBHOOK_EVENT_TYPES.REFUND_SUCCESS;
                 amount          = (refundEntity?.amount || 0) / 100;
                 refundId        = refundEntity?.id;
                 timestamp       = refundEntity?.created_at ? refundEntity.created_at * 1000 : Date.now();
-                paymentPurpose  = (paymentEntity?.notes?.payment_purpose as PaymentPurpose) || PaymentPurpose.EVENT_BOOKING;
+                if (!purposeRefund) return null;
+                paymentPurpose = purposeRefund;
                 if (refundEntity?.payment_id) paymentId = refundEntity.payment_id;
                 break;
 
             case 'refund.failed': 
-                // (Bank rejected the refund)
-                // Handle a failed refund (e.g., notify admin/user)
+                // Bank rejected the refund -> Handle a failed refund (e.g., notify admin/user)
                 // Optionally: Notify admin or user here
-                type            = StandardWebhookEventType.REFUND_FAILED;
+                type            = STANDARD_WEBHOOK_EVENT_TYPES.REFUND_FAILED;
                 amount          = (refundEntity?.amount || 0) / 100;
                 refundId        = refundEntity?.id;
                 timestamp       = refundEntity?.created_at ? refundEntity.created_at * 1000 : Date.now();
-                paymentPurpose  = (paymentEntity?.notes?.payment_purpose as PaymentPurpose) || PaymentPurpose.EVENT_BOOKING;
+                if (!purposeRefund) return null;
+                paymentPurpose = purposeRefund;
                 if (refundEntity?.payment_id) paymentId = refundEntity.payment_id;
                 break;
 
             default: 
                 console.log(`ℹ️ Unhandled webhook event received: ${eventName}`);
-                return null; // Unhandled event
+                return null;
         }
 
 
@@ -192,6 +212,7 @@ export class RazorpayProvider implements IPaymentProvider {
         return {
             eventType       : type,
             paymentId       : paymentId,
+            orderId         : orderId,
             refundId        : refundId,
             amount          : amount, 
             paymentPurpose  : paymentPurpose, 
@@ -224,7 +245,7 @@ export class RazorpayProvider implements IPaymentProvider {
         } catch (error: unknown) {
             const description = this.extractRazorpayErrorDescription(error);
             console.error("Razorpay Refund Failed Error :", description);
-            throw createHttpError(HttpStatus.BAD_REQUEST, description);
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, description);
         }
     }
 

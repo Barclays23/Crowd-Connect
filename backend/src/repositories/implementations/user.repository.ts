@@ -24,7 +24,7 @@ import {
     mapUserModelToHostEntity,
     mapUserModelToProfileEntity
 } from "@/mappers/user.mapper";
-import { UserStatus } from "@/constants/roles-and-statuses";
+import { UserStatus } from "@/constants/user-system.constants";
 import { UpdateEmailDto } from "@/dtos/auth.dto";
 
 

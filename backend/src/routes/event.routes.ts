@@ -1,4 +1,4 @@
-import { UserRole } from "@/constants/roles-and-statuses";
+import { USER_ROLES } from "@/constants/user-system.constants";
 import { EVENT_ROUTES } from "@/constants/routes.constants";
 import { BookingController } from "@/controllers/implementations/booking.controller";
 import { EventController } from "@/controllers/implementations/event.controller";
@@ -23,6 +23,8 @@ import { EventQueueService } from "@/services/queue-services/implementaions/even
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
+
+
 
 
 // REPOS
@@ -59,28 +61,28 @@ export const eventRouter = Router();
 
 
 
-eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(UserRole.USER, UserRole.HOST), 
+eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), 
     uploadEventPoster.single('eventPosterImage'), validateRequest({body: CreateEventFormSchema}), 
     eventController.createEvent.bind(eventController)
 )
 
 eventRouter.patch(EVENT_ROUTES.UPDATE_EVENT,
-   authenticate, authorize(UserRole.USER, UserRole.HOST),
+   authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST),
    uploadEventPoster.single("eventPosterImage"), validateRequest({ body: UpdateEventFormSchema }),
    eventController.updateEventByHost.bind(eventController)
 );
 
-eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(UserRole.HOST), 
+eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(USER_ROLES.HOST), 
     validateParams(EventIdParamSchema), 
     eventController.publishEvent.bind(eventController)
 );
 
-eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(UserRole.HOST), 
+eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(USER_ROLES.HOST), 
     validateParams(EventIdParamSchema), 
     eventController.cancelEvent.bind(eventController)
 );
 
-eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), 
+eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
     eventController.getUserEvents.bind(eventController)
 );
 
@@ -98,12 +100,12 @@ eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
 );
 
 
-eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(UserRole.HOST, UserRole.ADMIN),
+eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER_ROLES.HOST, USER_ROLES.ADMIN),
     eventController.getAllBookingsOfEvent.bind(eventController)
 );
 
 eventRouter.post(
-  EVENT_ROUTES.INITIATE_BOOKING, authenticate, authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN), 
+  EVENT_ROUTES.INITIATE_BOOKING, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
   validateRequest({body: initiateBookingSchema, params: EventIdParamSchema}), 
   bookingController.initiateBooking.bind(bookingController)
 );

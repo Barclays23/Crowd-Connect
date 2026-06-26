@@ -1,6 +1,7 @@
 // backend/src/dtos/event.dto.ts
+import { EventCategory, EventFormat, EventStatus, TicketType } from "@/constants/event.constants";
 import { IPagination } from "@/types/common.types";
-import { EVENT_CATEGORY, EVENT_FORMAT, EVENT_STATUS, ILocation, TICKET_TYPE } from "@/types/event.types";
+import { ILocation } from "@/types/event.types";
 
 
 /* ───────────────── HTTP REQUEST BOUNDARY DTOs ───────────────── */
@@ -9,12 +10,12 @@ export interface CreateEventRequestDTO {
   hostRef: string; // The User ID
 
   title: string;
-  category: EVENT_CATEGORY;
+  category: EventCategory;
   description: string;
 
   aiGeneratedImage?: string;   // if generated AI poster image (Base64 / URL)
   
-  format: EVENT_FORMAT;
+  format: EventFormat;
   locationName?: string;       //  if offline event (human readable string)
   location?: ILocation;        //  if offline event (location coordinatory points- lat/lng)
   onlineLink?: string;
@@ -22,7 +23,7 @@ export interface CreateEventRequestDTO {
   startDateTime: Date;
   endDateTime: Date;
   
-  ticketType: TICKET_TYPE;
+  ticketType: TicketType;
   ticketPrice: number;
   capacity: number;
 }
@@ -30,12 +31,12 @@ export interface CreateEventRequestDTO {
 
 export interface UpdateEventRequestDTO {
   title: string;
-  category: EVENT_CATEGORY;
+  category: EventCategory;
   description: string;
 
   aiGeneratedImage?: string;   // if generated AI poster image (Base64 / URL)
   
-  format: EVENT_FORMAT;
+  format: EventFormat;
   locationName?: string;       //  if offline event (human readable string)
   location?: ILocation;        //  if offline event (location coordinatory points- lat/lng)
   onlineLink?: string;
@@ -43,7 +44,7 @@ export interface UpdateEventRequestDTO {
   startDateTime: Date;
   endDateTime: Date;
   
-  ticketType: TICKET_TYPE;
+  ticketType: TicketType;
   ticketPrice: number;
   capacity: number;
 }
@@ -52,7 +53,7 @@ export interface UpdateEventRequestDTO {
 
 
 export interface EventStatusUpdateRequestDto {
-  newStatus: EVENT_STATUS, 
+  newStatus: EventStatus, 
   reason?: string;
 }
 
@@ -69,12 +70,12 @@ export interface EventResponseDTO {
   };
 
   title: string;
-  category: EVENT_CATEGORY;
+  category: EventCategory;
   description: string;
 
   posterUrl: string;
 
-  format: EVENT_FORMAT;
+  format: EventFormat;
   locationName?: string;
   location?: ILocation;
   onlineLink?: string;
@@ -82,7 +83,7 @@ export interface EventResponseDTO {
   startDateTime: string;
   endDateTime: string;
 
-  ticketType: TICKET_TYPE;
+  ticketType: TicketType;
   ticketPrice: number;
   capacity: number;
 
@@ -90,7 +91,7 @@ export interface EventResponseDTO {
   checkedInCount: number;
   grossTicketRevenue: number;
 
-  eventStatus: EVENT_STATUS;
+  eventStatus: EventStatus;
 
   cancellation?: {
     reason: string;

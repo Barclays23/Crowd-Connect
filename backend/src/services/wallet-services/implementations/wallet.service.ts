@@ -8,26 +8,22 @@ import {
    WalletCreditInput,
    WalletDebitInput,
    TransactionsFilterQuery,
-   // CreateWithdrawalRequestInput,
-   // GetWithdrawalRequestsFilter,
-   TRANSACTION_DIRECTION,
    WalletTransferInput,
 } from "@/types/wallet.types";
 import {
    GetTransactionsResponse,
    WalletOverviewResponse,
-   // GetWithdrawalRequestsResponse,
-   // WithdrawalRequestResponseDTO,
 } from "@/dtos/wallet.dto";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { UserMessages, WalletMessages } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { USER_MESSAGES, WALLET_MESSAGES } from "@/constants/messages.constants";
 import { 
    mapToCreateTransactionInput, 
    mapTransactionEntityToResponseDTO 
 } from "@/mappers/wallet.mapper";
 import { UserEntity } from "@/entities/user.entity";
 import { TransactionEntity } from "@/entities/transaction.entity";
+import { TRANSACTION_DIRECTIONS } from "@/constants/transaction.constants";
 
 
 
@@ -51,12 +47,12 @@ export class WalletService implements IWalletService {
       const newBalance: number | null = await this._userRepository.incrementWalletBalance(userId, amount, { session });
 
       if (newBalance === null) {
-         throw createHttpError(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND)
+         throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND)
       }
 
       const transactionInput = mapToCreateTransactionInput(
          creditInput, 
-         TRANSACTION_DIRECTION.CREDIT, 
+         TRANSACTION_DIRECTIONS.CREDIT, 
          newBalance
       );
 
@@ -79,12 +75,12 @@ export class WalletService implements IWalletService {
 
       const newBalance = await this._userRepository.decrementWalletBalance(userId, amount, { session });
       if (newBalance === null) {
-         throw createHttpError(HttpStatus.BAD_REQUEST, WalletMessages.INSUFFICIENT_WALLET_BALANCE);
+         throw createHttpError(HTTP_STATUS.BAD_REQUEST, WALLET_MESSAGES.INSUFFICIENT_WALLET_BALANCE);
       }
 
       const transactionInput = mapToCreateTransactionInput(
          debitInput, 
-         TRANSACTION_DIRECTION.DEBIT, 
+         TRANSACTION_DIRECTIONS.DEBIT, 
          newBalance
       );
 
@@ -132,7 +128,7 @@ export class WalletService implements IWalletService {
 
    async getWalletOverview(userId: string): Promise<WalletOverviewResponse> {
       const user: UserEntity | null = await this._userRepository.getUserById(userId.toString());
-      if (!user) throw createHttpError(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
+      if (!user) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
       const recentTransactions: TransactionEntity[] = await this._transactionRepository.findRecentTxnByUserId(userId, 10);
 

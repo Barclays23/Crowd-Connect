@@ -1,9 +1,9 @@
 // backend/src/utils/validations/eventValidations.ts
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { EVENT_FORMATS, EVENT_STATUSES, EventStatus, TICKET_TYPES } from "@/constants/event.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { AUTH_MESSAGES, EVENT_MESSAGES } from "@/constants/messages.constants";
 import { CreateEventRequestDTO, UpdateEventRequestDTO } from "@/dtos/event.dto";
 import { EventEntity } from "@/entities/event.entity";
-import { EVENT_FORMAT, EVENT_STATUS, TICKET_TYPE } from "@/types/event.types";
 import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 
@@ -11,26 +11,26 @@ import { createHttpError } from "@/utils/httpError.utils";
 
 export function validateEventCreate (createDto: CreateEventRequestDTO, imageFile: Express.Multer.File | undefined): void {
     if (createDto.startDateTime >= createDto.endDateTime) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Event end time must be after start time");
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Event end time must be after start time");
     }
 
-    if (createDto.format === EVENT_FORMAT.OFFLINE && !createDto.location) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Offline events must have a location" );
+    if (createDto.format === EVENT_FORMATS.OFFLINE && !createDto.location) {
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Offline events must have a location" );
     }
 
-    // if (createDto.format === EVENT_FORMAT.ONLINE && !createDto.onlineLink) {
-    //     throw createHttpError(HttpStatus.BAD_REQUEST, "Online events must have an online link");
+    // if (createDto.format === EVENT_FORMATS.ONLINE && !createDto.onlineLink) {
+    //     throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Online events must have an online link");
     // }
 
-    if (createDto.ticketType === TICKET_TYPE.FREE && createDto.ticketPrice > 0) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Free events cannot have a ticket price.");
+    if (createDto.ticketType === TICKET_TYPES.FREE && createDto.ticketPrice > 0) {
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Free events cannot have a ticket price.");
     }
-    if (createDto.ticketType === TICKET_TYPE.PAID && createDto.ticketPrice <= 0) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Paid events must have a ticket price.");
+    if (createDto.ticketType === TICKET_TYPES.PAID && createDto.ticketPrice <= 0) {
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Paid events must have a ticket price.");
     }
 
     if (!imageFile && !createDto.aiGeneratedImage) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, "Event poster is required");
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Event poster is required");
     }
 }
 
@@ -44,12 +44,12 @@ export function validateEventUpdateByHost(
 ): asserts existingEvent is EventEntity {
 
     if (!existingEvent) {
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
     if (existingEvent.organizer.hostId !== currentUserId) {
         throw createHttpError(
-            HttpStatus.FORBIDDEN,
+            HTTP_STATUS.FORBIDDEN,
             "Only the event host can update this event"
         );
     }
@@ -74,14 +74,14 @@ export function validateEventCoreUpdation(
 ): asserts existingEvent is EventEntity {
 
     if (!existingEvent) {
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
     const now        = new Date();
-    const isDraft    = existingEvent.eventStatus === EVENT_STATUS.DRAFT;
-    const isPublished= existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
+    const isDraft    = existingEvent.eventStatus === EVENT_STATUSES.DRAFT;
+    const isPublished= existingEvent.eventStatus === EVENT_STATUSES.PUBLISHED;
     const hasStarted = existingEvent.startDateTime <= now;
-    const hasFinished= existingEvent.endDateTime   <= now || existingEvent.eventStatus === EVENT_STATUS.COMPLETED;
+    const hasFinished= existingEvent.endDateTime   <= now || existingEvent.eventStatus === EVENT_STATUSES.COMPLETED;
 
     const effectiveStart = updateEventDto.startDateTime
         ? new Date(updateEventDto.startDateTime)
@@ -109,16 +109,16 @@ export function validateEventCoreUpdation(
 
 
     // ── TERMINAL STATUS GATE ─────────────────────────────────────────────────
-    if (existingEvent.eventStatus === EVENT_STATUS.CANCELLED) {
+    if (existingEvent.eventStatus === EVENT_STATUSES.CANCELLED) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "This event has been cancelled and can no longer be edited."
         );
     }
 
-    if (existingEvent.eventStatus === EVENT_STATUS.SUSPENDED) {
+    if (existingEvent.eventStatus === EVENT_STATUSES.SUSPENDED) {
         throw createHttpError(
-            HttpStatus.FORBIDDEN,
+            HTTP_STATUS.FORBIDDEN,
             "This event has been suspended. Editing is not allowed until the suspension is lifted."
         );
     }
@@ -126,7 +126,7 @@ export function validateEventCoreUpdation(
 
     if (isPublished && hasFinished) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "This event has already ended and can no longer be edited."
         );
     }
@@ -141,7 +141,7 @@ export function validateEventCoreUpdation(
         // 🔒 title — locked
         if (updateEventDto.title !== undefined && updateEventDto.title.trim() !== existingEvent.title) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Event title cannot be changed after the event has started."
             );
         }
@@ -149,7 +149,7 @@ export function validateEventCoreUpdation(
         // 🔒 category — locked
         if (updateEventDto.category && updateEventDto.category !== existingEvent.category) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Event category cannot be changed after the event has started."
             );
         }
@@ -157,7 +157,7 @@ export function validateEventCoreUpdation(
         // 🔒 format — locked (case 1: started)
         if (formatChanged) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Event format cannot be changed after the event has started."
             );
         }
@@ -165,7 +165,7 @@ export function validateEventCoreUpdation(
         // 🔒 location — locked (people are already on their way)
         if (updateEventDto.locationName && updateEventDto.locationName !== existingEvent.locationName) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Event venue cannot be changed after the event has started."
             );
         }
@@ -177,7 +177,7 @@ export function validateEventCoreUpdation(
 
             if (isCoordsChanged) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
+                    HTTP_STATUS.BAD_REQUEST,
                     "You cannot relocate the event venue once the event has started."
                 );
             }
@@ -186,7 +186,7 @@ export function validateEventCoreUpdation(
         // 🔒 startDateTime — locked (already passed)
         if (isChangingStartDate) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Start date/time cannot be changed after the event has started."
             );
         }
@@ -194,7 +194,7 @@ export function validateEventCoreUpdation(
         // 🔒 endDateTime — allow extend or shorten, but not to an already-past time
         if (isChangingEndDate && effectiveEnd <= now) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "End date/time cannot be set to a time that has already passed."
             );
         }
@@ -202,7 +202,7 @@ export function validateEventCoreUpdation(
         // 🔒 ticketType — locked
         if (updateEventDto.ticketType && updateEventDto.ticketType !== existingEvent.ticketType) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Ticket type cannot be changed after the event has started."
             );
         }
@@ -213,7 +213,7 @@ export function validateEventCoreUpdation(
             updateEventDto.ticketPrice !== existingEvent.ticketPrice
         ) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Ticket price cannot be changed after the event has started."
             );
         }
@@ -223,7 +223,7 @@ export function validateEventCoreUpdation(
     // ── DATE VALIDATION ──────────────────────────────────────────────────────
     if (effectiveStart >= effectiveEnd) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "The end date/time must be later than the start date/time."
         );
     }
@@ -233,7 +233,7 @@ export function validateEventCoreUpdation(
     // must update the start date before they can save anything else.
     if (isDraft && effectiveStart < now) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Start date & time cannot be in the past. Please update it before saving."
         );
     }
@@ -241,7 +241,7 @@ export function validateEventCoreUpdation(
     // Published, not yet started: start date cannot be in the past.
     if (isPublished && !hasStarted && effectiveStart < now) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Start date/time cannot be set to a time that has already passed."
         );
     }
@@ -253,7 +253,7 @@ export function validateEventCoreUpdation(
 
     if (!hasExistingPoster && !hasNewPoster) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Event poster is required"
         );
     }
@@ -262,7 +262,7 @@ export function validateEventCoreUpdation(
     // ── FORMAT LOCK (case 2: not started, tickets sold) ──────────────────────
     if (formatChanged && existingEvent.soldTickets > 0) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Cannot switch event format after tickets have been sold. " +
             "Cancel this event and create a new one."
         );
@@ -275,19 +275,19 @@ export function validateEventCoreUpdation(
         updateEventDto.capacity < existingEvent.soldTickets
     ) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             `Capacity cannot be set below the number of tickets already sold (${existingEvent.soldTickets}).`
         );
     }
 
 
     // ── OFFLINE REQUIRES LOCATION ────────────────────────────────────────────
-    if (effectiveFormat === EVENT_FORMAT.OFFLINE) {
+    if (effectiveFormat === EVENT_FORMATS.OFFLINE) {
         const hasLocation     = updateEventDto.location     ?? existingEvent.location;
         const hasLocationName = updateEventDto.locationName ?? existingEvent.locationName;
         if (!hasLocation || !hasLocationName) {
             throw createHttpError(
-                HttpStatus.BAD_REQUEST,
+                HTTP_STATUS.BAD_REQUEST,
                 "Offline events must have a venue location."
             );
         }
@@ -295,16 +295,16 @@ export function validateEventCoreUpdation(
 
 
     // ── TICKET TYPE / PRICE ──────────────────────────────────────────────────
-    if (effectiveTicketType === TICKET_TYPE.FREE && effectiveTicketPrice > 0) {
+    if (effectiveTicketType === TICKET_TYPES.FREE && effectiveTicketPrice > 0) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Free events cannot have a ticket price."
         );
     }
 
-    if (effectiveTicketType === TICKET_TYPE.PAID && effectiveTicketPrice <= 0) {
+    if (effectiveTicketType === TICKET_TYPES.PAID && effectiveTicketPrice <= 0) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Paid events must have a ticket price greater than 0."
         );
     }
@@ -313,39 +313,39 @@ export function validateEventCoreUpdation(
 
 export function validateEventDelete(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
     if (!eventEntity){
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
-    const eventStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+    const eventStatus: EventStatus = getEventDisplayStatus(eventEntity);
 
-    if (eventStatus !== EVENT_STATUS.DRAFT) {
-        throw createHttpError(HttpStatus.BAD_REQUEST, `Cannot delete a ${eventStatus.toLowerCase()} event.`);
+    if (eventStatus !== EVENT_STATUSES.DRAFT) {
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, `Cannot delete a ${eventStatus.toLowerCase()} event.`);
     }
 }
 
 
 export function validateEventPublish(eventEntity: EventEntity | null, userId: string): asserts eventEntity is EventEntity {
     if (!eventEntity) {
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
     if (eventEntity.organizer.hostId !== userId) {
         throw createHttpError(
-            HttpStatus.FORBIDDEN,
+            HTTP_STATUS.FORBIDDEN,
             "Only the event host can publish this event"
         );
     }
 
-    if (eventEntity.eventStatus !== EVENT_STATUS.DRAFT) {
+    if (eventEntity.eventStatus !== EVENT_STATUSES.DRAFT) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "Only draft events can be published"
         );
     }
 
     if (eventEntity.startDateTime <= new Date()) {
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             "This event's scheduled time has already passed. Please update the event date to publish."
         );
     }
@@ -354,18 +354,18 @@ export function validateEventPublish(eventEntity: EventEntity | null, userId: st
 
 export function validateEventSuspend(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
     if (!eventEntity) {
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
     // even draft event cannot suspend. but it can delete. (or can suspend it?? what is good ??)
     const allowedToSuspend = 
-        eventEntity.eventStatus === EVENT_STATUS.PUBLISHED &&
+        eventEntity.eventStatus === EVENT_STATUSES.PUBLISHED &&
         eventEntity.endDateTime > new Date();
 
     if (!allowedToSuspend) {
-        const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+        const displayStatus: EventStatus = getEventDisplayStatus(eventEntity);
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             `Cannot suspend an event with status "${displayStatus}"`
         );
     }
@@ -374,22 +374,22 @@ export function validateEventSuspend(eventEntity: EventEntity | null): asserts e
 
 export function validateEventCancel(eventEntity: EventEntity | null, userId: string): asserts eventEntity is EventEntity {
     if (!eventEntity) {
-        throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
 
     if (eventEntity.organizer.hostId !== userId){
-        throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.UNAUTHORIZED_ACCESS);
+        throw createHttpError(HTTP_STATUS.FORBIDDEN, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
     }
 
     // even draft event cannot cancel. but it can delete. (or can cancel draft events)
     const allowedToCancel = 
-        eventEntity.eventStatus === EVENT_STATUS.PUBLISHED && 
+        eventEntity.eventStatus === EVENT_STATUSES.PUBLISHED && 
         eventEntity.endDateTime > new Date();
         
     if (!allowedToCancel) {
-        const displayStatus: EVENT_STATUS = getEventDisplayStatus(eventEntity);
+        const displayStatus: EventStatus = getEventDisplayStatus(eventEntity);
         throw createHttpError(
-            HttpStatus.BAD_REQUEST,
+            HTTP_STATUS.BAD_REQUEST,
             `Cannot cancel an event with status "${displayStatus}"`
         );
     }

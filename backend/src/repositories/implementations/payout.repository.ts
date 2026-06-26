@@ -7,13 +7,13 @@ import {
     GetPayoutsFilter, 
     UpdatePayoutInput, 
     PayoutFilterQuery,
-    PAYOUT_REQUEST_STATUS
 } from "@/types/payout.types";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IPayoutRepository } from "@/repositories/interfaces/IPayoutRequestRepository";
 import { PayoutRequestModel } from "@/models/implementations/payoutRequest.model";
 import { PayoutEntity } from "@/entities/payout.entity";
 import { mapModelToPayoutEntity } from "@/mappers/payout.mapper";
+import { PayoutRequestStatus } from "@/constants/payout.constants";
 
 
 
@@ -67,7 +67,7 @@ export class PayoutRepository extends BaseRepository<IPayoutRequestModel> implem
         const query: PayoutFilterQuery = {};
         
         if (filters.status && filters.status !== "all") {
-            query.status = filters.status as PAYOUT_REQUEST_STATUS;
+            query.status = filters.status as PayoutRequestStatus;
         }
         if (filters.hostId) {
             query.hostRef = new Types.ObjectId(filters.hostId);
@@ -91,7 +91,7 @@ export class PayoutRepository extends BaseRepository<IPayoutRequestModel> implem
         const query: PayoutFilterQuery = {};
         
         if (filters.status && filters.status !== "all") {
-            query.status = filters.status as PAYOUT_REQUEST_STATUS;
+            query.status = filters.status as PayoutRequestStatus;
         }
         if (filters.hostId) {
             query.hostRef = new Types.ObjectId(filters.hostId);

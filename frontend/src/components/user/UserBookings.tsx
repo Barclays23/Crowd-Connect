@@ -1,6 +1,6 @@
 // frontend/src/components/user/UserBookings.tsx
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Loader2,
   ArrowUpDown,
@@ -31,18 +31,20 @@ import { toast }               from "react-toastify";
 import { ConfirmationModal }   from "@/components/admin/confirmation-modal";
 
 import {
-  BOOKING_STATUS,
   type IBookingState,
   type BookingSortField,
   type GetMyBookingsResponse,
 } from "@/types/booking.types";
 import BookingDetails              from "@/components/booking/BookingDetails";
-import { getBookingStatusVariant } from "@/utils/UI.utils";
-import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
+import { getBookingStatusVariant, getPaymentStatusVariant } from "@/utils/UI.utils";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/ui/FieldError";
 import { cancelReasonBase } from "@/schemas/booking.schema";
 import { canCancelBooking } from "@/utils/booking.utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constants";
+import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
+import { BookingModal } from "@/components/booking/BookingModal";
 
 
 
@@ -50,8 +52,8 @@ import { canCancelBooking } from "@/utils/booking.utils";
 function UserBookings() {
   const [searchTerm,      setSearchTerm]      = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | BOOKING_STATUS>("all");
-  const [formatFilter, setFormatFilter] = useState<"all" | EVENT_FORMAT>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | BookingStatus>("all");
+  const [formatFilter, setFormatFilter] = useState<"all" | EventFormat>("all");
   const [currentPage,     setCurrentPage]     = useState(1);
   const [sortBy,          setSortBy]          = useState<BookingSortField>("createdAt");
   const [sortOrder,       setSortOrder]       = useState<"asc" | "desc">("desc");
@@ -69,9 +71,13 @@ function UserBookings() {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState<string | null>(null);
 
+  const [activeRetryBooking, setActiveRetryBooking] = useState<IBookingState | null>(null);
+
   const itemsPerPage = 10;
 
-  
+
+  const { user } = useAuth();
+ 
 
 
   // debounce search
@@ -82,6 +88,7 @@ function UserBookings() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
 
 
   const fetchMyBookings = useCallback(async () => {
@@ -180,6 +187,7 @@ function UserBookings() {
     }
   };
 
+
   const hasActiveFilters = statusFilter !== "all" || formatFilter !== "all" || !!debouncedSearch;
 
 
@@ -212,8 +220,8 @@ function UserBookings() {
         <Select
           value={statusFilter}
           onValueChange={(v) => {
-            if (v === "all" || Object.values(BOOKING_STATUS).includes(v as BOOKING_STATUS)) {
-              setStatusFilter(v as "all" | BOOKING_STATUS);
+            if (v === "all" || Object.values(BOOKING_STATUS).includes(v as BookingStatus)) {
+              setStatusFilter(v as "all" | BookingStatus);
               setCurrentPage(1);
             }
           }}
@@ -283,7 +291,7 @@ function UserBookings() {
                 className="cursor-pointer"
                 onClick={() => handleSort("ticketRate")}
               >
-                Amount Paid {getSortIcon("ticketRate")}
+                Total Amount {getSortIcon("ticketRate")}
               </TableHead>
               <TableHead
                 className="cursor-pointer text-center"
@@ -331,6 +339,7 @@ function UserBookings() {
                 const isOnline  = booking.event.format === EVENT_FORMATS.ONLINE;
                 const isFree    = booking.totalAmount === 0;
                 const canCancel = canCancelBooking(booking);
+                const isEventExpired = new Date(booking.event.endDateTime) < new Date();
 
                 return (
                   <TableRow key={booking.bookingId}>
@@ -385,12 +394,21 @@ function UserBookings() {
 
                     {/* Status */}
                     <TableCell>
-                      <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
-                        {capitalize(booking.bookingStatus)}
-                      </Badge>
+                      <div className="flex flex-col gap-1.5 items-start">
+                         <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
+                           {capitalize(booking.bookingStatus)}
+                         </Badge>
+                         
+                         {/* Mini badge for payment status */}
+                         {!isFree && (
+                          <span className="text-[10px] tracking-wider font-semibold text-(--text-tertiary)">
+                            Payment: {capitalize(booking.payment.status)}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
-                    {/* Manage */}
+                    {/* Action Buttons */}
                     <TableCell className="text-right pr-5">
                       <div className="flex items-center justify-end gap-2">
                         <Button
@@ -401,7 +419,21 @@ function UserBookings() {
                           View
                         </Button>
 
-                        {canCancel && (
+                        {/* RETRY PAYMENT */}
+                        {booking.bookingStatus === BOOKING_STATUS.PENDING && (
+                          <Button
+                            variant="default"
+                            size="xs"
+                            disabled={isEventExpired}
+                            onClick={() => setActiveRetryBooking(booking)}
+                            className={isEventExpired ? "opacity-50 cursor-not-allowed" : ""}
+                          >
+                            {isEventExpired ? "Expired" : "Retry Payment"}
+                          </Button>
+                        )}
+
+                        {/* CANCEL BUTTON */}
+                        {canCancel && booking.bookingStatus !== BOOKING_STATUS.PENDING && (
                           <Button
                             variant="destructive"
                             size="xs"
@@ -437,6 +469,23 @@ function UserBookings() {
       >
         {viewBooking && <BookingDetails booking={viewBooking} />}
       </Modal>
+
+
+      {/* RETRY CHECKOUT MODAL */}
+      {activeRetryBooking && user && (
+        <BookingModal
+          isOpen={!!activeRetryBooking && !!user}
+          onClose={() => setActiveRetryBooking(null)}
+          user={user!}
+          event={activeRetryBooking?.event || ({} as IBookingState["event"])}
+          retryBooking={activeRetryBooking || undefined}
+          onBooked={() => {
+            setActiveRetryBooking(null);
+            toast.success("Payment successful! Your booking is confirmed.");
+            fetchMyBookings();
+          }}
+        />
+      )}
    
       {/* Cancel Confirmation Modal */}
       <ConfirmationModal

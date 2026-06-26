@@ -1,7 +1,8 @@
-import { EVENT_FORMATS, TICKET_TYPES, type IEventState } from "@/types/event.types";
+import { type IEventState } from "@/types/event.types";
 import { CalendarDays, MapPin, Users, Wifi, Clock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 
 const accentColors = {
   music: "from-purple-600 to-pink-600",

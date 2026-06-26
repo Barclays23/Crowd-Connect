@@ -1,3 +1,4 @@
+// frontend/src/components/common/Footer.tsx
 import {
   Calendar,
   Facebook,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import logo from "@/assets/crowdconnect-icon-1.png";
+import logo from "@/assets/crowdconnect-logo-1.png";
 
 
 

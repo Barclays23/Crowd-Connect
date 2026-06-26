@@ -1,12 +1,8 @@
 // src/models/implementations/user.model.ts
 
 import { model, Schema } from "mongoose";
-import { 
-  HostStatus, 
-  UserRole, 
-  UserStatus 
-} from "@/constants/roles-and-statuses";
 import { AuthProvider, IUserModel } from "@/types/user.types";
+import { HOST_STATUS, USER_ROLES, USER_STATUS } from "@/constants/user-system.constants";
 
 
 
@@ -62,13 +58,13 @@ const userSchema = new Schema<IUserModel>(
     },
     role: {
       type: String,
-      enum: Object.values(UserRole),
-      default: UserRole.USER,
+      enum: Object.values(USER_ROLES),
+      default: USER_ROLES.USER,
     },
     status: {
       type: String,
-      enum: Object.values(UserStatus),
-      default: UserStatus.PENDING,
+      enum: Object.values(USER_STATUS),
+      default: USER_STATUS.PENDING,
     },
     isSuperAdmin: {
       type: Boolean,
@@ -90,7 +86,7 @@ const userSchema = new Schema<IUserModel>(
     },
     hostStatus: {
       type: String,
-      enum: Object.values(HostStatus),
+      enum: Object.values(HOST_STATUS),
     },
     hostAppliedAt: {
       type: Date,

@@ -1,6 +1,9 @@
 // // backend/src/entities/user.entity.ts
 
-import { UserRole, UserStatus, HostStatus } from "@/constants/roles-and-statuses";
+import { 
+  USER_ROLES, HOST_STATUS, 
+  UserRole, HostStatus, UserStatus 
+} from "@/constants/user-system.constants";
 import { AuthProvider } from "@/types/user.types";
 
 
@@ -40,7 +43,7 @@ import { AuthProvider } from "@/types/user.types";
 
 // BaseUserEntity
 export interface UserEntity {
-  id            : string;
+  userId        : string;
   name          : string;
   email         : string;
   role          : UserRole;
@@ -148,12 +151,12 @@ export interface UpdateProfilePicInput {
 
 
 export interface UpgradeHostInput {
-  role: UserRole.HOST;  // to upgrade user to host (but hostStatus will be 'pending')
+  role: UserRole;  // to upgrade user to host (but hostStatus will be 'pending')
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
   certificateUrl?: string;  // when host re-apply (upgrading), is it mandatory or not??
-  hostStatus: HostStatus.PENDING;  // 'pending' on upgrade request
+  hostStatus: HostStatus;  // 'pending' on upgrade request
   hostAppliedAt: Date;
 }
 

@@ -1,13 +1,14 @@
-import { BOOKING_CONSTRAINTS, cancellableStatuses } from "@/types/booking.types";
-import { EVENT_FORMATS, type EVENT_FORMAT } from "@/types/event.types";
-import { BOOKING_STATUS } from "@/types/booking.types";
+import { BOOKING_CONSTRAINTS, cancellableStatuses, type BookingStatus } from "@/constants/booking.constants";
+import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
+
+
 
 
 
 
 // Simple helper for UI max quantity
 export const getMaxBookingQuantity = (
-  format: EVENT_FORMAT, 
+  format: EventFormat, 
   ticketsLeft: number
 ): number => {
   const maxPerBooking = format === EVENT_FORMATS.ONLINE 
@@ -23,7 +24,7 @@ export const getMaxBookingQuantity = (
 
 
 export function canCancelBooking(booking: {
-  bookingStatus: BOOKING_STATUS;
+  bookingStatus: BookingStatus;
   event: { startDateTime: string | Date };
 }): boolean {
   const eventDate = new Date(booking.event.startDateTime);

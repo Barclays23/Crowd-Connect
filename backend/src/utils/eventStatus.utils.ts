@@ -1,5 +1,6 @@
+import { EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { EventEntity } from "@/entities/event.entity";
-import { EVENT_STATUS, EventFilterQuery } from "@/types/event.types";
+import { EventFilterQuery } from "@/types/event.types";
 
 
 
@@ -14,18 +15,18 @@ export interface DateQueryOperator {
 
 
 // for response: converting DB status into display status
-export function getEventDisplayStatus(event: EventEntity): EVENT_STATUS {
+export function getEventDisplayStatus(event: EventEntity): EventStatus {
    const now = new Date();
 
-   if (event.eventStatus === EVENT_STATUS.DRAFT)     return EVENT_STATUS.DRAFT;
-   if (event.eventStatus === EVENT_STATUS.CANCELLED) return EVENT_STATUS.CANCELLED;
-   if (event.eventStatus === EVENT_STATUS.SUSPENDED) return EVENT_STATUS.SUSPENDED;
+   if (event.eventStatus === EVENT_STATUSES.DRAFT)     return EVENT_STATUSES.DRAFT;
+   if (event.eventStatus === EVENT_STATUSES.CANCELLED) return EVENT_STATUSES.CANCELLED;
+   if (event.eventStatus === EVENT_STATUSES.SUSPENDED) return EVENT_STATUSES.SUSPENDED;
 
    // if eventStatus is 'published', then,
-   if (event.startDateTime > now) return EVENT_STATUS.UPCOMING;
-   if (now >= event.startDateTime && now < event.endDateTime) return EVENT_STATUS.ONGOING;
+   if (event.startDateTime > now) return EVENT_STATUSES.UPCOMING;
+   if (now >= event.startDateTime && now < event.endDateTime) return EVENT_STATUSES.ONGOING;
 
-   return EVENT_STATUS.COMPLETED;
+   return EVENT_STATUSES.COMPLETED;
    // Return this as a virtual field in API responses (e.g., event.displayStatus
    // In API: Always include displayStatus in responses.
    // There is no "published" status. It is converted into "upcoming" & "ongoing"
@@ -37,36 +38,36 @@ export function getEventDisplayStatus(event: EventEntity): EVENT_STATUS {
 
 
 // for request: converting display status to DB status and event timings.
-export function applyEventStatusFilter(query: EventFilterQuery, status?: EVENT_STATUS) {
+export function applyEventStatusFilter(query: EventFilterQuery, status?: EventStatus) {
    if (!status) return;
 
    const now = new Date();
 
    switch (status) {
-      case EVENT_STATUS.DRAFT:
-      case EVENT_STATUS.CANCELLED:
-      case EVENT_STATUS.SUSPENDED:
+      case EVENT_STATUSES.DRAFT:
+      case EVENT_STATUSES.CANCELLED:
+      case EVENT_STATUSES.SUSPENDED:
          query.eventStatus = status;
          break;
 
-      case EVENT_STATUS.UPCOMING:
-         query.eventStatus = EVENT_STATUS.PUBLISHED;
+      case EVENT_STATUSES.UPCOMING:
+         query.eventStatus = EVENT_STATUSES.PUBLISHED;
          query.startDateTime = { $gt: now };
          break;
 
-      case EVENT_STATUS.ONGOING:
-         query.eventStatus = EVENT_STATUS.PUBLISHED;
+      case EVENT_STATUSES.ONGOING:
+         query.eventStatus = EVENT_STATUSES.PUBLISHED;
          query.startDateTime = { $lte: now };
          query.endDateTime = { $gt: now };
          break;
 
-      case EVENT_STATUS.COMPLETED:
-         query.eventStatus = EVENT_STATUS.PUBLISHED;
+      case EVENT_STATUSES.COMPLETED:
+         query.eventStatus = EVENT_STATUSES.PUBLISHED;
          query.endDateTime = { $lte: now };
          break;
 
-      case EVENT_STATUS.PUBLISHED:
-         query.eventStatus = EVENT_STATUS.PUBLISHED;
+      case EVENT_STATUSES.PUBLISHED:
+         query.eventStatus = EVENT_STATUSES.PUBLISHED;
          break;
    }
 

@@ -1,13 +1,9 @@
 // backend/src/dtos/wallet.dto.ts
 import { 
-  TRANSACTION_DIRECTION, 
-  TRANSACTION_REFERENCE_TYPE, 
-  TRANSACTION_STATUS, 
-  TRANSACTION_TYPE, 
-  WITHDRAWAL_STATUS, 
   IBankDetails 
 } from "@/types/wallet.types";
 import { IPagination } from "@/types/common.types";
+import { TransactionDirection, TransactionReferenceType, TransactionStatus, TransactionType, WithdrawalStatus } from "@/constants/transaction.constants";
 
 
 // Request DTO Types ─────────────────────────────────────────
@@ -24,12 +20,12 @@ import { IPagination } from "@/types/common.types";
 
 export interface TransactionResponseDTO {
   transactionId : string;
-  type          : TRANSACTION_TYPE;
-  direction     : TRANSACTION_DIRECTION;
+  type          : TransactionType;
+  direction     : TransactionDirection;
   amount        : number;
   balanceAfter  : number;
-  status        : TRANSACTION_STATUS;
-  referenceType?: TRANSACTION_REFERENCE_TYPE;
+  status        : TransactionStatus;
+  referenceType?: TransactionReferenceType;
   referenceId  ?: string;
   description  ?: string;
   createdAt     : string;
@@ -42,7 +38,7 @@ export interface TransactionResponseDTO {
 export interface WithdrawalRequestResponseDTO {
   _id               : string;
   amount            : number;
-  status            : WITHDRAWAL_STATUS;
+  status            : WithdrawalStatus;
   bankDetails       : IBankDetails;
   razorpayPayoutId ?: string;
   processedAt      ?: string;

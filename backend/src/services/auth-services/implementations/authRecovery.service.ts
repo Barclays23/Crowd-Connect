@@ -6,14 +6,14 @@ import { generateCryptoToken } from "@/utils/crypto.utils";
 import { normalizeEmail } from "@/utils/email.utils";
 import { REDIS_TOKEN_PREFIX } from "@/config/redis-cache.config";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { UpdateEmailDto } from "@/dtos/auth.dto";
 import { generateOTP } from "@/utils/generateOTP.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
 import { EmailTemplate, PasswordResetPayload, VerifyEmailPayload } from "@/types/email.types";
 import { IMailService } from "@/services/mail-services/interfaces/IMailService";
+import { AUTH_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -35,7 +35,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             if (!existingUser){
                 console.log('no user found in this email for password reset request.');
                 // For security reasons, don't reveal whether the email exists
-                // throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+                // throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             } else {
                 const { cryptoToken, expiryDate, expiryMinutes } = generateCryptoToken();
                 
@@ -84,7 +84,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
         const exists = await this._cacheService.getKeyValue(redisKey);
 
         if (!exists) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.RESET_LINK_INVALID_OR_EXPIRED);
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.RESET_LINK_INVALID_OR_EXPIRED);
         }
 
         return true;
@@ -102,11 +102,11 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
             const currentUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
 
-            if (!currentUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
             if (currentUser.isEmailVerified) {
-                throw createHttpError(HttpStatus.BAD_REQUEST,
-                    `${HttpResponse.EMAIL_ALREADY_VERIFIED} ${HttpResponse.CANNOT_CHANGE_VERIFIED_EMAIL}
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST,
+                    `${AUTH_MESSAGES.EMAIL_ALREADY_VERIFIED} ${USER_MESSAGES.CANNOT_CHANGE_VERIFIED_EMAIL}
                     `);
             }
                 
@@ -115,8 +115,8 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             if (isChangingEmail) {
                 const existingEmailUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedRequestedEmail);
 
-                if (existingEmailUser && existingEmailUser.id !== currentUser.id) {
-                    throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST);
+                if (existingEmailUser && existingEmailUser.userId !== currentUser.userId) {
+                    throw createHttpError(HTTP_STATUS.CONFLICT, AUTH_MESSAGES.EMAIL_EXIST);
                 }
             }
 
@@ -124,10 +124,10 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP (for Verify Email Request):', otpNumber);
 
-            const redisKey = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
+            const redisKey = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
 
             const redisData = {
-                userId          : currentUser.id,
+                userId          : currentUser.userId,
                 currentEmail    : normalizedCurrentEmail,
                 requestedEmail  : normalizedRequestedEmail,
                 isChangingEmail : isChangingEmail,
@@ -189,29 +189,29 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             const currentUser: UserEntity | null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
 
             if (!currentUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             }
 
-            const redisKey      = `verify-email:${currentUser.id}:${normalizedRequestedEmail}`;
+            const redisKey      = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
             const redisRawValue = await this._cacheService.getKeyValue(redisKey);
 
             if (!redisRawValue) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
             }
 
             const redisData = JSON.parse(redisRawValue);
 
-            if (redisData.userId !== currentUser.id) {
-                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            if (redisData.userId !== currentUser.userId) {
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
             }
 
             if (Date.now() > redisData.otpExpiry) {
                 await this._cacheService.deleteKeyValue(redisKey);
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
             }
 
             if (redisData.otp !== otpCode) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_INCORRECT);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_INCORRECT);
             }
 
 
@@ -225,10 +225,10 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 updateInput.email = normalizedRequestedEmail
             }
 
-            const updatedUser: UserEntity | null = await this._userRepository.updateUserEmail(currentUser.id, updateInput);
+            const updatedUser: UserEntity | null = await this._userRepository.updateUserEmail(currentUser.userId, updateInput);
 
             if (!updatedUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             }
 
             await this._cacheService.deleteKeyValue(redisKey);

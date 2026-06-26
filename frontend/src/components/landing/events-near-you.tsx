@@ -1,11 +1,12 @@
 import EventCard from "@/components/event/EventCard"
-import { DEFAULT_RADIUS_KM, EVENT_FORMATS, type IEventState } from "@/types/event.types"
+import { DEFAULT_RADIUS_KM, type IEventState } from "@/types/event.types"
 import { MapPin, Loader2 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { eventServices } from "@/services/eventServices"
 import { getApiErrorMessage } from "@/utils/errorMessages.utils"
 import { Button } from "@/components/ui/button"
 import { useReverseGeocode } from "@/hooks/useReverseGeocode"
+import { EVENT_FORMATS } from "@/constants/event.constants"
 
 
 export function EventsNearYou() {

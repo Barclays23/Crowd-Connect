@@ -1,13 +1,8 @@
 // src/models/implementations/walletTransaction.model.ts
 
 import { model, Model, Schema } from "mongoose";
-import { 
-   ITransactionModel, 
-   TRANSACTION_DIRECTION, 
-   TRANSACTION_REFERENCE_TYPE, 
-   TRANSACTION_STATUS, 
-   TRANSACTION_TYPE 
-} from "@/types/wallet.types";
+import { ITransactionModel } from "@/types/wallet.types";
+import { TRANSACTION_DIRECTIONS, TRANSACTION_REFERENCE_TYPES, TRANSACTION_STATUSES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 
 
 
@@ -20,12 +15,12 @@ const transactionSchema = new Schema<ITransactionModel>({
    },
    transactionType: {
       type: String,
-      enum: TRANSACTION_TYPE,
+      enum: TRANSACTION_TYPES,
       required: true
    },
    direction: { 
       type: String, 
-      enum: TRANSACTION_DIRECTION, 
+      enum: TRANSACTION_DIRECTIONS, 
       required: true 
    },
    amount: { 
@@ -39,12 +34,12 @@ const transactionSchema = new Schema<ITransactionModel>({
    },     // snapshot after this txn
    status:        { 
       type: String, 
-      enum: TRANSACTION_STATUS,
-      default: TRANSACTION_STATUS.COMPLETED
+      enum: TRANSACTION_STATUSES,
+      default: TRANSACTION_STATUSES.COMPLETED
    },
    referenceType: { 
       type: String, 
-      enum: TRANSACTION_REFERENCE_TYPE
+      enum: TRANSACTION_REFERENCE_TYPES
    },
    referenceId:   { 
       type: Schema.Types.ObjectId,

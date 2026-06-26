@@ -7,8 +7,7 @@ import {
     UserProfileResponseDto 
 } from "@/dtos/user.dto";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     HostEntity, 
     HostManageInput, 
@@ -26,9 +25,10 @@ import {
     mapToHostStatusUpdateResponseDto,
     mapUpdateHostDTOToInput, 
 } from "@/mappers/user.mapper";
-import { HostStatus, UserRole } from "@/constants/roles-and-statuses";
+import { HOST_STATUS, HostStatus, USER_ROLES, UserRole } from "@/constants/user-system.constants";
 import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "@/types/user.types";
 import { IHostManagementServices } from "../interfaces/IHostManagementServices";
+import { HOST_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -45,7 +45,7 @@ export class HostManagementServices implements IHostManagementServices {
 
             const query: UserFilterQuery = {};
 
-            query.role = role ?? UserRole.HOST;
+            query.role = role ?? USER_ROLES.HOST;
 
             if (search) {
                 query.$or = [
@@ -99,27 +99,27 @@ export class HostManagementServices implements IHostManagementServices {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
             if (!existingUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             }
 
             const isAlreadyHost = isHost(existingUser);
-            const isUser = existingUser.role === UserRole.USER;
+            const isUser = existingUser.role === USER_ROLES.USER;
 
-            const allowedToApply = isUser || (isAlreadyHost && existingUser?.hostStatus === HostStatus.REJECTED);
+            const allowedToApply = isUser || (isAlreadyHost && existingUser?.hostStatus === HOST_STATUS.REJECTED);
 
             if (!allowedToApply) {
                 if (isAlreadyHost) {
                     const status = existingUser.hostStatus;
-                    if (status === HostStatus.APPROVED) throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_ALREADY_APPROVED);
-                    if (status === HostStatus.PENDING) throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.HOST_APPLICATION_PENDING);
-                    if (status === HostStatus.BLOCKED) throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.HOST_BLOCKED);
+                    if (status === HOST_STATUS.APPROVED) throw createHttpError(HTTP_STATUS.BAD_REQUEST, HOST_MESSAGES.HOST_ALREADY_APPROVED);
+                    if (status === HOST_STATUS.PENDING) throw createHttpError(HTTP_STATUS.BAD_REQUEST, HOST_MESSAGES.HOST_APPLICATION_PENDING);
+                    if (status === HOST_STATUS.BLOCKED) throw createHttpError(HTTP_STATUS.FORBIDDEN, HOST_MESSAGES.HOST_BLOCKED);
                 }
             }
 
             let hostDocumentUrl: string | undefined;
 
             // if (!documentFile){
-            //     throw createHttpError(HttpStatus.BAD_REQUEST, 'File is not attached for upgrading.')
+            //     throw createHttpError(HTTP_STATUS.BAD_REQUEST, 'File is not attached for upgrading.')
             // }
 
 
@@ -167,21 +167,21 @@ export class HostManagementServices implements IHostManagementServices {
         try {
             const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
             if (!hostEntity) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
             }
 
             const allowedTransitions: Record<HostStatus, Array<'approve' | 'reject' | 'block'>> = {
-                [HostStatus.PENDING]: ['approve', 'reject', 'block'],
-                [HostStatus.APPROVED]: ['block'],
-                [HostStatus.REJECTED]: ['block'],
-                [HostStatus.BLOCKED]: [],  // Can unblock → changes to PENDING
+                [HOST_STATUS.PENDING]: ['approve', 'reject', 'block'],
+                [HOST_STATUS.APPROVED]: ['block'],
+                [HOST_STATUS.REJECTED]: ['block'],
+                [HOST_STATUS.BLOCKED]: [],  // Can unblock → changes to PENDING
             } as const;
 
             const allowedActions = allowedTransitions[hostEntity.hostStatus as HostStatus];
 
             if (!allowedActions.includes(action)) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
+                    HTTP_STATUS.BAD_REQUEST,
                     `Cannot ${action} a host in ${hostEntity.hostStatus} state.`
                     // `Cannot ${action} a ${hostEntity.hostStatus} host.`
                 );
@@ -223,13 +223,13 @@ export class HostManagementServices implements IHostManagementServices {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
             if (!existingUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.HOST_NOT_FOUND);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
             }
 
-            const isHost = existingUser.role === UserRole.HOST;
+            const isHost = existingUser.role === USER_ROLES.HOST;
 
             if (!isHost) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_A_HOST);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.USER_NOT_A_HOST);
             }
 
             // may check the validations
@@ -276,8 +276,6 @@ export class HostManagementServices implements IHostManagementServices {
             return hostProfile;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in HostManagementServices.updateHostByAdmin:', msg);
             throw error;
         }
     }

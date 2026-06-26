@@ -22,9 +22,11 @@ export interface IPlatformSettings {
 }
 
 
+// move to constants
 export type PolicyKey = "generalTerms" | "bookingTerms" | "cancellationTerms" | "hostTerms" | "reviewTerms";
 
 
+// move to constants
 export const POLICY_SECTIONS: { key: PolicyKey; title: string; desc: string }[] = [
     { key: "generalTerms", title: "General Platform Terms", desc: "Rules for all users utilizing CrowdConnect." },
     { key: "bookingTerms", title: "Booking & Ticketing Terms", desc: "Agreements presented during checkout." },

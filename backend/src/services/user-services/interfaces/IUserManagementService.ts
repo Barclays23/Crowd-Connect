@@ -6,7 +6,7 @@ import {
     UpdateUserRequestDto,
     UserProfileResponseDto, 
 } from "@/dtos/user.dto";
-import { UserStatus } from "@/constants/roles-and-statuses";
+import { UserStatus } from "@/constants/user-system.constants";
 
 
 

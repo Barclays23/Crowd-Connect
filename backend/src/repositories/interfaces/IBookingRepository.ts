@@ -21,20 +21,26 @@ import { ClientSession } from "mongoose";
 
 export interface IBookingRepository {
 
-  createBooking(input: CreateBookingInput): Promise<BookingEntity>;
+  createBooking(input: CreateBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity>;
 
   getBookingById(bookingId: string): Promise<BookingEntityPopulated | null>;
-
   getBookingByOrderId(orderId: string): Promise<BookingEntity | null>;
   getBookingByPaymentId(paymentId: string): Promise<BookingEntityPopulated | null>;
-
   getBookingByQrToken(token: string): Promise<BookingEntity | null>;
+  
+  // for online retry payment
+  updateBookingPaymentOrderId(bookingId: string, newOrderId: string): Promise<void>
 
   // Confirm booking after payment verified — sets CONFIRMED status + stores payment + qrToken
-  confirmBooking(bookingId: string, input: ConfirmBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
+  confirmOnlineBooking(bookingId: string, input: ConfirmBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
 
-  // Mark as FAILED when Razorpay payment.failed webhook received
+  // Confirm a pending booking via Wallet Retry
+  confirmWalletRetryBooking(bookingId: string, qrToken: string, walletOrderId: string, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
+
+  // do this with cron job or bullMQ (see bottom)
   markBookingFailed(bookingId: string): Promise<void>;
+
+  markBookingPaymentFailed(bookingId: string): Promise<void>;
 
   markBookingAsRefunded(
     bookingId: string, 

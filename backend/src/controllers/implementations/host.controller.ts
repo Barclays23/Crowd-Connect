@@ -2,12 +2,11 @@
 
 import { NextFunction, Request, Response } from "express";
 import { IHostController } from "../interfaces/IHostController";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { HostStatus, USER_ROLES, UserStatus } from "@/constants/user-system.constants";
 import { 
     GetHostsFilter, 
-    GetHostsResult, 
+    GetHostsResult,
 } from "@/types/user.types";
 
 import { 
@@ -17,6 +16,7 @@ import {
     UserProfileResponseDto 
 } from "@/dtos/user.dto";
 import { IHostManagementServices } from "@/services/host-services/interfaces/IHostManagementServices";
+import { HOST_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -29,7 +29,7 @@ export class HostController implements IHostController {
     async applyHostUpgrade (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -39,9 +39,9 @@ export class HostController implements IHostController {
 
             const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile});
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.HOST_APPLY_SUCCESS,
+                message: HOST_MESSAGES.HOST_APPLY_SUCCESS,
                 hostProfile: upgradedProfile,
             });
 
@@ -65,7 +65,7 @@ export class HostController implements IHostController {
                 page,
                 limit,
                 search,
-                role: UserRole.HOST,
+                role: USER_ROLES.HOST,
                 status: status ? status as UserStatus : undefined,
                 hostStatus: hostStatus ? hostStatus as HostStatus : undefined,
             };
@@ -75,9 +75,9 @@ export class HostController implements IHostController {
             const result: GetHostsResult = await this._hostService.getAllHosts(filters);
             // console.log('✅ Result in hostController.getAllHosts:', result);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_GET_HOSTS,
+                message: HOST_MESSAGES.SUCCESS_GET_HOSTS,
                 hostsData: result.hosts,
                 pagination: {
                     page: result.page,
@@ -104,11 +104,11 @@ export class HostController implements IHostController {
             const updatedHost: HostStatusUpdateResponseDto = await this._hostService.manageHostStatus({hostId, action, reason});
             
             let responseMessage: string = ''
-            if (action === 'approve') responseMessage = HttpResponse.HOST_APPROVE_SUCCESS;
-            else if (action === 'reject') responseMessage = HttpResponse.HOST_REJECT_SUCCESS;
-            else if (action === 'block') responseMessage = HttpResponse.HOST_BLOCK_SUCCESS;
+            if (action === 'approve') responseMessage = HOST_MESSAGES.HOST_APPROVE_SUCCESS;
+            else if (action === 'reject') responseMessage = HOST_MESSAGES.HOST_REJECT_SUCCESS;
+            else if (action === 'block') responseMessage = HOST_MESSAGES.HOST_BLOCK_SUCCESS;
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: responseMessage,
                 updatedHost: updatedHost,
@@ -135,9 +135,9 @@ export class HostController implements IHostController {
 
             const updatedHostProfile: UserProfileResponseDto = await this._hostService.updateHostByAdmin({hostId, updateDto, documentFile});
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.HOST_UPDATE_SUCCESS,
+                message: HOST_MESSAGES.HOST_UPDATE_SUCCESS,
                 updatedHost: updatedHostProfile,
             });
 

@@ -1,11 +1,5 @@
 // backend/src/entities/transaction.entity.ts
-
-import { 
-    TRANSACTION_DIRECTION, 
-    TRANSACTION_REFERENCE_TYPE, 
-    TRANSACTION_STATUS, 
-    TRANSACTION_TYPE 
-} from "@/types/wallet.types";
+import { TransactionDirection, TransactionReferenceType, TransactionStatus, TransactionType } from "@/constants/transaction.constants";
 import { Types } from "mongoose";
 
 
@@ -14,12 +8,12 @@ import { Types } from "mongoose";
 export interface TransactionEntity {
   transactionId  : string;
   userRef        : string;
-  transactionType: TRANSACTION_TYPE;
-  direction      : TRANSACTION_DIRECTION;
+  transactionType: TransactionType;
+  direction      : TransactionDirection;
   amount         : number;
   balanceAfter   : number;
-  status         : TRANSACTION_STATUS;
-  referenceType ?: TRANSACTION_REFERENCE_TYPE;
+  status         : TransactionStatus;
+  referenceType ?: TransactionReferenceType;
   referenceId   ?: string;
   description   ?: string;
   metadata      ?: Record<string, unknown>;
@@ -31,12 +25,12 @@ export interface TransactionEntity {
 
 export interface CreateTransactionInput {
   userRef        : Types.ObjectId;
-  transactionType: TRANSACTION_TYPE;
-  direction      : TRANSACTION_DIRECTION;
+  transactionType: TransactionType;
+  direction      : TransactionDirection;
   amount         : number;
   balanceAfter   : number;
-  status         : TRANSACTION_STATUS;
-  referenceType ?: TRANSACTION_REFERENCE_TYPE;
+  status         : TransactionStatus;
+  referenceType ?: TransactionReferenceType;
   referenceId   ?: Types.ObjectId;
   description   ?: string;
   metadata      ?: Record<string, unknown>;

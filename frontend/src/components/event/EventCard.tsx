@@ -1,4 +1,5 @@
-import { EVENT_FORMATS, TICKET_TYPES, type IEventState } from "@/types/event.types";
+import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
+import { type IEventState } from "@/types/event.types";
 import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

@@ -74,7 +74,7 @@ export function mapPayoutEntityToDTO(entity: PayoutEntity): PayoutResponseDTO {
 
 export function mapToEligibleEventDTO(event: EventEntity, payout?: PayoutEntity): EligibleEventDTO {
     return {
-        eventId           : event.id,
+        eventId           : event.eventId,
         title             : event.title,
         endDateTime       : event.endDateTime,
         grossTicketRevenue: event.grossTicketRevenue ?? 0,

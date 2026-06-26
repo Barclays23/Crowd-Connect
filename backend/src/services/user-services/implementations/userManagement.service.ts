@@ -1,18 +1,35 @@
 // src/services/user/implementations/UserManagement.service.ts
 
-import { GetUsersFilter, GetUsersResult, UserFilterQuery } from "@/types/user.types";
+import { 
+    GetUsersFilter, 
+    GetUsersResult, 
+    UserFilterQuery 
+} from "@/types/user.types";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IUserManagementService } from "../interfaces/IUserManagementService";
-import { CreateUserInput, UpdateUserInput, UserEntity, UserProfileEntity } from "@/entities/user.entity";
-import { CreateUserRequestDto, UpdateUserRequestDto, UserProfileResponseDto } from "@/dtos/user.dto";
-import { mapCreateUserRequestDtoToInput, mapUpdateUserRequestDtoToInput, mapUserEntityToProfileDto } from "@/mappers/user.mapper";
+import { 
+    CreateUserInput, 
+    UpdateUserInput, 
+    UserEntity, 
+    UserProfileEntity 
+} from "@/entities/user.entity";
+import { 
+    CreateUserRequestDto, 
+    UpdateUserRequestDto, 
+    UserProfileResponseDto 
+} from "@/dtos/user.dto";
+import { 
+    mapCreateUserRequestDtoToInput, 
+    mapUpdateUserRequestDtoToInput, 
+    mapUserEntityToProfileDto 
+} from "@/mappers/user.mapper";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { ALLOWED_CREATE_ROLES, USER_ROLES, USER_STATUS, UserStatus } from "@/constants/user-system.constants";
 import { generateRandomPassword } from "@/utils/password-generator.utils";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
+import { ADMIN_MESSAGES, AUTH_MESSAGES, HOST_MESSAGES, SYSTEM_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -73,28 +90,28 @@ export class UserManagementService implements IUserManagementService {
     }): Promise<UserProfileResponseDto> {
         try {
             const currentAdmin: UserEntity | null = await this._userRepository.getUserById(currentAdminId);
-            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
 
-            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== USER_ROLES.ADMIN) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, SYSTEM_MESSAGES.INSUFFICIENT_PERMISSION);
             }
 
-            if (createDto.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_CREATE_ADMIN);
+            if (createDto.role === USER_ROLES.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_CREATE_ADMIN);
             }
 
-            if (![UserRole.USER, UserRole.ADMIN].includes(createDto.role)) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.INVALID_USER_ROLE_CREATION);
+            if (!ALLOWED_CREATE_ROLES.includes(createDto.role)) {
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, ADMIN_MESSAGES.INVALID_USER_ROLE_CREATION);
             }
 
             const existingEmailUser: UserEntity | null = await this._userRepository.getUserByEmail(createDto.email);
             if (existingEmailUser) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.EMAIL_EXIST);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.EMAIL_EXIST);
             }
 
             const existingMobileUser: UserEntity | null = createDto.mobile ? await this._userRepository.getUserByMobile(createDto.mobile) : null;
             if (existingMobileUser) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.MOBILE_EXIST);
             }
 
             // const tempPassword = 'aaAA22@@'
@@ -111,12 +128,12 @@ export class UserManagementService implements IUserManagementService {
                 });
             }
 
-            createDto.status = UserStatus.PENDING;  // status will be changed to ACTIVE once the user is logged in
+            createDto.status = USER_STATUS.PENDING;  // status will be changed to ACTIVE once the user is logged in
             const userInput: CreateUserInput = mapCreateUserRequestDtoToInput({createDto, profilePicUrl, hashedPassword});
 
             const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userInput);
             if (!createdUserResult) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_USER);
+                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, USER_MESSAGES.FAILED_CREATE_USER);
             }
 
             const newUser: UserProfileResponseDto = mapUserEntityToProfileDto(createdUserResult);
@@ -152,35 +169,35 @@ export class UserManagementService implements IUserManagementService {
                 this._userRepository.getUserById(currentAdminId)
             ]);
 
-            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            if (!targetUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
 
-            if (currentAdmin.status === UserStatus.BLOCKED) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            if (currentAdmin.status === USER_STATUS.BLOCKED) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, USER_MESSAGES.USER_ACCOUNT_BLOCKED);
             }
 
-            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== USER_ROLES.ADMIN) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, SYSTEM_MESSAGES.INSUFFICIENT_PERMISSION);
             }
 
             const isEditingSelf = targetUserId === currentAdminId;
-            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin && !isEditingSelf) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_EDIT_ADMIN);
+            if (targetUser.role === USER_ROLES.ADMIN && !currentAdmin.isSuperAdmin && !isEditingSelf) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_EDIT_ADMIN);
             }
 
-            if (targetUser.isSuperAdmin && currentAdmin.id !== targetUser.id) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_EDIT_SUPER_ADMIN);
+            if (targetUser.isSuperAdmin && currentAdmin.userId !== targetUser.userId) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_EDIT_SUPER_ADMIN);
             }
 
             const isChangingEmail = updateDto.email && updateDto.email !== targetUser.email;
             if (isChangingEmail) {
                 if (targetUser.isEmailVerified) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_VERIFIED_EMAIL);
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, USER_MESSAGES.CANNOT_CHANGE_VERIFIED_EMAIL);
                 }
 
                 const existingEmailUser = await this._userRepository.getUserByEmail(updateDto.email!);
-                if (existingEmailUser && existingEmailUser.id !== targetUserId) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.EMAIL_EXIST);
+                if (existingEmailUser && existingEmailUser.userId !== targetUserId) {
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.EMAIL_EXIST);
                 }
             }
 
@@ -189,24 +206,24 @@ export class UserManagementService implements IUserManagementService {
                 if (updateDto.mobile && updateDto.mobile.trim() !== '') {
                     const existingMobileUser: UserEntity | null = await this._userRepository.getUserByMobile(updateDto.mobile);
 
-                    if (existingMobileUser && existingMobileUser.id !== targetUserId) {
-                        throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.MOBILE_EXIST);
+                    if (existingMobileUser && existingMobileUser.userId !== targetUserId) {
+                        throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.MOBILE_EXIST);
                     }
                 }
             }
             
             const isChangingRole = updateDto.role && updateDto.role !== targetUser.role;
             if (isChangingRole){
-                if (targetUser.isSuperAdmin && updateDto.role !== UserRole.ADMIN) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_SUPER_ADMIN_ROLE);
+                if (targetUser.isSuperAdmin && updateDto.role !== USER_ROLES.ADMIN) {
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, ADMIN_MESSAGES.CANNOT_CHANGE_SUPER_ADMIN_ROLE);
                 }
 
-                if (targetUser.role === UserRole.HOST) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_HOST_ROLE);
+                if (targetUser.role === USER_ROLES.HOST) {
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, HOST_MESSAGES.CANNOT_CHANGE_HOST_ROLE);
                 }
 
-                if (updateDto.role === UserRole.HOST) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.CANNOT_CHANGE_HOST_DIRECTLY);
+                if (updateDto.role === USER_ROLES.HOST) {
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, HOST_MESSAGES.CANNOT_CHANGE_HOST_DIRECTLY);
                 }
             }
 
@@ -267,32 +284,32 @@ export class UserManagementService implements IUserManagementService {
                 this._userRepository.getUserById(currentAdminId)
             ]);
 
-            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            if (!targetUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
 
-            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== USER_ROLES.ADMIN) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, SYSTEM_MESSAGES.INSUFFICIENT_PERMISSION);
             }
 
-            if (currentAdmin.status === UserStatus.BLOCKED) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            if (currentAdmin.status === USER_STATUS.BLOCKED) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, USER_MESSAGES.USER_ACCOUNT_BLOCKED);
             }
 
-            if (currentAdmin.id === targetUserId) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_SELF);
+            if (currentAdmin.userId === targetUserId) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_BLOCK_SELF);
             }
 
             if (targetUser.isSuperAdmin) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_SUPER_ADMIN);
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_BLOCK_SUPER_ADMIN);
             }
 
-            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_BLOCK_ADMIN);
+            if (targetUser.role === USER_ROLES.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_BLOCK_ADMIN);
             }
 
-            const newStatus = targetUser.status !== UserStatus.BLOCKED
-                ? UserStatus.BLOCKED
-                : UserStatus.PENDING;
+            const newStatus = targetUser.status !== USER_STATUS.BLOCKED
+                ? USER_STATUS.BLOCKED
+                : USER_STATUS.PENDING;
 
             const updatedStatus: UserStatus|null = await this._userRepository.updateUserStatus(targetUserId, newStatus);
 
@@ -321,27 +338,27 @@ export class UserManagementService implements IUserManagementService {
                     this._userRepository.getUserById(currentAdminId)
             ]);
 
-            if (!targetUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-            if (!currentAdmin) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.UNAUTHORIZED_ACCESS);
+            if (!targetUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+            if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
 
-            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== UserRole.ADMIN) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.INSUFFICIENT_PERMISSION);
+            if (!currentAdmin.isSuperAdmin && currentAdmin.role !== USER_ROLES.ADMIN) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, SYSTEM_MESSAGES.INSUFFICIENT_PERMISSION);
             }
 
-            if (currentAdmin.status === UserStatus.BLOCKED) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            if (currentAdmin.status === USER_STATUS.BLOCKED) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, USER_MESSAGES.USER_ACCOUNT_BLOCKED);
             }
 
-            if (currentAdmin.id === targetUserId) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_SELF);
+            if (currentAdmin.userId === targetUserId) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_DELETE_SELF);
             }
 
             if (targetUser.isSuperAdmin) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_SUPER_ADMIN);
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_DELETE_SUPER_ADMIN);
             }
 
-            if (targetUser.role === UserRole.ADMIN && !currentAdmin.isSuperAdmin) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.ADMIN_CANNOT_DELETE_ADMIN);
+            if (targetUser.role === USER_ROLES.ADMIN && !currentAdmin.isSuperAdmin) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, ADMIN_MESSAGES.ADMIN_CANNOT_DELETE_ADMIN);
             }
 
             if (targetUser.profilePic && targetUser.profilePic.trim() !== '') {

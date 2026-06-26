@@ -1,19 +1,10 @@
 // backend/src/types/payout.types.ts
 
+import { PayoutRequestStatus } from "@/constants/payout.constants";
 import { IPopulatedUserFromTransaction } from "@/types/wallet.types";
 import { Types } from "mongoose";
 
 
-
-export enum PAYOUT_REQUEST_STATUS {
-  PENDING    = "pending",
-  // REQUESTED  = 'requested',   // Host clicked "Request Payout"
-  APPROVED   = 'approved',    // Admin reviewed & approved (only need if using payment gateways/webhooks)
-  REJECTED   = 'rejected',    // Admin denied (fraud, low attendance, policy violation)
-  // PROCESSED  = 'processed',   // Razorpay transfer succeeded
-  // FAILED     = 'failed',      // Transfer failed (e.g. invalid account, insufficient balance)
-  PAID       = "paid",
-}
 
 
 export interface IPayoutRequestModel {
@@ -31,7 +22,7 @@ export interface IPayoutRequestModel {
   commissionAmount : number;                       // grossAmount × commissionRate %
   netAmount        : number;                       // grossAmount − commissionAmount → released to host wallet
   
-  status           : PAYOUT_REQUEST_STATUS;
+  status           : PayoutRequestStatus;
   requestedAt      : Date;
   reviewedAt      ?: Date;
   reviewedBy      ?: Types.ObjectId;               // ref: User (admin who processed)
@@ -80,7 +71,7 @@ export interface CreatePayoutInput {
   netAmount       : number;
   ticketsSold     : number;
   checkedInCount  : number;
-  status          : PAYOUT_REQUEST_STATUS;
+  status          : PayoutRequestStatus;
   proofUrls       : string[];
   requestedAt     : Date;
 }
@@ -96,7 +87,7 @@ export interface ReviewPayoutInput {
 
 
 export interface UpdatePayoutInput {
-  status?           : PAYOUT_REQUEST_STATUS;
+  status?           : PayoutRequestStatus;
   reviewedBy?       : string;
   reviewedAt?       : Date;
   rejectionReason?  : string;

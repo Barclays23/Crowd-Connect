@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { TextArea } from "@/components/ui/text-area";
 import { ButtonLoader } from "@/components/common/ButtonLoader";
 import { type EventFormValues } from "@/schemas/event.schema";
-import { EVENT_CATEGORIES } from "@/types/event.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
 import { FieldError } from "../ui/FieldError";
@@ -27,6 +26,7 @@ import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-map-utils/goo
 import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoComplete";
 import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
+import { EVENT_CATEGORIES } from "@/constants/event.constants";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };

@@ -1,6 +1,6 @@
 // backend/src/routes/payout.routes.ts  (Host routes)
 import { Router } from "express";
-import { UserRole } from "@/constants/roles-and-statuses";
+import { USER_ROLES } from "@/constants/user-system.constants";
 import { PayoutController } from "@/controllers/implementations/payout.controller";
 import { PayoutService } from "@/services/payout-services/implementations/payout.service";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
@@ -42,7 +42,7 @@ const payoutController  = new PayoutController(payoutService)
 const payoutRouter = Router();
 
 // middleware
-payoutRouter.use(authenticate, authorize(UserRole.HOST));
+payoutRouter.use(authenticate, authorize(USER_ROLES.HOST));
 
 
 

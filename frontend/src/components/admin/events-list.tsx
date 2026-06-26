@@ -34,7 +34,7 @@ import { Modal } from "../ui/modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { EVENT_CATEGORIES, type EventSortDirection, type EventSortField, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
+import { type EventSortDirection, type EventSortField, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { useForm } from "react-hook-form";
@@ -45,6 +45,7 @@ import { TextArea } from "@/components/ui/text-area";
 import EditEventForm from "@/components/user/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { capitalize } from "@/utils/namingConventions";
+import { EVENT_CATEGORIES } from "@/constants/event.constants";
 
 
 

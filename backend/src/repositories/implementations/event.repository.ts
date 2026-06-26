@@ -1,5 +1,6 @@
 // // backend/src/repositories/implementations/event.repository.ts
 
+import { EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { 
    CreateEventInput, 
    EventEntity, 
@@ -11,7 +12,6 @@ import Event from "@/models/implementations/event.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { 
-   EVENT_STATUS, 
    EventFilterQuery, 
    IEventModel, 
    IEventModelPopulatedHost, 
@@ -106,7 +106,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       const results = await this.model.aggregate([
          {
             $match: {
-               eventStatus: EVENT_STATUS.PUBLISHED,
+               eventStatus: EVENT_STATUSES.PUBLISHED,
                endDateTime: { $gt: now },
             }
          },
@@ -165,9 +165,9 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       const query = { 
          hostRef: hostId, 
          $or: [
-            { eventStatus: EVENT_STATUS.COMPLETED },
+            { eventStatus: EVENT_STATUSES.COMPLETED },
             { 
-               eventStatus: EVENT_STATUS.PUBLISHED, 
+               eventStatus: EVENT_STATUSES.PUBLISHED, 
                endDateTime: { $lt: new Date() } 
             }
          ]
@@ -187,7 +187,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
    }
 
 
-   async updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS | null> {
+   async updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EventStatus| null> {
       const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, { $set: updateInput });
       const updatedStatus = updatedEventData ? updatedEventData.eventStatus : null;
       return updatedStatus;

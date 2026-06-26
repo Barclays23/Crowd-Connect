@@ -1,5 +1,5 @@
 // backend/src/repositories/interfaces/IUserRepository.ts
-import { UserStatus } from '@/constants/roles-and-statuses';
+import { UserStatus } from '@/constants/user-system.constants';
 import { 
     AuthUserCheckInput, 
     SignUpUserInput, 

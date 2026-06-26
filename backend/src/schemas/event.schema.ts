@@ -1,7 +1,12 @@
 // backend/src/schemas/event.schema.ts
-
-import { ALL_EVENT_CATEGORIES, EVENT_FORMAT, TICKET_TYPE } from "@/types/event.types";
 import { z } from "zod";
+import { 
+   ALL_EVENT_CATEGORIES, 
+   EVENT_FORMATS, 
+   TICKET_TYPES 
+} from "@/constants/event.constants";
+
+
 
 
 /* ---------- Base Fields ---------- */
@@ -101,12 +106,12 @@ const isoDateTime = z
 
 
 export const formatBase = z
-   .enum(EVENT_FORMAT, "Invalid event format");
+   .enum(EVENT_FORMATS, "Invalid event format");
 
 
 
 export const ticketTypeBase = z
-   .enum(TICKET_TYPE, "Invalid ticket type");
+   .enum(TICKET_TYPES, "Invalid ticket type");
 
 
 
@@ -331,7 +336,7 @@ const eventFormSchemaFactory = (isEditMode = false) =>
       // }
 
       // 2. Location Validation: Required if IN-PERSON
-      if (data.format === EVENT_FORMAT.OFFLINE) {
+      if (data.format === EVENT_FORMATS.OFFLINE) {
          if (!data.locationName) {
             ctx.addIssue({
                code: z.ZodIssueCode.custom,
@@ -350,7 +355,7 @@ const eventFormSchemaFactory = (isEditMode = false) =>
       }
 
       // 3. Price Validation: Required if PAID
-      if (data.ticketType === TICKET_TYPE.PAID && data.ticketPrice <= 0) {
+      if (data.ticketType === TICKET_TYPES.PAID && data.ticketPrice <= 0) {
             ctx.addIssue({
             code: z.ZodIssueCode.custom,
             // message: "Paid events must have a valid ticket price.",

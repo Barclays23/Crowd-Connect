@@ -20,7 +20,7 @@ export class WebhookController implements IWebhookController {
     async handleWebhookEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             // 1. Extract provider from the URL (e.g., /api/webhooks/razorpay)
-            const providerName = req.params.provider as string;
+            const providerName: string = req.params.provider as string;
             const paymentService: IPaymentService | undefined = this._paymentServices.get(providerName);
 
             if (!paymentService) {
