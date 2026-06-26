@@ -6,7 +6,7 @@ import { uploadImage } from "@/middlewares/file-upload.middleware";
 import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
 import { UserManagementService } from "@/services/user-services/implementations/userManagement.service";
 import { USER_ROUTES } from "@/constants/routes.constants";
-import { UserRole } from "@/constants/roles-and-statuses";
+import { USER_ROLES } from "@/constants/user-system.constants";
 import { PasswordService } from "@/services/password-services/implementations/password.service";
 import { validateBody } from "@/middlewares/validate.middleware";
 import { changePasswordSchema } from "@/schemas/user.schema";
@@ -38,7 +38,7 @@ const userController = new UserController(
 const userRouter = Router();
 
 userRouter.use(authenticate);
-userRouter.use(authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN));
+userRouter.use(authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN));
 
 
 

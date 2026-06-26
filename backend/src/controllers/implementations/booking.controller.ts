@@ -2,13 +2,25 @@
 
 import { Request, Response, NextFunction } from "express";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
-import { BookingOrderRequestDTO, BookingResponseDTO, GetBookingsResponseDTO, InitiateBookingResponseDTO, VerifyPaymentRequestDTO } from "@/dtos/booking.dto";
-import { BOOKING_STATUS, GetBookingsFilter, BookingSortField, ALLOWED_BOOKING_SORT_FIELDS } from "@/types/booking.types";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { 
+  BookingOrderRequestDTO, 
+  BookingResponseDTO, 
+  GetBookingsResponseDTO, 
+  InitiateBookingResponseDTO, 
+  VerifyPaymentRequestDTO 
+} from "@/dtos/booking.dto";
+import { 
+  GetBookingsFilter, 
+  BookingSortField, 
+  ALLOWED_BOOKING_SORT_FIELDS 
+} from "@/types/booking.types";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { IBookingController } from "@/controllers/interfaces/IBookingController";
-import { EVENT_FORMAT } from "@/types/event.types";
-import { UserRole } from "@/constants/roles-and-statuses";
-import { BookingMessages } from "@/constants/responseMessages.constants";
+import { BOOKING_MESSAGES, PAYMENT_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
+import { EventFormat } from "@/constants/event.constants";
+import { BookingStatus } from "@/constants/booking.constants";
+import { UserRole } from "@/constants/user-system.constants";
+import { PaymentMethod } from "@/constants/payment.constants";
 
 
 
@@ -22,9 +34,11 @@ export class BookingController implements IBookingController{
   async initiateBooking(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
         return;
       }
+
+      console.log('req.body: ', req.body);
 
       const bookingReqDto: BookingOrderRequestDTO = {
         ...req.body,
@@ -34,14 +48,12 @@ export class BookingController implements IBookingController{
 
       const result: InitiateBookingResponseDTO = await this._bookingService.initiateBooking(bookingReqDto);
 
-      res.status(HttpStatus.CREATED).json({
+      res.status(HTTP_STATUS.CREATED).json({
         success: true,
         data: result, // (isFree + populatedBooking) OR (isFree + order)
       });
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.initiateBooking:", msg);
       next(error);
     }
   }
@@ -50,16 +62,16 @@ export class BookingController implements IBookingController{
   async verifyAndConfirmPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
         return;
       }
       
-      const userId = req.user.userId;
-      const dto: VerifyPaymentRequestDTO = req.body;
+      const userId: string                = req.user.userId;
+      const dto: VerifyPaymentRequestDTO  = req.body;
 
       const populatedBooking: BookingResponseDTO = await this._bookingService.verifyAndConfirmBookingPayment(userId, dto);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         message: "Payment verified. Booking confirmed!",
         data: populatedBooking,
@@ -74,20 +86,56 @@ export class BookingController implements IBookingController{
 
 
 
+  async retryPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const bookingId: string = req.params.bookingId as string;
+      const paymentMethod: PaymentMethod = req.body.paymentMethod as PaymentMethod; // "ONLINE" or "WALLET"
+      const userId = req.user!.userId;
+
+      if (!bookingId) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+          success: false, 
+          message: BOOKING_MESSAGES.BOOKING_ID_MISSING
+        });
+        return;
+      }
+
+      if (!paymentMethod) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json({ 
+          success: false, 
+          message: PAYMENT_MESSAGES.INVALID_ID_MISSING
+        });
+        return;
+      }
+
+      const result = await this._bookingService.retryPayment(bookingId, userId, paymentMethod);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: PAYMENT_MESSAGES.RETRY_PAYMENT_PROCESSED,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+
   async getMyBookings(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: USER_MESSAGES.USER_INFORMATION_MISSING});
         return;
       }
-      const userId = req.user.userId;
+      const userId: string = req.user.userId;
 
       const page  = parseInt(req.query.page  as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
       const status = (req.query.status as string)?.trim() || "";
       const search      = (req.query.search      as string)?.trim() || "";
-      const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
+      const eventFormat = (req.query.eventFormat as EventFormat)?.trim() || "";
 
       const eventId = (req.query.eventId as string)        || undefined;
 
@@ -101,8 +149,8 @@ export class BookingController implements IBookingController{
         eventId,
         page,
         limit,
-        status: status ? (status as BOOKING_STATUS) : undefined,
-        eventFormat: eventFormat ? (eventFormat as EVENT_FORMAT) : undefined,
+        status: status ? (status as BookingStatus) : undefined,
+        eventFormat: eventFormat ? (eventFormat as EventFormat) : undefined,
         search: search ? search : undefined,
         sortBy,
         sortOrder,
@@ -112,7 +160,7 @@ export class BookingController implements IBookingController{
 
       const result: GetBookingsResponseDTO = await this._bookingService.getMyBookings(userId, filters);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success:    true,
         bookings:   result.bookings,
         pagination: result.pagination,
@@ -132,11 +180,9 @@ export class BookingController implements IBookingController{
       const page    = parseInt(req.query.page  as string) || 1;
       const limit   = parseInt(req.query.limit as string) || 10;
 
-      const status  = (req.query.status  as BOOKING_STATUS) || undefined;
+      const status  = (req.query.status  as BookingStatus) || undefined;
       const search      = (req.query.search      as string)?.trim() || "";
-      const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
-
-      const eventId = (req.query.eventId as string)        || undefined;   // need eventId for this func ??
+      const eventFormat = (req.query.eventFormat as EventFormat)?.trim() || "";
 
       const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
         ? (req.query.sortBy as BookingSortField)
@@ -148,8 +194,8 @@ export class BookingController implements IBookingController{
         // eventId,
         page,
         limit,
-        status:      status      ? (status as BOOKING_STATUS) : undefined,
-        eventFormat: eventFormat ? (eventFormat as EVENT_FORMAT) : undefined,
+        status:      status      ? (status as BookingStatus) : undefined,
+        eventFormat: eventFormat ? (eventFormat as EventFormat) : undefined,
         search:      search      ? search : undefined,
         sortBy,
         sortOrder,
@@ -160,7 +206,7 @@ export class BookingController implements IBookingController{
       // const result: GetBookingsResponseDTO = await this._bookingService.getAdminBookings(filters);
       const result: GetBookingsResponseDTO = await this._bookingService.getBookingsList(filters);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success:    true,
         bookingsData:   result.bookings,
         pagination: result.pagination,
@@ -177,7 +223,7 @@ export class BookingController implements IBookingController{
   async getBookingById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId || !req.user.role) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User or Role missing" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User or Role missing" });
         return;
       }
       const requestingUserId = req.user.userId;
@@ -186,7 +232,7 @@ export class BookingController implements IBookingController{
 
       const booking = await this._bookingService.getBookingById(bookingId, requestingUserId, role);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
         data:    booking,
       });
@@ -201,7 +247,7 @@ export class BookingController implements IBookingController{
   async cancelBookingByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+        res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
         return;
       }
       
@@ -211,9 +257,9 @@ export class BookingController implements IBookingController{
       
       await this._bookingService.cancelBookingByUser(bookingId, userId, cancelReason);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
-        message: BookingMessages.BOOKING_CANCELLED,
+        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
       });
 
     } catch (error: unknown) {
@@ -231,9 +277,9 @@ export class BookingController implements IBookingController{
       
       await this._bookingService.cancelBookingByAuthority(bookingId, cancelReason);
 
-      res.status(HttpStatus.OK).json({
+      res.status(HTTP_STATUS.OK).json({
         success: true,
-        message: BookingMessages.BOOKING_CANCELLED,
+        message: BOOKING_MESSAGES.BOOKING_CANCELLED,
       });
 
     } catch (error: unknown) {

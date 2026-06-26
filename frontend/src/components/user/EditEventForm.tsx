@@ -1,8 +1,9 @@
 import { HostEventForm } from "@/components/host/HostEventForm";
+import type { EventStatus } from "@/constants/event.constants";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import { platformSettingsService } from "@/services/platformSettingsService";
-import type { EVENT_STATUS, IEventState } from "@/types/event.types";
-import type { IPlatformSettings, SettingsResponse } from "@/types/platformSettings.types";
+import type { IEventState } from "@/types/event.types";
+import type { SettingsResponse } from "@/types/platformSettings.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,7 +55,7 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
   const schema = eventFormSchemaFactory(
     hasExistingImage, 
     true, // isEditMode
-    editEvent.eventStatus as EVENT_STATUS
+    editEvent.eventStatus as EventStatus
   );
   
 

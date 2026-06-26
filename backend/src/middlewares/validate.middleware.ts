@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { ZodType, ZodError } from 'zod';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import { HttpStatus } from '@/constants/statusCodes.constants';
-import { HttpResponse } from '@/constants/responseMessages.constants';
+import { HTTP_STATUS } from '@/constants/http-status.constants';
 import { formatZodErrorMessages } from '@/utils/formatZodErrors';
+import { AUTH_MESSAGES } from '@/constants/messages.constants';
+
 
 
 export interface ValidationSchemas {
@@ -41,8 +42,8 @@ export const validateRequest = (schemas: ValidationSchemas) =>
         console.log('Zod Validation Error.issues:', error.issues);
         
         // Zod validation failed
-        res.status(HttpStatus.BAD_REQUEST).json({
-          error: HttpResponse.INVALID_CREDENTIALS,
+        res.status(HTTP_STATUS.BAD_REQUEST).json({
+          error: AUTH_MESSAGES.INVALID_CREDENTIALS,
           details: formatZodErrorMessages(error.issues),
         });
       }

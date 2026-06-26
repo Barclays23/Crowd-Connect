@@ -3,7 +3,7 @@ import { IPlatformSettingsRepository } from '@/repositories/interfaces/IPlatform
 import { IPlatformSettingsService } from '../interfaces/IPlatformSettingsService';
 import { PlatformSettingsEntity } from '@/entities/platformSettings.entity';
 import { createHttpError } from '@/utils/httpError.utils';
-import { HttpStatus } from '@/constants/statusCodes.constants';
+import { HTTP_STATUS } from '@/constants/http-status.constants';
 
 
 
@@ -32,14 +32,14 @@ export class PlatformSettingsService implements IPlatformSettingsService {
     private _validateSettings(data: Partial<PlatformSettingsEntity>): void {
         if (data.commissionPercent !== undefined) {
             if (data.commissionPercent < 0 || data.commissionPercent > 100) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, 'Commission must be between 0 and 100');
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, 'Commission must be between 0 and 100');
             }
         }
 
         if (data.refundTier1Hours !== undefined && data.refundTier2Hours !== undefined) {
             if (data.refundTier1Hours <= data.refundTier2Hours) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
+                    HTTP_STATUS.BAD_REQUEST,
                     `Tier 1 cutoff (${data.refundTier1Hours}h) must be greater than Tier 2 cutoff (${data.refundTier2Hours}h)`
                 );
             }
@@ -56,14 +56,14 @@ export class PlatformSettingsService implements IPlatformSettingsService {
         for (const field of percentFields) {
             const val = data[field];
             if (val !== undefined && (val < 0 || val > 100)) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, `${field} must be between 0 and 100`);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, `${field} must be between 0 and 100`);
             }
         }
 
         if (data.refundTier1Percent !== undefined && data.refundTier2Percent !== undefined) {
             if (data.refundTier1Percent < data.refundTier2Percent) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
+                    HTTP_STATUS.BAD_REQUEST,
                     'Tier 1 refund % should be >= Tier 2 refund %'
                 );
             }
@@ -72,7 +72,7 @@ export class PlatformSettingsService implements IPlatformSettingsService {
         if (data.refundTier2Percent !== undefined && data.refundTier3Percent !== undefined) {
             if (data.refundTier2Percent < data.refundTier3Percent) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST,
+                    HTTP_STATUS.BAD_REQUEST,
                     'Tier 2 refund % should be >= Tier 3 refund %'
                 );
             }

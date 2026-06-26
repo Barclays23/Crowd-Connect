@@ -95,7 +95,7 @@ function App() {
                                  <Route path="/dashboard" element={<UserAccountTabs />} />
                                  <Route path="/my-events" element={<UserAccountTabs />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
-                                 <Route path="/my-wishlist" element={<UserAccountTabs />} />
+                                 <Route path="/my-favourites" element={<UserAccountTabs />} />
                                  <Route path="/my-wallet" element={<UserAccountTabs />} />
                                  <Route path="/my-payouts" element={<UserAccountTabs />} />
                               </Route>

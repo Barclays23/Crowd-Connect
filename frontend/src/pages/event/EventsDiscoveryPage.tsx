@@ -21,7 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EVENT_CATEGORIES, EVENT_FORMATS, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
+import { 
+  type GetEventsApiResponse, 
+  type IEventState 
+} from "@/types/event.types";
 import EventCard from "@/components/event/EventCard";
 import EventCardList from "@/components/event/EventCardList";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -35,6 +38,7 @@ import heroBg_Day from "@/assets/images/hero-images/event-hero-bg1-day.png"
 import heroBg_Night from "@/assets/images/hero-images/event-hero-bg1-night.png"
 
 import { useTheme } from "@/contexts/ThemeContext";
+import { EVENT_CATEGORIES, EVENT_FORMATS } from "@/constants/event.constants";
 
 
 const FORMAT_OPTIONS = [

@@ -9,7 +9,7 @@ import {
 import { eventServices } from "@/services/eventServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { toast } from "react-toastify";
-import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES, type IEventState } from "@/types/event.types";
+import { type IEventState } from "@/types/event.types";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { capitalize } from "@/utils/namingConventions";
@@ -20,6 +20,7 @@ import { EventMap } from "@/components/common/EventMap";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
 
 
 

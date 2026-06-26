@@ -25,7 +25,7 @@ import {
    HostManageInput,
 } from "@/entities/user.entity";
 import { IUserModel } from "@/types/user.types";
-import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { HOST_STATUS, USER_ROLES, USER_STATUS } from "@/constants/user-system.constants";
 
 
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
@@ -37,7 +37,7 @@ const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
 // UserModel to UserEntity (without password)
 export const mapUserModelToUserEntity = (doc: IUserModel): UserEntity => ({
-   id: doc._id.toString(),
+   userId: doc._id.toString(),
    name: doc.name,
    email: doc.email,
    //   password: doc.password,
@@ -75,7 +75,7 @@ export const mapUserModelToHostEntity = (doc: IUserModel): HostEntity => {
       registrationNumber: doc.registrationNumber ?? '',
       businessAddress: doc.businessAddress ?? '',
       certificateUrl: doc.certificateUrl ?? '',
-      hostStatus: doc.hostStatus ?? HostStatus.PENDING,
+      hostStatus: doc.hostStatus ?? HOST_STATUS.PENDING,
       appliedAt: doc.hostAppliedAt ?? undefined,
       reviewedAt: doc.hostReviewedAt ?? undefined,
       hostRejectionReason: doc.hostRejectionReason ?? undefined,
@@ -114,7 +114,7 @@ export const mapUserModelToProfileEntity = (doc: IUserModel): UserProfileEntity 
 
 // UserEntity to AuthUserResponseDto (for auth responses: login, verify-otp etc)
 export const mapUserEntityToAuthUserDto = (entity: UserEntity): AuthUserResponseDto => ({
-   userId: entity.id.toString(),
+   userId: entity.userId.toString(),
    name: entity.name,
    email: entity.email,
    role: entity.role,
@@ -137,7 +137,7 @@ export const mapUserEntityToAuthUserDto = (entity: UserEntity): AuthUserResponse
 // USER ENTITY to USER PROFILE DTO  (Need only UserProfileEntity as parameter ??)
 export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | UserProfileEntity): UserProfileResponseDto => {
    const baseProfile: BaseUserResponseDto = {
-      userId: String(entity.id),
+      userId: String(entity.userId),
       name: entity.name,
       email: entity.email,
       role: entity.role,
@@ -184,7 +184,7 @@ export const mapToHostStatusUpdateResponseDto = (
    host: HostEntity
 ): HostStatusUpdateResponseDto => {
    return {
-      hostId: host.id,
+      hostId: host.userId,
       hostStatus: host.hostStatus,
       hostReviewedAt: host.reviewedAt,
       hostRejectionReason: host.hostRejectionReason,
@@ -207,8 +207,8 @@ export const mapSignUpRequestDtoToInput = (dto: SignUpRequestDto): SignUpUserInp
    email: dto.email,
    password: dto.password,
    isEmailVerified: true,  // since otp is already verified
-   status: UserStatus.ACTIVE,  // set status to "active" upon signup
-   role: superAdminEmail === dto.email ? UserRole.ADMIN : UserRole.USER,
+   status: USER_STATUS.ACTIVE,  // set status to "active" upon signup
+   role: superAdminEmail === dto.email ? USER_ROLES.ADMIN : USER_ROLES.USER,
    isSuperAdmin: superAdminEmail === dto.email ? true : false,
 });
 
@@ -226,8 +226,8 @@ export const mapCreateUserRequestDtoToInput = ({ createDto, hashedPassword, prof
       email: createDto.email,
       password: hashedPassword,
       role: createDto.role,
-      // status: createDto.status ?? UserStatus.PENDING,
-      status: UserStatus.PENDING,  // setting the status as 'PENDING' while creating - status will be changed to ACTIVE once the user is logged in
+      // status: createDto.status ?? USER_STATUS.PENDING,
+      status: USER_STATUS.PENDING,  // setting the status as 'PENDING' while creating - status will be changed to ACTIVE once the user is logged in
       mobile: createDto.mobile,
       profilePic: profilePicUrl,
       isEmailVerified: false,
@@ -284,11 +284,11 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
   hostDocumentUrl?: string;  // when re-apply, mandatory or not??
 }): UpgradeHostInput => {
    const udgradeInput: UpgradeHostInput = {
-      role: UserRole.HOST,
+      role: USER_ROLES.HOST,
       organizationName: upgradeDto.organizationName,
       registrationNumber: upgradeDto.registrationNumber,
       businessAddress: upgradeDto.businessAddress,
-      hostStatus: HostStatus.PENDING,
+      hostStatus: HOST_STATUS.PENDING,
       hostAppliedAt: new Date(),
    };
    if (hostDocumentUrl) udgradeInput.certificateUrl = hostDocumentUrl;
@@ -306,20 +306,20 @@ export const mapToHostManageInput = (
    switch (action) {
       case "approve":
          return {
-            hostStatus: HostStatus.APPROVED,
+            hostStatus: HOST_STATUS.APPROVED,
             hostReviewedAt: new Date(),
          };
 
       case "reject":
          return {
-            hostStatus: HostStatus.REJECTED,
+            hostStatus: HOST_STATUS.REJECTED,
             hostRejectionReason: reason,
             hostReviewedAt: new Date(),
          };
 
       // case "block":
       //    return {
-      //       hostStatus: HostStatus.BLOCKED,
+      //       hostStatus: HOST_STATUS.BLOCKED,
       //       hostBlockReason: reason,
       //       hostReviewedAt: reviewedAt,
       //    };
@@ -346,7 +346,7 @@ export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentU
    if (updateDto.registrationNumber !== undefined) updateInput.registrationNumber = updateDto.registrationNumber;
    if (updateDto.businessAddress !== undefined) updateInput.businessAddress = updateDto.businessAddress;
    if (hostDocumentUrl !== undefined) updateInput.certificateUrl = hostDocumentUrl;
-   if (!isDoneByAdmin) updateInput.hostStatus = HostStatus.PENDING;
+   if (!isDoneByAdmin) updateInput.hostStatus = HOST_STATUS.PENDING;
 
    return updateInput;
 };

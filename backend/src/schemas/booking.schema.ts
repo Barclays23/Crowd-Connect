@@ -1,17 +1,23 @@
 // backend/src/schemas/booking.schema.ts
-
+import { PAYMENT_METHODS } from "@/constants/payment.constants";
 import { z } from "zod";
 
 
 // ─── Booking Initiation (free + paid events) ──────────────────────────────────
 export const initiateBookingSchema = z.object({
   quantity: z
-    .number("quantity must be a number")
-    .int("quantity must be a whole number")
+    .number("Quantity must be a number")
+    .min(1, "Quantity must be at least 1")
+    .int("Quantity must be a whole number")
     .min(1, "You must choose at least 1 ticket.")
     .max(10, "Booking quantity cannot exceed 10"),
   // Online events only allow quantity 1 — enforced at service layer, not here.
+
+  paymentMethod: z.nativeEnum(PAYMENT_METHODS, "A valid payment method is required"),
+
 });
+
+
 
 
 

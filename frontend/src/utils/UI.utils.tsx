@@ -1,10 +1,13 @@
 // frontend/src/utils/UI.utils.tsx
 
-import type { EVENT_STATUS, IEventState } from "@/types/event.types";
-import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
+import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constants";
+import type { EventStatus } from "@/constants/event.constants";
+import { PAYMENT_STATUSES, type PaymentStatus } from "@/constants/payment.constants";
+import { TRANSACTION_DIRECTION, TRANSACTION_STATUS, TRANSACTION_TYPE, type TransactionDirection, type TransactionStatus, type TransactionType } from "@/constants/transaction.constants";
+import type { IEventState } from "@/types/event.types";
 import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { SiIcloud } from 'react-icons/si'
-import { TRANSACTION_DIRECTION, TRANSACTION_STATUS, TRANSACTION_TYPE } from "@/types/wallet.types";
+
 
 
 
@@ -46,7 +49,7 @@ export const getUserStatusBadgeVariant = (status: string) => {
 // ─── Event UI helpers ────────────────────────────────────────────────────
 
 export const getEventStatusBadgeVariant = (
-  status: EVENT_STATUS
+  status: EventStatus
 ) => {
   switch (status) {
     case "draft":
@@ -128,7 +131,7 @@ export function getSeatsInfo(event: IEventState) {
 // ─── Booking UI helpers ────────────────────────────────────────────────────
 
 export function getBookingStatusVariant(
-  status: BOOKING_STATUS
+  status: BookingStatus
 ): BadgeVariant {
   switch (status) {
     case BOOKING_STATUS.CONFIRMED: return "success";    // green — booking is active
@@ -141,7 +144,7 @@ export function getBookingStatusVariant(
 }
 
 
-export function getBookingStatusIcon(status: BOOKING_STATUS) {
+export function getBookingStatusIcon(status: BookingStatus) {
   switch (status) {
     case BOOKING_STATUS.CONFIRMED: return <CheckCircle className="h-4 w-4" />;
     case BOOKING_STATUS.ATTENDED:  return <CheckCircle className="h-4 w-4" />;
@@ -157,13 +160,13 @@ export function getBookingStatusIcon(status: BOOKING_STATUS) {
 // ─── Payment UI helpers ────────────────────────────────────────────────────
 
 export function getPaymentStatusVariant(
-  status: PAYMENT_STATUS
+  status: PaymentStatus
 ): "default" | "secondary" | "destructive" | "outline" | "success" {
   switch (status) {
-    case PAYMENT_STATUS.COMPLETED:     return "success";
-    case PAYMENT_STATUS.REFUNDED: return "secondary";
-    case PAYMENT_STATUS.PENDING:  return "outline";
-    case PAYMENT_STATUS.FAILED:   return "destructive";
+    case PAYMENT_STATUSES.COMPLETED:     return "success";
+    case PAYMENT_STATUSES.REFUNDED: return "secondary";
+    case PAYMENT_STATUSES.PENDING:  return "outline";
+    case PAYMENT_STATUSES.FAILED:   return "destructive";
     default:                      return "outline";
   }
 }
@@ -174,7 +177,7 @@ export function getPaymentStatusVariant(
 
 
 // ─── Wallet & Transaction UI helpers ────────────────────────────────────────────────────
-export function getTransactionStatusVariant (status: TRANSACTION_STATUS): "default" | "secondary" | "destructive" | "outline" {
+export function getTransactionStatusVariant (status: TransactionStatus): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case TRANSACTION_STATUS.COMPLETED: return "default";
     case TRANSACTION_STATUS.PENDING:   return "secondary";
@@ -184,7 +187,7 @@ export function getTransactionStatusVariant (status: TRANSACTION_STATUS): "defau
 }
 
 
-export const TRANSACTION_TYPE_LABELS: Record<TRANSACTION_TYPE, string> = {
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   [TRANSACTION_TYPE.BOOKING_REFUND]  : "Booking refund",
   [TRANSACTION_TYPE.CASHBACK]        : "Cashback",
   [TRANSACTION_TYPE.REFERRAL_CREDIT] : "Referral credit",
@@ -194,7 +197,7 @@ export const TRANSACTION_TYPE_LABELS: Record<TRANSACTION_TYPE, string> = {
 };
 
 
-export function formatTransactionAmount(amount: number, direction: TRANSACTION_DIRECTION): string {
+export function formatTransactionAmount(amount: number, direction: TransactionDirection): string {
   const prefix = direction === TRANSACTION_DIRECTION.CREDIT ? "+ " : "− ";
   return `${prefix}₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
 }

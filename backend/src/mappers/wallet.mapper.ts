@@ -2,9 +2,6 @@
 
 import { 
     ITransactionModel, 
-    TRANSACTION_DIRECTION, 
-    TRANSACTION_STATUS, 
-    TRANSACTION_TYPE, 
     TransactionsFilterQuery, 
     WalletCreditInput, 
     WalletDebitInput 
@@ -13,6 +10,7 @@ import { CreateTransactionInput, TransactionEntity } from "@/entities/transactio
 import { TransactionResponseDTO } from "@/dtos/wallet.dto";
 import { Types } from "mongoose";
 import { Request } from "express";
+import { TRANSACTION_STATUSES, TransactionDirection, TransactionStatus, TransactionType } from "@/constants/transaction.constants";
 
 
 
@@ -27,9 +25,9 @@ export function mapTransactionQueryToFilter(req: Request) {
        limit     : parseInt(req.query.limit as string) || 10,
        sortBy    : (req.query.sortBy    as "createdAt" | "amount") || "createdAt",
        sortOrder : (req.query.sortOrder as "asc" | "desc") || "desc",
-       ...(req.query.direction  && { direction : req.query.direction  as TRANSACTION_DIRECTION }),
-       ...(req.query.type       && { transactionType : req.query.type       as TRANSACTION_TYPE }),
-       ...(req.query.status     && { status    : req.query.status     as TRANSACTION_STATUS }),
+       ...(req.query.direction  && { direction : req.query.direction  as TransactionDirection }),
+       ...(req.query.type       && { transactionType : req.query.type as TransactionType }),
+       ...(req.query.status     && { status    : req.query.status     as TransactionStatus }),
        ...(req.query.startDate  && { startDate : req.query.startDate  as string }),
        ...(req.query.endDate    && { endDate   : req.query.endDate    as string }),
     };
@@ -81,7 +79,7 @@ export function mapTransactionEntityToResponseDTO(entity: TransactionEntity): Tr
 
 export function mapToCreateTransactionInput(
     input: WalletCreditInput | WalletDebitInput,
-    direction: TRANSACTION_DIRECTION,
+    direction: TransactionDirection,
     newBalance: number
 ): CreateTransactionInput {
     return {
@@ -90,7 +88,7 @@ export function mapToCreateTransactionInput(
         direction,
         amount: input.amount,
         balanceAfter : newBalance,
-        status: TRANSACTION_STATUS.COMPLETED,
+        status: TRANSACTION_STATUSES.COMPLETED,
         referenceType: input.referenceType,
         referenceId: input.referenceId 
             ? new Types.ObjectId(input.referenceId.toString()) 

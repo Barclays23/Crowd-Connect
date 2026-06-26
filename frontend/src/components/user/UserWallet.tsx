@@ -15,18 +15,20 @@ import { formatDate2 }        from "@/utils/dateAndTimeFormats";
 import { toast }              from "react-toastify";
 
 import {
-  TRANSACTION_DIRECTION,
-  TRANSACTION_STATUS,
-  TRANSACTION_TYPE,
   type ITransactionState,
   type WalletOverviewResponse,
   type TransactionSortField,
   type GetTransactionsParams,
   type GetTransactionsResponse,
 } from "@/types/wallet.types";
-import { formatTransactionAmount, getTransactionStatusVariant, TRANSACTION_TYPE_LABELS } from "@/utils/UI.utils";
+import { 
+  formatTransactionAmount, 
+  getTransactionStatusVariant, 
+  TRANSACTION_TYPE_LABELS 
+} from "@/utils/UI.utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toTitleCase } from "@/utils/namingConventions";
+import { TRANSACTION_DIRECTION, TRANSACTION_STATUS, TRANSACTION_TYPE, type TransactionDirection, type TransactionStatus, type TransactionType } from "@/constants/transaction.constants";
 
 
 
@@ -42,9 +44,9 @@ function UserWallet() {
   const [txLoading,    setTxLoading]    = useState(false);
   const [error,        setError]        = useState<string | null>(null);
 
-  const [directionFilter, setDirectionFilter] = useState<"all" | TRANSACTION_DIRECTION>("all");
-  const [typeFilter,      setTypeFilter]      = useState<"all" | TRANSACTION_TYPE>("all");
-  const [statusFilter,    setStatusFilter]    = useState<"all" | TRANSACTION_STATUS>("all");
+  const [directionFilter, setDirectionFilter] = useState<"all" | TransactionDirection>("all");
+  const [typeFilter,      setTypeFilter]      = useState<"all" | TransactionType>("all");
+  const [statusFilter,    setStatusFilter]    = useState<"all" | TransactionStatus>("all");
   const [sortBy,          setSortBy]          = useState<TransactionSortField>("createdAt");
   const [sortOrder,       setSortOrder]       = useState<"asc" | "desc">("desc");
 
@@ -214,7 +216,7 @@ function UserWallet() {
         <Select
           value={typeFilter}
           onValueChange={(v) => {
-            setTypeFilter(v as "all" | TRANSACTION_TYPE);
+            setTypeFilter(v as "all" | TransactionType);
             setCurrentPage(1);
           }}
         >
@@ -232,7 +234,7 @@ function UserWallet() {
         <Select
           value={directionFilter}
           onValueChange={(v) => {
-            setDirectionFilter(v as "all" | TRANSACTION_DIRECTION);
+            setDirectionFilter(v as "all" | TransactionDirection);
             setCurrentPage(1);
           }}
         >
@@ -249,7 +251,7 @@ function UserWallet() {
         <Select
           value={statusFilter}
           onValueChange={(v) => {
-            setStatusFilter(v as "all" | TRANSACTION_STATUS);
+            setStatusFilter(v as "all" | TransactionStatus);
             setCurrentPage(1);
           }}
         >

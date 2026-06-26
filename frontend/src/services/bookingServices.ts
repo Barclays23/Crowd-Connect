@@ -1,28 +1,32 @@
 // frontend/src/services/bookingServices.ts
 import axiosInstance from "@/config/axios";
+import type { PaymentMethod } from "@/constants/payment.constants";
 import type { 
    IBookingState, 
    GetBookingsApiResponse, 
    GetMyBookingsParams, 
    GetMyBookingsResponse, 
-   InitiateBookingResponse 
+   InitiateBookingResponse, 
+   BookingPaymentOrder
 } from "@/types/booking.types";
 
 
 
 
 export const bookingServices = {
-   initiateBooking: async (eventId: string, quantity: number): Promise<InitiateBookingResponse> => {
+   initiateBooking: async (eventId: string, quantity: number, paymentMethod: PaymentMethod): Promise<InitiateBookingResponse> => {
+      console.log('paymentMethod choosen :', paymentMethod);
       const response = await axiosInstance.post(
          `/api/event/${eventId}/initiate-booking`,
-         { quantity },
+         { quantity, paymentMethod },
          { withCredentials: true }
       );
       return response.data.data;
    },
 
 
-   verifyBookingPayment: async (payload: {
+
+   verifyBookingPayment: async (payload: {  // make a interface for the payload
       bookingId: string;
       paymentOrderId:   string;
       paymentId: string;
@@ -33,6 +37,16 @@ export const bookingServices = {
          { withCredentials: true }
       );
 
+      return response.data.data;
+   },
+
+
+
+   retryBookingPayment: async (bookingId: string, paymentMethod: PaymentMethod): Promise<InitiateBookingResponse> => {
+      const response = await axiosInstance.post(`/api/booking/${bookingId}/retry-payment`, 
+         { paymentMethod },
+         { withCredentials: true }
+      );
       return response.data.data;
    },
 
@@ -78,15 +92,6 @@ export const bookingServices = {
    //    });
    //    return res.data;
    // },
-
-   // interface BookingQueryParams {
-   //    page: string;
-   //    limit: string;
-   //    sortBy: string;
-   //    sortOrder: string;
-   //    search?: string;
-   //    status?: string;
-   // }
 
    getBookingsListOfEvent: async (eventId: string, queryString: string): Promise<GetBookingsApiResponse> => {
       const res = await axiosInstance.get(`/api/event/${eventId}/bookings?${queryString}`, {

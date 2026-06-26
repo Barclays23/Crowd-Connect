@@ -1,7 +1,7 @@
 import { REDIS_TOKEN_PREFIX } from "@/config/redis-cache.config";
-import { AuthMessages, HttpResponse } from "@/constants/responseMessages.constants";
-import { UserStatus } from "@/constants/roles-and-statuses";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { AUTH_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
+import { USER_STATUS } from "@/constants/user-system.constants";
 import { ResetPasswordDto } from "@/dtos/auth.dto";
 import { SensitiveUserEntity, UserEntity } from "@/entities/user.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
@@ -26,7 +26,7 @@ export class PasswordService implements IPasswordService {
             // const raw = await redisClient.get(redisKey);
             const raw = await this._cacheService.getKeyValue(redisKey);
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.RESET_LINK_INVALID_OR_EXPIRED}`);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, `${AUTH_MESSAGES.RESET_LINK_INVALID_OR_EXPIRED}`);
             }
             const tokenData = JSON.parse(raw);
 
@@ -35,7 +35,7 @@ export class PasswordService implements IPasswordService {
             const updatedUser: UserEntity | null = await this._userRepository.updateUserPassword(tokenData.email, hashedPassword);
 
             if (!updatedUser) {
-                throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_ACCOUNT_NOT_EXIST);
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_ACCOUNT_NOT_EXIST);
             }
 
             // await redisClient.del(redisKey);
@@ -56,21 +56,21 @@ export class PasswordService implements IPasswordService {
         try {
             const currentUser: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: userEmail});
 
-            if (!currentUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
-            if (currentUser.status === UserStatus.BLOCKED) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            if (currentUser.status === USER_STATUS.BLOCKED) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, USER_MESSAGES.USER_ACCOUNT_BLOCKED);
             }
 
             if (currentUser.password) {
                 if (!data.currentPassword) {
-                    throw createHttpError(HttpStatus.BAD_REQUEST, "Current password is required.");
+                    throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Current password is required.");
                 }
 
                 const isCurrentPasswordValid = await comparePassword(data.currentPassword, currentUser.password);
 
                 if (!isCurrentPasswordValid) {
-                    throw createHttpError(HttpStatus.UNAUTHORIZED, AuthMessages.PASSWORD_CURRENT_INCORRECT);
+                    throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.PASSWORD_CURRENT_INCORRECT);
                 }
             }
 
@@ -82,7 +82,7 @@ export class PasswordService implements IPasswordService {
             const updatedUser: UserEntity | null = await this._userRepository.updateUserPassword(userEmail, hashedPassword);
 
             if (!updatedUser) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, AuthMessages.PASSWORD_CHANGE_FAILED);
+                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, AUTH_MESSAGES.PASSWORD_CHANGE_FAILED);
             }
 
             return;

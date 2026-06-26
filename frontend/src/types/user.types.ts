@@ -1,14 +1,12 @@
 // frontend/src/types/user.types.ts
-
+import type { HostStatus, UserRole, UserStatus } from "@/constants/user-system.constants";
 import type { IPagination } from "@/types/common.types";
 
-export type UserRole = "user" | "host" | "admin";
-export type UserStatus = "active" | "blocked" | "pending";
-export type HostStatus = "pending" | "approved" | "rejected" | "blocked";
 
-
+// move to constants
 export const MAX_PROFILE_PIC_SIZE = 2 * 1024 * 1024; // 2MB
 export const ACCEPTED_PROFILE_PIC_TYPES = ['image/jpg', "image/jpeg", "image/png", 'image/gif', "image/webp"];
+
 
 
 export interface UserState {

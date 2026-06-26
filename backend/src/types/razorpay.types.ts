@@ -22,13 +22,14 @@ export interface RazorPayOrderOptions {
 
 
 export interface RazorpayBaseEntity {
-    id: string;
-    amount: number;
-    currency: string;
-    status: string;
-    notes?: RazorpayNotes;
-    created_at: number;
-    payment_id?: string; // Only exists on refunds
+    id          : string;
+    amount      : number;
+    currency    : string;
+    status      : string;
+    order_id?   : string;
+    notes?      : RazorpayNotes;
+    created_at  : number;
+    payment_id? : string; // Only exists on refunds
 }
 
 

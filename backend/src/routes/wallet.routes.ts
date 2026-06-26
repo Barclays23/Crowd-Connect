@@ -5,7 +5,7 @@ import { authenticate, authorize } from '@/middlewares/auth.middleware';
 import { UserRepository } from '@/repositories/implementations/user.repository';
 
 import { WALLET_ROUTES } from '@/constants/routes.constants';
-import { UserRole } from '@/constants/roles-and-statuses';
+import { USER_ROLES } from '@/constants/user-system.constants';
 import { WalletController } from '@/controllers/implementations/wallet.controller';
 import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
 import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
@@ -31,7 +31,7 @@ const walletController = new WalletController(walletService);
 const walletRouter = Router();
 
 walletRouter.use(authenticate);
-walletRouter.use(authorize(UserRole.USER, UserRole.HOST, UserRole.ADMIN));
+walletRouter.use(authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN));
 
 
 walletRouter.get(WALLET_ROUTES.MY_WALLET, walletController.getWalletOverview.bind(walletController));   // GET /api/wallet

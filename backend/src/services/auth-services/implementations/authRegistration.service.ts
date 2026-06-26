@@ -5,10 +5,8 @@ import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IAuthRegistrationService } from "../interfaces/IAuthRegistration";
 import { SignUpUserInput, UserEntity } from "@/entities/user.entity";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { generateOTP } from "@/utils/generateOTP.utils";
-import { renderTemplate } from "@/utils/templateLoader2";
 import { hashPassword } from "@/utils/bcrypt.utils";
 import { AuthResult } from "@/types/auth.types";
 import { mapSignUpRequestDtoToInput, mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
@@ -17,6 +15,7 @@ import { ICacheService } from "@/services/cache-services/interfaces/ICacheServic
 import { EmailTemplate, OtpEmailPayload } from "@/types/email.types";
 import { renderTemplateWithHandleBars } from "@/utils/templateLoader1";
 import { IMailService } from "@/services/mail-services/interfaces/IMailService";
+import { AUTH_MESSAGES, SYSTEM_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -32,7 +31,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
     async signUp(signUpDto: SignUpRequestDto): Promise<string> {
         try {
             const existUser: UserEntity | null = await this._userRepository.getUserByEmail(signUpDto.email);
-            if (existUser) throw createHttpError(HttpStatus.CONFLICT, HttpResponse.EMAIL_EXIST)
+            if (existUser) throw createHttpError(HTTP_STATUS.CONFLICT, AUTH_MESSAGES.EMAIL_EXIST)
             
             const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
             console.log('Generated OTP:', otpNumber);
@@ -77,7 +76,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             );
 
             if (!response) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
+                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, SYSTEM_MESSAGES.INTERNAL_SERVER_ERROR);
             }
 
             // return user email for otp verification step (/verify-account)
@@ -96,18 +95,18 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             const raw: string | null = await this._cacheService.getKeyValue(email);
 
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, `${AUTH_MESSAGES.SESSION_EXPIRED} ${SYSTEM_MESSAGES.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
 
             const tempRedisData = JSON.parse(raw);
             console.log('✅✅✅ Retrieved user & OTP data from Redis:', tempRedisData);
 
             if (Date.now() > tempRedisData.otpExpiry) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_EXPIRED);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
             }
 
             if (tempRedisData.otp !== otp) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.OTP_INCORRECT);
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_INCORRECT);
             }
 
             
@@ -128,7 +127,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             // Delete temp data from Redis
             await this._cacheService.deleteKeyValue(email);
 
-            const tokenPayload = { userId: userData.id.toString() }; // keep payload minimal
+            const tokenPayload = { userId: userData.userId.toString() }; // keep payload minimal
             const accessToken = createAccessToken(tokenPayload);
             const refreshToken = createRefreshToken(tokenPayload);
 
@@ -154,7 +153,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             const raw: string | null = await this._cacheService.getKeyValue(email);
 
             if (!raw) {
-                throw createHttpError(HttpStatus.NOT_FOUND, `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.TRY_AGAIN}`, "SESSION_EXPIRED");
+                throw createHttpError(HTTP_STATUS.NOT_FOUND, `${AUTH_MESSAGES.SESSION_EXPIRED} ${SYSTEM_MESSAGES.TRY_AGAIN}`, "SESSION_EXPIRED");
             }
             const tempRedisData = JSON.parse(raw);
             console.log('✅ Retrieved user data for resending OTP:', tempRedisData);
@@ -180,9 +179,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
                 htmlTemplate,
             });
 
-            // await sendEmail({ toAddress: email, mailSubject, text, htmlTemplate });
-
-
             // Prepare updated data for Redis
             const updatedRedisData = {
                 ...tempRedisData, // Maintain original user details
@@ -193,7 +189,7 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             // Update OTP and expiry in Redis (Redis TTL will remain the same as when requested first otp)
             const response: string | null = await this._cacheService.setKeyValue(email, JSON.stringify(updatedRedisData))
             if (!response) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.INTERNAL_SERVER_ERROR);
+                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, SYSTEM_MESSAGES.INTERNAL_SERVER_ERROR);
             }
 
             return email;

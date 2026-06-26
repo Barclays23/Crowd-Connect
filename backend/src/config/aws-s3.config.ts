@@ -99,10 +99,10 @@ export const deleteFromS3 = async (fileKey: string): Promise<void> => {
 
     //         const currentUser: UserEntity | null = await this._userRepository.getUserById(currentUserId);
 
-    //         if (!currentUser) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+    //         if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
 
     //         if (currentUser.status === UserStatus.BLOCKED) {
-    //             throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+    //             throw createHttpError(HTTP_STATUS.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
     //         }
 
     //         let newProfilePicKey: string | undefined;

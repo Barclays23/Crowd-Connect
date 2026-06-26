@@ -4,8 +4,8 @@ import { Request, Response, NextFunction } from "express";
 import { IEventRepository }               from "@/repositories/interfaces/IEventRepository";
 import { EventRepository }                from "@/repositories/implementations/event.repository";
 import { createHttpError }                from "@/utils/httpError.utils";
-import { HttpStatus }                     from "@/constants/statusCodes.constants";
 import { EventEntity }                    from "@/entities/event.entity";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 
 
 declare global {
@@ -28,18 +28,18 @@ export async function requireEventOwner(
         const userId  = req.user?.userId;
 
         if (!eventId) {
-            throw createHttpError(HttpStatus.BAD_REQUEST, "Event ID is required.");
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Event ID is required.");
         }
 
         const event = await eventRepo.getEventById(eventId);
 
         if (!event) {
-            throw createHttpError(HttpStatus.NOT_FOUND, "Event not found.");
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Event not found.");
         }
 
         if (event.organizer.hostId !== userId) {
             throw createHttpError(
-                HttpStatus.FORBIDDEN,
+                HTTP_STATUS.FORBIDDEN,
                 "You do not have permission to manage this event."
             );
         }

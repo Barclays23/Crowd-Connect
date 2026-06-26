@@ -1,12 +1,13 @@
 // frontend/src/components/admin/view-host-modal.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge, badgeVariants } from "@/components/ui/badge";
-import type { HostStatus, UserState, UserStatus } from "@/types/user.types";
+import type { UserState } from "@/types/user.types";
 import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
 import { getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
 import { Button } from "../ui/button";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import type { HostStatus, UserStatus } from "@/constants/user-system.constants";
 
 
 interface ViewHostModalProps {

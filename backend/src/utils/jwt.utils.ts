@@ -5,9 +5,9 @@ const { JsonWebTokenError, TokenExpiredError } = jwt;
 import crypto from "crypto";
 import 'dotenv/config';
 import { createHttpError } from "./httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { QRTokenPayload } from "@/types/ticket.types";
+import { AUTH_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -80,8 +80,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     // 🔒 Token expired
     if (err instanceof TokenExpiredError) {
       throw createHttpError(
-        HttpStatus.UNAUTHORIZED,
-        `${HttpResponse.SESSION_EXPIRED} ${HttpResponse.LOGIN_AGAIN}`,
+        HTTP_STATUS.UNAUTHORIZED,
+        `${AUTH_MESSAGES.SESSION_EXPIRED} ${AUTH_MESSAGES.LOGIN_AGAIN}`,
         "SESSION_EXPIRED"
       );
       // message: "Your session has expired. Please log in again to continue."
@@ -92,8 +92,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
     // 🔒 Invalid / malformed / signature error
     if (err instanceof JsonWebTokenError) {
       throw createHttpError(
-        HttpStatus.UNAUTHORIZED,
-        `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`,
+        HTTP_STATUS.UNAUTHORIZED,
+        `${AUTH_MESSAGES.SESSION_ENDED} ${AUTH_MESSAGES.LOGIN_AGAIN}`,
         "SESSION_EXPIRED"
       );
       // message: "Your session has ended. Please log in again to continue."
@@ -102,8 +102,8 @@ function verifyRefreshToken(token: string): RefreshTokenPayload {
 
     // 🔒 Truly unknown error (very rare)
     throw createHttpError(
-      HttpStatus.UNAUTHORIZED,
-      `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`,
+      HTTP_STATUS.UNAUTHORIZED,
+      `${AUTH_MESSAGES.SESSION_ENDED} ${AUTH_MESSAGES.LOGIN_AGAIN}`,
       "SESSION_EXPIRED"
     );
     // message: "Your session has ended. Please log in again to continue."
@@ -121,9 +121,9 @@ function verifyQrToken(token: string): QRTokenPayload {
 
   } catch (err) {
     if (err instanceof JsonWebTokenError) {
-      throw createHttpError(HttpStatus.UNAUTHORIZED, "Invalid QR code signature.");
+      throw createHttpError(HTTP_STATUS.UNAUTHORIZED, "Invalid QR code signature.");
     }
-    throw createHttpError(HttpStatus.UNAUTHORIZED, "QR code verification failed.");
+    throw createHttpError(HTTP_STATUS.UNAUTHORIZED, "QR code verification failed.");
   }
 }
 

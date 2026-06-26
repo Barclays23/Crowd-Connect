@@ -1,7 +1,6 @@
 // backend/src/types/checkin.types.ts
-
-import { BOOKING_STATUS } from "@/types/booking.types";
-import { EVENT_STATUS } from "@/types/event.types";
+import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
+import { EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { Types } from "mongoose";
 
 
@@ -10,18 +9,18 @@ import { Types } from "mongoose";
 export const EARLY_CHECKIN_BUFFER_MS = 30 * 60 * 1000;
 
 // Booking statuses that are permit for entry
-export const ENTERABLE_STATUSES: BOOKING_STATUS[] = [
-  BOOKING_STATUS.CONFIRMED,
-  BOOKING_STATUS.ATTENDED,  // partial re-scan still valid while remainingEntries > 0
+export const ENTERABLE_STATUSES: BookingStatus[] = [
+  BOOKING_STATUSES.CONFIRMED,
+  BOOKING_STATUSES.ATTENDED,  // partial re-scan still valid while remainingEntries > 0
 ];
 
 
 // Event statuses that permit scanning
 // PUBLISHED is included because your DB stores PUBLISHED; display layer computes upcoming/ongoing
-export const SCANNABLE_EVENT_STATUSES: string[] = [
-  EVENT_STATUS.PUBLISHED,
-  EVENT_STATUS.UPCOMING,
-  EVENT_STATUS.ONGOING,
+export const SCANNABLE_EVENT_STATUSES: EventStatus[] = [
+  EVENT_STATUSES.PUBLISHED,
+  EVENT_STATUSES.UPCOMING,
+  EVENT_STATUSES.ONGOING,
 ];
 
 
@@ -42,7 +41,7 @@ export interface CheckInResultDTO {
   entriesThisScan:  number;   // how many entered just now
   remainingEntries: number;   // after this scan
   isFullyUsed:      boolean;  // remainingEntries === 0
-  bookingStatus:    BOOKING_STATUS;
+  bookingStatus:    BookingStatus;
   checkedInAt:      Date;
 }
 
@@ -61,7 +60,7 @@ export interface AttendanceRecord {
     remainingEntries: number;
     isFullyUsed:      boolean;
     checkedInAt:      Date;
-    bookingStatus:    BOOKING_STATUS;
+    bookingStatus:    BookingStatus;
 }
 
 
@@ -78,7 +77,7 @@ export interface GetAttendanceResult {
 export interface CheckInBookingPopulated {
     bookingId:              string;
     ticketNo:         string;
-    bookingStatus:    BOOKING_STATUS;
+    bookingStatus:    BookingStatus;
     quantity:         number;
     remainingEntries: number;
     checkedInAt?:     Date;
@@ -92,7 +91,7 @@ export interface CheckInBookingPopulated {
         title:         string;
         startDateTime: Date;
         endDateTime:   Date;
-        eventStatus:   EVENT_STATUS;
+        eventStatus:   EventStatus;
     };
 }
 
@@ -104,7 +103,7 @@ export interface CheckInBookingPopulated {
 export type BookingQrLean = {
   _id:              Types.ObjectId;
   ticketNo:         string;
-  bookingStatus:    BOOKING_STATUS;
+  bookingStatus:    BookingStatus;
   quantity:         number;
   remainingEntries: number;
   checkedInAt?:     Date;
@@ -118,7 +117,7 @@ export type BookingQrLean = {
     title:         string;
     startDateTime: Date;
     endDateTime:   Date;
-    eventStatus:   EVENT_STATUS;
+    eventStatus:   EventStatus;
   };
 };
 
@@ -127,7 +126,7 @@ export type BookingQrLean = {
 export type AttendanceLean = {
   _id:              Types.ObjectId;
   ticketNo:         string;
-  bookingStatus:    BOOKING_STATUS;
+  bookingStatus:    BookingStatus;
   quantity:         number;
   remainingEntries: number;
   checkedInAt?:     Date;

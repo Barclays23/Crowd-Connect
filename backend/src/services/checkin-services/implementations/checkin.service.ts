@@ -1,5 +1,5 @@
 // backend/src/services/implementations/checkin.service.ts
-import { BOOKING_STATUS, BookingCheckinUpdate }   from "@/types/booking.types";
+import { BookingCheckinUpdate }   from "@/types/booking.types";
 import {
   ICheckinRepository,
 } from "@/repositories/interfaces/ICheckinRepository";
@@ -14,7 +14,7 @@ import { QRTokenPayload } from "@/types/ticket.types";
 import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckinService";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     validateBookingForCheckIn, 
     validateEventForCheckIn, 
@@ -23,6 +23,7 @@ import {
 } from "@/utils/validations/checkinValidations";
 import { verifyQrToken } from "@/utils/jwt.utils";
 import { mapToCheckInResultDTO } from "@/mappers/checkin.mappers";
+import { BOOKING_STATUSES } from "@/constants/booking.constants";
 
 
 
@@ -45,7 +46,7 @@ export class CheckinService implements ICheckinService {
 
         const booking: CheckInBookingPopulated | null = await this._checkinRepo.findBookingByQrToken(qrToken);
         if (!booking) {
-            throw createHttpError(HttpStatus.NOT_FOUND, "Booking not found.");
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Booking not found.");
         }
 
         validateBookingForCheckIn(booking, entryCount);
@@ -56,7 +57,7 @@ export class CheckinService implements ICheckinService {
         // ── 8. Process check-in ────────────────────────────────────────────────────
         const isFirstScan         = !booking.checkedInAt;
         const newRemainingEntries = booking.remainingEntries - entryCount;
-        const newBookingStatus    = newRemainingEntries === 0 ? BOOKING_STATUS.ATTENDED : booking.bookingStatus;
+        const newBookingStatus    = newRemainingEntries === 0 ? BOOKING_STATUSES.ATTENDED : booking.bookingStatus;
         const checkedInAt         = isFirstScan ? new Date() : booking.checkedInAt!;
 
         const checkinUpdateInput: BookingCheckinUpdate = {

@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { TransactionsFilterQuery } from "@/types/wallet.types";
 import { IWalletController } from "@/controllers/interfaces/IWalletController";
 import { GetTransactionsResponse, WalletOverviewResponse } from "@/dtos/wallet.dto";
@@ -21,7 +21,7 @@ export class WalletController implements IWalletController {
          const userId = req.user!.userId;
          const transactionData: WalletOverviewResponse = await this._walletService.getWalletOverview(userId);
 
-         res.status(HttpStatus.OK).json({ success: true, data: transactionData });
+         res.status(HTTP_STATUS.OK).json({ success: true, data: transactionData });
 
       } catch (error) {
          next(error);
@@ -36,7 +36,7 @@ export class WalletController implements IWalletController {
 
          const transactionData: GetTransactionsResponse = await this._walletService.getTransactions(filters);
 
-         res.status(HttpStatus.OK).json({ success: true, data: transactionData });
+         res.status(HTTP_STATUS.OK).json({ success: true, data: transactionData });
 
       } catch (error: unknown) {
          next(error);

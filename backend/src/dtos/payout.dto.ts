@@ -1,7 +1,7 @@
 // backend/src/dtos/payout.dto.ts
 
+import { PayoutRequestStatus } from "@/constants/payout.constants";
 import { IPagination } from "@/types/common.types";
-import { PAYOUT_REQUEST_STATUS } from "@/types/payout.types";
 
 
 
@@ -24,7 +24,7 @@ export interface PayoutResponseDTO {
   ticketsSold      : number;
   checkedInCount   : number;
 
-  status           : PAYOUT_REQUEST_STATUS;
+  status           : PayoutRequestStatus;
   requestedAt      : string;
   reviewedAt      ?: string;
   reviewedBy      ?: string;

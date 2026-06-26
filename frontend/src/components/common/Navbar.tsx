@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import UserAvatar from "../ui/userAvatar";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { LogoutResponse } from "@/types/auth.types";
-import logo from "@/assets/crowdconnect-icon-1.png";
+import logo from "@/assets/crowdconnect-logo-1.png";
 
 
 
@@ -80,6 +80,7 @@ export function Navbar() {
       { to: "/events", label: "Events" },
       { to: "/host", label: "Host Event", },
       { to: "/my-bookings", label: "My Bookings", requiresAuth: true },
+      { to: "/my-events", label: "My Events", requiresAuth: true },
       { to: "/my-account", label: "My Account", requiresAuth: true },
       { to: "/admin", label: "Admin Dashboard", requiresAdmin: true }, // Only show if admin
    ];
@@ -90,7 +91,7 @@ export function Navbar() {
    return (
       <>
          {/* Navbar Header */}
-         <header className="border-b border-(--border-default) bg-(--bg-primary)/95 backdrop-blur supports-[backdrop-filter]:bg-(--bg-primary)/60 sticky top-0 z-50">
+         <header className="border-b border-(--border-default) bg-(--bg-primary)/95 backdrop-blur supports-backdrop-filter:bg-(--bg-primary)/60 sticky top-0 z-50">
             <div className="container flex h-16 items-center justify-between px-4">
                {/* Logo */}
                <Link to="/" className="flex items-center space-x-2">

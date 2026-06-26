@@ -7,7 +7,7 @@ import { validateRequest } from "@/middlewares/validate.middleware";
 import { HostUpgradeSchema } from "@/schemas/host.schema";
 import { HostManagementServices } from "@/services/host-services/implementations/HostManagement.service";
 import { HOST_ROUTES } from "@/constants/routes.constants";
-import { UserRole } from "@/constants/roles-and-statuses";
+import { USER_ROLES } from "@/constants/user-system.constants";
 
 
 
@@ -31,7 +31,7 @@ const hostController = new HostController(hostManagementServices);
 const hostRouter = Router();
 
 
-hostRouter.post(HOST_ROUTES.APPLY_UPGRADE, authenticate, authorize(UserRole.USER, UserRole.HOST), 
+hostRouter.post(HOST_ROUTES.APPLY_UPGRADE, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), 
     uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
     hostController.applyHostUpgrade.bind(hostController)
 );

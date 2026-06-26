@@ -19,6 +19,7 @@ import { ButtonLoader } from "../common/ButtonLoader"
 import type { UserState, UserUpsertResult } from "@/types/user.types"
 import { cn } from "@/lib/utils"
 import { getApiErrorMessage } from "@/utils/errorMessages.utils"
+import { USER_ROLES, USER_STATUS, type UserRole, type UserStatus } from "@/constants/user-system.constants"
 
 
 
@@ -53,8 +54,8 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
       name: "",
       email: "",
       mobile: "",
-      role: user?.role ?? "user",
-      status: user?.status || "pending",
+      role: (user?.role as UserRole) ?? USER_ROLES.USER,
+      status: (user?.status as UserStatus) ?? USER_STATUS.PENDING,
       // profilePic: undefined,
     }
   })

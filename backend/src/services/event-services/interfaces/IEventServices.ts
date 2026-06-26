@@ -1,4 +1,5 @@
 // backend/src/services/event-services/interfaces/IEventServices.ts
+import { EventStatus } from "@/constants/event.constants";
 import { 
     CreateEventRequestDTO, 
     EventResponseDTO, 
@@ -6,7 +7,6 @@ import {
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
 import { 
-    EVENT_STATUS, 
     GetEventsFilter, 
     GetAllEventsResult, 
     GetPublicEventsFilter 
@@ -36,9 +36,9 @@ export interface IEventServices {
 
     getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult>;
 
-    cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | null>
+    cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EventStatus | null>
     
-    suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EVENT_STATUS | null>;
+    suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EventStatus | null>;
     
     deleteEvent(eventId: string): Promise<void>;
 

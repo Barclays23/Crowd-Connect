@@ -1,7 +1,7 @@
 // frontend/src/constants/apiEndpoints.constants.ts
 
 // only for the Google Auth (not using exios)
-const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 
 
 // base prefixes

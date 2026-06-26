@@ -9,9 +9,12 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate6 } from "@/utils/dateAndTimeFormats";
-import { BOOKING_STATUS, type IBookingState } from "@/types/booking.types";
+import { type IBookingState } from "@/types/booking.types";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
-import { EVENT_FORMATS } from "@/types/event.types";
+import { EVENT_FORMATS } from "@/constants/event.constants";
+import { BOOKING_STATUS } from "@/constants/booking.constants";
+
+
 
 interface BookingTicketProps {
   booking: IBookingState;

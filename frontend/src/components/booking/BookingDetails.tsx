@@ -1,17 +1,15 @@
 // frontend/src/components/user/BookingDetails.tsx
 
-import {
-  CreditCard, Info, AlertOctagon,
-  Plane
-} from "lucide-react";
+import { CreditCard, Info, AlertOctagon, Plane } from "lucide-react";
 import { Badge }        from "@/components/ui/badge";
 import { formatDate5 }  from "@/utils/dateAndTimeFormats";
-import { BOOKING_STATUS, PAYMENT_STATUS } from "@/types/booking.types";
 import type { IBookingState }           from "@/types/booking.types";
 import { getPaymentStatusVariant } from "@/utils/UI.utils";
 import EventMap2 from "@/components/common/EventMap2";
-import { EVENT_FORMATS } from "@/types/event.types";
 import BookingTicket from "@/components/booking/BookingTicket";
+import { EVENT_FORMATS } from "@/constants/event.constants";
+import { BOOKING_STATUS } from "@/constants/booking.constants";
+import { PAYMENT_STATUSES } from "@/constants/payment.constants";
 
 
 // Horizontal layout for lists in the lower cards
@@ -86,7 +84,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                   />
 
                   {/* Paid At – only show if payment actually happened */}
-                  {booking.payment.status === PAYMENT_STATUS.COMPLETED && booking.payment && (
+                  {booking.payment.status === PAYMENT_STATUSES.COMPLETED && booking.payment && (
                      <DetailRow
                         label="Paid On"
                         value={formatDate5(booking.payment.paidAt)}
@@ -94,7 +92,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                   )}
 
                   {/* Razorpay details – only for paid bookings */}
-                  {!isFree && booking.payment.status !== PAYMENT_STATUS.PENDING && (
+                  {!isFree && booking.payment.status !== PAYMENT_STATUSES.PENDING && (
                      <>
                         <DetailRow
                         label="Order ID"

@@ -1,6 +1,7 @@
 
-import { BOOKING_STATUS, IBookingModel, PAYMENT_STATUS } from '@/types/booking.types';
-import { IEventModel } from '@/types/event.types';
+import { BOOKING_STATUSES } from '@/constants/booking.constants';
+import { PAYMENT_STATUSES } from '@/constants/payment.constants';
+import { IBookingModel } from '@/types/booking.types';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
 
@@ -42,8 +43,8 @@ const bookingSchema = new Schema<IBookingModel>(
       },
       bookingStatus: {
          type: String,
-         enum: Object.values(BOOKING_STATUS),
-         default: BOOKING_STATUS.PENDING,
+         enum: Object.values(BOOKING_STATUSES),
+         default: BOOKING_STATUSES.PENDING,
          required: true,
       },
 
@@ -66,8 +67,8 @@ const bookingSchema = new Schema<IBookingModel>(
          signature: { type: String },
          status: {
             type: String,
-            enum: Object.values(PAYMENT_STATUS),
-            default: PAYMENT_STATUS.PENDING,
+            enum: Object.values(PAYMENT_STATUSES),
+            default: PAYMENT_STATUSES.PENDING,
             required: true,
          },
          paidAt: { type: Date },

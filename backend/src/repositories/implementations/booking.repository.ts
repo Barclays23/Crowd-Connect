@@ -18,7 +18,6 @@ import {
   mapPopulatedBookingModelToEntity 
 } from "@/mappers/booking.mapper";
 import { 
-  BOOKING_STATUS,  
   BookingFacetResult, 
   GetBookingsFilter, 
   GetBookingsResult, 
@@ -26,7 +25,9 @@ import {
   IBookingPopulatedUserAndEvent, 
   MajorEventChange 
 } from "@/types/booking.types";
-import { PAYMENT_STATUS } from "@/types/booking.types";
+import { BOOKING_STATUSES } from "@/constants/booking.constants";
+import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+
 
 
 
@@ -42,7 +43,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   }
 
 
-  async createBooking(createBookingInput: CreateBookingInput): Promise<BookingEntity> {
+  async createBooking(createBookingInput: CreateBookingInput, options: { session?: ClientSession } = {}): Promise<BookingEntity> {
     const dbInput = {
       ...createBookingInput,
       _id: typeof createBookingInput._id === 'string' 
@@ -50,7 +51,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
         : createBookingInput._id,
     };
 
-    const bookingData: IBookingModel = await this.createOne(dbInput as Partial<IBookingModel>);
+    const bookingData: IBookingModel = await this.createOne(dbInput as Partial<IBookingModel>, options);
     return mapBookingModelToEntity(bookingData);
   }
 
@@ -72,15 +73,10 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   }
 
 
-  // async getBookingByPaymentId(paymentId: string): Promise<BookingEntity | null> {
-  //   const booking: IBookingModel | null = await this.findOneQuery({ "payment.paymentId": paymentId })
-  //     .lean<IBookingModel>();
-
-  //   return booking ? mapBookingModelToEntity(booking) : null;
-  // }
 
   async getBookingByPaymentId(paymentId: string): Promise<BookingEntityPopulated | null> {
-    const booking = await this.findOneQuery({ "payment.paymentId": paymentId })
+    const booking: IBookingPopulatedUserAndEvent | null = await this.findOneQuery({ "payment.paymentId": paymentId })
+      .populate("userRef", "name email")
       .populate("eventRef", "title")
       .lean<IBookingPopulatedUserAndEvent>();
 
@@ -96,34 +92,91 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   }
 
 
-  async confirmBooking(
+  async confirmOnlineBooking(
     bookingId: string, 
     input: ConfirmBookingInput, 
     options?: { session?: ClientSession }
   ): Promise<BookingEntity | null> {
     const updated = await this.findByIdAndUpdate(
-        bookingId,
-        {
-          $set: {
-            bookingStatus:       input.bookingStatus,
-            qrToken:             input.qrToken,
-            "payment.paymentId": input.payment.paymentId,
-            "payment.signature": input.payment.signature,
-            "payment.status":    input.payment.status,
-            "payment.paidAt":    input.payment.paidAt,
-          },
+      bookingId,
+      {
+        $set: {
+          bookingStatus       : input.bookingStatus,
+          qrToken             : input.qrToken,
+          "payment.paymentId" : input.payment.paymentId,
+          "payment.signature" : input.payment.signature,
+          "payment.status"    : input.payment.status,
+          "payment.paidAt"    : input.payment.paidAt,
         },
-      );
+      },
+    );
 
     return updated ? mapBookingModelToEntity(updated) : null;
   }
 
 
+
+  async confirmWalletRetryBooking(
+    bookingId: string, 
+    qrToken: string, 
+    walletOrderId: string, 
+    options?: { session?: ClientSession }
+  ): Promise<BookingEntity | null> {
+    const updated = await this.findByIdAndUpdate(
+      bookingId,
+      {
+        $set: {
+          bookingStatus       : BOOKING_STATUSES.CONFIRMED,
+          qrToken             : qrToken,
+          "payment.orderId"   : walletOrderId,
+          "payment.status"    : PAYMENT_STATUSES.COMPLETED,
+          "payment.paidAt"    : new Date(),
+          // Unset paymentId and signature in case they were populated by a failed Razorpay attempt
+          $unset: { 
+            "payment.paymentId": "", 
+            "payment.signature": "" 
+          }
+        },
+      },
+      options
+    );
+
+    return updated ? mapBookingModelToEntity(updated) : null;
+  }
+
+
+
+  async updateBookingPaymentOrderId(bookingId: string, newOrderId: string): Promise<void> {
+    const bookingResult: IBookingModel | null = await this.findByIdAndUpdate(bookingId, { 
+        $set: { 
+          "payment.orderId": newOrderId 
+        } 
+      }
+    );
+
+    if (!bookingResult) {
+      throw new Error("Failed to update payment order ID: Booking not found in database.");
+    }
+  }
+
+
+  // need this function ??
   async markBookingFailed(bookingId: string): Promise<void> {
     await this.findByIdAndUpdate(bookingId, {
       $set: {
-        bookingStatus   : BOOKING_STATUS.FAILED,
-        "payment.status": PAYMENT_STATUS.FAILED,
+        bookingStatus   : BOOKING_STATUSES.FAILED,
+        "payment.status": PAYMENT_STATUSES.FAILED,
+      },
+    });
+  }
+
+
+
+  // do this with cron job or bullMQ (see bottom)
+  async markBookingPaymentFailed(bookingId: string): Promise<void> {
+    await this.findByIdAndUpdate(bookingId, {
+      $set: {
+        "payment.status": PAYMENT_STATUSES.FAILED,
       },
     });
   }
@@ -268,7 +321,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
         $match: {
           userRef:       new Types.ObjectId(userId),
           eventRef:      new Types.ObjectId(eventId),
-          bookingStatus: { $in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ATTENDED] },
+          bookingStatus: { $in: [BOOKING_STATUSES.CONFIRMED, BOOKING_STATUSES.ATTENDED] },
         },
       },
       {
@@ -278,33 +331,6 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
     return result[0]?.total ?? 0;
   }
-
-
-  // async updateBooking(bookingId: string, data: Partial<BookingEntity>): Promise<BookingEntity | null> {
-  //   try {
-  //     const updated = await this.findByIdAndUpdate(bookingId, data);
-  //     return updated ? mapBookingModelToEntity(updated) : null;
-  //   } catch (error) {
-  //     const msg = error instanceof Error ? error.message : "Unknown error";
-  //     console.error("Error in BookingRepository.updateBooking:", msg);
-  //     throw error;
-  //   }
-  // }
-
-
-
-  // no need this. already doing in applyCheckInUpdate
-  // async decrementRemainingEntries(bookingId: string, count: number): Promise<BookingEntity | null> {
-  //   const updated = await this.findByIdAndUpdate(
-  //     bookingId,
-  //     { $inc: { remainingEntries: -count } },
-  //   );
-
-  //   const updatedBooking: BookingEntity | null = updated ? mapBookingModelToEntity(updated) : null;
-
-  //   return updatedBooking;
-  // }
-
 
 
 
@@ -328,11 +354,11 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
   async setGracePeriodForEvent(eventId: string, data: { gracePeriodEnd: Date; majorEventChange: MajorEventChange }): Promise<void> {
     await this.updateMany(
-      { eventRef: new Types.ObjectId(eventId), bookingStatus: BOOKING_STATUS.CONFIRMED },
+      { eventRef: new Types.ObjectId(eventId), bookingStatus: BOOKING_STATUSES.CONFIRMED },
       {
         $set: {
-          majorEventChange:     data.majorEventChange,
-          gracePeriodEnd: data.gracePeriodEnd,
+          majorEventChange  : data.majorEventChange,
+          gracePeriodEnd    : data.gracePeriodEnd,
         },
       }
     );
@@ -342,7 +368,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   async findConfirmedBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]> {
     const bookings: IBookingPopulatedUserAndEvent[] = await this.findManyQuery({ 
       eventRef     : new Types.ObjectId(eventId), 
-      bookingStatus: { $in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.ATTENDED] }
+      bookingStatus: { $in: [BOOKING_STATUSES.CONFIRMED, BOOKING_STATUSES.ATTENDED] }
     })
     .populate("eventRef", EVENT_POPULATE_SELECT)
     .lean<IBookingPopulatedUserAndEvent[]>();
@@ -355,7 +381,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   async findPendingBookingsForEvent(eventId: string): Promise<BookingEntityPopulated[]> {
     const bookings: IBookingPopulatedUserAndEvent[] = await this.findManyQuery({ 
       eventRef:      new Types.ObjectId(eventId), 
-      bookingStatus: BOOKING_STATUS.PENDING 
+      bookingStatus: BOOKING_STATUSES.PENDING 
     })
     .populate("eventRef", EVENT_POPULATE_SELECT)
     .lean<IBookingPopulatedUserAndEvent[]>();
@@ -365,10 +391,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
 
 
-  async bulkCancelBookings(
-    bookingIds: string[],
-    updateInput: BulkCancelBookingsInput
-  ): Promise<void> {
+  async bulkCancelBookings(bookingIds: string[], updateInput: BulkCancelBookingsInput): Promise<void> {
     await this.updateMany(
       { _id: { $in: bookingIds.map(id => new Types.ObjectId(id)) } },
       { $set: updateInput }
@@ -377,3 +400,26 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
 
 }
+
+
+
+
+// When should bookingStatus be marked FAILED?
+// This is a great architectural question.
+
+// If a user's card is declined (and the webhook sends payment.failed), we only mark payment.status = FAILED. We leave the bookingStatus = PENDING.
+
+// Why? Because the user might just have typed their CVV wrong. We want them to click "Retry Payment" on the frontend and try again.
+
+// So, when does a booking actually become FAILED?
+// In an industry-standard system, a booking becomes FAILED (or EXPIRED) if the user abandons the payment entirely and never comes back.
+
+// Usually, you would have a Background Cron Job (using a library like node-cron or BullMQ) that runs every 30 minutes. It looks for bookings like this:
+
+// TypeScript
+// {
+//    bookingStatus: "pending",
+//    createdAt: { $lt: thirtyMinutesAgo }
+// }
+// The Cron Job then updates those old, abandoned bookings to BOOKING_STATUSES.FAILED. 
+// This cleans up your database and stops the user from trying to pay for an event that might already be sold out hours later.

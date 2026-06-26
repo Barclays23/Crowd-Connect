@@ -5,9 +5,8 @@ import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { IAuthSessionService } from "../interfaces/IAuthSession";
 import { AuthResult } from "@/types/auth.types";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { UserStatus } from "@/constants/roles-and-statuses";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { USER_STATUS, UserStatus } from "@/constants/user-system.constants";
 import { comparePassword } from "@/utils/bcrypt.utils";
 import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { 
@@ -20,6 +19,7 @@ import { ICacheService } from "@/services/cache-services/interfaces/ICacheServic
 import { Profile } from "passport-google-oauth20";
 import { AuthProvider } from "@/types/user.types";
 import { BaseUserResponseDto } from "@/dtos/user.dto";
+import { AUTH_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -34,31 +34,31 @@ export class AuthSessionService implements IAuthSessionService {
         try {
             const userData: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: signInDto.email});
             // console.log('✅ User data retrieved in AuthSessionService.signIn:', userData);
-            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!userData) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
-            if (userData.status === UserStatus.BLOCKED) {
-                throw createHttpError(HttpStatus.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
+            if (userData.status === USER_STATUS.BLOCKED) {
+                throw createHttpError(HTTP_STATUS.FORBIDDEN, USER_MESSAGES.USER_ACCOUNT_BLOCKED);
             }
 
             // if user already have an account created with Google Auth, but no password
             if (!userData.password) {
                 throw createHttpError(
-                    HttpStatus.BAD_REQUEST, 
+                    HTTP_STATUS.BAD_REQUEST, 
                     "Please use Google to log into this account.", 
                     "OAUTH_USER_LOGIN"
                 );
             }
 
             const isMatch: boolean = await comparePassword(signInDto.password, userData.password);
-            if (!isMatch) throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.PASSWORD_INCORRECT);
+            if (!isMatch) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.PASSWORD_INCORRECT);
             
             // change user.status to 'active' if it was 'inactive' or 'pending'
-            if (userData.status === UserStatus.PENDING) {
-                const updatedStatus: UserStatus | null = await this._userRepository.updateUserStatus(userData.id, UserStatus.ACTIVE);
+            if (userData.status === USER_STATUS.PENDING) {
+                const updatedStatus: UserStatus | null = await this._userRepository.updateUserStatus(userData.userId, USER_STATUS.ACTIVE);
                 // console.log(`✅ User status updated to '${updatedStatus}' upon sign-in.`);
             }
 
-            const tokenPayload  = { userId: userData.id.toString() }; // keep payload minimal
+            const tokenPayload  = { userId: userData.userId.toString() }; // keep payload minimal
             const accessToken   = createAccessToken(tokenPayload);
             const refreshToken  = createRefreshToken(tokenPayload);
 
@@ -71,8 +71,6 @@ export class AuthSessionService implements IAuthSessionService {
             };
 
         } catch (error: unknown) {
-            // const msg = error instanceof Error ? error.message : 'Unknown error';
-            // winstonLogger.error("Error in AuthSessionService.signIn", { error: msg });
             throw error;
         }
     }
@@ -82,7 +80,7 @@ export class AuthSessionService implements IAuthSessionService {
         try {
             console.log('handleGoogleAuth googleProfile :', googleProfile)
             const email: string | undefined = googleProfile.emails?.[0].value;
-            if (!email) throw createHttpError(HttpStatus.BAD_REQUEST, "No email found in Google profile");
+            if (!email) throw createHttpError(HTTP_STATUS.BAD_REQUEST, "No email found in Google profile");
     
             let user: SensitiveUserEntity | null = await this._userRepository.getUserByEmail(email);
 
@@ -126,15 +124,15 @@ export class AuthSessionService implements IAuthSessionService {
                 }
 
                 if (needsUpdate) {
-                    const updatedUser = await this._userRepository.updateUserByAdmin(user.id, updateData);
+                    const updatedUser = await this._userRepository.updateUserByAdmin(user.userId, updateData);
                     if (updatedUser) user = updatedUser;
                 }
 
             }
     
-            if (!user) throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to authenticate with Google");
+            if (!user) throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to authenticate with Google");
     
-            const tokenPayload  = { userId: user.id.toString() };
+            const tokenPayload  = { userId: user.userId.toString() };
             const accessToken   = createAccessToken(tokenPayload);
             const refreshToken  = createRefreshToken(tokenPayload);
     
@@ -156,7 +154,7 @@ export class AuthSessionService implements IAuthSessionService {
         try {
             if (!refreshToken) {
                 // message: "Your session has ended. Please log in again to continue."
-                throw createHttpError(HttpStatus.UNAUTHORIZED, `${HttpResponse.SESSION_ENDED} ${HttpResponse.LOGIN_AGAIN}`, "SESSION_EXPIRED");
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, `${AUTH_MESSAGES.SESSION_ENDED} ${AUTH_MESSAGES.LOGIN_AGAIN}`, "SESSION_EXPIRED");
             }
             
             const decoded = verifyRefreshToken(refreshToken);
@@ -164,13 +162,13 @@ export class AuthSessionService implements IAuthSessionService {
 
             if (!decoded || !decoded.userId || !decoded.jti) {
                 console.error('Decoded refreshToken expired or is missing required fields:', decoded);
-                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_INVALID_OR_EXPIRED);
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.TOKEN_INVALID_OR_EXPIRED);
             }
 
             // Check the blacklist. If the JTI exists in the store, it means the token was logged out/revoked.
             const isBlacklisted: string | null = await this._cacheService.getKeyValue(decoded.jti);
             if (isBlacklisted) {
-                throw createHttpError(HttpStatus.UNAUTHORIZED, HttpResponse.TOKEN_REVOKED);
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.TOKEN_REVOKED);
             }
 
             // Create new access token
@@ -183,8 +181,6 @@ export class AuthSessionService implements IAuthSessionService {
             return newAccessToken;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthSessionService.refreshAccessToken:", msg);
             throw error;
         }
     }
@@ -195,7 +191,7 @@ export class AuthSessionService implements IAuthSessionService {
             const decoded = verifyRefreshToken(refreshToken);
 
             if (!decoded || !decoded.jti) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload.");
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Malformed token payload.");
             }
 
             // Save the JTI to the blacklist/Redis with remaining TTL (in seconds)
@@ -206,13 +202,11 @@ export class AuthSessionService implements IAuthSessionService {
                     console.log(`User with ID ${decoded.userId} logged out. JTI: ${decoded.jti} blacklisted.`);
                 }
             } else {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "Malformed token payload: missing expiration.");
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Malformed token payload: missing expiration.");
             }
 
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthSessionService.revokeRefreshToken:", msg);
             throw error;
         }
     }
@@ -222,10 +216,10 @@ export class AuthSessionService implements IAuthSessionService {
         try {
             const userData: UserEntity | null = await this._userRepository.getUserById(userId);
 
-            if (!userData) throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
+            if (!userData) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
             const safeUser: AuthUserResponseDto = {
-                userId: userData.id.toString(),
+                userId: userData.userId.toString(),
                 name: userData.name,
                 email: userData.email,
                 role: userData.role,
@@ -239,8 +233,6 @@ export class AuthSessionService implements IAuthSessionService {
             return safeUser;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthSessionService.getAuthUser:", msg);
             throw error;
         }
     }

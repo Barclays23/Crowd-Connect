@@ -1,5 +1,11 @@
 // backend/src/types/event.types.ts
 
+import { 
+  EventCategory, 
+  EventFormat, 
+  EventStatus, 
+  TicketType 
+} from "@/constants/event.constants";
 import { EventResponseDTO } from "@/dtos/event.dto";
 import { IPagination } from "@/types/common.types";
 import { DateQueryOperator } from "@/utils/eventStatus.utils";
@@ -8,63 +14,10 @@ import { Types } from "mongoose";
 
 
 
-export const ALL_EVENT_CATEGORIES = [
-   "Art & Exhibitions",
-   "Business & Networking",
-   "Charity & Causes",
-   "Conferences & Seminars",
-   "Education & Workshops",
-   "Fashion & Beauty",
-   "Festivals & Fairs",
-   "Film & Media",
-   "Food & Drink",
-   "Health & Wellness",
-   "Kids & Family",
-   "Music & Concerts",
-   "Parties & Nightlife",
-   "Spiritual & Religious",
-   "Sports & Fitness",
-   "Technology & Innovation",
-   "Theatre & Live Shows",
-   "Travel & Outdoor",
-   "Weddings & Social Gatherings",
-] as const;
-
-
-export type EVENT_CATEGORY = typeof ALL_EVENT_CATEGORIES[number];
-
-
-export enum EVENT_FORMAT {
-  ONLINE = 'online',
-  OFFLINE = 'offline',
-}
-
-
-export enum TICKET_TYPE {
-  FREE = 'free',
-  PAID = 'paid',
-}
-
 
 export interface ILocation {
-   type: "Point";
-   coordinates: [number, number]; // [longitude, latitude]
-}
-
-export const DEFAULT_RADIUS_KM = 25
-
-
-export enum EVENT_STATUS {
-  DRAFT = "draft",             // DRAFT: Creating / Editing phase.
-  PUBLISHED = "published",     // PUBLISHED: Live and bookable. and cannot change back to draft (time-based display computed from here).
-  CANCELLED = "cancelled",     // CANCELLED: Permanent stop.
-  SUSPENDED = "suspended",     // SUSPENDED: admin suspended. (but reason in cancelledReason)
-  COMPLETED = "completed",     // COMPLETED: Auto or manual (after end / payouts). After every process completed.
-
-  // Onlu for virtual UI display based on startDateTime & endDateTime
-  // use getEventDisplayStatus to generate the display event status.
-  UPCOMING = "upcoming",
-  ONGOING  = "ongoing",
+  type: "Point";
+  coordinates: [number, number]; // [longitude, latitude]
 }
 
 
@@ -75,14 +28,14 @@ export interface IEventModel {
 
   // Basic Details
   title: string;
-  category: EVENT_CATEGORY;
+  category: EventCategory;
   description: string;
 
   // Visuals
   posterUrl: string; // Stores the Cloudinary/S3 URL
 
   // Format & Location
-  format: EVENT_FORMAT;
+  format: EventFormat;
   locationName?: string,             // Optional if online
   location?: ILocation;       // Optional if online
   onlineLink?: string;        // Optional if offline
@@ -92,7 +45,7 @@ export interface IEventModel {
   endDateTime: Date;
 
   // Pricing & Capacity
-  ticketType: TICKET_TYPE;
+  ticketType: TicketType;
   ticketPrice: number;
   capacity: number;
   soldTickets: number; // To track how many tickets/seats left (booking ++ & cancel booking --)
@@ -100,7 +53,7 @@ export interface IEventModel {
   grossTicketRevenue: number; // To track total revenue for the event (every new booking - cancellation)
 
   // Status & Views
-  eventStatus: EVENT_STATUS;
+  eventStatus: EventStatus;
   views: number;       // for trending/popular calculation
    
   // Event Cancellation
@@ -188,15 +141,15 @@ interface IBaseEventFilter {
   page: number;
   limit: number;
   search?: string;
-  category?: EVENT_CATEGORY;
-  format?: EVENT_FORMAT;
-  ticketType?: TICKET_TYPE;
+  category?: EventCategory;
+  format?: EventFormat;
+  ticketType?: TicketType;
 }
 
 
 // query filters for fetching events (by admin)
 export interface GetEventsFilter extends IBaseEventFilter {
-  status?: EVENT_STATUS;
+  status?: EventStatus;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
 }

@@ -8,16 +8,16 @@ import {
 } from "@/entities/booking.entity";
 import { BookingResponseDTO } from "@/dtos/booking.dto";
 import { 
-  BOOKING_STATUS, 
   IBookingModel, 
   IBookingPopulatedUserAndEvent, 
   MapBookingParams, 
-  PAYMENT_STATUS 
 } from "@/types/booking.types";
 import { Types } from "mongoose";
-import { TICKET_TYPE } from "@/types/event.types";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { getRefundPercentage } from "@/utils/refundCalculator";
+import { TICKET_TYPES } from "@/constants/event.constants";
+import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
 
 
 
@@ -25,27 +25,32 @@ import { getRefundPercentage } from "@/utils/refundCalculator";
 // ─── DTO → Input ───────────────────────────────────────────────────────────
 export function mapBookingOrderDtoToInput(params: MapBookingParams): CreateBookingInput {
 
-  const { userId, event, newBookingQty, ticketNo, qrToken, paymentOrderId } = params;
-  const isFree = event.ticketType === TICKET_TYPE.FREE;
+  const { userId, event, newBookingQty, ticketNo, qrToken, paymentOrderId, bookingStatus, paymentStatus } = params;
+
+  if (!paymentOrderId) {
+    throw new Error("SYSTEM_ERROR: paymentOrderId is strictly required to create a booking.");
+  }
 
   return {
-    userRef: new Types.ObjectId(userId),
-    eventRef: new Types.ObjectId(event.id),
-    quantity: newBookingQty,
-    ticketNo: ticketNo,
-    eventFormat: event.format,
-    ticketRate: event.ticketPrice,
-    totalAmount: event.ticketPrice * newBookingQty,
-    bookingStatus: isFree ? BOOKING_STATUS.CONFIRMED : BOOKING_STATUS.PENDING,
-    qrToken: isFree && qrToken ? qrToken : "",  // No QR token for paid events, generated after payment success
-    remainingEntries: newBookingQty,
-    payment: {
-      orderId: isFree ? `free_${userId}_${Date.now()}` : paymentOrderId!,
-      status: isFree ? PAYMENT_STATUS.COMPLETED : PAYMENT_STATUS.PENDING,
-      ...(isFree && { paidAt: new Date() }),
+    userRef           : new Types.ObjectId(userId),
+    eventRef          : new Types.ObjectId(event.eventId),
+    quantity          : newBookingQty,
+    ticketNo          : ticketNo,
+    eventFormat       : event.format,
+    ticketRate        : event.ticketPrice,
+    totalAmount       : event.ticketPrice * newBookingQty,
+    bookingStatus     : bookingStatus,
+    qrToken           : qrToken || "",  // No QR token for paid events, generated after payment success
+    remainingEntries  : newBookingQty,
+    payment           : {
+      orderId   : paymentOrderId,
+      status    : paymentStatus,
+      // Only set paidAt if the payment is completed right now (Free or Wallet)
+      ...(paymentStatus === PAYMENT_STATUSES.COMPLETED && { paidAt: new Date() }),
     },
   };
 }
+
 
 // for paid event booking confirmation
 export function mapConfirmBookingInput(
@@ -57,11 +62,11 @@ export function mapConfirmBookingInput(
     payment: {
       paymentId,
       signature,
-      status: PAYMENT_STATUS.COMPLETED,
+      status: PAYMENT_STATUSES.COMPLETED,
       paidAt: new Date(),
     },
     qrToken,
-    bookingStatus: BOOKING_STATUS.CONFIRMED,
+    bookingStatus: BOOKING_STATUSES.CONFIRMED,
   };
 }
 
@@ -76,7 +81,7 @@ function mapBookingBase(model: {
   quantity: number
   ticketRate: number
   totalAmount: number
-  bookingStatus: BOOKING_STATUS
+  bookingStatus: BookingStatus
   payment: IBookingModel["payment"]
   qrToken: string
   remainingEntries: number
@@ -123,7 +128,7 @@ export function mapPopulatedBookingModelToEntity(
 
   const base = mapBookingBase({
     ...model,
-    userRef: model.userRef._id,
+    userRef : model.userRef._id,
     eventRef: model.eventRef._id,
   });
 
@@ -132,20 +137,20 @@ export function mapPopulatedBookingModelToEntity(
   return {
     ...rest,
     event: {
-      eventId: model.eventRef._id.toString(),
-      title: model.eventRef.title,
-      category: model.eventRef.category,
-      posterUrl: model.eventRef.posterUrl,
-      startDateTime: model.eventRef.startDateTime,
-      endDateTime: model.eventRef.endDateTime,
-      format: model.eventRef.format,
-      locationName: model.eventRef.locationName,
-      onlineLink: model.eventRef.onlineLink,
+      eventId       : model.eventRef._id.toString(),
+      title         : model.eventRef.title,
+      category      : model.eventRef.category,
+      posterUrl     : model.eventRef.posterUrl,
+      startDateTime : model.eventRef.startDateTime,
+      endDateTime   : model.eventRef.endDateTime,
+      format        : model.eventRef.format,
+      locationName  : model.eventRef.locationName,
+      onlineLink    : model.eventRef.onlineLink,
     },
     user: {
-      userId: model.userRef._id.toString(),
-      name: model.userRef.name,
-      email: model.userRef.email,
+      userId  : model.userRef._id.toString(),
+      name    : model.userRef.name,
+      email   : model.userRef.email,
     }
   };
 }
@@ -162,7 +167,7 @@ export function mapBookingEntityToResponseDTO(
   let currentRefundPercent    = 0;
   let currentRefundableAmount = 0;
 
-  if (entity.bookingStatus === BOOKING_STATUS.CONFIRMED) {
+  if (entity.bookingStatus === BOOKING_STATUSES.CONFIRMED) {
     if (isGraceRefundActive) {
       currentRefundPercent = settings.gracePeriodRefundPercent;
     } else {

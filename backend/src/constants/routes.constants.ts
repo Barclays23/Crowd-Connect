@@ -62,7 +62,8 @@ export const BOOKING_ROUTES = {
     CANCEL_BOOKING      : '/:bookingId/cancel',
     MY_BOOKINGS         : '/my-bookings',
     BOOKING_DETAILS     : '/:bookingId',
-    VERIFY_PAYMENT      : '/:bookingId/verify-payment'
+    VERIFY_PAYMENT      : '/:bookingId/verify-payment',
+    RETRY_PAYMENT       : '/:bookingId/retry-payment', 
 } as const;
 
 
@@ -75,8 +76,13 @@ export const WALLET_ROUTES = {
 
 export const WEBHOOK_ROUTES = {
     RAZORPAY_WEBHOOK    : '/razorpay',
-    STRIPE_WEBHOOK      : '/stripe'
+    STRIPE_WEBHOOK      : '/stripe',
+    // Instead of RAZORPAY_WEBHOOK and STRIPE_WEBHOOK, use a dynamic provider route
+    // This means Razorpay will hit: POST /api/webhooks/razorpay
+    // Stripe will hit: POST /api/webhooks/stripe
+    PROVIDER_WEBHOOK    : '/:provider', 
 } as const;
+
 
 
 

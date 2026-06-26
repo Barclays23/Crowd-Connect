@@ -32,7 +32,6 @@ import { Modal } from "@/components/ui/modal";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
-  EVENT_CATEGORIES,
   type EventSortDirection,
   type EventSortField,
   type GetEventsApiResponse,
@@ -46,6 +45,7 @@ import EditEventForm from "@/components/user/EditEventForm";
 import { capitalize } from "@/utils/namingConventions";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
+import { EVENT_CATEGORIES } from "@/constants/event.constants";
 
 
 

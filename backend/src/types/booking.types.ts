@@ -1,44 +1,12 @@
 // backend/src/types/booking.types.ts
 
+import { BookingStatus } from "@/constants/booking.constants";
+import { EventCategory, EventChangeType, EventFormat } from "@/constants/event.constants";
+import { PaymentStatus } from "@/constants/payment.constants";
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { IPagination } from "@/types/common.types";
-import { EVENT_CATEGORY, EVENT_FORMAT } from "@/types/event.types";
 import { Types } from "mongoose";
-
-
-// ─── Enums ────────────────────────────────────────────────────────────────────
-
-export enum BOOKING_STATUS {
-  PENDING   = "pending",    // Razorpay order created; payment not yet confirmed
-  CONFIRMED = "confirmed",  // Payment verified; QR issued; host earns this ticket
-  FAILED    = "failed",     // Razorpay payment.failed webhook received
-                            // Kept in DB for audit trail — never delete failed bookings
-  CANCELLED = "cancelled",  // User cancelled — check payment.status for refund state
-  ATTENDED  = "attended",   // remainingEntries hit 0 — ALL tickets in this booking scanned
-                            // Partial scans stay as CONFIRMED (e.g. 3 of 5 scanned → CONFIRMED)
-}
-
-// REFUNDED lives in PAYMENT_STATUS, not BOOKING_STATUS.
-// BOOKING_STATUS = booking lifecycle (user-facing state machine).
-// PAYMENT_STATUS = Razorpay transaction state (payment-provider-facing).
-// They move independently — booking can be CANCELLED while refund is still in transit.
-export enum PAYMENT_STATUS {
-  PENDING   = "pending",
-  COMPLETED = "completed",
-  FAILED    = "failed",
-  REFUNDED  = "refunded",
-}
-
-// ─── Booking Flow ─────────────────────────────────────────────────────────────
-//
-// PENDING ──→ CONFIRMED ──→ ATTENDED          (all tickets scanned)
-//          |            └──→ CONFIRMED         (no-show / partial — host still earns it)
-//          └──→ FAILED                         (Razorpay payment.failed webhook)
-//
-// CONFIRMED ──→ CANCELLED
-//                  └── payment.status = REFUNDED  (cancelled within refund window)
-//                  └── payment.status = PAID      (cancelled past window — no refund)
 
 
 
@@ -46,7 +14,8 @@ export enum PAYMENT_STATUS {
 export interface MajorEventChange {
   changedAt:  Date;
   // changeType: "DATE" | "VENUE" | "PRICE" | "CAPACITY" | "OTHER" | "FORMAT";
-  changeType: "STARTDATETIME" | "ENDDATETIME" | "VENUE" | "LOCATION" | "TICKETPRICE" | "MULTIPLE";
+  changeType: EventChangeType;
+  // use this change types from constants
   // need FORMAT ?? (I think cannot change event format once anyone booked the event)
   // CAPACITY is included because an admin can force-reduce capacity for compliance
   // reasons (e.g. fire safety limits a 500-seat venue to 150). Confirmed ticket
@@ -72,15 +41,15 @@ export interface IBookingModel {
   ticketNo          : string;
 
   // Status & event format
-  bookingStatus     : BOOKING_STATUS;
-  eventFormat       : EVENT_FORMAT;
+  bookingStatus     : BookingStatus;
+  eventFormat       : EventFormat;
 
   // Payment — embedded (not a separate model).
   payment           : {
     orderId     : string;
     paymentId?  : string;    // undefined until Razorpay captures the charge
     signature?  : string;    // undefined until verified on backend
-    status      : PAYMENT_STATUS;
+    status      : PaymentStatus;
     paidAt?     : Date;
   }
 
@@ -134,11 +103,11 @@ export interface IBookingPopulatedUserAndEvent extends Omit<IBookingModel, "even
   eventRef: {
     _id:           Types.ObjectId;
     title:         string;
-    category:      EVENT_CATEGORY;
+    category:      EventCategory;
     posterUrl:     string; 
     startDateTime: Date;
     endDateTime:   Date;
-    format:        EVENT_FORMAT;
+    format:        EventFormat;
     locationName?: string;
     onlineLink?:   string;
   },
@@ -168,10 +137,10 @@ export interface GetBookingsFilter {
   page:     number;
   limit:    number;
   search?: string;
-  status?:  BOOKING_STATUS;
+  status?:  BookingStatus;
   userId?:  string;   // filter by a specific user's bookings
   eventId?: string;   // admin / host: filter bookings for a specific event
-  eventFormat?: EVENT_FORMAT;
+  eventFormat?: EventFormat;
   sortBy?:    BookingSortField;
   sortOrder?: "asc" | "desc";
 }
@@ -179,10 +148,10 @@ export interface GetBookingsFilter {
 
 // not used
 export interface BookingFilterQuery {
-  bookingStatus?: BOOKING_STATUS;
+  bookingStatus?: BookingStatus;
   userRef?:       Types.ObjectId;
   eventRef?:      Types.ObjectId;
-  eventFormat?:   EVENT_FORMAT;
+  eventFormat?:   EventFormat;
   // $or?:           Record<string, unknown>[];  // (for ticketNo search)
   $or?:           Array<Record<string, unknown>>;  // (for ticketNo search)
 }
@@ -197,12 +166,14 @@ export interface GetBookingsResult {
 
 
 export interface MapBookingParams {
-  userId: string;
-  event: EventEntity;
-  newBookingQty: number;
-  ticketNo: string;
-  qrToken?: string;        // Only passed for free events
-  paymentOrderId?: string; // Only passed for paid events
+  userId          : string;
+  event           : EventEntity;
+  newBookingQty   : number;
+  ticketNo        : string;
+  qrToken?        : string;         // Passed for FREE and WALLET payments (since they confirm instantly)
+  paymentOrderId? : string;         // Only passed for ONLINE PAYMENT (Razorpay Order ID)
+  bookingStatus   : BookingStatus;
+  paymentStatus   : PaymentStatus;
 }
 
 
@@ -214,7 +185,7 @@ export interface MapBookingParams {
 export interface BookingCheckinUpdate {
   bookingId   : string,
   entryCount  : number,
-  newStatus   : BOOKING_STATUS,
+  newStatus   : BookingStatus,
   checkedInAt?: Date,
 }
 

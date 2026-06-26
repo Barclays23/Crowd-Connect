@@ -1,70 +1,11 @@
 // backend/src/types/wallet.types.ts
 
+import { TransactionDirection, TransactionReferenceType, TransactionStatus, TransactionType, WithdrawalStatus } from "@/constants/transaction.constants";
 import { Types } from "mongoose";
 
 
 
 
-export enum TRANSACTION_TYPE {
-  // ── User wallet ───────────────────────────────────────────────
-  BOOKING_REFUND      = "BOOKING_REFUND",      // admin → user  (refund for booking cancelled / event cancelled / suspended)
-  CASHBACK            = "CASHBACK",            // admin → user  (5-star review reward)
-  REFERRAL_CREDIT     = "REFERRAL_CREDIT",     // admin → user  (referral bonus)
-  WALLET_PAYMENT      = "WALLET_PAYMENT",      // user  → admin (user pay via wallet)
-  WITHDRAWAL          = "WITHDRAWAL",          // host wallet → bank (host withdraws wallet balance to bank)
-  WITHDRAWAL_REVERSAL = "WITHDRAWAL_REVERSAL", // failed payout → credit back
-
-  // ── Host wallet ───────────────────────────────────────────────
-  HOST_PAYOUT         = "HOST_PAYOUT",         // admin → host  (host receives net earnings after event)    
-
-  // ── Admin wallet ──────────────────────────────────────────────  ← ADD THESE
-  BOOKING_PAYMENT     = "BOOKING_PAYMENT",     // user  → admin (ticket purchase via Razorpay)
-  HOSTING_FEE         = "HOSTING_FEE",         // user  → admin (role upgrade fee)
-  COMMISSION_EARNED   = "COMMISSION_EARNED",   // retained from host payout
-  REFUND_ISSUED       = "REFUND_ISSUED",       // admin → user  (debit from admin wallet)
-
-  // ── Both ──────────────────────────────────────────────────────
-  ADMIN_ADJUSTMENT    = "ADMIN_ADJUSTMENT",    // manual correction by super admin
-}
-
-
-
-export enum TRANSACTION_DIRECTION {
-  CREDIT = "CREDIT",
-  DEBIT  = "DEBIT",
-}
-
-
-
-export enum TRANSACTION_STATUS {
-  PENDING   = "PENDING",
-  COMPLETED = "COMPLETED",
-  FAILED    = "FAILED",
-}
-
-
-
-export enum TRANSACTION_REFERENCE_TYPE {
-  BOOKING             = "BOOKING",
-  EVENT               = "EVENT",
-  PAYOUT_REQUEST      = "PAYOUT_REQUEST",
-  WITHDRAWAL_REQUEST  = "WITHDRAWAL_REQUEST",
-  REVIEW              = "REVIEW",
-}
-
-
-// move to with drawal types ts
-export enum WITHDRAWAL_STATUS {
-  PENDING    = "PENDING",
-  PROCESSING = "PROCESSING",   // Razorpay Payout API call initiated
-  COMPLETED  = "COMPLETED",
-  FAILED     = "FAILED",       // triggers auto wallet credit-back
-}
-
-
-
-
-// Sub-interfaces ─────────────────────────────────────────
 
 export interface IBankDetails {
   accountHolderName : string;
@@ -82,12 +23,12 @@ export interface IBankDetails {
 export interface ITransactionModel {
   _id           : Types.ObjectId;
   userRef       : Types.ObjectId;                     // ref: User — indexed
-  transactionType : TRANSACTION_TYPE;
-  direction     : TRANSACTION_DIRECTION;
+  transactionType : TransactionType;
+  direction     : TransactionDirection;
   amount        : number;                             // always positive
   balanceAfter  : number;                             // wallet snapshot after this tx
-  status        : TRANSACTION_STATUS;
-  referenceType?: TRANSACTION_REFERENCE_TYPE;
+  status        : TransactionStatus;
+  referenceType?: TransactionReferenceType;
   referenceId  ?: Types.ObjectId;                     // bookingId | eventId | payoutRequestId | etc.
   description  ?: string;                             // e.g. "Refund for booking at Jazz Night"
   metadata     ?: Record<string, unknown>;            // e.g. { razorpayRefundId, commissionRate }
@@ -101,7 +42,7 @@ export interface IWithdrawalRequestModel {
   _id               : Types.ObjectId;
   hostRef           : Types.ObjectId;              // ref: User
   amount            : number;                      // min: 1
-  status            : WITHDRAWAL_STATUS;
+  status            : WithdrawalStatus;
   bankDetails       : IBankDetails;
   razorpayPayoutId ?: string;                      // set after Razorpay Payout API call
   processedAt      ?: Date;                        // when status changed to COMPLETED or FAILED
@@ -142,9 +83,9 @@ export interface WalletTransferInput {
   fromUserId: string;
   toUserId: string;
   transferAmount: number;
-  fromTransactionType: TRANSACTION_TYPE;
-  toTransactionType: TRANSACTION_TYPE;
-  referenceType: TRANSACTION_REFERENCE_TYPE;
+  fromTransactionType: TransactionType;
+  toTransactionType: TransactionType;
+  referenceType: TransactionReferenceType;
   referenceId: Types.ObjectId | string;
   description: string;
   metadata?: Record<string, unknown>;
@@ -155,8 +96,8 @@ export interface WalletTransferInput {
 export interface WalletCreditInput {
   userId            : string;
   amount            : number;
-  transactionType   : TRANSACTION_TYPE;
-  referenceType?    : TRANSACTION_REFERENCE_TYPE;
+  transactionType   : TransactionType;
+  referenceType?    : TransactionReferenceType;
   referenceId  ?    : Types.ObjectId | string;
   description  ?    : string;
   metadata     ?    : Record<string, unknown>;
@@ -186,9 +127,9 @@ export interface TransactionsFilterQuery {
   limit      : number;
   sortBy    ?: "createdAt" | "amount";
   sortOrder ?: "asc" | "desc";
-  direction ?: TRANSACTION_DIRECTION;
-  transactionType ?: TRANSACTION_TYPE;
-  status    ?: TRANSACTION_STATUS;
+  direction ?: TransactionDirection;
+  transactionType ?: TransactionType;
+  status    ?: TransactionStatus;
   startDate ?: string;
   endDate   ?: string;
 }
@@ -199,7 +140,7 @@ export interface TransactionsFilterQuery {
 export interface GetWithdrawalRequestsFilter {
   page    : number;
   limit   : number;
-  status ?: WITHDRAWAL_STATUS;
+  status ?: WithdrawalStatus;
 }
 
 

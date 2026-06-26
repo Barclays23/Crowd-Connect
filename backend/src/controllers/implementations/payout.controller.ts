@@ -1,7 +1,7 @@
 // backend/src/controllers/implementations/payout.controller.ts
 import { Request, Response, NextFunction } from "express";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { PayoutMessages } from "@/constants/responseMessages.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { PAYOUT_MESSAGES } from "@/constants/messages.constants";
 import { IPayoutService } from "@/services/payout-services/interfaces/IPayoutService";
 import { IPayoutController } from "@/controllers/interfaces/IPayoutController";
 import { 
@@ -25,7 +25,7 @@ export class PayoutController implements IPayoutController {
             const result: GetEligibleEventsResponse = await this._payoutServices.getEligibleEvents(hostId);
             // console.log('getEligibleEvents result :', result);
 
-            res.status(HttpStatus.OK).json(result);
+            res.status(HTTP_STATUS.OK).json(result);
 
         } catch (err: unknown) {
             next(err);
@@ -41,8 +41,8 @@ export class PayoutController implements IPayoutController {
 
             const payoutData: PayoutResponseDTO = await this._payoutServices.requestPayout(hostId, eventId, files);
 
-            res.status(HttpStatus.CREATED).json({
-                message : PayoutMessages.PAYOUT_REQUEST_SUBMITTED,
+            res.status(HTTP_STATUS.CREATED).json({
+                message : PAYOUT_MESSAGES.PAYOUT_REQUEST_SUBMITTED,
                 payoutData,
             });
 
@@ -67,7 +67,7 @@ export class PayoutController implements IPayoutController {
 
             const payoutResult: GetPayoutsResponse = await this._payoutServices.getMyPayouts(hostId, filters);
 
-            res.status(HttpStatus.OK).json(payoutResult);
+            res.status(HTTP_STATUS.OK).json(payoutResult);
 
         } catch (err: unknown) {
             next(err);
@@ -88,7 +88,7 @@ export class PayoutController implements IPayoutController {
 
             const payoutResult: GetPayoutsResponse = await this._payoutServices.getAllPayouts(filters);
 
-            res.status(HttpStatus.OK).json(payoutResult);
+            res.status(HTTP_STATUS.OK).json(payoutResult);
 
         } catch (err: unknown) {
             next(err);
@@ -105,10 +105,10 @@ export class PayoutController implements IPayoutController {
 
             const payoutData = await this._payoutServices.reviewPayout(adminId, payoutId, payoutInput);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 message: action === "approve"
-                    ? PayoutMessages.PAYOUT_APPROVED
-                    : PayoutMessages.PAYOUT_REJECTED,
+                    ? PAYOUT_MESSAGES.PAYOUT_APPROVED
+                    : PAYOUT_MESSAGES.PAYOUT_REJECTED,
                 payoutData,
             });
 

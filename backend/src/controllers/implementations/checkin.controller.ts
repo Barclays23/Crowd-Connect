@@ -1,12 +1,15 @@
 // backend/src/controllers/checkin.controller.ts
 
 import { Request, Response, NextFunction } from "express";
-import { CheckInResultDTO, GetAttendanceResult, ScanQRInput }                     from "@/types/checkin.types";
+import { 
+    CheckInResultDTO, 
+    GetAttendanceResult, 
+    ScanQRInput 
+} from "@/types/checkin.types";
 import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckinService";
 import { ICheckinController } from "@/controllers/interfaces/ICheckinController";
 import { createHttpError } from "@/utils/httpError.utils";
-import { HttpStatus } from "@/constants/statusCodes.constants";
-import { number } from "zod";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 
 
 
@@ -24,7 +27,7 @@ export class CheckinController implements ICheckinController {
             const { qrToken, entryCount } = req.body as ScanQRInput;
 
             if (!qrToken) {
-                throw createHttpError(HttpStatus.BAD_REQUEST, "QR token is required.");
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, "QR token is required.");
             }
             
             const parsedEntryCount: number = entryCount !== undefined ? Number(entryCount) : 1;

@@ -1,13 +1,17 @@
 // backend/src/types/user.types.ts
 import { UserProfileResponseDto } from "@/dtos/user.dto";
-import { HostStatus, UserRole, UserStatus } from "@/constants/roles-and-statuses";
+import { HostStatus, UserRole, UserStatus } from "@/constants/user-system.constants";
 import { Types } from "mongoose";
+
+
 
 
 export enum AuthProvider {
   LOCAL = 'local',
   GOOGLE = 'google'
 }
+
+
 
 export interface IUserModel {
   _id: Types.ObjectId | string;

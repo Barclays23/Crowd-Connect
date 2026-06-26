@@ -1,7 +1,8 @@
 // backend/src/repositories/interfaces/IEventRepository.ts
 
+import { EventStatus } from "@/constants/event.constants";
 import { CreateEventInput, EventEntity, EventStatusUpdateInput, UpdateEventInput } from "@/entities/event.entity";
-import { EVENT_STATUS, EventFilterQuery, SortQuery } from "@/types/event.types";
+import { EventFilterQuery, SortQuery } from "@/types/event.types";
 import { ClientSession } from "mongoose";
 
 
@@ -20,7 +21,7 @@ export interface IEventRepository {
     getCompletedEventsByHost(hostId: string): Promise<EventEntity[]>;
     
     updateEvent(eventId: string, eventInput: UpdateEventInput) : Promise<EventEntity|null>;
-    updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EVENT_STATUS | null>;
+    updateEventStatus(eventId: string, updateInput: EventStatusUpdateInput): Promise<EventStatus | null>;
     deleteEvent(eventId: string): Promise<void>;
 
     countEvents(filterQuery: EventFilterQuery): Promise<number>;

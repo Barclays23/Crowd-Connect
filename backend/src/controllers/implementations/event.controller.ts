@@ -9,31 +9,28 @@ import {
     GetDiscoveryEventsResult, 
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     mapCreateEventRequestToDto, 
     mapEventDiscoveryQueryToFilters 
 } from "@/mappers/event.mapper";
 import { 
     allowedEventSortFields, 
-    EVENT_CATEGORY, 
-    EVENT_FORMAT, 
-    EVENT_STATUS, 
     GetAllEventsResult, 
     GetEventsFilter, 
     GetPublicEventsFilter, 
-    TICKET_TYPE 
 } from "@/types/event.types";
 import { SortOrder } from "mongoose";
 import { 
     ALLOWED_BOOKING_SORT_FIELDS, 
-    BOOKING_STATUS, 
     BookingSortField, 
     GetBookingsFilter 
 } from "@/types/booking.types";
 import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
+import { EVENT_MESSAGES } from "@/constants/messages.constants";
+import { EventCategory, EventFormat, EventStatus, TicketType } from "@/constants/event.constants";
+import { BookingStatus } from "@/constants/booking.constants";
 
 
 
@@ -49,7 +46,7 @@ export class EventController implements IEventController {
     async createEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -64,9 +61,9 @@ export class EventController implements IEventController {
                 imageFile,
             });
 
-            res.status(HttpStatus.CREATED).json({
+            res.status(HTTP_STATUS.CREATED).json({
                 success: true,
-                message: HttpResponse.SUCCESS_CREATE_EVENT,
+                message: EVENT_MESSAGES.SUCCESS_CREATE_EVENT,
                 eventData: createdEvent,
             });
             
@@ -81,7 +78,7 @@ export class EventController implements IEventController {
     async updateEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -103,9 +100,9 @@ export class EventController implements IEventController {
                 imageFile
             });
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_UPDATE_EVENT,
+                message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
                 updatedEvent,
             });
             
@@ -120,7 +117,7 @@ export class EventController implements IEventController {
     async updateEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
                 return;
             }
             
@@ -140,9 +137,9 @@ export class EventController implements IEventController {
                 imageFile
             });
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_UPDATE_EVENT,
+                message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
                 updatedEvent,
             });
             
@@ -173,10 +170,10 @@ export class EventController implements IEventController {
             const filters: GetEventsFilter = { 
                 page, 
                 limit, 
-                category: category ? category as EVENT_CATEGORY : undefined,
-                format: format ? format as EVENT_FORMAT : undefined,
-                status: status ? status as EVENT_STATUS : undefined,
-                ticketType: ticketType ? ticketType as TICKET_TYPE : undefined,
+                category: category ? category as EventCategory : undefined,
+                format: format ? format as EventFormat : undefined,
+                status: status ? status as EventStatus : undefined,
+                ticketType: ticketType ? ticketType as TicketType : undefined,
                 search,
                 sortBy,
                 sortOrder
@@ -185,7 +182,7 @@ export class EventController implements IEventController {
 
             const result: GetAllEventsResult = await this._eventServices.getAllEvents(filters);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 eventsData: result.events,
                 pagination: result.pagination
@@ -202,7 +199,7 @@ export class EventController implements IEventController {
     async cancelEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -216,7 +213,7 @@ export class EventController implements IEventController {
                 cancelReason
             });
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: "Event cancelled successfully.",
                 data: { status: updatedStatus }
@@ -237,11 +234,11 @@ export class EventController implements IEventController {
             console.log('eventId :', eventId);
             console.log('suspendReason :', suspendReason);
 
-            const updatedStatus: EVENT_STATUS | null = await this._eventServices.suspendEvent({eventId, suspendReason});
+            const updatedStatus: EventStatus | null = await this._eventServices.suspendEvent({eventId, suspendReason});
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_SUSPEND_EVENT,
+                message: EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT,
                 updatedStatus
             });
             
@@ -256,7 +253,7 @@ export class EventController implements IEventController {
     async publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>{
         try {     
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
 
@@ -265,8 +262,8 @@ export class EventController implements IEventController {
     
             await this._eventServices.publishEvent(eventId, userId);
     
-            res.status(HttpStatus.OK).json({
-                message: HttpResponse.SUCCESS_PUBLISH_EVENT,
+            res.status(HTTP_STATUS.OK).json({
+                message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
             });
 
         } catch (error: unknown) {
@@ -284,9 +281,9 @@ export class EventController implements IEventController {
 
             await this._eventServices.deleteEvent(eventId);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
-                message: HttpResponse.SUCCESS_DELETE_EVENT,
+                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
             });
 
             
@@ -301,7 +298,7 @@ export class EventController implements IEventController {
     async getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
                 return;
             }
             const userId = req.user.userId;
@@ -323,10 +320,10 @@ export class EventController implements IEventController {
             const filters: GetEventsFilter = { 
                 page, 
                 limit, 
-                category: category ? category as EVENT_CATEGORY : undefined,
-                format: format ? format as EVENT_FORMAT : undefined,
-                status: status ? status as EVENT_STATUS : undefined,
-                ticketType: ticketType ? ticketType as TICKET_TYPE : undefined,
+                category: category ? category as EventCategory : undefined,
+                format: format ? format as EventFormat : undefined,
+                status: status ? status as EventStatus : undefined,
+                ticketType: ticketType ? ticketType as TicketType : undefined,
                 search,
                 sortBy,
                 sortOrder
@@ -335,7 +332,7 @@ export class EventController implements IEventController {
 
             const result = await this._eventServices.getUserEvents({userId, filters});
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 eventsData: result.events,
                 pagination: result.pagination
@@ -359,7 +356,7 @@ export class EventController implements IEventController {
 
             console.log('PUBLIC EVENTS pagination:', pagination)
             
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 eventsData,
                 pagination
             });
@@ -378,7 +375,7 @@ export class EventController implements IEventController {
 
             const trendingEvents = await this._eventServices.getTrendingEvents(limit);
 
-            res.status(HttpStatus.OK).json({ success: true, trendingEvents });
+            res.status(HTTP_STATUS.OK).json({ success: true, trendingEvents });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -395,7 +392,7 @@ export class EventController implements IEventController {
 
             const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 eventDetails
             });
 
@@ -415,9 +412,9 @@ export class EventController implements IEventController {
             const page    = parseInt(req.query.page  as string) || 1;
             const limit   = parseInt(req.query.limit as string) || 10;
 
-            const status  = (req.query.status  as BOOKING_STATUS) || undefined;
+            const status  = (req.query.status  as BookingStatus) || undefined;
             const search      = (req.query.search      as string)?.trim() || "";
-            const eventFormat = (req.query.eventFormat as EVENT_FORMAT)?.trim() || "";
+            const eventFormat = (req.query.eventFormat as EventFormat)?.trim() || "";
 
             const sortBy: BookingSortField = ALLOWED_BOOKING_SORT_FIELDS.includes(req.query.sortBy as BookingSortField)
             ? (req.query.sortBy as BookingSortField)
@@ -429,8 +426,8 @@ export class EventController implements IEventController {
                 eventId,
                 page,
                 limit,
-                status:      status      ? (status as BOOKING_STATUS) : undefined,
-                eventFormat: eventFormat ? (eventFormat as EVENT_FORMAT) : undefined,
+                status:      status      ? (status as BookingStatus) : undefined,
+                eventFormat: eventFormat ? (eventFormat as EventFormat) : undefined,
                 search:      search      ? search : undefined,
                 sortBy,
                 sortOrder,
@@ -441,7 +438,7 @@ export class EventController implements IEventController {
             // const result: GetBookingsResponseDTO = await this._bookingServices.getAllBookingsOfEvent(filters);
             const result: GetBookingsResponseDTO = await this._bookingServices.getBookingsList(filters);
 
-            res.status(HttpStatus.OK).json({
+            res.status(HTTP_STATUS.OK).json({
                 success:    true,
                 bookingsData:   result.bookings,
                 pagination: result.pagination,

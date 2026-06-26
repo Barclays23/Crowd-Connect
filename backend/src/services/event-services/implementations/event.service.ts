@@ -4,8 +4,7 @@ import {
     uploadBase64ToCloudinary, 
     uploadToCloudinary 
 } from "@/config/cloudinary";
-import { HttpResponse } from "@/constants/responseMessages.constants";
-import { HttpStatus } from "@/constants/statusCodes.constants";
+import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     CreateEventRequestDTO, 
     EventResponseDTO, 
@@ -28,8 +27,6 @@ import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 import { IEventServices } from "@/services/event-services/interfaces/IEventServices";
 import { 
-    EVENT_FORMAT, 
-    EVENT_STATUS, 
     EventFilterQuery, 
     GetEventsFilter, 
     GetAllEventsResult, 
@@ -56,6 +53,8 @@ import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
 import { IEventQueueService } from "@/services/queue-services/interfaces/IEventQueueService";
+import { EVENT_MESSAGES } from "@/constants/messages.constants";
+import { EVENT_FORMATS, EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 
 
 
@@ -109,7 +108,7 @@ export class EventManagementServices implements IEventServices {
             const createdEvent: EventEntity = await this._eventRepository.createEvent(eventInput);
 
             if (!createdEvent) {
-                throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_CREATE_EVENT);
+                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, EVENT_MESSAGES.FAILED_CREATE_EVENT);
             }
 
             const newEvent: EventResponseDTO = mapEventEntityToEventResponseDto(createdEvent);
@@ -297,7 +296,7 @@ export class EventManagementServices implements IEventServices {
 
 
     // cancel /suspend by admin
-    async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EVENT_STATUS | null> {
+    async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EventStatus | null> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
@@ -305,7 +304,7 @@ export class EventManagementServices implements IEventServices {
 
             // suspend the event
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
-                newStatus: EVENT_STATUS.SUSPENDED,
+                newStatus: EVENT_STATUSES.SUSPENDED,
                 reason: suspendReason,
             });
             
@@ -322,7 +321,7 @@ export class EventManagementServices implements IEventServices {
             );
 
             // Send notification to host and attendees (later)
-            // if (updatedStatus === EVENT_STATUS.SUSPENDED) {
+            // if (updatedStatus === EVENT_STATUSES.SUSPENDED) {
             //     await Promise.all([
             //         this._notificationServices.sendEventSuspendedToHost(
             //             // eventEntity.hostRef,
@@ -348,7 +347,7 @@ export class EventManagementServices implements IEventServices {
 
 
     // cancel by host
-    async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EVENT_STATUS | null> {
+    async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EventStatus | null> {
         try {
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
@@ -356,7 +355,7 @@ export class EventManagementServices implements IEventServices {
 
             // cancel the event
             const eventStatusUpdateInput: EventStatusUpdateInput = mapToEventStatusUpdateInput({
-                newStatus: EVENT_STATUS.CANCELLED,
+                newStatus: EVENT_STATUSES.CANCELLED,
                 reason: cancelReason,
             });
             
@@ -372,7 +371,7 @@ export class EventManagementServices implements IEventServices {
             );
 
             // Send notification to host and attendees (later)
-            // if (updatedStatus === EVENT_STATUS.CANCELLED) {
+            // if (updatedStatus === EVENT_STATUSES.CANCELLED) {
             //     await Promise.all([
             //         this._notificationServices.sendEventSuspendedToHost(
             //             // eventEntity.hostRef,
@@ -404,7 +403,7 @@ export class EventManagementServices implements IEventServices {
 
             validateEventPublish(eventEntity, userId);
 
-            const eventStatusUpdateInput: EventStatusUpdateInput = {eventStatus: EVENT_STATUS.PUBLISHED};
+            const eventStatusUpdateInput: EventStatusUpdateInput = {eventStatus: EVENT_STATUSES.PUBLISHED};
 
             // generate online link at publish time
             // if (event.format === "online" && !event.onlineLink) {
@@ -461,7 +460,7 @@ export class EventManagementServices implements IEventServices {
         const skip = (page - 1) * limit;
         
         const dbQuery: EventFilterQuery = { 
-            eventStatus: EVENT_STATUS.PUBLISHED,
+            eventStatus: EVENT_STATUSES.PUBLISHED,
             endDateTime: { $gt: new Date() } // Only show events that haven't ended
         };
 
@@ -542,7 +541,7 @@ export class EventManagementServices implements IEventServices {
         const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
         if (!eventEntity){
-            throw createHttpError(HttpStatus.NOT_FOUND, HttpResponse.EVENT_NOT_FOUND);
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
         }
 
         this._eventRepository.incrementEventViews(eventId).catch(err =>
@@ -608,17 +607,17 @@ export class EventManagementServices implements IEventServices {
         });
 
         const formatChanged = !!updateEventDto.format && updateEventDto.format !== existingEvent.format;
-        const isPublished   = existingEvent.eventStatus === EVENT_STATUS.PUBLISHED;
+        const isPublished   = existingEvent.eventStatus === EVENT_STATUSES.PUBLISHED;
 
         if (formatChanged) {
-            if (updateEventDto.format === EVENT_FORMAT.OFFLINE) {
+            if (updateEventDto.format === EVENT_FORMATS.OFFLINE) {
                 // Switching to offline: clear the online link, ensure location is present
                 updateEventInput.onlineLink    = null;
                 updateEventInput.locationName  = updateEventDto.locationName;
                 updateEventInput.location      = updateEventDto.location;
             }
 
-            if (updateEventDto.format === EVENT_FORMAT.ONLINE) {
+            if (updateEventDto.format === EVENT_FORMATS.ONLINE) {
                 // Switching to online: clear location fields
                 updateEventInput.locationName = undefined;
                 updateEventInput.location     = null;
@@ -634,24 +633,24 @@ export class EventManagementServices implements IEventServices {
 
         // if no changes made while updating event
         if (Object.keys(updateEventInput).length === 0) {
-            // throw createHttpError(HttpStatus.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
+            // throw createHttpError(HTTP_STATUS.BAD_REQUEST, HttpResponse.NO_CHANGE_MADE);
         }
 
-        const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(existingEvent.id, updateEventInput);
+        const updatedEvent: EventEntity | null = await this._eventRepository.updateEvent(existingEvent.eventId, updateEventInput);
 
         if (!updatedEvent) {
-            throw createHttpError(HttpStatus.INTERNAL_SERVER_ERROR, HttpResponse.FAILED_UPDATE_EVENT);
+            throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, EVENT_MESSAGES.FAILED_UPDATE_EVENT);
         }
 
 
         // Reschedule queque for marking the event status as 'COMPLETED' if endDateTime changed AND event is published
-        if (updatedEvent.eventStatus === EVENT_STATUS.PUBLISHED) {
+        if (updatedEvent.eventStatus === EVENT_STATUSES.PUBLISHED) {
             const endDateTimeChanged = 
                 updateEventDto.endDateTime && 
                 new Date(updateEventDto.endDateTime).getTime() !== existingEvent.endDateTime.getTime();
 
             if (endDateTimeChanged) {
-                await this._eventQueueService.rescheduleEventCompletion(updatedEvent.id, updatedEvent.endDateTime);
+                await this._eventQueueService.rescheduleEventCompletion(updatedEvent.eventId, updatedEvent.endDateTime);
             }
         }
 
@@ -671,7 +670,7 @@ export class EventManagementServices implements IEventServices {
                     )
                 );
 
-                await this._bookingService.setGracePeriodForEvent(existingEvent.id, {
+                await this._bookingService.setGracePeriodForEvent(existingEvent.eventId, {
                     gracePeriodEnd,
                     summary: buildChangeSummary(majorChanges),
                     changes:  majorChanges,
