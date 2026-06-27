@@ -2,7 +2,7 @@
 
 import { BookingStatus } from "@/constants/booking.constants";
 import { EventCategory, EventFormat } from "@/constants/event.constants";
-import { PaymentStatus } from "@/constants/payment.constants";
+import { PaymentMethod, PaymentStatus } from "@/constants/payment.constants";
 import { MajorEventChange } from "@/types/booking.types";
 import { Types } from "mongoose";
 
@@ -22,6 +22,7 @@ export interface BookingEntity {
   bookingStatus: BookingStatus;
 
   payment: {
+    method: PaymentMethod;
     orderId:    string;
     paymentId?: string;
     signature?: string;
@@ -79,6 +80,7 @@ export interface CreateBookingInput {
   totalAmount: number;
   ticketNo:    string;
   payment: {
+    method    : PaymentMethod;
     orderId: string;
     paymentId?: string;
     status:          PaymentStatus;
@@ -90,9 +92,11 @@ export interface CreateBookingInput {
   bookingStatus:    BookingStatus;
 }
 
-// 2
-export interface ConfirmBookingInput {
+
+
+export interface ConfirmOnlineBookingInput {
   payment: {
+    method: PaymentMethod;
     paymentId: string;
     signature: string;
     status: PaymentStatus;

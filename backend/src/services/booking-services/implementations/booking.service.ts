@@ -14,7 +14,7 @@ import {
 import { 
    mapBookingEntityToResponseDTO, 
    mapBookingOrderDtoToInput, 
-   mapConfirmBookingInput 
+   mapConfirmOnlineBookingInput 
 } from "@/mappers/booking.mapper";
 
 import { 
@@ -27,7 +27,7 @@ import {
    CancelBookingInput, 
    BookingEntity, 
    BookingEntityPopulated, 
-   ConfirmBookingInput, 
+   ConfirmOnlineBookingInput, 
    CreateBookingInput 
 } from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
@@ -219,8 +219,8 @@ export class BookingService implements IBookingService {
 
 
 
-   // verifyPaymentAndConfirmBooking (better rename??)
-   async verifyAndConfirmBookingPayment(userId: string, dto: VerifyPaymentRequestDTO, skipSignatureCheck?: boolean): Promise<BookingResponseDTO>{
+   // called by both webhook strategy and booking controller (for online payment & booking confirmation)
+   async verifyPaymentAndConfirmBooking(userId: string, dto: VerifyPaymentRequestDTO, skipSignatureCheck?: boolean): Promise<BookingResponseDTO>{
       try {
          const { paymentOrderId, paymentId, signature } = dto;
 
@@ -454,6 +454,7 @@ export class BookingService implements IBookingService {
          newBookingQty  : quantity,
          ticketNo, 
          qrToken,
+         paymentMethod  : PAYMENT_METHODS.NONE,
          paymentOrderId : internalFreeOrderId,
          bookingStatus  : BOOKING_STATUSES.CONFIRMED,
          paymentStatus  : PAYMENT_STATUSES.COMPLETED
@@ -512,6 +513,7 @@ export class BookingService implements IBookingService {
             newBookingQty  : quantity, 
             ticketNo, 
             qrToken,
+            paymentMethod  : PAYMENT_METHODS.WALLET,
             paymentOrderId : internalWalletOrderId,
             bookingStatus  : BOOKING_STATUSES.CONFIRMED,
             paymentStatus  : PAYMENT_STATUSES.COMPLETED
@@ -543,12 +545,13 @@ export class BookingService implements IBookingService {
    private async _processOnlineBooking(user: UserEntity, event: EventEntity, quantity: number, totalAmount: number, ticketNo: string): Promise<InitiateBookingResponseDTO> {
       const paymentOrder: CreateOrderResult = await this._paymentService.createBookingOrder(totalAmount, user.userId);
 
-      const createBookingInput = mapBookingOrderDtoToInput({
+      const createBookingInput: CreateBookingInput = mapBookingOrderDtoToInput({
          userId         : user.userId,
          event, 
          newBookingQty  : quantity, 
          ticketNo,
          // no qrToken before webhook payment process, verify payment & confirm booking.
+         paymentMethod  : PAYMENT_METHODS.ONLINE,
          paymentOrderId : paymentOrder.orderId,
          bookingStatus  : BOOKING_STATUSES.PENDING,
          paymentStatus  : PAYMENT_STATUSES.PENDING
@@ -657,6 +660,7 @@ export class BookingService implements IBookingService {
 
 
 
+   // for online payment bookings
    private async _processBookingConfirmation(
       booking  : BookingEntity, 
       userId   : string, 
@@ -679,7 +683,7 @@ export class BookingService implements IBookingService {
 
          const qrToken: string = this._ticketService.generateQrToken(qRTokenPayload);
 
-         const confirmBookingInput: ConfirmBookingInput = mapConfirmBookingInput(paymentId, signature, qrToken);
+         const confirmBookingInput: ConfirmOnlineBookingInput = mapConfirmOnlineBookingInput(paymentId, signature, qrToken);
          await this._bookingRepository.confirmOnlineBooking(booking.bookingId, confirmBookingInput, { session });
 
          await this._eventRepository.incrementEventTicketAndRevenueStats(

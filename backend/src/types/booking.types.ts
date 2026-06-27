@@ -2,7 +2,7 @@
 
 import { BookingStatus } from "@/constants/booking.constants";
 import { EventCategory, EventChangeType, EventFormat } from "@/constants/event.constants";
-import { PaymentStatus } from "@/constants/payment.constants";
+import { PaymentMethod, PaymentStatus } from "@/constants/payment.constants";
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { IPagination } from "@/types/common.types";
@@ -46,6 +46,7 @@ export interface IBookingModel {
 
   // Payment — embedded (not a separate model).
   payment           : {
+    method      : PaymentMethod;
     orderId     : string;
     paymentId?  : string;    // undefined until Razorpay captures the charge
     signature?  : string;    // undefined until verified on backend
@@ -173,6 +174,7 @@ export interface MapBookingParams {
   qrToken?        : string;         // Passed for FREE and WALLET payments (since they confirm instantly)
   paymentOrderId? : string;         // Only passed for ONLINE PAYMENT (Razorpay Order ID)
   bookingStatus   : BookingStatus;
+  paymentMethod   : PaymentMethod;
   paymentStatus   : PaymentStatus;
 }
 

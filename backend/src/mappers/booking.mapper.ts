@@ -3,7 +3,7 @@
 import { 
   BookingEntity, 
   BookingEntityPopulated, 
-  ConfirmBookingInput, 
+  ConfirmOnlineBookingInput, 
   CreateBookingInput 
 } from "@/entities/booking.entity";
 import { BookingResponseDTO } from "@/dtos/booking.dto";
@@ -15,8 +15,7 @@ import {
 import { Types } from "mongoose";
 import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { getRefundPercentage } from "@/utils/refundCalculator";
-import { TICKET_TYPES } from "@/constants/event.constants";
-import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+import { PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMethod } from "@/constants/payment.constants";
 import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
 
 
@@ -25,7 +24,7 @@ import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
 // ─── DTO → Input ───────────────────────────────────────────────────────────
 export function mapBookingOrderDtoToInput(params: MapBookingParams): CreateBookingInput {
 
-  const { userId, event, newBookingQty, ticketNo, qrToken, paymentOrderId, bookingStatus, paymentStatus } = params;
+  const { userId, event, newBookingQty, ticketNo, qrToken, paymentOrderId, bookingStatus, paymentMethod, paymentStatus } = params;
 
   if (!paymentOrderId) {
     throw new Error("SYSTEM_ERROR: paymentOrderId is strictly required to create a booking.");
@@ -43,6 +42,7 @@ export function mapBookingOrderDtoToInput(params: MapBookingParams): CreateBooki
     qrToken           : qrToken || "",  // No QR token for paid events, generated after payment success
     remainingEntries  : newBookingQty,
     payment           : {
+      method    : paymentMethod,
       orderId   : paymentOrderId,
       status    : paymentStatus,
       // Only set paidAt if the payment is completed right now (Free or Wallet)
@@ -52,14 +52,15 @@ export function mapBookingOrderDtoToInput(params: MapBookingParams): CreateBooki
 }
 
 
-// for paid event booking confirmation
-export function mapConfirmBookingInput(
+// for paid event booking confirmation (ONLINE & WALLET)
+export function mapConfirmOnlineBookingInput(
   paymentId: string,
   signature: string,
   qrToken: string
-): ConfirmBookingInput {
+): ConfirmOnlineBookingInput {
   return {
     payment: {
+      method: PAYMENT_METHODS.ONLINE,
       paymentId,
       signature,
       status: PAYMENT_STATUSES.COMPLETED,
@@ -203,6 +204,7 @@ export function mapBookingEntityToResponseDTO(
     totalAmount:      entity.totalAmount,
     bookingStatus:    entity.bookingStatus,
     payment: {
+      method    : entity.payment.method,
       orderId:   entity.payment.orderId,
       paymentId: entity.payment.paymentId,
       signature: entity.payment.signature,
