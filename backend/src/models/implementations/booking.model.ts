@@ -1,6 +1,6 @@
 
 import { BOOKING_STATUSES } from '@/constants/booking.constants';
-import { PAYMENT_STATUSES } from '@/constants/payment.constants';
+import { PAYMENT_METHODS, PAYMENT_STATUSES } from '@/constants/payment.constants';
 import { IBookingModel } from '@/types/booking.types';
 import { Model } from 'mongoose';
 import { Schema, model, HydratedDocument } from 'mongoose';
@@ -62,6 +62,11 @@ const bookingSchema = new Schema<IBookingModel>(
          type: Date,
       },
       payment: {
+         method   : {
+            type: String,
+            enum: Object.values(PAYMENT_METHODS),
+            required: true,
+         },
          orderId  : { type: String, required: true },
          paymentId: { type: String },
          signature: { type: String },
@@ -92,12 +97,6 @@ const bookingSchema = new Schema<IBookingModel>(
          type: Date,
          default: null,
       },
-
-      // refundAmount: { type: Number },
-      // refundStatus: {
-      //    type: String,
-      //    enum: ['PENDING', 'PROCESSED', 'FAILED'],
-      // },
    },
    {
       timestamps: true,

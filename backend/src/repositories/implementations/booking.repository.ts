@@ -9,7 +9,7 @@ import {
   BookingEntity, 
   BookingEntityPopulated, 
   BulkCancelBookingsInput, 
-  ConfirmBookingInput, 
+  ConfirmOnlineBookingInput, 
   CreateBookingInput, 
   MarkRefundedInput 
 } from "@/entities/booking.entity";
@@ -26,7 +26,7 @@ import {
   MajorEventChange 
 } from "@/types/booking.types";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
-import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/constants/payment.constants";
 
 
 
@@ -64,6 +64,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
     return booking ? mapPopulatedBookingModelToEntity(booking) : null;
   }
 
+  
 
   async getBookingByOrderId(orderId: string): Promise<BookingEntity | null> {
     const booking = await this.findOneQuery({ "payment.orderId": orderId })
@@ -94,7 +95,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
   async confirmOnlineBooking(
     bookingId: string, 
-    input: ConfirmBookingInput, 
+    input: ConfirmOnlineBookingInput, 
     options?: { session?: ClientSession }
   ): Promise<BookingEntity | null> {
     const updated = await this.findByIdAndUpdate(
@@ -103,12 +104,14 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
         $set: {
           bookingStatus       : input.bookingStatus,
           qrToken             : input.qrToken,
+          "payment.method"    : input.payment.method,
           "payment.paymentId" : input.payment.paymentId,
           "payment.signature" : input.payment.signature,
           "payment.status"    : input.payment.status,
           "payment.paidAt"    : input.payment.paidAt,
         },
       },
+      options
     );
 
     return updated ? mapBookingModelToEntity(updated) : null;
@@ -128,6 +131,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
         $set: {
           bookingStatus       : BOOKING_STATUSES.CONFIRMED,
           qrToken             : qrToken,
+          "payment.method"    : PAYMENT_METHODS.WALLET,
           "payment.orderId"   : walletOrderId,
           "payment.status"    : PAYMENT_STATUSES.COMPLETED,
           "payment.paidAt"    : new Date(),

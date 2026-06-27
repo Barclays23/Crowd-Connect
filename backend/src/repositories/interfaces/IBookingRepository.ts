@@ -5,7 +5,7 @@ import {
   BookingEntity, 
   BookingEntityPopulated, 
   BulkCancelBookingsInput, 
-  ConfirmBookingInput, 
+  ConfirmOnlineBookingInput, 
   CreateBookingInput, 
   MarkRefundedInput 
 } from "@/entities/booking.entity";
@@ -32,7 +32,7 @@ export interface IBookingRepository {
   updateBookingPaymentOrderId(bookingId: string, newOrderId: string): Promise<void>
 
   // Confirm booking after payment verified — sets CONFIRMED status + stores payment + qrToken
-  confirmOnlineBooking(bookingId: string, input: ConfirmBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
+  confirmOnlineBooking(bookingId: string, input: ConfirmOnlineBookingInput, options?: { session?: ClientSession }): Promise<BookingEntity | null>;
 
   // Confirm a pending booking via Wallet Retry
   confirmWalletRetryBooking(bookingId: string, qrToken: string, walletOrderId: string, options?: { session?: ClientSession }): Promise<BookingEntity | null>;

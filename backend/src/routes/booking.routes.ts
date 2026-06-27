@@ -136,6 +136,6 @@ export default bookingRouter;
 
 
 
-// User pays online and stays on the page: React hits booking.controller.ts -> Calls verifyAndConfirmBookingPayment -> Booking Confirmed. (When the webhook arrives 2 seconds later, it hits the Idempotency check and ignores it).
+// User pays online and stays on the page: React hits booking.controller.ts -> Calls handleWebhookEvent -> verifyWebhookSignature -> processWebhookEvent -> strategy -> verifyPaymentAndConfirmBooking -> Booking Confirmed. (When the webhook arrives 2 seconds later, it hits the Idempotency check and ignores it).
 
-// User pays online but closes the browser: React crashes. But Razorpay hits webhook.controller.ts -> Calls verifyAndConfirmBookingPayment -> Booking Confirmed safely in the background.
+// User pays online but closes the browser: React crashes. But Razorpay hits webhook.controller.ts -> Calls verifyPaymentAndConfirmBooking -> Booking Confirmed safely in the background.

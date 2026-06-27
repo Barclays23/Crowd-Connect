@@ -69,7 +69,7 @@ export class BookingController implements IBookingController{
       const userId: string                = req.user.userId;
       const dto: VerifyPaymentRequestDTO  = req.body;
 
-      const populatedBooking: BookingResponseDTO = await this._bookingService.verifyAndConfirmBookingPayment(userId, dto);
+      const populatedBooking: BookingResponseDTO = await this._bookingService.verifyPaymentAndConfirmBooking(userId, dto);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

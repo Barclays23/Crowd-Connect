@@ -66,6 +66,7 @@ export interface BookingResponseDTO {
   ticketNo        : string;
   bookingStatus   : BookingStatus;
   payment   : {
+    method        : PaymentMethod;
     orderId       : string;
     paymentId?    : string;
     signature?    : string;

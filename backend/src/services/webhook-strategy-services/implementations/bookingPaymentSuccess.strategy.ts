@@ -2,9 +2,9 @@
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { IPaymentSuccessStrategy } from "../interfaces/IPaymentSuccessStrategy";
 import { StandardWebhookEvent } from "@/types/webhook.types";
-import { BookingService } from "@/services/booking-services/implementations/booking.service";
 import { VerifyPaymentRequestDTO } from "@/dtos/booking.dto";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
+import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 
 
 
@@ -13,7 +13,7 @@ import { BOOKING_STATUSES } from "@/constants/booking.constants";
 export class BookingPaymentSuccessStrategy implements IPaymentSuccessStrategy {
     constructor(
         private readonly _bookingRepository: IBookingRepository,
-        private readonly _bookingService: BookingService 
+        private readonly _bookingService: IBookingService 
     ) {}
 
 
@@ -42,8 +42,8 @@ export class BookingPaymentSuccessStrategy implements IPaymentSuccessStrategy {
             signature       : "verified-by-webhook" // Safe: Webhook router already verified the payload hash
         };
 
-        // Note: You must update verifyAndConfirmBookingPayment in BookingService to accept a `skipSignatureCheck` flag 
+        // Note: You must update verifyPaymentAndConfirmBooking in BookingService to accept a `skipSignatureCheck` flag 
         // and bypass `this._paymentService.verifyPaymentSignature` when called from this webhook.
-        await this._bookingService.verifyAndConfirmBookingPayment(booking.userRef.toString(), dto, true);
+        await this._bookingService.verifyPaymentAndConfirmBooking(booking.userRef.toString(), dto, true);
     }
 }

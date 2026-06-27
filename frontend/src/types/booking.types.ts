@@ -55,6 +55,7 @@ export interface IBookingState {
   eventFormat       : EventFormat;
   bookingStatus     : BookingStatus;
   payment           : {
+    method              : PaymentMethod;
     orderId             : string;
     paymentId?          : string;
     status              : PaymentStatus;

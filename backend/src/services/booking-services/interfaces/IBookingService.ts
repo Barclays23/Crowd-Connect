@@ -22,7 +22,8 @@ export interface IBookingService {
 
   retryPayment(bookingId: string, userId: string, paymentMethod: PaymentMethod): Promise<InitiateBookingResponseDTO>
 
-  verifyAndConfirmBookingPayment(userId: string, dto: VerifyPaymentRequestDTO, skipSignatureCheck?: boolean): Promise<BookingResponseDTO>;
+  // called by both webhook strategy and booking controller (for online payment & booking confirmation)
+  verifyPaymentAndConfirmBooking(userId: string, dto: VerifyPaymentRequestDTO, skipSignatureCheck?: boolean): Promise<BookingResponseDTO>;
 
   getMyBookings(userId: string, filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;
 

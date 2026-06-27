@@ -481,7 +481,6 @@ function UserBookings() {
           retryBooking={activeRetryBooking || undefined}
           onBooked={() => {
             setActiveRetryBooking(null);
-            toast.success("Payment successful! Your booking is confirmed.");
             fetchMyBookings();
           }}
         />

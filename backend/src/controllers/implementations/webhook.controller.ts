@@ -23,14 +23,21 @@ export class WebhookController implements IWebhookController {
             const providerName: string = req.params.provider as string;
             const paymentService: IPaymentService | undefined = this._paymentServices.get(providerName);
 
+            console.log('handleWebhookEvent providerName :', providerName)
+            console.log('handleWebhookEvent paymentService :', paymentService)
+
             if (!paymentService) {
                 console.error(`🚨 Webhook hit for unsupported provider: ${providerName}`);
                 res.status(400).json({ status: "error", message: "Unsupported provider" });
                 return;
             }
 
+            console.log('verifying webhook payment signature...')
+
             // 2. Verify Signature (Provider handles its own header extraction!)
             const isValid = paymentService.verifyWebhookSignature(req.body, req.headers);
+
+            console.log('handleWebhookEvent isValid :', isValid)
 
             if (!isValid) {
                 console.error(`🚨 Invalid ${providerName} Webhook Signature`);
