@@ -97,6 +97,7 @@ export default function UserEvents() {
          setEditModalOpen(false);
          setEditEvent(null);
          fetchMyEvents();
+         
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);

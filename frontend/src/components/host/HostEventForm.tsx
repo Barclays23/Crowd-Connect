@@ -166,9 +166,9 @@ export const HostEventForm = ({
    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0] || null;
       if (file) {
-      setValue("uploadedImage", file);
-      setValue("aiGeneratedImage", null); // Clear AI preview if manual upload
-      trigger();
+         setValue("uploadedImage", file);
+         setValue("aiGeneratedImage", null); // Clear AI preview if manual upload
+         trigger();
       }
    };
    
@@ -179,48 +179,49 @@ export const HostEventForm = ({
       setValue("aiGeneratedImage", null);
    };
 
+
    // ── Generate AI Poster ──
    const handleGenerateAiPoster = async () => {
       const isValid = await trigger(["title", "category", "description", "startDate", "startTime"]);
       if (!isValid) {
-      toast.error("Please fill title, category, and start date/time first");
-      return;
+         toast.error("Please fill title, category, and start date/time first");
+         return;
       }
 
       try {
-      setIsGeneratingAI(true);
+         setIsGeneratingAI(true);
 
-      const payload = {
-         title: currentTitle,
-         category: currentCategory,
-         description: watch("description") || "",
-         startDateTime: new Date(`${watch("startDate")}T${watch("startTime")}:00`).toISOString(),
-         locationName: watch("locationName") || "",
-      };
+         const payload = {
+            title: currentTitle,
+            category: currentCategory,
+            description: watch("description") || "",
+            startDateTime: new Date(`${watch("startDate")}T${watch("startTime")}:00`).toISOString(),
+            locationName: watch("locationName") || "",
+         };
 
-      const res = await fetch("/api/ai/generate-event-poster", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(payload),
-      });
+         const res = await fetch("/api/ai/generate-event-poster", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+         });
 
-      if (!res.ok) {
-         const err = await res.json();
-         throw new Error(err.error || "Failed to generate poster");
-      }
+         if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Failed to generate poster");
+         }
 
-      const { imageData } = await res.json(); // { base64, mimeType }
+         const { imageData } = await res.json(); // { base64, mimeType }
 
-      const dataUrl = `data:${imageData.mimeType};base64,${imageData.base64}`;
-      setValue("aiGeneratedImage", dataUrl);
-      setValue("uploadedImage", null);
-      trigger();
+         const dataUrl = `data:${imageData.mimeType};base64,${imageData.base64}`;
+         setValue("aiGeneratedImage", dataUrl);
+         setValue("uploadedImage", null);
+         trigger();
 
-      toast.success("Poster generated! You can regenerate or keep this one.");
+         toast.success("Poster generated! You can regenerate or keep this one.");
 
       } catch (error: unknown) {
-      const errorMessage = getApiErrorMessage(error);
-      if (errorMessage) toast.error(errorMessage);
+         const errorMessage = getApiErrorMessage(error);
+         if (errorMessage) toast.error(errorMessage);
 
       } finally {
          setIsGeneratingAI(false);

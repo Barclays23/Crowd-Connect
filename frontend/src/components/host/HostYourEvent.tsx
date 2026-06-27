@@ -15,6 +15,7 @@ import { eventServices } from "@/services/eventServices";
 import { useEffect, useState } from "react";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import type { SettingsResponse } from "@/types/platformSettings.types";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -22,6 +23,8 @@ import type { SettingsResponse } from "@/types/platformSettings.types";
 const HostYourEvent = () => {
   const [commissionPercent, setCommissionPercent] = useState<number>(10);
   const [loading, setLoading]   = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCommissionPercent = async () => {
@@ -98,6 +101,8 @@ const HostYourEvent = () => {
       const response = await eventServices.createEvent(formData);
       toast.success(response.message);
       methods.reset();
+      navigate('/my-events');
+
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
       if (errorMessage) toast.error(errorMessage);
