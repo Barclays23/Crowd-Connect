@@ -46,7 +46,7 @@ import {
     validateEventUpdateByAdmin, 
     validateEventUpdateByHost 
 } from "@/utils/validations/eventValidations";
-import { applyEventStatusFilter } from "@/utils/eventStatus.utils";
+import { applyEventStatusFilter, getEventStatusCondition } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";
@@ -179,21 +179,29 @@ export class EventManagementServices implements IEventServices {
                 sortOrder
             } = filters;
 
-            const query: EventFilterQuery = {};
+            const queryConditions: EventFilterQuery[] = [];
 
             if (search) {
-                query.$or = [
-                    { title: { $regex: search, $options: 'i' } },
-                    { locationName: { $regex: search, $options: 'i' } },
-                ];
+                queryConditions.push({
+                    $or: [
+                        { title: { $regex: search, $options: 'i' } },
+                        { locationName: { $regex: search, $options: 'i' } },
+                    ]
+                });
             }
-            
-            // if (status) query.eventStatus = status;
-            applyEventStatusFilter(query, status);
 
-            if (category) query.category = category;
-            if (format) query.format = format;
-            if (ticketType) query.ticketType = ticketType;
+            const statusCondition = getEventStatusCondition(status);
+            if (statusCondition) {
+                queryConditions.push(statusCondition);
+            }
+
+            if (category) queryConditions.push({ category });
+            if (format) queryConditions.push({ format });
+            if (ticketType) queryConditions.push({ ticketType });
+
+            const finalQuery: EventFilterQuery = queryConditions.length > 0 
+                ? { $and: queryConditions } 
+                : {};
 
             const skip = (page - 1) * limit;
             const sort: Record<string, 1 | -1> = {};
@@ -201,12 +209,14 @@ export class EventManagementServices implements IEventServices {
                 sort[sortBy] = sortOrder === "asc" ? 1 : -1;
             }
 
-            console.log('Final query in EventManagementServices.getAllEvents:', query);
+            console.log('Final query in EventManagementServices.getAllEvents:', finalQuery);
             console.log("Sort applied:", sort);
 
+            const publicProjection = '-onlineLink';  // dont send onlineLink to public users
+
             const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
-                this._eventRepository.findEvents(query, skip, limit, sort),
-                this._eventRepository.countEvents(query)
+                this._eventRepository.findEvents(finalQuery, skip, limit, sort, publicProjection),
+                this._eventRepository.countEvents(finalQuery)
             ]);
 
             const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
@@ -243,23 +253,30 @@ export class EventManagementServices implements IEventServices {
                 sortOrder
             }: GetEventsFilter = filters;
 
-            const query: EventFilterQuery = {};
+            const queryConditions: EventFilterQuery[] = [];
 
-            query.hostRef = new Types.ObjectId(userId);
+            queryConditions.push({ hostRef: new Types.ObjectId(userId) });
 
             if (search) {
-                query.$or = [
-                    { title: { $regex: search, $options: 'i' } },
-                    { locationName: { $regex: search, $options: 'i' } },
-                ];
+                queryConditions.push({
+                    $or: [
+                        { title: { $regex: search, $options: 'i' } },
+                        { locationName: { $regex: search, $options: 'i' } },
+                    ]
+                });
             }
 
-            // if (status) query.eventStatus = status;
-            applyEventStatusFilter(query, status);
+            const statusCondition = getEventStatusCondition(status);
+            if (statusCondition) {
+                queryConditions.push(statusCondition);
+            }
 
-            if (category) query.category = category;
-            if (format) query.format = format;
-            if (ticketType) query.ticketType = ticketType;
+
+            if (category) queryConditions.push({ category });
+            if (format) queryConditions.push({ format });
+            if (ticketType) queryConditions.push({ ticketType });
+
+            const finalQuery: EventFilterQuery = { $and: queryConditions };
 
             const skip = (page - 1) * limit;
             const sort: Record<string, 1 | -1> = {};
@@ -267,12 +284,12 @@ export class EventManagementServices implements IEventServices {
                 sort[sortBy] = sortOrder === "asc" ? 1 : -1;
             }
 
-            console.log('Final query in EventManagementServices.getUserEvents:', query);
+            console.log('finalQuery in EventManagementServices.getUserEvents:', finalQuery);
             console.log("Sort applied:", sort);
 
             const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
-                this._eventRepository.findEvents(query, skip, limit, sort),
-                this._eventRepository.countEvents(query)
+                this._eventRepository.findEvents(finalQuery, skip, limit, sort),
+                this._eventRepository.countEvents(finalQuery)
             ]);
             
             const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];

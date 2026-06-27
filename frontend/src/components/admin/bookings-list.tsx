@@ -314,13 +314,22 @@ export function BookingsList() {
                         <TableHead>Category</TableHead>
                         <TableHead>Format</TableHead>
                         <TableHead
-                        className="text-(--text-secondary) font-semibold cursor-pointer text-center"
-                        onClick={() => handleSort("quantity")}
+                           className="text-(--text-secondary) font-semibold cursor-pointer"
+                           onClick={() => handleSort("createdAt")}
                         >
-                        <div className="flex items-center justify-center">
-                           Tickets
-                           {getSortIcon("quantity")}
-                        </div>
+                           <div className="flex items-center">
+                              Booked On
+                              {getSortIcon("createdAt")}
+                           </div>
+                        </TableHead>
+                        <TableHead
+                           className="text-(--text-secondary) font-semibold cursor-pointer text-center"
+                           onClick={() => handleSort("quantity")}
+                           >
+                           <div className="flex items-center justify-center">
+                              Tickets
+                              {getSortIcon("quantity")}
+                           </div>
                         </TableHead>
                         <TableHead
                         className="text-(--text-secondary) font-semibold cursor-pointer"
@@ -405,60 +414,80 @@ export function BookingsList() {
                                  </Badge>
                                  </TableCell>
 
+                                 <TableCell className="text-(--text-secondary) whitespace-nowrap">
+                                    {formatDate2(booking.createdAt)}
+                                 </TableCell>
+
                                  <TableCell className="text-center font-medium">
                                     {booking.quantity}
                                  </TableCell>
 
+                                 {/* Amount & Payment Method */}
                                  <TableCell className="font-medium">
-                                 {isFree ? (
-                                    <Badge variant="success">Free</Badge>
-                                 ) : (
-                                    `₹${booking.totalAmount.toLocaleString("en-IN")}`
-                                 )}
+                                    <div className="flex flex-col items-start gap-0.5">
+                                       {isFree ? (
+                                          <Badge variant="success">Free</Badge>
+                                       ) : (
+                                          <span>₹{booking.totalAmount.toLocaleString("en-IN")}</span>
+                                       )}
+                                       {!isFree && booking.payment?.method && (
+                                          <span className="text-[10px] text-(--text-tertiary) uppercase tracking-wider font-semibold">
+                                             {booking.payment.method}
+                                          </span>
+                                       )}
+                                    </div>
                                  </TableCell>
 
+                                 {/* Booking Status + Payment Status */}
                                  <TableCell>
-                                 <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
-                                    {capitalize(booking.bookingStatus)}
-                                 </Badge>
+                                    <div className="flex flex-col items-start gap-1">
+                                       <Badge variant={getBookingStatusVariant(booking.bookingStatus)}>
+                                          {capitalize(booking.bookingStatus)}
+                                       </Badge>
+                                       {!isFree && booking.payment?.status && (
+                                          <span className="text-[10px] text-(--text-tertiary) uppercase tracking-wider font-semibold">
+                                             Pay: {booking.payment.status}
+                                          </span>
+                                       )}
+                                    </div>
                                  </TableCell>
 
                                  <TableCell className="text-right">
-                                 <div className="flex items-center justify-end gap-1">
-                                    <Button
-                                       variant="ghost"
-                                       size="icon"
-                                       title="View"
-                                       onClick={() => setViewBooking(booking)}
-                                    >
-                                       <Eye className="h-4 w-4" />
-                                    </Button>
-
-                                    {canCancel && (
+                                    <div className="flex items-center justify-end gap-1">
                                        <Button
                                           variant="ghost"
                                           size="icon"
-                                          title="Cancel Booking"
-                                          className="text-(--status-error)"
-                                          onClick={() => {
-                                             setCancelBookingId(booking.bookingId);
-                                             setCancelReason("");
-                                             setCancelError(null);
-                                          }}
-                                          disabled={cancellingId === booking.bookingId}
+                                          title="View"
+                                          onClick={() => setViewBooking(booking)}
                                        >
-                                       {cancellingId === booking.bookingId ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                       ) : (
-                                          <Ban className="h-4 w-4" />
-                                       )}
+                                          <Eye className="h-4 w-4" />
                                        </Button>
-                                    )}
 
-                                    <Button variant="ghost" size="icon" title="Delete Booking" className="text-(--status-error)">
-                                       <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                 </div>
+                                       {canCancel && (
+                                          <Button
+                                             variant="ghost"
+                                             size="icon"
+                                             title="Cancel Booking"
+                                             className="text-(--status-error)"
+                                             onClick={() => {
+                                                setCancelBookingId(booking.bookingId);
+                                                setCancelReason("");
+                                                setCancelError(null);
+                                             }}
+                                             disabled={cancellingId === booking.bookingId}
+                                          >
+                                          {cancellingId === booking.bookingId ? (
+                                             <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                             <Ban className="h-4 w-4" />
+                                          )}
+                                          </Button>
+                                       )}
+
+                                       <Button variant="ghost" size="icon" title="Delete Booking" className="text-(--status-error)">
+                                          <Trash2 className="h-4 w-4" />
+                                       </Button>
+                                    </div>
                                  </TableCell>
                               </TableRow>
                            );

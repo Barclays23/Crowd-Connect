@@ -82,10 +82,11 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       query: EventFilterQuery,
       skip : number,
       limit: number,
-      sort : SortQuery
+      sort : SortQuery,
+      projection?: string | Record<string, number | boolean>
    ): Promise<EventEntity[]> {  
       const paginatedEvents: IEventModelPopulatedHost[] = await this.findManyQuery(query)
-         .select('-onlineLink') // dont send online link to public users
+         .select(projection || '') // dont send onlineLink to public users
          .populate("hostRef", "name organizationName")
          .collation({ locale: 'en', strength: 2 })
          .sort(sort ? sort : { createdAt: -1 })

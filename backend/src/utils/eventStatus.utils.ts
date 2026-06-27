@@ -65,6 +65,8 @@ export function applyEventStatusFilter(query: EventFilterQuery, status?: EventSt
          query.eventStatus = EVENT_STATUSES.PUBLISHED;
          query.endDateTime = { $lte: now };
          break;
+         
+         
 
       case EVENT_STATUSES.PUBLISHED:
          query.eventStatus = EVENT_STATUSES.PUBLISHED;
@@ -73,5 +75,51 @@ export function applyEventStatusFilter(query: EventFilterQuery, status?: EventSt
 
 }
 
+
+
+
+// replaced by applyEventStatusFilter
+export function getEventStatusCondition(status?: EventStatus): EventFilterQuery | null {
+   if (!status) return null;
+
+   const now = new Date();
+
+   switch (status) {
+      case EVENT_STATUSES.DRAFT:
+      case EVENT_STATUSES.CANCELLED:
+      case EVENT_STATUSES.SUSPENDED:
+         return { eventStatus: status };
+
+      case EVENT_STATUSES.UPCOMING:
+         return { 
+            eventStatus: EVENT_STATUSES.PUBLISHED, 
+            startDateTime: { $gt: now } 
+         };
+
+      case EVENT_STATUSES.ONGOING:
+         return { 
+            eventStatus: EVENT_STATUSES.PUBLISHED, 
+            startDateTime: { $lte: now }, 
+            endDateTime: { $gt: now } 
+         };
+
+      case EVENT_STATUSES.COMPLETED:
+         return {
+            $or: [
+               { eventStatus: EVENT_STATUSES.COMPLETED },
+               { 
+                  eventStatus: EVENT_STATUSES.PUBLISHED, 
+                  endDateTime: { $lte: now } 
+               }
+            ]
+         };
+
+      case EVENT_STATUSES.PUBLISHED:
+         return { eventStatus: EVENT_STATUSES.PUBLISHED };
+         
+      default:
+         return null;
+   }
+}
 
 

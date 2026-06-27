@@ -10,7 +10,7 @@ export interface IEventRepository {
     createEvent(eventInput: CreateEventInput) : Promise<EventEntity>;
 
     
-    findEvents(filterQuery: EventFilterQuery, skip: number, limit: number, sort: SortQuery): Promise<EventEntity[]>;
+    findEvents(filterQuery: EventFilterQuery, skip: number, limit: number, sort: SortQuery, projection?: string | Record<string, number | boolean>): Promise<EventEntity[]>;
     getTrendingEvents(limit: number): Promise<EventEntity[]>;
     getEventById(eventId: string): Promise<EventEntity | null>;
     getPublicEvents(
