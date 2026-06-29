@@ -1,11 +1,11 @@
-// frontend/src/pages/admin/AdminEventList.tsx
+// frontend/src/pages/admin/AdminEvents.tsx
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import AdminBanner from "@/components/admin/admin-banner";
-import { EventsList } from "@/components/admin/events-list";
+import { AdminEventsTable } from "@/components/admin/admin-events-table";
 
 
 
-const AdminEventList = () => {
+const AdminEvents = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
@@ -15,10 +15,10 @@ const AdminEventList = () => {
           className=""
         />
 
-        <EventsList />
+        <AdminEventsTable />
       </div>
     </AdminLayout>
   );
 };
 
-export default AdminEventList;
+export default AdminEvents;

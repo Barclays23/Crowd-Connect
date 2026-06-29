@@ -127,6 +127,9 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
         return sortOrder === "asc" ? <ArrowUp className="h-3.5 w-3.5 ml-1" /> : <ArrowDown className="h-3.5 w-3.5 ml-1" />;
     };
 
+
+
+
     return (
         <div className="space-y-5">
             {/* Summary pills */}
@@ -193,7 +196,10 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                                 <div className="flex items-center">Booked On <SortIcon field="createdAt" /></div>
                             </TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold cursor-pointer text-center" onClick={() => handleSort("quantity")}>
-                                <div className="flex items-center justify-center">Qty <SortIcon field="quantity" /></div>
+                                <div className="flex items-center justify-center">Tickets <SortIcon field="quantity" /></div>
+                            </TableHead>
+                            <TableHead className="text-(--text-secondary) font-semibold cursor-pointer text-center">
+                                <div className="flex items-center justify-center">Remaining Entries</div>
                             </TableHead>
                             <TableHead className="text-(--text-secondary) font-semibold cursor-pointer" onClick={() => handleSort("totalAmount")}>
                                 <div className="flex items-center">Total Amount <SortIcon field="totalAmount" /></div>
@@ -229,7 +235,7 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                                 const isFree    = booking.totalAmount === 0;
                                 const canCancel = canCancelBooking(booking);
                                 return (
-                                    <TableRow key={booking.bookingId} className="hover:bg-(--table-row-hover-bg) transition-colors">
+                                    <TableRow key={booking.bookingId} className="hover:bg-(--table-row-hover) transition-colors">
                                         <TableCell className="text-(--text-tertiary) text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="font-mono text-xs truncate">
@@ -246,6 +252,7 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
                                         </TableCell>
                                         <TableCell className="text-sm text-(--text-secondary)">{formatDate2(booking.createdAt)}</TableCell>
                                         <TableCell className="text-center font-semibold text-(--text-primary)">{booking.quantity}</TableCell>
+                                        <TableCell className="text-center font-semibold text-(--text-primary)">{booking.remainingEntries}</TableCell>
                                         <TableCell className="font-medium text-(--text-primary)">
                                             {isFree ? <Badge variant="success">Free</Badge> : `₹${booking.totalAmount.toLocaleString("en-IN")}`}
                                         </TableCell>

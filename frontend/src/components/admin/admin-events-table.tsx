@@ -1,4 +1,4 @@
-// frontend/src/components/admin/events-list.tsx
+// frontend/src/components/admin/admin-events-table.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
@@ -34,24 +34,34 @@ import { Modal } from "../ui/modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { type EventSortDirection, type EventSortField, type GetEventsApiResponse, type IEventState } from "@/types/event.types";
+import { 
+   type EventSortDirection, 
+   type EventSortField, 
+   type GetEventsApiResponse, 
+   type IEventState 
+} from "@/types/event.types";
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { suspendEventSchema, type EventFormValues, type SuspendEventFormValues } from "@/schemas/event.schema";
+import { 
+   suspendEventSchema, 
+   type EventFormValues, 
+   type SuspendEventFormValues 
+} from "@/schemas/event.schema";
 import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
 import EditEventForm from "@/components/user/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
+import { useNavigate } from "react-router-dom";
 
 
 
 
 
-export function EventsList() {
+export function AdminEventsTable() {
   // Filters & UI state
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -74,7 +84,7 @@ export function EventsList() {
   const [error, setError] = useState<string | null>(null);
   
   // Modal states (kept as-is)
-  const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
+//   const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
   const [editEvent, setEditEvent] = useState<IEventState | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<IEventState | null>(null);
   const [suspendEvent, setSuspendEvent] = useState<IEventState | null>(null);
@@ -86,6 +96,8 @@ export function EventsList() {
 
    // Debounced search
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+   const navigate = useNavigate();
 
    const {
       register,
@@ -474,7 +486,12 @@ export function EventsList() {
                            </TableCell>
                            <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
-                                 <Button variant="ghost" size="icon" onClick={() => setViewEvent(event)}>
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => navigate(`/admin/events/${event.eventId}`)}
+                                    title="View Event Details"
+                                 >
                                     <Eye className="h-4 w-4" />
                                  </Button>
                                  {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (                              
@@ -531,10 +548,6 @@ export function EventsList() {
                />
             )}
 
-            {/* View Event Modal */}
-            <Modal isOpen={!!viewEvent} onClose={() => setViewEvent(null)} title="Event Details" size="lg">
-               {viewEvent && <ViewEventModal event={viewEvent} />}
-            </Modal>
 
             {/* Edit Event Modal */}
             <Modal

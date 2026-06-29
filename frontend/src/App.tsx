@@ -48,11 +48,12 @@ import HostPage from "@/pages/host/HostPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUserList from "@/pages/admin/AdminUserList";
 import AdminHostsList from "./pages/admin/AdminHostsList";
-import AdminEventList from "@/pages/admin/AdminEventsList";
+import AdminEventList from "@/pages/admin/AdminEvents";
 import AdminBookingsList from "@/pages/admin/AdminBookingsList";
 import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
 import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
 import GoogleAuthSuccess from "@/components/auth/GoogleAuthSuccess";
+import EventDashboard from "@/pages/event/EventDashboard";
 
 
 
@@ -94,6 +95,7 @@ function App() {
                                  <Route path="/my-account" element={<UserAccountTabs />} />
                                  <Route path="/dashboard" element={<UserAccountTabs />} />
                                  <Route path="/my-events" element={<UserAccountTabs />} />
+                                 <Route path="/my-events/:eventId" element={<EventDashboard />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
                                  <Route path="/my-favourites" element={<UserAccountTabs />} />
                                  <Route path="/my-wallet" element={<UserAccountTabs />} />
@@ -108,6 +110,7 @@ function App() {
                               <Route path="/admin/users" element={<AdminUserList />} />
                               <Route path="/admin/hosts" element={<AdminHostsList />} />
                               <Route path="/admin/events" element={<AdminEventList />} />
+                              <Route path="/admin/events/:eventId" element={<EventDashboard />} />
                               <Route path="/admin/bookings" element={<AdminBookingsList />} />
                               <Route path="/admin/settings" element={<AdminPlatformSettings />} />
                               <Route path="/admin/payout-requests" element={<AdminPayoutRequests />} />

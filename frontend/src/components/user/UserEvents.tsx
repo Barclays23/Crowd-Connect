@@ -46,6 +46,7 @@ import { capitalize } from "@/utils/namingConventions";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -63,7 +64,7 @@ export default function UserEvents() {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
 
-   const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
+   // const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
    const [editEvent, setEditEvent] = useState<IEventState | null>(null);
    const [editModalOpen, setEditModalOpen] = useState(false);
 
@@ -84,6 +85,8 @@ export default function UserEvents() {
    const [totalPages, setTotalPages] = useState(1);
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+   const navigate = useNavigate();
 
    const handleEditEventSubmit = async (data: EventFormValues) => {
       if (!editEvent) return;
@@ -216,6 +219,8 @@ export default function UserEvents() {
          setIsCancelling(false);
       }
    };
+
+
 
    return (
       <div className="space-y-6">
@@ -419,7 +424,13 @@ export default function UserEvents() {
                            {/* Action Buttons */}
                            <TableCell className="text-right pr-6">
                               <div className="flex items-center justify-end gap-0.5">
-                                 <Button variant="ghost" size="icon" title="View Event" onClick={() => setViewEvent(event)} className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)">
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    title="Manage Event" 
+                                    onClick={() => navigate(`/my-events/${event.eventId}`)} 
+                                    className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)"
+                                 >
                                     <Eye className="h-4.5 w-4.5" />
                                  </Button>
 
@@ -466,9 +477,7 @@ export default function UserEvents() {
             </div>
          )}
 
-         <Modal isOpen={!!viewEvent} onClose={() => setViewEvent(null)} title="Event Details" size="lg">
-            {viewEvent && <ViewEventModal event={viewEvent} />}
-         </Modal>
+
 
          <Modal isOpen={editModalOpen} onClose={() => { setEditModalOpen(false); setEditEvent(null); }} title={`Edit Event : ${editEvent?.title}`} size="lg">
             {editEvent && (
