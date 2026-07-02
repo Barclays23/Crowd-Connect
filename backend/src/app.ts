@@ -23,6 +23,7 @@ import checkinRouter from '@/routes/checkin.routes';
 import payoutRouter from '@/routes/payout.routes';
 import { configurePassport } from '@/config/passport.config';
 import passport from 'passport';
+import aiRouter from '@/routes/ai.routes';
 
 
 const app = express();
@@ -68,6 +69,8 @@ app.use('/api/wallet', walletRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/event/:eventId/checkin', checkinRouter);
 app.use('/api/payout', payoutRouter);
+app.use("/api/ai", aiRouter);
+
 
 
 app.use(errorHandler);

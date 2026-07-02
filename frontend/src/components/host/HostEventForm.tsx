@@ -27,6 +27,9 @@ import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoCo
 import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
+import { generatePosterSchema } from "@/schemas/ai.schema";
+import type { GeneratePosterPayload, GeneratePosterResponse } from "@/types/ai.types";
+import { aiServices } from "@/services/aiServices";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };
@@ -53,6 +56,7 @@ export const HostEventForm = ({
    const {
       register,
       handleSubmit,
+      getValues,
       setValue,
       watch,
       trigger,
@@ -182,42 +186,41 @@ export const HostEventForm = ({
 
    // ── Generate AI Poster ──
    const handleGenerateAiPoster = async () => {
-      const isValid = await trigger(["title", "category", "description", "startDate", "startTime"]);
-      if (!isValid) {
-         toast.error("Please fill title, category, and start date/time first");
+      // Get current form values without triggering full form validation errors (like empty prices)
+      const currentValues = getValues();
+
+      const validation = generatePosterSchema.safeParse(currentValues);
+
+      if (!validation.success) {
+         // Visually highlight the fields that are missing
+         trigger(["title", "category", "description", "startDate", "startTime"]);
+         toast.error("Please fill title, category, description, and start date/time first.");
          return;
       }
 
       try {
          setIsGeneratingAI(true);
 
-         const payload = {
-            title: currentTitle,
-            category: currentCategory,
-            description: watch("description") || "",
-            startDateTime: new Date(`${watch("startDate")}T${watch("startTime")}:00`).toISOString(),
-            locationName: watch("locationName") || "",
+         const payload: GeneratePosterPayload = {
+            title: currentValues.title,
+            category: currentValues.category,
+            description: currentValues.description,
+            startDateTime: new Date(`${currentValues.startDate}T${currentValues.startTime}:00`).toISOString(),
+            locationName: currentValues.locationName || (currentValues.format === "online" ? "Virtual Event" : ""),
          };
 
-         const res = await fetch("/api/ai/generate-event-poster", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-         });
+         const response: GeneratePosterResponse = await aiServices.generateEventPoster(payload);
 
-         if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error || "Failed to generate poster");
+         if (response.aiPosterData) {
+            // Use the returned data URL directly
+            setValue("aiGeneratedImage", response.aiPosterData, { 
+               shouldValidate: true, 
+               shouldDirty: true 
+            });
+            setValue("uploadedImage", null);
+            
+            toast.success(response.message);
          }
-
-         const { imageData } = await res.json(); // { base64, mimeType }
-
-         const dataUrl = `data:${imageData.mimeType};base64,${imageData.base64}`;
-         setValue("aiGeneratedImage", dataUrl);
-         setValue("uploadedImage", null);
-         trigger();
-
-         toast.success("Poster generated! You can regenerate or keep this one.");
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
@@ -682,32 +685,42 @@ export const HostEventForm = ({
                <div className="border-2 border-dashed border-(--brand-primary) bg-(--badge-primary-bg) rounded-xl p-6 text-center transition-colors">
                   {!currentAiImage ? (
                      <div className="py-6">
-                     <Bot className="w-12 h-12 text-(--brand-primary) mx-auto mb-3" />
-                     <h4 className="text-(--text-brand) font-medium mb-1">AI Poster Generator</h4>
-                     <Button
-                        type="button"
-                        onClick={handleGenerateAiPoster}
-                        disabled={isGeneratingAI || !currentTitle}
-                        className="bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text) mt-4"
-                     >
-                        {isGeneratingAI ? (
-                           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
-                        ) : (
-                           <><Sparkles className="w-4 h-4 mr-2" /> Generate Poster</>
-                        )}
-                     </Button>
+                        <Bot className="w-12 h-12 text-(--brand-primary) mx-auto mb-3" />
+                        <h4 className="text-(--text-brand) font-medium mb-1">AI Poster Generator</h4>
+                        <Button
+                           type="button"
+                           onClick={handleGenerateAiPoster}
+                           disabled={isGeneratingAI || !currentTitle}
+                           className="bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text) mt-4"
+                        >
+                           {isGeneratingAI ? (
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                           ) : (
+                              <><Sparkles className="w-4 h-4 mr-2" /> Generate Poster</>
+                           )}
+                        </Button>
                      </div>
                   ) : (
                      <div className="relative group">
-                     <img
-                        src={currentAiImage}
-                        alt="AI Generated Poster"
-                        className="w-full h-48 object-cover rounded-lg shadow-(--shadow-md)"
-                     />
-                     <div className="absolute inset-0 bg-(--bg-overlay) opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-lg">
-                        <Button size="sm" variant="secondary" onClick={handleGenerateAiPoster}>Regenerate</Button>
-                        <Button size="sm" variant="destructive" onClick={() => setValue("aiGeneratedImage", null)}>Remove</Button>
-                     </div>
+                        <img
+                           src={currentAiImage}
+                           alt="AI Generated Poster"
+                           className="w-full h-48 object-cover rounded-lg shadow-(--shadow-md)"
+                        />
+                        <div className="absolute inset-0 bg-(--bg-overlay) opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-lg">
+                           <Button 
+                              type="button" size="sm" variant="secondary" onClick={handleGenerateAiPoster} disabled={isGeneratingAI || !currentTitle}>
+                              {isGeneratingAI ? (
+                                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                              ) : (
+                                 <><Sparkles className="w-4 h-4 mr-2" /> Regenerate</>
+                              )}
+                           </Button>
+                           <Button 
+                              type="button" size="sm" variant="destructive" onClick={() => setValue("aiGeneratedImage", null)}>
+                              Remove
+                           </Button>
+                        </div>
                      </div>
                   )}
                </div>

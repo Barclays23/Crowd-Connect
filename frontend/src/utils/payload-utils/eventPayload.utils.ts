@@ -43,8 +43,8 @@ export const buildEventFormData = (data: EventFormValues) => {
 
    // Image Logic
    if (data.useAI && data.aiGeneratedImage) {
-      payload.append("aiPosterData", data.aiGeneratedImage); // base64 data URL
-      // payload.append("aiGeneratedImage", data.aiGeneratedImage); // base64 data URL
+      // payload.append("aiPosterData", data.aiGeneratedImage); // base64 data URL
+      payload.append("aiGeneratedImage", data.aiGeneratedImage); // base64 data URL
    } else if (data.uploadedImage) {
       payload.append("eventPosterImage", data.uploadedImage); // File
    }

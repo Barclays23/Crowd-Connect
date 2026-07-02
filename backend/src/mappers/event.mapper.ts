@@ -52,7 +52,8 @@ export const mapCreateEventRequestToDto = (
         ? JSON.parse(body.location) // if not already parsed from zod validation (validateRequest)
         : body.location,
 
-      onlineLink     : body.onlineLink,
+      aiGeneratedImage  : body.aiGeneratedImage || undefined,
+      onlineLink        : body.onlineLink,
    };
 };
 

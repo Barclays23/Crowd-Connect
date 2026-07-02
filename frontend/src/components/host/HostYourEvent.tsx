@@ -1,6 +1,6 @@
 // src/components/host/HostYourEvent.tsx
 
-// / <reference path="../../types/google.maps.d.ts" />
+// <reference path="../../types/google.maps.d.ts" />
 import { FormProvider, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
@@ -92,7 +92,7 @@ const HostYourEvent = () => {
     }
 
     if (data.useAI && data.aiGeneratedImage) {
-      formData.append("aiPosterData", data.aiGeneratedImage);
+      formData.append("aiGeneratedImage", data.aiGeneratedImage);
     } else if (data.uploadedImage) {
       formData.append("eventPosterImage", data.uploadedImage);
     }

@@ -187,6 +187,15 @@ export const coordinatesBase = z.preprocess(
 
 
 
+// AI Generated image base64 string
+export const base64ImageBase = z
+   .string()
+   .refine((val) => val.startsWith("data:image/"), {
+      message: "Must be a valid base64 image string format",
+   })
+   .optional()
+   .nullable();
+
 
 
 // export const imageFileBase = z
@@ -202,11 +211,7 @@ export const coordinatesBase = z.preprocess(
 
 
 
-export const aiUrlBase = z
-   .string()
-   .url("Invalid AI image URL")
-   .optional()
-   .nullable();
+
 
 
 
@@ -267,8 +272,8 @@ const eventFormSchemaFactory = (isEditMode = false) =>
 
       // Media
       // uploadedImage: imageFileBase,  (file is not validating with zod. let the multer handle in backend)
-      aiGeneratedImage: aiUrlBase,   // which one??
-      aiPosterData: aiUrlBase,  // which one??
+      aiGeneratedImage: base64ImageBase,   // which one??
+      // aiPosterData: base64ImageBase,  // which one??
    })
    .superRefine((data, ctx) => {
       
