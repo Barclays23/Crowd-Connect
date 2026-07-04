@@ -45,7 +45,7 @@ export default function EventCard({ event }: { event: IEventState }) {
     return (
         <article
             onClick={() => navigate(`/events/${event.eventId}`)}
-            className="group cursor-pointer relative rounded-3xl overflow-hidden aspect-[3/4] transition-all duration-500
+            className="group cursor-pointer relative rounded-3xl overflow-hidden aspect-3/4 transition-all duration-500
                 hover:scale-[1.02] hover:shadow-2xl"
             style={{ isolation: "isolate" }}
         >
@@ -89,7 +89,7 @@ export default function EventCard({ event }: { event: IEventState }) {
             </div>
 
             {/* ── FLOATING DATE CHIP — top right overlap ── */}
-            <div className={`absolute top-12 right-4 mt-2 flex flex-col items-center rounded-2xl px-3 py-2 min-w-[52px] ${glass}`}>
+            <div className={`absolute top-12 right-4 mt-2 flex flex-col items-center rounded-2xl px-3 py-2 min-w-13 ${glass}`}>
                 <span className="text-2xl font-black leading-none" style={{ color: "var(--brand-primary)" }}>{dayNum}</span>
                 <span className="text-[9px] font-black tracking-widest uppercase mt-0.5" style={{ color: "var(--overlay-text)" }}>{month}</span>
             </div>

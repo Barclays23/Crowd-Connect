@@ -60,7 +60,7 @@ function EventCard({ event }: { event: IEventState }) {
       `}
     >
       {/* Left accent bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b ${accent} z-20`} />
+      <div className={`absolute left-0 top-0 bottom-0 w-2.5 bg-linear-to-b ${accent} z-20`} />
 
       <div className="relative flex-1 flex flex-col">
         {/* Hero Image + angled overlay */}
@@ -73,13 +73,13 @@ function EventCard({ event }: { event: IEventState }) {
               whileHover={{ scale: 1.12 }}
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+            <div className="absolute inset-0 bg-linear-to-b from-gray-900 to-black flex items-center justify-center">
               <CalendarDays className="w-20 h-20 text-gray-700/50" />
             </div>
           )}
 
           {/* Diagonal overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/40 to-transparent" />
 
           {/* Date block - prominent top-right */}
           <div className="absolute top-5 right-5 z-10">
@@ -115,7 +115,7 @@ function EventCard({ event }: { event: IEventState }) {
           {/* Category & Status */}
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-indigo-400">
-              <span className={`w-2 h-2 rounded-full bg-gradient-to-r ${accent}`} />
+              <span className={`w-2 h-2 rounded-full bg-linear-to-r ${accent}`} />
               {event.category || "Event"}
             </span>
 
@@ -177,7 +177,7 @@ function EventCard({ event }: { event: IEventState }) {
               </div>
               <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                 <motion.div
-                  className={`h-full bg-gradient-to-r ${accent}`}
+                  className={`h-full bg-linear-to-r ${accent}`}
                   initial={{ width: 0 }}
                   animate={{ width: `${capacityPercent}%` }}
                   transition={{ duration: 1.4, ease: "easeOut" }}
@@ -188,7 +188,7 @@ function EventCard({ event }: { event: IEventState }) {
         </div>
 
         {/* Footer CTA */}
-        <div className="px-6 py-4 border-t border-gray-800/50 bg-gradient-to-r from-gray-950 to-gray-900/80 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-gray-800/50 bg-linear-to-r from-gray-950 to-gray-900/80 flex items-center justify-between">
           <div className="text-sm text-gray-400 truncate max-w-[60%]">
             {event.organizer?.organizerName || "Hosted by"}
           </div>

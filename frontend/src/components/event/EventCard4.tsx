@@ -43,33 +43,33 @@ function EventCard({ event }: { event: IEventState }) {
       onClick={() => navigate(`/events/${event.eventId}`)}
       className={`
         group relative cursor-pointer rounded-2xl overflow-hidden
-        bg-[var(--card-bg)] border border-[var(--card-border)]
-        shadow-[var(--card-shadow)] hover:shadow-[var(--card-shadow-hover)]
+        bg-(--card-bg) border border-(--card-border)
+        shadow-(--card-shadow) hover:shadow-(--card-shadow-hover)
         transition-all duration-400 flex flex-row h-72
-        ${isEnded || isCancelled || isSuspended ? "opacity-75 grayscale-[30%]" : ""}
+        ${isEnded || isCancelled || isSuspended ? "opacity-75 grayscale-30" : ""}
       `}
     >
       {/* LEFT: Date ribbon + image */}
-      <div className="relative w-28 shrink-0 flex flex-col items-center pt-5 bg-[var(--bg-secondary)] border-r border-[var(--card-border)]">
+      <div className="relative w-28 shrink-0 flex flex-col items-center pt-5 bg-(--bg-secondary) border-r border-(--card-border)">
         {/* Date block */}
         <div className="text-center">
-          <div className="text-3xl font-bold text-[var(--heading-primary)] leading-none">
+          <div className="text-3xl font-bold text-(--heading-primary) leading-none">
             {day}
           </div>
-          <div className="text-lg font-semibold text-[var(--brand-primary)]">
+          <div className="text-lg font-semibold text-(--brand-primary)">
             {month}
           </div>
-          <div className="text-xs text-[var(--text-tertiary)] mt-1">{weekday}</div>
+          <div className="text-xs text-(--text-tertiary) mt-1">{weekday}</div>
         </div>
 
         {/* Small time below */}
-        <div className="mt-3 text-xs font-medium text-[var(--text-secondary)] flex items-center gap-1">
+        <div className="mt-3 text-xs font-medium text-(--text-secondary) flex items-center gap-1">
           <Clock size={13} />
           {time}
         </div>
 
         {/* Vertical line accent */}
-        <div className="absolute bottom-0 left-1/2 w-px h-20 bg-gradient-to-b from-[var(--brand-primary)] to-transparent opacity-40" />
+        <div className="absolute bottom-0 left-1/2 w-px h-20 bg-linear-to-b from-(--brand-primary) to-transparent opacity-40" />
       </div>
 
       {/* RIGHT: Image + content overlay */}
@@ -83,13 +83,13 @@ function EventCard({ event }: { event: IEventState }) {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full bg-[var(--bg-tertiary)] flex items-center justify-center">
-              <CalendarDays size={48} className="text-[var(--text-tertiary)] opacity-40" />
+            <div className="w-full h-full bg-(--bg-tertiary) flex items-center justify-center">
+              <CalendarDays size={48} className="text-(--text-tertiary) opacity-40" />
             </div>
           )}
           {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--bg-primary)] via-[var(--bg-primary)]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-(--bg-primary) via-(--bg-primary)/70 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
         </div>
 
         {/* Content */}
@@ -102,8 +102,8 @@ function EventCard({ event }: { event: IEventState }) {
                 px-3.5 py-1.5 text-sm font-semibold rounded-full
                 backdrop-blur-sm border
                 ${isFree
-                  ? "bg-[var(--badge-success-bg)] text-[var(--badge-success-text)] border-[var(--badge-success-border)]"
-                  : "bg-[var(--badge-primary-bg)] text-[var(--badge-primary-text)] border-[var(--badge-primary-border)]"
+                  ? "bg-(--badge-success-bg) text-(--badge-success-text) border-(--badge-success-border)"
+                  : "bg-(--badge-primary-bg) text-(--badge-primary-text) border-(--badge-primary-border)"
                 }
               `}
             >
@@ -114,8 +114,8 @@ function EventCard({ event }: { event: IEventState }) {
             <div className="flex items-center gap-2">
               {isLive && (
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--status-success)] opacity-70" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--status-success)]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-(--status-success) opacity-70" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-(--status-success)" />
                 </span>
               )}
 
@@ -124,14 +124,14 @@ function EventCard({ event }: { event: IEventState }) {
                   px-3 py-1 text-xs font-bold uppercase tracking-wide rounded-full
                   backdrop-blur-sm border
                   ${isCancelled
-                    ? "bg-[var(--badge-error-bg)] text-[var(--badge-error-text)] border-[var(--badge-error-border)]"
+                    ? "bg-(--badge-error-bg) text-(--badge-error-text) border-(--badge-error-border)"
                     : isSuspended
-                    ? "bg-[var(--badge-warning-bg)] text-[var(--badge-warning-text)] border-[var(--badge-warning-border)]"
+                    ? "bg-(--badge-warning-bg) text-(--badge-warning-text) border-(--badge-warning-border)"
                     : isEnded
-                    ? "bg-[var(--badge-secondary-bg)] text-[var(--badge-secondary-text)] border-[var(--badge-secondary-border)]"
+                    ? "bg-(--badge-secondary-bg) text-(--badge-secondary-text) border-(--badge-secondary-border)"
                     : isLive
-                    ? "bg-[var(--badge-success-bg)] text-[var(--badge-success-text)] border-[var(--badge-success-border)]"
-                    : "bg-[var(--badge-info-bg)] text-[var(--badge-info-text)] border-[var(--badge-info-border)]"
+                    ? "bg-(--badge-success-bg) text-(--badge-success-text) border-(--badge-success-border)"
+                    : "bg-(--badge-info-bg) text-(--badge-info-text) border-(--badge-info-border)"
                   }
                 `}
               >
@@ -156,8 +156,8 @@ function EventCard({ event }: { event: IEventState }) {
                 inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-full
                 backdrop-blur-sm border
                 ${isOnline
-                  ? "bg-[var(--badge-info-bg)] text-[var(--badge-info-text)] border-[var(--badge-info-border)]"
-                  : "bg-[var(--badge-secondary-bg)] text-[var(--badge-secondary-text)] border-[var(--badge-secondary-border)]"
+                  ? "bg-(--badge-info-bg) text-(--badge-info-text) border-(--badge-info-border)"
+                  : "bg-(--badge-secondary-bg) text-(--badge-secondary-text) border-(--badge-secondary-border)"
                 }
               `}
             >
@@ -166,18 +166,18 @@ function EventCard({ event }: { event: IEventState }) {
             </div>
 
             {/* Title */}
-            <h3 className="text-xl font-bold text-[var(--heading-primary)] leading-tight line-clamp-2 group-hover:text-[var(--brand-primary)] transition-colors duration-300">
+            <h3 className="text-xl font-bold text-(--heading-primary) leading-tight line-clamp-2 group-hover:text-(--brand-primary) transition-colors duration-300">
               {event.title}
             </h3>
 
             {/* Quick info */}
-            <div className="flex items-center gap-5 text-sm text-[var(--text-secondary)]">
+            <div className="flex items-center gap-5 text-sm text-(--text-secondary)">
               <div className="flex items-center gap-1.5">
                 <Users size={15} />
                 <span>{event.soldTickets ?? 0} going</span>
               </div>
               {!isOnline && event.locationName && (
-                <div className="truncate max-w-[180px]">
+                <div className="truncate max-w-45">
                   {event.locationName}
                 </div>
               )}
@@ -186,12 +186,12 @@ function EventCard({ event }: { event: IEventState }) {
 
           {/* Footer CTA */}
           <div className="mt-4 flex items-center justify-between text-sm">
-            <span className="text-[var(--text-tertiary)] truncate max-w-[60%]">
+            <span className="text-(--text-tertiary) truncate max-w-[60%]">
               {event.organizer?.organizerName || "—"}
             </span>
 
             <motion.span
-              className="inline-flex items-center gap-1.5 font-medium text-[var(--brand-primary)] group-hover:text-[var(--brand-primary-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 font-medium text-(--brand-primary) group-hover:text-(--brand-primary-hover) transition-colors"
               whileHover={{ x: 4 }}
               transition={{ type: "spring", stiffness: 500, damping: 20 }}
             >
@@ -204,9 +204,9 @@ function EventCard({ event }: { event: IEventState }) {
 
       {/* Capacity bar – thin line at bottom */}
       {event.capacity && capacityPercent > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--bg-tertiary)] overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-(--bg-tertiary) overflow-hidden">
           <motion.div
-            className="h-full bg-[var(--brand-primary)]"
+            className="h-full bg-(--brand-primary)"
             initial={{ width: 0 }}
             animate={{ width: `${capacityPercent}%` }}
             transition={{ duration: 1.2, ease: "easeOut" }}
