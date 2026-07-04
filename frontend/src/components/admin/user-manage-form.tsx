@@ -114,7 +114,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
     setProfileFile(null);
 
     if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      fileInputRef.current.value = "";
     }
   };
 
@@ -134,34 +134,35 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
     formData.append("status", values.status);
     formData.append("mobile", values.mobile ?? ""); // changed from undefined
     if (profileFile) {
-        formData.append("profileImage", profileFile);
+      formData.append("profileImage", profileFile);
     }
 
     console.log(`user formData to be sent:`, JSON.parse(JSON.stringify(Object.fromEntries(formData))));
-  try {
-    setIsSubmitting(true);
-    onSubmitting?.(true);
 
-    let response;
+    try {
+      setIsSubmitting(true);
+      onSubmitting?.(true);
 
-    if (isEditMode && user) {
-      response = await userServices.editUserService(user.userId, formData);
-      toast.success(response.message);
+      let response;
 
-    } else {
+      if (isEditMode && user) {
+        response = await userServices.editUserService(user.userId, formData);
+        toast.success(response.message);
+
+      } else {
         response = await userServices.createUserService(formData);
-      toast.success(response.message);
-    }
-    
-    onSuccess?.(response?.userData);
+        toast.success(response.message);
+      }
+      
+      onSuccess?.(response?.userData);
 
-  } catch (error: unknown) {
-    const errorMessage = getApiErrorMessage(error);
-    if (errorMessage) toast.error(errorMessage);
-  } finally {
-    setIsSubmitting(false);
-    onSubmitting?.(false);
-  }
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error);
+      if (errorMessage) toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+      onSubmitting?.(false);
+    }
   }
 
 
@@ -175,7 +176,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
         className="space-y-8">
 
         {isSubmitting && (
-          <div className="absolute inset-0 z-50 !m-0 !p-0 flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]">
+          <div className="absolute inset-0 z-50 m-0! p-0! flex items-center justify-center bg-(--bg-overlay) backdrop-blur-[0.2px]">
             <LoadingSpinner1 
               size="lg"
               message={loadingMessage} 
