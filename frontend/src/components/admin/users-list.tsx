@@ -110,13 +110,7 @@ export function UsersList() {
     }
   }, [currentPage, debouncedSearchTerm, roleFilter, statusFilter]);
 
-  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
     fetchUsers();
   }, [fetchUsers]);
 

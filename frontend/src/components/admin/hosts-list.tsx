@@ -125,12 +125,7 @@ export function HostsList() {
   }, [currentPage, debouncedSearchTerm, hostStatusFilter, accountStatusFilter]);
 
 
-  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
     fetchHosts();
   }, [fetchHosts]);
 
