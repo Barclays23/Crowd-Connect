@@ -55,6 +55,7 @@ import { IPlatformSettingsService } from "@/services/platform-settings-services/
 import { IEventQueueService } from "@/services/queue-services/interfaces/IEventQueueService";
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EVENT_FORMATS, EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
+import { convertBase64ToBuffer } from "@/utils/file.utils";
 
 
 
@@ -103,9 +104,11 @@ export class EventManagementServices implements IEventServices {
                     fileType    : 'image',
                 });
             } else if (createDto.aiGeneratedImage) {
+                const imageBuffer: Buffer = convertBase64ToBuffer(createDto.aiGeneratedImage);
+
                 // eventPosterUrl = createDto.aiGeneratedImage;
                 eventPosterUrl = await uploadToCloudinary({
-                    fileBuffer  : createDto.aiGeneratedImage, // Assuming your Cloudinary util accepts base64 strings
+                    fileBuffer  : imageBuffer,
                     folderPath  : 'event-posters',
                     fileType    : 'image',
                 });
