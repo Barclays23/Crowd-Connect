@@ -20,7 +20,7 @@ import { HuggingFaceImageProvider } from '@/providers/ai-image-providers/impleme
 
 
 // const GenerativeAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
-const genAI         = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+// const genAI         = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 // const openAI        = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 
@@ -32,6 +32,7 @@ const genAI         = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as st
 const aiImageProvider   = new PollinationsImageProvider();
 // const aiImageProvider   = new FalImageProvider();  // Fal/Flux provider ($0.004/mega pixel)
 // const aiImageProvider   = new HuggingFaceImageProvider();
+
 
 
 // SERVICES

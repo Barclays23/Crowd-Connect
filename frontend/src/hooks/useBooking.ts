@@ -12,7 +12,7 @@ import type {
 import { openRazorpayCheckout } from "@/utils/razorpay.utils";
 import { logger } from "@/utils/logger";
 import { initiateBookingSchema } from "@/schemas/booking.schema";
-import { PAYMENT_METHODS, type PaymentMethod } from "@/constants/payment.constants";
+import { PAYMENT_METHODS } from "@/constants/payment.constants";
 
 
 
