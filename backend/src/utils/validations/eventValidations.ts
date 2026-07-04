@@ -30,7 +30,7 @@ export function validateEventCreate (createDto: CreateEventRequestDTO, imageFile
     }
 
     if (!imageFile && !createDto.aiGeneratedImage) {
-        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Event poster is required");
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, "An event poster is required (either an upload or an AI generated image).");
     }
 }
 

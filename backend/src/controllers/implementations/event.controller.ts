@@ -54,6 +54,8 @@ export class EventController implements IEventController {
             const currentUserId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
 
+            console.log('createEvent body :', body)
+
             const createDto: CreateEventRequestDTO = mapCreateEventRequestToDto(req, currentUserId);
 
             const createdEvent: EventResponseDTO = await this._eventServices.createEvent({

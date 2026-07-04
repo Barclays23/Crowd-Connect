@@ -1,6 +1,19 @@
 // backend/src/constants/routes.constants.ts
 
 
+
+
+
+
+export const AI_ROUTES = {
+    GENERATE_EVENT_POSTER   : "/generate-event-poster",
+} as const;
+
+
+
+
+
+
 export const AUTH_ROUTES = {
     LOGIN                   : '/login',
     REGISTER                : '/register',

@@ -1,3 +1,4 @@
+// frontend/src/schemas/event.schema.ts
 import { EVENT_CATEGORIES, type EventStatus } from "@/constants/event.constants";
 import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES } from "@/types/event.types";
 import { parseISODateTime } from "@/utils/dateAndTimeFormats";
@@ -154,9 +155,11 @@ export const imageFileBase = z
 
 
 
-export const aiUrlBase = z
+export const base64ImageBase = z
    .string()
-   .url("Invalid AI image URL")
+   .refine((val) => val.startsWith("data:image/"), {
+       message: "Must be a valid base64 image string",
+   })
    .optional()
    .nullable();
 
@@ -221,7 +224,7 @@ export const eventFormSchemaFactory = (
 
       // Media
       uploadedImage: imageFileBase,
-      aiGeneratedImage: aiUrlBase,
+      aiGeneratedImage: base64ImageBase,
       useAI: z.boolean(),
    })
    .superRefine((data, ctx) => {

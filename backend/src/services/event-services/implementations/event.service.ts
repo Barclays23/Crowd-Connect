@@ -88,16 +88,27 @@ export class EventManagementServices implements IEventServices {
             // if (imageFile) {
             //     eventPosterUrl = await this._storageService.uploadFile(imageFile.buffer, 'event-posters');
             // }
+            // if (imageFile) {
+            //     // Route A: Handle standard file upload buffer stream to S3 / Cloudinary
+            //     finalPosterUrl = await this._storageService.uploadFile(imageFile);
+            // } else if (createDto.aiGeneratedImage) {
+            //     // Route B: Handle Base64 Data URL string from AI generation
+            //     finalPosterUrl = await this._storageService.uploadBase64(createDto.aiGeneratedImage);
+            // }
 
             if (imageFile) {
                 eventPosterUrl = await uploadToCloudinary({
-                    fileBuffer: imageFile.buffer,
-                    folderPath: 'event-posters',
-                    fileType: 'image',
+                    fileBuffer  : imageFile.buffer,
+                    folderPath  : 'event-posters',
+                    fileType    : 'image',
                 });
             } else if (createDto.aiGeneratedImage) {
-                // need to upload the aiGeneratedImage base64 or url to cloudinary ??
-                eventPosterUrl = createDto.aiGeneratedImage;
+                // eventPosterUrl = createDto.aiGeneratedImage;
+                eventPosterUrl = await uploadToCloudinary({
+                    fileBuffer  : createDto.aiGeneratedImage, // Assuming your Cloudinary util accepts base64 strings
+                    folderPath  : 'event-posters',
+                    fileType    : 'image',
+                });
             }
                                                  
             const eventInput: CreateEventInput = mapCreateEventRequestDtoToInput({
