@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
-import type { RegisterPayload } from '@/types/auth.types';
+import type { EmailResponseData, RegisterPayload } from '@/types/auth.types';
+import type { ApiResponse } from '@/types/common.types';
 
 
 
@@ -24,13 +25,13 @@ function Registration() {
 
     try {
       setIsLoading(true);
-      const response = await register(formData);
+      const response: ApiResponse<EmailResponseData> = await register(formData);
       console.log("response in handleRegistration:", response);
       toast.success(response.message);
       
       navigate('/otp-verification', { 
         state: { 
-          email: response?.email, 
+          email: response?.data.email, 
           otpSentAt: Date.now(),
           successPath: '/' // navigate here after successful OTP verification
         } 
