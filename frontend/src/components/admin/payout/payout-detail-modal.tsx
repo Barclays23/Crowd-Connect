@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate1 } from "@/utils/dateAndTimeFormats";
 import { formatNumberToINR } from "@/utils/UI.utils";
-import type { IPayoutRequest } from "@/types/payout.types";
+import type { IPayoutState } from "@/types/payout.types";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 
 
@@ -22,7 +22,7 @@ function DetailRow({ label, value, className = "", mono = false }: {
    );
 }
 
-export function PayoutDetailModal({ payout, onClose }: { payout: IPayoutRequest; onClose: () => void }) {
+export function PayoutDetailModal({ payout, onClose }: { payout: IPayoutState; onClose: () => void }) {
     return (
         <div className="space-y-5 text-(--text-primary)">
             {/* Header status banner */}

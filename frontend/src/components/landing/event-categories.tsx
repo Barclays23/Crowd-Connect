@@ -73,7 +73,7 @@ const eventCategories = [
 export function EventCategories() {
   return (
     <section className="py-16 bg-(--bg-accent)/90">
-      <div className="container px-4">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-(--heading-primary) mb-2">Event Categories & Types</h2>
           <p className="text-(--text-secondary)">Explore our diverse range of events across multiple categories</p>

@@ -40,7 +40,7 @@ export const AUTH_ROUTES = {
 
 export const USER_ROUTES = {
     GET_PROFILE         : '/profile',
-    EDIT_BASIC_INFO     : '/edit-basic-info',
+    BASIC_INFO          : '/basic-info',
     UPDATE_PROFILE_PIC  : '/profile-pic',
     CHANGE_PASSWORD     : '/change-password',
 } as const;
@@ -50,7 +50,8 @@ export const USER_ROUTES = {
 
 
 export const HOST_ROUTES = {
-    APPLY_UPGRADE   : '/apply-upgrade',
+    APPLY_UPGRADE       : '/apply-upgrade',
+    UPDATE_HOST_DETAILS : '/update-details',
 } as const;
 
 
@@ -66,7 +67,6 @@ export const EVENT_ROUTES = {
     TRENDING_EVENTS         : '/trending-events',
     EVENT_DETAILS           : '/events/:eventId',
     GET_BOOKINGS_OF_EVENT   : '/:eventId/bookings',
-    INITIATE_BOOKING        : '/:eventId/initiate-booking',
 } as const;
 
 
@@ -74,6 +74,7 @@ export const EVENT_ROUTES = {
 export const BOOKING_ROUTES = {
     CANCEL_BOOKING      : '/:bookingId/cancel',
     MY_BOOKINGS         : '/my-bookings',
+    INITIATE_BOOKING    : '/initiate/:eventId',
     BOOKING_DETAILS     : '/:bookingId',
     VERIFY_PAYMENT      : '/:bookingId/verify-payment',
     RETRY_PAYMENT       : '/:bookingId/retry-payment', 

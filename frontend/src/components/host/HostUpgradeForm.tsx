@@ -27,6 +27,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { ButtonLoader } from "../common/ButtonLoader";
 import { useNavigate } from "react-router-dom";
+import type { ApiResponse } from "@/types/common.types";
+import type { UserState } from "@/types/user.types";
 
 
 interface HostUpgradeFormProps {
@@ -92,11 +94,11 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
 
          // console.log("Submitting host upgrade data:", data);
 
-         const response = await hostServices.applyHostUpgrade(formData);
+         const response: ApiResponse<UserState> = await hostServices.applyHostUpgrade(formData);
          console.log("Host upgrade response:", response);
 
          toast.success(response.message);
-         if (response.hostProfile) setUser(response.hostProfile);
+         if (response.data) setUser(response.data);
 
          setSubmitSuccess(true);
          reset();

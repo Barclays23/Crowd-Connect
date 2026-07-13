@@ -66,7 +66,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.CREATED).json({
                 success: true,
                 message: EVENT_MESSAGES.SUCCESS_CREATE_EVENT,
-                eventData: createdEvent,
+                // eventData: createdEvent,
+                data: createdEvent,
             });
             
         } catch (error: unknown) {
@@ -105,7 +106,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-                updatedEvent,
+                // updatedEvent,
+                data: updatedEvent,
             });
             
         } catch (error: unknown) {
@@ -142,7 +144,7 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-                updatedEvent,
+                data: updatedEvent,
             });
             
         } catch (error: unknown) {
@@ -186,7 +188,8 @@ export class EventController implements IEventController {
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                eventsData: result.events,
+                // eventsData: result.events,
+                data: result.events,
                 pagination: result.pagination
             });
 
@@ -241,7 +244,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT,
-                updatedStatus
+                // updatedStatus
+                data: { eventStatus: updatedStatus }
             });
             
         } catch (error: unknown) {
@@ -265,6 +269,7 @@ export class EventController implements IEventController {
             await this._eventServices.publishEvent(eventId, userId);
     
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
             });
 
@@ -336,7 +341,8 @@ export class EventController implements IEventController {
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                eventsData: result.events,
+                // eventsData: result.events,
+                data: result.events,
                 pagination: result.pagination
             });
 
@@ -349,18 +355,18 @@ export class EventController implements IEventController {
 
 
 
+    // for public events
     async getDiscoveryEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const filters: GetPublicEventsFilter = mapEventDiscoveryQueryToFilters(req);
             console.log('filters for PUBLIC EVENTS:', req.query)
             
             const {eventsData, pagination}: GetDiscoveryEventsResult = await this._eventServices.getEventsForDiscovery(filters);
-
-            console.log('PUBLIC EVENTS pagination:', pagination)
             
             res.status(HTTP_STATUS.OK).json({
-                eventsData,
-                pagination
+                success: true,
+                data: eventsData,
+                pagination: pagination
             });
             
         } catch (error: unknown) {
@@ -377,7 +383,10 @@ export class EventController implements IEventController {
 
             const trendingEvents = await this._eventServices.getTrendingEvents(limit);
 
-            res.status(HTTP_STATUS.OK).json({ success: true, trendingEvents });
+            res.status(HTTP_STATUS.OK).json({ 
+                success: true, 
+                data: trendingEvents 
+            });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -395,7 +404,9 @@ export class EventController implements IEventController {
             const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
 
             res.status(HTTP_STATUS.OK).json({
-                eventDetails
+                // eventDetails
+                success: true,
+                data: eventDetails
             });
 
         } catch (error: unknown) {
@@ -441,8 +452,9 @@ export class EventController implements IEventController {
             const result: GetBookingsResponseDTO = await this._bookingServices.getBookingsList(filters);
 
             res.status(HTTP_STATUS.OK).json({
-                success:    true,
-                bookingsData:   result.bookings,
+                // bookingsData:   result.bookings,
+                success: true,
+                data: result.bookings,
                 pagination: result.pagination,
             });
 

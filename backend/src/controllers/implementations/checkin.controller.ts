@@ -21,6 +21,7 @@ export class CheckinController implements ICheckinController {
 
 
     // POST /api/event/:eventId/checkin
+    // POST /api/checkin/:eventId/scan
     async scanQRCode(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const eventId = req.params.eventId as string;
@@ -39,7 +40,7 @@ export class CheckinController implements ICheckinController {
 
             const checkinResult: CheckInResultDTO = await this._checkinService.scanQRCode(scanQRInput, eventId);
 
-            res.status(200).json({
+            res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: checkinResult.isFullyUsed
                     ? `Entry complete — all ${checkinResult.quantity} ticket(s) used.`
@@ -55,14 +56,16 @@ export class CheckinController implements ICheckinController {
 
 
     // GET /api/events/:eventId/checkin/attendance
+    // GET /api/checkin/:eventId/attendance
     async getEventAttendance(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const eventId = req.params.eventId as string;
 
             const attendanceResult: GetAttendanceResult = await this._checkinService.getEventAttendance(eventId);
 
-            res.status(200).json({
+            res.status(HTTP_STATUS.OK).json({
                 success : true,
+                message : "Attendance retrieved successfully",
                 data    : attendanceResult,
             });
 

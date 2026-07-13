@@ -61,18 +61,18 @@ export const mapCreateEventRequestToDto = (
 
 export const mapEventDiscoveryQueryToFilters = (req: Request): GetPublicEventsFilter => {
    return {
-      page: parseInt(req.query.page as string) || 1,
-      limit: parseInt(req.query.limit as string) || 12,
-      search: (req.query.search as string)?.trim(),
-      startDate: req.query.startDate as string,
-      endDate: req.query.endDate as string,
-      category: (req.query.category as string)?.trim() as EventCategory,
-      format: (req.query.format as string)?.trim() as EventFormat,
-      ticketType: (req.query.ticketType as string)?.trim() as TicketType,
-      lat: req.query.lat ? parseFloat(req.query.lat as string) : undefined,
-      lng: req.query.lng ? parseFloat(req.query.lng as string) : undefined,
-      radiusKm: req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : DEFAULT_RADIUS_KM,
-      sortBy: (req.query.sort as GetPublicEventsFilter["sortBy"]) || "upcoming",
+      page     : parseInt(req.query.page as string) || 1,
+      limit    : parseInt(req.query.limit as string) || 12,
+      search      : (req.query.search as string)?.trim(),
+      startDate   : req.query.startDate as string,
+      endDate     : req.query.endDate as string,
+      category    : (req.query.category as string)?.trim() as EventCategory,
+      format      : (req.query.format as string)?.trim() as EventFormat,
+      ticketType  : (req.query.ticketType as string)?.trim() as TicketType,
+      lat         : req.query.lat ? parseFloat(req.query.lat as string) : undefined,
+      lng         : req.query.lng ? parseFloat(req.query.lng as string) : undefined,
+      radiusKm    : req.query.radiusKm ? parseFloat(req.query.radiusKm as string) : DEFAULT_RADIUS_KM,
+      sortBy      : (req.query.sortBy as GetPublicEventsFilter["sortBy"]) || "upcoming",
    };
 };
 

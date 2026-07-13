@@ -17,6 +17,8 @@ import { SuccessCheckIcon } from '../ui/success-check-icon'
 import { getApiErrorMessage } from '@/utils/errorMessages.utils'
 import { LoadingSpinner1 } from '../common/LoadingSpinner1'
 import { EMAIL_PROVIDERS } from '@/utils/UI.utils'
+import type { EmailResponseData } from '@/types/auth.types'
+import type { ApiResponse } from '@/types/common.types'
 
 
 const ForgotPasswordSchema = z.object({
@@ -52,7 +54,7 @@ export function ForgotPasswordModal({ onClose }: ForgotPasswordModalProps) {
       setIsLoading(true)
       setSubmitState('idle')
 
-      const response = await authService.requestFogotPassword(data.email)
+      const response: ApiResponse<EmailResponseData> = await authService.requestFogotPassword(data.email)
 
       toast.success(response.message || 'Password reset link has been sent!')
       setSubmitState('success')

@@ -1,5 +1,5 @@
 // frontend/src/components/admin/hosts-list.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Download,
@@ -37,23 +37,13 @@ import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";
-import type { UserState } from "@/types/user.types";
+import type { GetHostsQueryParams, HostStatusUpdateData, UserState } from "@/types/user.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
-import type { HostStatus } from "@/constants/user-system.constants";
+import { USER_ROLES, type HostStatus } from "@/constants/user-system.constants";
+import type { ApiResponse } from "@/types/common.types";
 
-
-
-interface ApiResponse {
-  hostsData: UserState[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
 
 
 export function HostsList() {
@@ -93,25 +83,23 @@ export function HostsList() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        role: "host",
+      const params: GetHostsQueryParams = {
+        role: USER_ROLES.HOST,
+        page: currentPage,
+        limit: itemsPerPage,
         ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
         ...(hostStatusFilter !== "all" && { hostStatus: hostStatusFilter }),
         ...(accountStatusFilter !== "all" && { status: accountStatusFilter }),
-      });
+      };
       
       console.log("Fetching hosts with params:", params.toString());
 
-      const response = await hostServices.getAllHosts(params.toString());
+      const response: ApiResponse<UserState[]> = await hostServices.getAllHosts(params);
       console.log("Response in fetchHosts :", response);
 
-      const data: ApiResponse = response.data || response;
-
-      setHosts(data.hostsData);
-      setTotalHosts(data.pagination.total);
-      setTotalPages(data.pagination.totalPages || Math.ceil(data.pagination.total / itemsPerPage));
+      setHosts(response.data);
+      setTotalHosts(response.pagination?.totalCount ?? 0);
+      setTotalPages(response.pagination?.totalPages || Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
     } catch (err: unknown) {
       console.error("Failed to fetch hosts:", err);
@@ -151,7 +139,7 @@ export function HostsList() {
     }
 
     try {
-      const response = await hostServices.manageHostRequest({hostId, action, reason});
+      const response: ApiResponse<HostStatusUpdateData> = await hostServices.manageHostRequest(hostId, {action, reason});
 
       toast.success(response.message || `Host ${action === "approve" ? "approved" : "rejected"} successfully`);
 

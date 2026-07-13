@@ -23,7 +23,7 @@ function getSeatsInfo(event: IEventState) {
     return                     { label: `${remaining} / ${event.capacity}`, color: "text-(--overlay-text)", fill: "bg-(--brand-primary)", pct };
 }
 
-export default function EventCard({ event }: { event: IEventState }) {
+export default function EventCard2({ event }: { event: IEventState }) {
     if (!event) return null;
 
     const navigate  = useNavigate();

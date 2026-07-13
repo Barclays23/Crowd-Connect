@@ -38,8 +38,8 @@ export class UserController implements IUserController {
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                userProfile,
-                message: USER_MESSAGES.SUCCESS_GET_USERS,
+                message: USER_MESSAGES.SUCCESS_GET_USER_PROFILE,
+                data: userProfile,
             });
 
         } catch (err: unknown) {
@@ -69,8 +69,8 @@ export class UserController implements IUserController {
             
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                updatedUser: updatedUserBasicInfo,
-                message: USER_MESSAGES.SUCCESS_UPDATE_PROFILE
+                message: USER_MESSAGES.SUCCESS_UPDATE_PROFILE,
+                data: updatedUserBasicInfo,
             });
 
 
@@ -128,8 +128,8 @@ export class UserController implements IUserController {
             
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                updatedProfilePic: updatedUser.profilePic,
-                message: USER_MESSAGES.PROFILE_PICTURE_CHANGED
+                message: USER_MESSAGES.PROFILE_PICTURE_CHANGED,
+                data: { profilePic: updatedUser.profilePic },
             });
 
         } catch (err: unknown) {
@@ -166,13 +166,8 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: USER_MESSAGES.SUCCESS_GET_USERS,
-                usersData: result.users,
-                pagination: {
-                    page: result.page,
-                    limit: result.limit,
-                    total: result.total,
-                    totalPages: Math.ceil(result.total / result.limit),
-                },
+                data: result.users,
+                pagination: result.pagination,
             });
 
 
@@ -205,7 +200,7 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.CREATED).json({
                 success: true,
                 message: USER_MESSAGES.SUCCESS_CREATE_USER,
-                userData: createdUser,
+                data: createdUser,
             });
 
 
@@ -238,11 +233,11 @@ export class UserController implements IUserController {
             });
 
             // console.log('✅ updatedUser in userController.editUserByAdmin:', updatedUser);
-            
+
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: USER_MESSAGES.SUCCESS_UPDATE_USER,
-                userData: updatedUser,
+                data: updatedUser,
             });
 
         } catch (err: unknown) {
@@ -275,7 +270,7 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: responseMessage,
-                updatedStatus,
+                data: { status: updatedStatus },
             });
 
 

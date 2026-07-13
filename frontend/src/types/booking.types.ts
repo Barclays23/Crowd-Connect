@@ -9,7 +9,8 @@ import {
 } from "@/constants/payment.constants";
 import type { IPagination } from "@/types/common.types";
 import type { 
-  BasePaymentOrderDetails, 
+  BasePaymentOrderDetails,
+  VerifyPaymentPayload, 
 } from "@/types/payment.types";
 
 
@@ -21,13 +22,7 @@ export type BookingSortField = "createdAt" | "startDateTime" | "ticketRate" | "t
 
 
 
-// ─── Booking Responses ────────────────────────────────────────────────────────
-
-// Returned for paid events from POST /bookings/initiate
-export interface BookingPaymentOrder extends BasePaymentOrderDetails {
-  bookingId: string;  // pending booking _id — stored by frontend for reference
-}
-
+// ─── Booking Response Interfaces ───────────────────────────────────────────────────────
 
 // Returned after booking is confirmed (free event or after payment verified)
 export interface IBookingState {
@@ -75,13 +70,25 @@ export interface IBookingState {
 }
 
 
+// Returned for paid events from POST /bookings/initiate
+export interface BookingPaymentOrder extends BasePaymentOrderDetails {
+  bookingId: string;  // pending booking _id — stored by frontend for reference
+}
+
+
 
 // Discriminated union — returned from POST /bookings/initiate
 export type InitiateBookingResponse = 
-  | { isFree: true;  paymentMethod: typeof PAYMENT_METHODS.NONE;   populatedBooking: IBookingState }
-  | { isFree: false; paymentMethod: typeof PAYMENT_METHODS.WALLET; populatedBooking: IBookingState }
-  | { isFree: false; paymentMethod: typeof PAYMENT_METHODS.ONLINE; order: BookingPaymentOrder };
+| { isFree: true;  paymentMethod: typeof PAYMENT_METHODS.NONE;   populatedBooking: IBookingState }
+| { isFree: false; paymentMethod: typeof PAYMENT_METHODS.WALLET; populatedBooking: IBookingState }
+| { isFree: false; paymentMethod: typeof PAYMENT_METHODS.ONLINE; order: BookingPaymentOrder };
 
+
+
+
+
+
+// ─── Request Payloads ─────────────────────────────────────────────────────────
 
 export interface InitiateBookingParams {
   eventId             : string;
@@ -104,7 +111,7 @@ export interface RetryBookingParams {
 }
 
 
-export interface GetMyBookingsParams {
+export interface GetBookingsQueryParams  {
   page?         : number;
   limit?        : number;
   status?       : string;
@@ -115,14 +122,14 @@ export interface GetMyBookingsParams {
 }
 
 
-export interface GetMyBookingsResponse {
-  bookings  : IBookingState[];
-  pagination: IPagination;
+
+export interface VerifyBookingPaymentPayload extends VerifyPaymentPayload {
+  bookingId: string;
 }
 
 
-export interface GetBookingsApiResponse {
-  bookingsData  : IBookingState[];
-  pagination    : IPagination;
-  // message       : string;
+
+export interface CancelBookingPayload {
+  cancelReason: string;
 }
+

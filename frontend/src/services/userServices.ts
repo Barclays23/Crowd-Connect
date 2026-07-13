@@ -1,126 +1,126 @@
+// frontend/src/services/userService.ts
 import axiosInstance from "@/config/axios";
-import type { GetUsersApiResponse } from "@/types/user.types";
-
-
-// to update user basic info (name & mobile) by user himself
-export interface UserBasicInfo {
-    name?: string;
-    mobile?: string;
-    // email?: string;  // separate editing
-    // add other profile fields as needed
-}
-
-
-
-// add user or edit user by admin
-// interface UserFormData {
-//     name: string;
-//     email: string;
-//     mobile?: string;
-//     role: string;
-//     status: string;
-//     profilePic: File | undefined;
-// }
-
-
-//  const userFormData = {
-//    name: values.name,
-//    email: values.email,
-//    mobile: values.mobile,
-//    role: values.role,
-//    status: values.status,
-//    // If your editUserService supports profilePic as a file, add it here
-//    profilePic: profileFile || undefined,
-//  };
-
-
-
-
-
+import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
+import type { ApiResponse } from "@/types/common.types";
+import type { 
+    ChangePasswordPayload, 
+    GetUsersQueryParams, 
+    ProfilePicUpdateData, 
+    UserBasicInfoPayload, 
+    UserState, 
+    UserStatusUpdateData
+} from "@/types/user.types";
 
 
 
 export const userServices = {
 
-    getUserProfile: async () => {
-        const response = await axiosInstance.get('/api/user/profile', { withCredentials: true });
+    getUserProfile: async (): Promise<ApiResponse<UserState>> => {
+        const response = await axiosInstance.get<ApiResponse<UserState>>(
+            API_ENDPOINTS.USER.PROFILE, 
+            { withCredentials: true }
+        );
         return response.data;
     },
-
 
 
     // edit basic profile details by user (name & mobile)
-    editUserBasicInfo: async (data: UserBasicInfo) => {
-        const response = await axiosInstance.patch("/api/user/edit-basic-info", data, { withCredentials: true });
+    editUserBasicInfo: async (data: UserBasicInfoPayload): Promise<ApiResponse<UserBasicInfoPayload>> => {
+        const response = await axiosInstance.patch<ApiResponse<UserBasicInfoPayload>>(
+            API_ENDPOINTS.USER.BASIC_INFO, 
+            data, 
+            { withCredentials: true }
+        );
         return response.data;
     },
 
 
-    updateProfilePicture: async (formData: FormData) => {
-        const response = await axiosInstance.put("/api/user/profile-pic", formData, { 
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+    updateProfilePicture: async (formData: FormData): Promise<ApiResponse<ProfilePicUpdateData>> => {
+        const response = await axiosInstance.put<ApiResponse<ProfilePicUpdateData>>(
+            API_ENDPOINTS.USER.PROFILE_PIC, 
+            formData, 
+            { 
+                withCredentials: true,
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }
+        );
+        return response.data;
+    },
+
+
+    changePassword: async (data: ChangePasswordPayload): Promise<ApiResponse<void>> => {
+        const response = await axiosInstance.patch<ApiResponse<void>>(
+            API_ENDPOINTS.USER.CHANGE_PASSWORD, 
+            data, 
+            { withCredentials: true }
+        );
+        return response.data;
+    },
+
+
+    getAllUsers: async (params: GetUsersQueryParams = {}): Promise<ApiResponse<UserState[]>> => {
+        const searchParams = new URLSearchParams({
+            page:  String(params.page  ?? 1),
+            limit: String(params.limit ?? 10),
+            ...(params.search                             && { search: params.search }),
+            ...(params.role && params.role !== "all"      && { role:   params.role }),
+            ...(params.status && params.status !== "all"  && { status: params.status }),
         });
-        return response.data;
-    },
 
+        const queryString: string  = searchParams.toString();
+        const endpoint = `${API_ENDPOINTS.ADMIN.USERS}?${queryString}`;
 
-    changePassword: async (data: { currentPassword: string; newPassword: string }) => {
-        const response = await axiosInstance.patch("/api/user/change-password", data, { withCredentials: true });
-        return response.data;
-    },
-
-
-
-    getAllUsers: async (queryString: string = ""): Promise<GetUsersApiResponse> => {
-        const response = await axiosInstance.get(`/api/admin/users${queryString ? `?${queryString}` : ""}`, {
-            withCredentials: true
-        });
-        return response.data;
-    },
-
-
-
-    // edit user by admin
-    editUserService: async (userId: string, formData: FormData) => {
-        const response = await axiosInstance.put(`/api/admin/users/${userId}`, formData, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await axiosInstance.get<ApiResponse<UserState[]>>(
+            endpoint, 
+            { withCredentials: true }
+        );
         return response.data;
     },
 
 
     // create user by admin
-    createUserService: async (formData: FormData) => {
-        console.log('formData received in createUserService :', formData);
-        const response = await axiosInstance.post(`/api/admin/users`, formData, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+    createUserService: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+        const response = await axiosInstance.post<ApiResponse<UserState>>(
+            API_ENDPOINTS.ADMIN.USERS, 
+            formData, 
+            {
+                withCredentials: true,
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }
+        );
         return response.data;
     },
 
 
-
-    toggleUserBlock: async (userId: string) => {
-        const response = await axiosInstance.patch(`/api/admin/users/${userId}/toggle-block`, {
-            withCredentials: true,
-        });
+    // edit user by admin
+    editUserService: async (userId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
+        const response = await axiosInstance.put<ApiResponse<UserState>>(
+            API_ENDPOINTS.ADMIN.USER_ACTION(userId), 
+            formData, 
+            {
+                withCredentials: true,
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }
+        );
         return response.data;
     },
 
 
-    deleteUser: async (userId: string) => {
-        const response = await axiosInstance.delete(`/api/admin/users/${userId}`, {
-            withCredentials: true,
-        });
+    toggleUserBlock: async (userId: string): Promise<ApiResponse<UserStatusUpdateData>> => {
+        const response = await axiosInstance.patch<ApiResponse<UserStatusUpdateData>>(
+            API_ENDPOINTS.ADMIN.TOGGLE_BLOCK(userId), 
+            {}, // Empty body
+            { withCredentials: true }
+        );
+        return response.data;
+    },
+
+
+    deleteUser: async (userId: string): Promise<ApiResponse<void>> => {
+        const response = await axiosInstance.delete<ApiResponse<void>>(
+            API_ENDPOINTS.ADMIN.USER_ACTION(userId), 
+            { withCredentials: true }
+        );
         return response.data;
     },
 }

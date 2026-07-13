@@ -1,3 +1,4 @@
+// backend/src/routes/host.routes.ts
 import { Router } from "express";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { HostController } from "@/controllers/implementations/host.controller";

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 
-function EventCard({ event }: { event: IEventState }) {
+function EventCard4({ event }: { event: IEventState }) {
   if (!event) return null;
 
   const navigate = useNavigate();
@@ -217,4 +217,4 @@ function EventCard({ event }: { event: IEventState }) {
   );
 }
 
-export default EventCard;
+export default EventCard4;

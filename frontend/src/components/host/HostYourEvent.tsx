@@ -14,8 +14,10 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { eventServices } from "@/services/eventServices";
 import { useEffect, useState } from "react";
 import { platformSettingsService } from "@/services/platformSettingsService";
-import type { SettingsResponse } from "@/types/platformSettings.types";
+import type { IPlatformSettings } from "@/types/platformSettings.types";
 import { useNavigate } from "react-router-dom";
+import type { ApiResponse } from "@/types/common.types";
+import type { IEventState } from "@/types/event.types";
 
 
 
@@ -30,8 +32,8 @@ const HostYourEvent = () => {
     const fetchCommissionPercent = async () => {
         try {
           setLoading(true);
-          const response: SettingsResponse = await platformSettingsService.getSettings();
-          setCommissionPercent(response?.settingsData?.commissionPercent ?? commissionPercent);
+          const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
+          setCommissionPercent(response.data.commissionPercent ?? commissionPercent);
 
         } catch (error: unknown) {
           console.warn("Could not load platform settings, using default commission :", error);
@@ -66,6 +68,8 @@ const HostYourEvent = () => {
     },
   });
 
+
+
   const handleSubmit = async (data: EventFormValues) => {
     const startDateTime = new Date(`${data.startDate}T${data.startTime}:00`).toISOString();
     const endDateTime = new Date(`${data.endDate}T${data.endTime}:00`).toISOString();
@@ -98,7 +102,7 @@ const HostYourEvent = () => {
     }
 
     try {
-      const response = await eventServices.createEvent(formData);
+      const response: ApiResponse<IEventState> = await eventServices.createEvent(formData);
       toast.success(response.message);
       methods.reset();
       navigate('/my-events');

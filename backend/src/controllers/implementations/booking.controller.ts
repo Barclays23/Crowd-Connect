@@ -50,7 +50,8 @@ export class BookingController implements IBookingController{
 
       res.status(HTTP_STATUS.CREATED).json({
         success: true,
-        data: result, // (isFree + populatedBooking) OR (isFree + order)
+        message: BOOKING_MESSAGES.BOOKING_INITIATED,
+        data: result,  // (isFree + populatedBooking) OR (isFree + order)
       });
 
     } catch (error: unknown) {
@@ -78,8 +79,6 @@ export class BookingController implements IBookingController{
       });
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.verifyAndConfirmPayment:", msg);
       next(error);
     }
   }
@@ -115,6 +114,7 @@ export class BookingController implements IBookingController{
         message: PAYMENT_MESSAGES.RETRY_PAYMENT_PROCESSED,
         data: result
       });
+
     } catch (error) {
       next(error);
     }
@@ -161,14 +161,13 @@ export class BookingController implements IBookingController{
       const result: GetBookingsResponseDTO = await this._bookingService.getMyBookings(userId, filters);
 
       res.status(HTTP_STATUS.OK).json({
-        success:    true,
-        bookings:   result.bookings,
+        success: true,
+        message: "Bookings retrieved successfully.",
+        data: result.bookings,
         pagination: result.pagination,
-      });
+      });      
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.getMyBookings:", msg);
       next(error);
     }
   }
@@ -207,14 +206,13 @@ export class BookingController implements IBookingController{
       const result: GetBookingsResponseDTO = await this._bookingService.getBookingsList(filters);
 
       res.status(HTTP_STATUS.OK).json({
-        success:    true,
-        bookingsData:   result.bookings,
+        success: true,
+        message: "Admin bookings retrieved successfully.",
+        data: result.bookings,
         pagination: result.pagination,
       });
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.getAdminBookings:", msg);
       next(error);
     }
   }
@@ -234,11 +232,11 @@ export class BookingController implements IBookingController{
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data:    booking,
+        message: "Booking retrieved successfully.",
+        data: booking,
       });
+
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.getBookingById:", msg);
       next(error);
     }
   }
@@ -263,8 +261,6 @@ export class BookingController implements IBookingController{
       });
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.cancelBookingByUser:", msg);
       next(error);
     }
   }
@@ -283,8 +279,6 @@ export class BookingController implements IBookingController{
       });
 
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error in BookingController.cancelBookingByAdmin:", msg);
       next(error);
     }
   }

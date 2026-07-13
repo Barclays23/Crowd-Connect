@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/FieldError";
 import { PayoutRequestSchema, type PayoutRequestFormValues } from "@/schemas/payout.schema";
 import { payoutServices } from "@/services/payoutServices";
-import type { IPayoutEligibleEvent } from "@/types/payout.types";
+import type { ApiResponse } from "@/types/common.types";
+import type { IPayoutEligibleEvent, IPayoutState } from "@/types/payout.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { formatNumberToINR } from "@/utils/UI.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -100,7 +101,7 @@ export function PayoutEventFormCard({
                 formData.append("payout-proofs", file);
             });
 
-            const res = await payoutServices.requestPayout(event.eventId, formData);
+            const res: ApiResponse<IPayoutState> = await payoutServices.requestPayout(event.eventId, formData);
 
             toast.success(res.message);
             onSuccess();

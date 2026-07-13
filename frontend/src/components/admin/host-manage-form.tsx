@@ -27,6 +27,7 @@ import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -175,7 +176,7 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
          formData.append("businessAddress", values.businessAddress);
          if (hostDocument) formData.append("hostDocument", hostDocument);
 
-         let response;
+         let response: ApiResponse<UserState>;
          if (mode === 'editMode') {
             response = await hostServices.updateHostDetailsByAdmin(host.userId, formData);
          } else {
@@ -183,7 +184,7 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
          }
 
          toast.success(response.message);
-         onSuccess?.(response?.userData || response);
+         onSuccess?.(response?.data);
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);

@@ -40,8 +40,7 @@ export type AuthUserResponseDto = BaseUserResponseDto;
 
 
 // API RESPONSE
-export interface AuthResponseDto {
+export interface AuthTokensData {
     authUser: AuthUserResponseDto;
     accessToken: string;
-    message: string;
 }

@@ -10,8 +10,9 @@ import { authorize }         from "@/middlewares/auth.middleware";
 import { validateRequest }      from "@/middlewares/validate.middleware";
 import {
   cancelBookingSchema,
+  initiateBookingSchema,
 } from "@/schemas/booking.schema";
-import { BookingIdParamSchema } from "@/schemas/mongo.schema";
+import { BookingIdParamSchema, EventIdParamSchema } from "@/schemas/mongo.schema";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
@@ -70,6 +71,13 @@ bookingRouter.get(
   BOOKING_ROUTES.BOOKING_DETAILS,
   bookingController.getBookingById.bind(bookingController)
 );
+
+bookingRouter.post(
+  BOOKING_ROUTES.INITIATE_BOOKING, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
+  validateRequest({body: initiateBookingSchema, params: EventIdParamSchema}), 
+  bookingController.initiateBooking.bind(bookingController)
+);
+
 bookingRouter.put(
   BOOKING_ROUTES.CANCEL_BOOKING, validateRequest({ body: cancelBookingSchema, params: BookingIdParamSchema }),
   bookingController.cancelBookingByUser.bind(bookingController)

@@ -36,13 +36,6 @@ export interface UserState {
 
 
 
-export interface GetUsersApiResponse {
-  usersData: UserState[];
-  message: string;
-  pagination: IPagination;
-}
-
-
 export interface UserUpsertResult {
   userId: string;
   name: string;
@@ -51,4 +44,67 @@ export interface UserUpsertResult {
   role: UserRole;
   status: UserStatus;
   profilePic?: string;
+}
+
+
+
+
+
+// ─── REQUEST PAYLOADS ─────────────────────────────────────────────────────────
+
+
+export interface GetUsersQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: UserRole | "all";
+  status?: string;
+}
+
+export interface UserBasicInfoPayload {
+  name?: string;
+  mobile?: string;
+  // email?: string;  // separate editing
+  // add other profile fields as needed
+}
+
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface GetHostsQueryParams {
+  role?: UserRole;
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  hostStatus?: string;
+}
+
+export interface ManageHostPayload {
+  action: "approve" | "reject";
+  reason?: string;
+}
+
+
+
+
+// ─── RESPONSE DATA PAYLOADS (The 'T' in ApiResponse<T>) ────────────────────────────────
+
+
+export interface ProfilePicUpdateData {
+  profilePic: string;
+}
+
+export interface UserStatusUpdateData {
+  status: UserStatus;
+}
+
+export interface HostStatusUpdateData {
+  hostId: string;
+  hostStatus: HostStatus;
+  hostReviewedAt?: string;
+  hostRejectionReason?: string;
 }

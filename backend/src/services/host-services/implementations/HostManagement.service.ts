@@ -71,10 +71,12 @@ export class HostManagementServices implements IHostManagementServices {
 
             return {
                 hosts: mappedHosts,
-                page,
-                limit,
-                total: totalCount,
-                totalPages: Math.ceil(totalCount / limit),
+                pagination: {
+                    totalCount: totalCount,
+                    limit: limit,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCount / limit)
+                },
             };
 
         } catch (error: unknown) {

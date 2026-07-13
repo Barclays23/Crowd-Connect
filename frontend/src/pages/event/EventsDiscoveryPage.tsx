@@ -22,10 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  type GetEventsApiResponse, 
-  type IEventState 
+  DEFAULT_RADIUS_KM,
+  type GetPublicEventsParams,
+  type IEventState, 
+  type PublicEventsSortOption
 } from "@/types/event.types";
-import EventCard from "@/components/event/EventCard";
+import EventCard1 from "@/components/event/EventCard1";
 import EventCardList from "@/components/event/EventCardList";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { toast } from "react-toastify";
@@ -39,6 +41,7 @@ import heroBg_Night from "@/assets/images/hero-images/event-hero-bg1-night.png"
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { EVENT_CATEGORIES, EVENT_FORMATS } from "@/constants/event.constants";
+import type { ApiResponse } from "@/types/common.types";
 
 
 const FORMAT_OPTIONS = [
@@ -134,28 +137,46 @@ function EventsDiscoveryPage() {
   const fetchEvents = useCallback(
     async (page = 1, overrideSearch = search) => {
       setLoading(true);
+
       try {
-        const params = new URLSearchParams();
-        if (overrideSearch) params.append("search", overrideSearch);
-        if (category) params.append("category", category);
-        if (format) params.append("format", format);
-        if (ticketType) params.append("ticketType", ticketType);
-        if (sort) params.append("sort", sort);
-        if (startDate) params.append("startDate", startDate);
-        if (endDate) params.append("endDate", endDate);
-        if (selectedLocation) {
-          params.append("lat", selectedLocation.lat.toString());
-          params.append("lng", selectedLocation.lng.toString());
-          params.append("locationName", selectedLocation.name);
-        }
-        params.append("limit", itemsPerPage.toString());
-        params.append("page", page.toString());
+        // const params = new URLSearchParams();
+        // if (overrideSearch) params.append("search", overrideSearch);
+        // if (category) params.append("category", category);
+        // if (format) params.append("format", format);
+        // if (ticketType) params.append("ticketType", ticketType);
+        // if (sort) params.append("sort", sort);
+        // if (startDate) params.append("startDate", startDate);
+        // if (endDate) params.append("endDate", endDate);
+        // if (selectedLocation) {
+        //   params.append("lat", selectedLocation.lat.toString());
+        //   params.append("lng", selectedLocation.lng.toString());
+        //   params.append("locationName", selectedLocation.name);
+        // }
+        // params.append("limit", itemsPerPage.toString());
+        // params.append("page", page.toString());
 
-        const response: GetEventsApiResponse = await eventServices.getPublicEvents(params.toString());
+        const params: GetPublicEventsParams = {
+          page,
+          limit: itemsPerPage,
+          ...(overrideSearch && { search: overrideSearch }),
+          ...(category && { category }),
+          ...(format && { format }),
+          ...(ticketType && { ticketType }),
+          ...(sort && { sortBy: sort as PublicEventsSortOption }),
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
+          ...(selectedLocation && {
+            lat       : selectedLocation.lat,
+            lng       : selectedLocation.lng,
+            radiusKm  : DEFAULT_RADIUS_KM, 
+          }),
+        };
 
-        setEvents(response.eventsData ?? []);
-        setTotalEvents(response.pagination.totalCount ?? 0);
-        setTotalPages(response.pagination.totalPages ?? 0);
+        const response: ApiResponse<IEventState[]> = await eventServices.getPublicEvents(params);
+
+        setEvents(response.data ?? []);
+        setTotalEvents(response.pagination?.totalCount ?? 0);
+        setTotalPages(response.pagination?.totalPages ?? 0);
 
       } catch (error: unknown) {
         const errorMessage = getApiErrorMessage(error);
@@ -613,7 +634,7 @@ function EventsDiscoveryPage() {
         ) : layout === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {events.map((event) => (
-              <EventCard key={event.eventId} event={event} />
+              <EventCard1 key={event.eventId} event={event} />
             ))}
           </div>
         ) : (

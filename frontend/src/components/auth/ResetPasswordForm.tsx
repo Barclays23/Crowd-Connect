@@ -17,6 +17,7 @@ import { toast } from 'react-toastify'
 import { getApiErrorMessage } from '@/utils/errorMessages.utils'
 
 import { ResetPasswordSchema } from '@/schemas/auth.schema'
+import type { ApiResponse } from '@/types/common.types'
 
 
 type ResetPasswordFormData = z.infer<typeof ResetPasswordSchema>
@@ -50,7 +51,7 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
     try {
       setIsSubmitting(true)
 
-      const response = await authService.resetPasswordService({
+      const response: ApiResponse<void> = await authService.resetPasswordService({
         token,
         newPassword: data.password,
         confirmPassword: data.confirmPassword,
@@ -59,11 +60,12 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
       toast.success(response.message)
       reset()
       onSuccess?.()
+
     } catch (error: unknown) {
       console.log('error from resetPasswordService:', error);
-      
       const errorMessage = getApiErrorMessage(error)
       if (errorMessage) toast.error(errorMessage);
+
     } finally {
       setIsSubmitting(false)
     }
@@ -73,27 +75,27 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
     <Card
       className="
         w-full max-w-md mx-auto my-10
-        bg-[var(--card-bg)]
-        text-[var(--text-primary)]
-        shadow-[var(--card-shadow)]
-        border border-[var(--card-border)]
+        bg-(--card-bg)
+        text-(--text-primary)
+        shadow-(--card-shadow)
+        border border-(--card-border)
       "
     >
       <CardHeader className="text-center pb-6">
-        <CardTitle className="text-2xl font-bold text-[var(--heading-primary)]">
+        <CardTitle className="text-2xl font-bold text-(--heading-primary)">
           Reset Your Password
         </CardTitle>
-        <CardDescription className="mt-2 text-[var(--text-secondary)]">
+        <CardDescription className="mt-2 text-(--text-secondary)">
           Enter and confirm your new password
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="relative min-h-[340px]">
+      <CardContent className="relative min-h-85">
         {isSubmitting && (
           <div
             className="
               absolute inset-0 z-10 !m-0 !p-0 flex items-center justify-center
-              bg-[var(--bg-overlay)]
+              bg-(--bg-overlay)
               backdrop-blur-[2px]
               rounded-lg
             "
@@ -116,7 +118,7 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
           <div className="space-y-2">
             <Label
               htmlFor="password"
-              className="text-[var(--text-secondary)]"
+              className="text-(--text-secondary)"
             >
               New Password
             </Label>
@@ -128,11 +130,11 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
                 placeholder="Enter new password"
                 className="
                   h-11 pr-10
-                  bg-[var(--form-input-bg)]
-                  text-[var(--form-input-text)]
-                  border border-[var(--form-input-border)]
-                  placeholder:text-[var(--form-placeholder)]
-                  focus-visible:ring-[var(--border-focus)]
+                  bg-(--form-input-bg)
+                  text-(--form-input-text)
+                  border border-(--form-input-border)
+                  placeholder:text-(--form-placeholder)
+                  focus-visible:ring-(--border-focus)
                 "
                 disabled={isSubmitting}
                 {...register('password')}
@@ -144,8 +146,8 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
                 size="sm"
                 className="
                   absolute right-0 top-0 h-11 px-3
-                  text-[var(--btn-ghost-text)]
-                  hover:bg-[var(--btn-ghost-hover)]
+                  text-(--btn-ghost-text)
+                  hover:bg-(--btn-ghost-hover)
                 "
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isSubmitting}
@@ -161,7 +163,7 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
           <div className="space-y-2">
             <Label
               htmlFor="confirmPassword"
-              className="text-[var(--text-secondary)]"
+              className="text-(--text-secondary)"
             >
               Confirm Password
             </Label>
@@ -173,11 +175,11 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
                 placeholder="Confirm new password"
                 className="
                   h-11 pr-10
-                  bg-[var(--form-input-bg)]
-                  text-[var(--form-input-text)]
-                  border border-[var(--form-input-border)]
-                  placeholder:text-[var(--form-placeholder)]
-                  focus-visible:ring-[var(--border-focus)]
+                  bg-(--form-input-bg)
+                  text-(--form-input-text)
+                  border border-(--form-input-border)
+                  placeholder:text-(--form-placeholder)
+                  focus-visible:ring-(--border-focus)
                 "
                 disabled={isSubmitting}
                 {...register('confirmPassword')}
@@ -189,8 +191,8 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
                 size="sm"
                 className="
                   absolute right-0 top-0 h-11 px-3
-                  text-[var(--btn-ghost-text)]
-                  hover:bg-[var(--btn-ghost-hover)]
+                  text-(--btn-ghost-text)
+                  hover:bg-(--btn-ghost-hover)
                 "
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 disabled={isSubmitting}
@@ -206,9 +208,9 @@ export function ResetPasswordForm({ token, onSuccess }: ResetPasswordFormProps) 
             type="submit"
             className="
               w-full h-11 mt-6 font-medium
-              bg-[var(--btn-primary-bg)]
-              text-[var(--btn-primary-text)]
-              hover:bg-[var(--btn-primary-hover)]
+              bg-(--btn-primary-bg)
+              text-(--btn-primary-text)
+              hover:bg-(--btn-primary-hover)
             "
             disabled={isSubmitting}
           >

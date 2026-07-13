@@ -26,6 +26,8 @@ export class HostController implements IHostController {
         private _hostService: IHostManagementServices
     ) {}
 
+
+
     async applyHostUpgrade (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
@@ -42,7 +44,8 @@ export class HostController implements IHostController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: HOST_MESSAGES.HOST_APPLY_SUCCESS,
-                hostProfile: upgradedProfile,
+                // hostProfile: upgradedProfile,
+                data: upgradedProfile,
             });
 
         } catch (err: unknown) {
@@ -78,13 +81,9 @@ export class HostController implements IHostController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: HOST_MESSAGES.SUCCESS_GET_HOSTS,
-                hostsData: result.hosts,
-                pagination: {
-                    page: result.page,
-                    limit: result.limit,
-                    total: result.total,
-                    totalPages: Math.ceil(result.total / result.limit),
-                },
+                // hostsData: result.hosts,
+                data: result.hosts,
+                pagination: result.pagination,
             });
 
         } catch (err: unknown) {
@@ -111,7 +110,8 @@ export class HostController implements IHostController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: responseMessage,
-                updatedHost: updatedHost,
+                // updatedHost: updatedHost,
+                data: updatedHost,
             });
 
 
@@ -138,7 +138,8 @@ export class HostController implements IHostController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: HOST_MESSAGES.HOST_UPDATE_SUCCESS,
-                updatedHost: updatedHostProfile,
+                // updatedHost: updatedHostProfile,
+                data: updatedHostProfile,
             });
 
 

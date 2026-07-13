@@ -1,9 +1,15 @@
-// import { EventCard } from "./event-card"
+// frontend/src/components/landing/featured-events.tsx
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import EventCard from "@/components/event/EventCard"
+import EventCard1 from "@/components/event/EventCard1"
 import type { IEventState } from "@/types/event.types"
-import { useEffect, useRef } from "react"
+import { useCarousel } from "@/hooks/useCarousel"
+
+
+
+
+const GAP = 24 // gap-6
+
 
 
 const featuredEvents: IEventState[] = [
@@ -182,119 +188,71 @@ const featuredEvents: IEventState[] = [
 
 
 
-const VISIBLE_CARDS = 4
-const GAP = 24 // gap-6
-
 export function FeaturedEvents() {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const isScrollingRef = useRef(false)
+   const { scrollRef, visibleCards, scrollCarousel } = useCarousel(featuredEvents.length, GAP);
 
-  // Clone last N and first N cards for infinite feel
-  const cloneCount = VISIBLE_CARDS
-  const cards = [
-    ...featuredEvents.slice(-cloneCount),  // clones at start
-    ...featuredEvents,                      // real cards
-    ...featuredEvents.slice(0, cloneCount), // clones at end
-  ]
+   const cloneCount = visibleCards;
+   const cards = [
+      ...featuredEvents.slice(-cloneCount),
+      ...featuredEvents,
+      ...featuredEvents.slice(0, cloneCount),
+   ];
 
-  const getCardWidth = () => {
-    if (!scrollRef.current) return 0
-    const containerWidth = scrollRef.current.offsetWidth
-    return (containerWidth - GAP * (VISIBLE_CARDS - 1)) / VISIBLE_CARDS
-  }
 
-  const getScrollPerCard = () => getCardWidth() + GAP
 
-  // On mount, jump silently to offset so clones at start are hidden
-  useEffect(() => {
-    if (!scrollRef.current) return
-    const offset = getScrollPerCard() * cloneCount
-    scrollRef.current.scrollLeft = offset
-  }, [])
-
-  const scrollCarousel = (direction: "left" | "right") => {
-    if (!scrollRef.current || isScrollingRef.current) return
-    isScrollingRef.current = true
-
-    const step = getScrollPerCard()
-    const current = scrollRef.current.scrollLeft
-    const target = direction === "left" ? current - step : current + step
-
-    scrollRef.current.scrollTo({ left: target, behavior: "smooth" })
-
-    // After smooth scroll, check if we've hit a clone zone and silently jump
-    setTimeout(() => {
-      if (!scrollRef.current) return
-
-      const el = scrollRef.current
-      const realStart = step * cloneCount
-      const realEnd = step * (cloneCount + featuredEvents.length)
-
-      if (el.scrollLeft < step * 1) {
-        // Hit start clone zone — jump to real end equivalent
-        el.scrollLeft = el.scrollLeft + step * featuredEvents.length
-      } else if (el.scrollLeft >= realEnd - step * 0.5) {
-        // Hit end clone zone — jump to real start equivalent
-        el.scrollLeft = el.scrollLeft - step * featuredEvents.length
-      }
-
-      isScrollingRef.current = false
-    }, 350) // slightly longer than smooth scroll duration (~300ms)
-  }
-
-  return (
-    <section className="py-16 bg-(--bg-primary)">
-      <div className="container px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-(--heading-primary) mb-2">Featured Events</h2>
-            <p className="text-(--text-secondary)">Discover the most popular events happening now</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => scrollCarousel("left")}
-              className="border-(--border-default) text-(--text-secondary) hover:bg-(--bg-tertiary) hover:text-(--text-primary)"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => scrollCarousel("right")}
-              className="border-(--border-default) text-(--text-secondary) hover:bg-(--bg-tertiary) hover:text-(--text-primary)"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <div
-          ref={scrollRef}
-          className="flex overflow-x-hidden py-6 px-0"
-          style={{ gap: `${GAP}px` }}
-        >
-          {cards.map((event, index) => (
-            <div
-              key={index}
-              className="shrink-0"
-              style={{ width: `calc((100% - ${GAP * (VISIBLE_CARDS - 1)}px) / ${VISIBLE_CARDS})` }}
-            >
-              <EventCard event={event} />
+   return (
+      <section className="py-16 bg-(--bg-primary)">
+         <div className="container mx-auto px-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 sm:gap-0">
+               <div>
+                  <h2 className="text-3xl font-bold text-(--heading-primary) mb-2">Featured Events</h2>
+                  <p className="text-(--text-secondary)">Discover the most popular events happening now</p>
+               </div>
+               <div className="flex space-x-2 self-start sm:self-auto">
+                  <Button
+                     variant="outline"
+                     size="icon"
+                     onClick={() => scrollCarousel("left")}
+                     className="border-(--border-default) text-(--text-secondary) hover:bg-(--bg-tertiary) hover:text-(--text-primary)"
+                  >
+                     <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                     variant="outline"
+                     size="icon"
+                     onClick={() => scrollCarousel("right")}
+                     className="border-(--border-default) text-(--text-secondary) hover:bg-(--bg-tertiary) hover:text-(--text-primary)"
+                  >
+                     <ChevronRight className="h-4 w-4" />
+                  </Button>
+               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="text-center mt-8">
-          <Button
-            variant="outline"
-            className="bg-(--btn-secondary-bg) hover:bg-(--btn-secondary-hover) text-(--btn-secondary-text) border-(--border-default)"
-          >
-            View All Featured Events
-          </Button>
-        </div>
-      </div>
-    </section>
-  )
+            <div
+               ref={scrollRef}
+               className="flex overflow-x-hidden py-6 px-0"
+               style={{ gap: `${GAP}px` }}
+            >
+               {cards.map((event, index) => (
+                  <div
+                     key={`featured-${event.eventId}-${index}`}
+                     className="shrink-0"
+                     style={{ width: `calc((100% - ${GAP * (visibleCards - 1)}px) / ${visibleCards})` }}
+                  >
+                     <EventCard1 event={event} />
+                  </div>
+               ))}
+            </div>
+
+            <div className="text-center mt-8">
+               <Button
+                  variant="outline"
+                  className="bg-(--btn-secondary-bg) hover:bg-(--btn-secondary-hover) text-(--btn-secondary-text) border-(--border-default)"
+               >
+                  View All Featured Events
+               </Button>
+            </div>
+         </div>
+      </section>
+   )
 }

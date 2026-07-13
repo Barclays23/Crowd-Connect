@@ -1,3 +1,4 @@
+// frontend/src/components/event/EventCard1.tsx
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 import { type IEventState } from "@/types/event.types";
 import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp } from "lucide-react";
@@ -33,7 +34,7 @@ function formatDate(dateStr: string) {
     });
 }
 
-function EventCard({ event }: { event: IEventState }) {
+function EventCard1({ event }: { event: IEventState }) {
     if (!event) return null;
 
     const navigate = useNavigate();
@@ -170,4 +171,4 @@ function EventCard({ event }: { event: IEventState }) {
     );
 }
 
-export default EventCard;
+export default EventCard1;

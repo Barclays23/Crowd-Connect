@@ -25,7 +25,11 @@ export class PayoutController implements IPayoutController {
             const result: GetEligibleEventsResponse = await this._payoutServices.getEligibleEvents(hostId);
             // console.log('getEligibleEvents result :', result);
 
-            res.status(HTTP_STATUS.OK).json(result);
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "Eligible events retrieved successfully",
+                data: result,
+            });
 
         } catch (err: unknown) {
             next(err);
@@ -42,8 +46,9 @@ export class PayoutController implements IPayoutController {
             const payoutData: PayoutResponseDTO = await this._payoutServices.requestPayout(hostId, eventId, files);
 
             res.status(HTTP_STATUS.CREATED).json({
-                message : PAYOUT_MESSAGES.PAYOUT_REQUEST_SUBMITTED,
-                payoutData,
+                success: true,
+                message: PAYOUT_MESSAGES.PAYOUT_REQUEST_SUBMITTED,
+                data: payoutData,
             });
 
         } catch (err: unknown) {
@@ -67,7 +72,12 @@ export class PayoutController implements IPayoutController {
 
             const payoutResult: GetPayoutsResponse = await this._payoutServices.getMyPayouts(hostId, filters);
 
-            res.status(HTTP_STATUS.OK).json(payoutResult);
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "Host payouts retrieved successfully",
+                data: payoutResult.payouts,
+                pagination: payoutResult.pagination,
+            });
 
         } catch (err: unknown) {
             next(err);
@@ -88,7 +98,12 @@ export class PayoutController implements IPayoutController {
 
             const payoutResult: GetPayoutsResponse = await this._payoutServices.getAllPayouts(filters);
 
-            res.status(HTTP_STATUS.OK).json(payoutResult);
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "All payouts retrieved successfully",
+                data: payoutResult.payouts,
+                pagination: payoutResult.pagination,
+            });
 
         } catch (err: unknown) {
             next(err);
@@ -106,10 +121,11 @@ export class PayoutController implements IPayoutController {
             const payoutData = await this._payoutServices.reviewPayout(adminId, payoutId, payoutInput);
 
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: action === "approve"
                     ? PAYOUT_MESSAGES.PAYOUT_APPROVED
                     : PAYOUT_MESSAGES.PAYOUT_REJECTED,
-                payoutData,
+                data: payoutData,
             });
 
         } catch (err: unknown) {

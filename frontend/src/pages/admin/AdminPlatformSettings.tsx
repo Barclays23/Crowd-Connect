@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { toast } from "react-toastify";
-import type { IPlatformSettings, SettingsResponse } from "@/types/platformSettings.types";
+import type { IPlatformSettings } from "@/types/platformSettings.types";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import { Pencil, X, Check } from "lucide-react";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -99,28 +100,16 @@ const AdminPlatformSettings = () => {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
-
-
-    const extractSettings = (response: SettingsResponse | IPlatformSettings | unknown): IPlatformSettings => {
-        const res = response as any; // temporary cast only inside function
-
-        if (res?.data?.settingsData) return res.data.settingsData;
-        if (res?.settingsData) return res.settingsData;
-        if (res?.data) return res.data;
-
-        return res as IPlatformSettings;
-    };
     
 
     useEffect(() => {
         const fetchSettings = async () => {
             try {
                 setLoading(true);
-                const response: SettingsResponse = await platformSettingsService.getSettings();
-                const settings = extractSettings(response);
+                const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
 
-                setSavedSettings(settings);
-                setDraftSettings({ ...settings });
+                setSavedSettings(response.data);
+                setDraftSettings({ ...response.data });
 
             } catch (error: unknown) {
                 console.error("Failed to load settings:", error);
@@ -158,11 +147,10 @@ const AdminPlatformSettings = () => {
         setSaving(true);
 
         try {
-            const response: SettingsResponse = await platformSettingsService.updateSettings(draftSettings as IPlatformSettings);
-            const updatedSettings = extractSettings(response);
+            const response: ApiResponse<IPlatformSettings> = await platformSettingsService.updateSettings(draftSettings as IPlatformSettings);
 
-            setSavedSettings(updatedSettings);
-            setDraftSettings({ ...updatedSettings });
+            setSavedSettings(response.data);
+            setDraftSettings({ ...response.data });
             setIsEditing(false);
             
             toast.success("Settings saved successfully");

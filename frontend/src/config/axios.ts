@@ -3,6 +3,8 @@ import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import { authService } from "@/services/authServices";
 import { toast } from 'react-toastify';
+import type { ApiResponse } from "@/types/common.types";
+import type { RefreshTokenData } from "@/types/auth.types";
 
 
 
@@ -169,10 +171,10 @@ axiosInstance.interceptors.response.use(
          try {
             console.log('Attempting to refresh access token');
                
-            const response = await authService.refreshTokenService();
+            const response: ApiResponse<RefreshTokenData> = await authService.refreshTokenService();
             console.log('Refresh token response in intercepter :', response);
 
-            const { newAccessToken, message } = response;
+            const { newAccessToken } = response.data;
                
             if (!newAccessToken){
                throw new Error("No new access token received in interceptor.");
@@ -184,7 +186,7 @@ axiosInstance.interceptors.response.use(
             localStorage.setItem("accessToken", newAccessToken);
             // console.log('localStorage accessToken after:', localStorage.getItem("accessToken"));
 
-            console.log('refreshTokenService response message:', message);
+            console.log('refreshTokenService response message:', response.message);
             console.log(`→ retrying original request: ${originalRequest?.url}`);
             
             // Retry all queued requests with the new token

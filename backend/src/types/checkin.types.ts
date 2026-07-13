@@ -26,8 +26,8 @@ export const SCANNABLE_EVENT_STATUSES: EventStatus[] = [
 
 // ─── Controller → Service ───────────────────────────────────────────────
 export interface ScanQRInput {
-    qrToken     : string;
-    entryCount  : number; // how many people entering this single scan (partial group support)
+  qrToken     : string;
+  entryCount  : number; // how many people entering this single scan (partial group support)
 }
 
 
@@ -51,23 +51,23 @@ export interface CheckInResultDTO {
 
 // ─── Attendance list item (for the host's live attendance panel) ──────────────
 export interface AttendanceRecord {
-    bookingId:        string;
-    ticketNo:         string;
-    attendeeName:     string;
-    attendeeEmail:    string;
-    quantity:         number;
-    entriesUsed:      number;   // quantity - remainingEntries
-    remainingEntries: number;
-    isFullyUsed:      boolean;
-    checkedInAt:      Date;
-    bookingStatus:    BookingStatus;
+  bookingId:        string;
+  ticketNo:         string;
+  attendeeName:     string;
+  attendeeEmail:    string;
+  quantity:         number;
+  entriesUsed:      number;   // quantity - remainingEntries
+  remainingEntries: number;
+  isFullyUsed:      boolean;
+  checkedInAt:      Date;
+  bookingStatus:    BookingStatus;
 }
 
 
 
 export interface GetAttendanceResult {
-    attendanceRecords   : AttendanceRecord[];
-    totalChecked        : number; // sum of (quantity - remainingEntries) across all scanned bookings
+  attendanceRecords   : AttendanceRecord[];
+  totalChecked        : number; // sum of (quantity - remainingEntries) across all scanned bookings
 }
 
 
@@ -75,24 +75,24 @@ export interface GetAttendanceResult {
 
 // ─── Populated shape used internally by the repository ───────────────────────
 export interface CheckInBookingPopulated {
-    bookingId:              string;
-    ticketNo:         string;
-    bookingStatus:    BookingStatus;
-    quantity:         number;
-    remainingEntries: number;
-    checkedInAt?:     Date;
-    userRef: {
-        userId:   string;
-        name:  string;
-        email: string;
-    };
-    eventRef: {
-        eventId:       string;
-        title:         string;
-        startDateTime: Date;
-        endDateTime:   Date;
-        eventStatus:   EventStatus;
-    };
+  bookingId:        string;
+  ticketNo:         string;
+  bookingStatus:    BookingStatus;
+  quantity:         number;
+  remainingEntries: number;
+  checkedInAt?:     Date;
+  userRef: {
+    userId:   string;
+    name:  string;
+    email: string;
+  };
+  eventRef: {
+    eventId:       string;
+    title:         string;
+    startDateTime: Date;
+    endDateTime:   Date;
+    eventStatus:   EventStatus;
+  };
 }
 
 

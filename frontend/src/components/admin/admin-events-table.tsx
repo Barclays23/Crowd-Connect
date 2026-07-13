@@ -37,11 +37,10 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { 
    type EventSortDirection, 
    type EventSortField, 
-   type GetEventsApiResponse, 
-   type IEventState 
+   type IEventState, 
+   type UpdateEventStatusPayload
 } from "@/types/event.types";
 import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
-import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
@@ -56,6 +55,7 @@ import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -136,11 +136,11 @@ export function AdminEventsTable() {
             ...(formatFilter !== "all" && { format: formatFilter }),
          });
 
-         const response: GetEventsApiResponse = await eventServices.getAllEvents(params.toString());
+         const response: ApiResponse<IEventState[]> = await eventServices.getAllEvents(params.toString());
 
-         setEvents(response.eventsData);
-         setTotalEvents(response.pagination.totalCount);
-         setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.totalCount / itemsPerPage));
+         setEvents(response.data);
+         setTotalEvents(response.pagination?.totalCount ?? 0);
+         setTotalPages(response.pagination?.totalPages || Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
@@ -180,14 +180,14 @@ export function AdminEventsTable() {
       try {
          const formData: FormData = buildEventFormData(data);
 
-         const response = await eventServices.updateEventByAdmin({ eventId: editEvent.eventId, formData });
+         const response: ApiResponse<IEventState> = await eventServices.updateEventByAdmin({ eventId: editEvent.eventId, formData });
 
          toast.success(response.message);
 
          setEvents((prev) =>
             prev.map((event) =>
             event.eventId === editEvent.eventId
-               ? { ...event, ...response.updatedEvent }
+               ? { ...event, ...response.data }
                : event
             )
          );
@@ -204,12 +204,12 @@ export function AdminEventsTable() {
 
       try {
          setSuspendingEventId(suspendEvent.eventId);
-         const response = await eventServices.suspendEvent(suspendEvent.eventId, data.reason);
+         const response: ApiResponse<UpdateEventStatusPayload> = await eventServices.suspendEvent(suspendEvent.eventId, data.reason);
          toast.success(response.message);
 
          setEvents((prev) =>
             prev.map((e) =>
-               e.eventId === suspendEvent.eventId ? { ...e, eventStatus: response.updatedStatus } : e
+               e.eventId === suspendEvent.eventId ? { ...e, eventStatus: response.data.eventStatus } : e
             )
          );
 
@@ -228,7 +228,7 @@ export function AdminEventsTable() {
    const handleDeleteEvent = async (event: IEventState) => {
       try {
          setDeletingEventId(event.eventId);
-         const response = await eventServices.deleteEvent(event.eventId);
+         const response: ApiResponse<void> = await eventServices.deleteEvent(event.eventId);
          toast.success(response.message);
 
          setEvents((prev) => prev.filter((e) => e.eventId !== event.eventId));

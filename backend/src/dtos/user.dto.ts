@@ -10,7 +10,6 @@ export interface UserBasicInfoUpdateDTO {
   name?: string;
   mobile?: string;
   // email?: string;  // separate editing
-  // add other profile fields as needed
 }
 
 

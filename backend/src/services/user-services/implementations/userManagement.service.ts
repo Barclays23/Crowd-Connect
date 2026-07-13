@@ -68,10 +68,12 @@ export class UserManagementService implements IUserManagementService {
 
             return {
                 users: mappedUsers,
-                page,
-                limit,
-                total: totalCount,
-                totalPages: Math.ceil(totalCount / limit),
+                pagination: {
+                    currentPage: page,
+                    limit: limit,
+                    totalCount: totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                },
             };
 
         } catch (err: unknown) {

@@ -1,5 +1,5 @@
-import EventCard from "@/components/event/EventCard"
-import { DEFAULT_RADIUS_KM, type IEventState } from "@/types/event.types"
+import EventCard1 from "@/components/event/EventCard1"
+import { DEFAULT_RADIUS_KM, type GetPublicEventsParams, type IEventState } from "@/types/event.types"
 import { MapPin, Loader2 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { eventServices } from "@/services/eventServices"
@@ -7,6 +7,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils"
 import { Button } from "@/components/ui/button"
 import { useReverseGeocode } from "@/hooks/useReverseGeocode"
 import { EVENT_FORMATS } from "@/constants/event.constants"
+import type { ApiResponse } from "@/types/common.types"
 
 
 export function EventsNearYou() {
@@ -20,20 +21,25 @@ export function EventsNearYou() {
 
 
 
-  const fetchNearbyEvents = (lat: number, lng: number) => {
-    const query = new URLSearchParams({
-      format: EVENT_FORMATS.OFFLINE,
-      lat: lat.toString(),
-      lng: lng.toString(),
-      radiusKm: DEFAULT_RADIUS_KM.toString(),
-      limit: "6",
-    }).toString()
+  const fetchNearbyEvents = async (lat: number, lng: number) => {
+    try {
+      const params: GetPublicEventsParams = {
+        format: EVENT_FORMATS.OFFLINE,
+        lat,
+        lng,
+        radiusKm: DEFAULT_RADIUS_KM,
+        limit: 6,
+      };
 
-    eventServices
-      .getPublicEvents(query)
-      .then((data) => setNearbyEvents(data.eventsData ?? []))
-      .catch((err) => setLocationError(getApiErrorMessage(err)))
-      .finally(() => setLoading(false))
+      const response: ApiResponse<IEventState[]> = await eventServices.getPublicEvents(params);
+      setNearbyEvents(response.data ?? []);
+
+    } catch (error) {
+      setLocationError(getApiErrorMessage(error))
+      
+    } finally {
+      setLoading(false);
+    }
   }
 
   const requestLocation = useCallback(() => {
@@ -87,7 +93,7 @@ export function EventsNearYou() {
 
   return (
     <section className="py-16 bg-(--bg-primary)">
-      <div className="container px-4">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-12">
           <div>
             <h2 className="text-3xl font-bold text-(--heading-primary) mb-2">
@@ -127,7 +133,7 @@ export function EventsNearYou() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {nearbyEvents.map((event) => (
               <div key={event.eventId} className="group">
-                <EventCard event={event} />
+                <EventCard1 event={event} />
               </div>
             ))}
           </div>

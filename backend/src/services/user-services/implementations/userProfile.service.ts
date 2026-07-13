@@ -71,10 +71,10 @@ export class UserProfileService implements IUserProfileService {
             }
 
             // since profilePic is not included in UserBasicInfo (profilePic will update separately)
-            const profilePicUrl = undefined;  // keeping it undefined for input mapping
+            const profilePicUrl = undefined;
 
             const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
-                
+            
             const updatedUserResult: UserEntity | null = await this._userRepository.updateUserProfile(currentUserId, updateInput);
             
             if (!updatedUserResult) {

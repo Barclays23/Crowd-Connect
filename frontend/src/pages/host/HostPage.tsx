@@ -7,6 +7,8 @@ import { userServices } from '@/services/userServices';
 import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import { toast } from 'react-toastify';
+import type { ApiResponse } from '@/types/common.types';
+import type { UserState } from '@/types/user.types';
 
 
 
@@ -26,10 +28,10 @@ const HostPage = () => {
 
          try {
             setIsLoading(true);
-            const response = await userServices.getUserProfile();
-            console.log('Host User Profile data in HostPage:', response.userProfile);
-            toast.success(!response.userProfile)
-            setUser(response.userProfile);
+            const response: ApiResponse<UserState> = await userServices.getUserProfile();
+            console.log('Host User Profile data in HostPage:', response.data);
+            toast.success(response.message)
+            setUser(response.data);
 
          } catch (error) {
             console.error('Failed to fetch user profile:', error);

@@ -24,13 +24,15 @@ import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
-import type { GetUsersApiResponse, UserState, UserUpsertResult } from "@/types/user.types";
+import type { GetUsersQueryParams, UserState, UserStatusUpdateData, UserUpsertResult } from "@/types/user.types";
 import { HostManageForm } from "./host-manage-form";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import type { ApiResponse } from "@/types/common.types";
+import type { UserRole, UserStatus } from "@/constants/user-system.constants";
 
 
 
@@ -85,19 +87,19 @@ export function UsersList() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
+      const params: GetUsersQueryParams = {
+        page: currentPage,
+        limit: itemsPerPage,
         ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
-        ...(roleFilter !== "all" && { role: roleFilter }),
-        ...(statusFilter !== "all" && { status: statusFilter }),
-      });
+        ...(roleFilter !== "all" && { role: roleFilter as UserRole }),
+        ...(statusFilter !== "all" && { status: statusFilter as UserStatus}),
+      };
 
-      const response: GetUsersApiResponse = await userServices.getAllUsers(params.toString());
+      const response: ApiResponse<UserState[]> = await userServices.getAllUsers(params);
 
-      setUsers(response.usersData);
-      setTotalUsers(response.pagination.totalCount);
-      setTotalPages(response.pagination.totalPages || Math.ceil(response.pagination.totalCount / itemsPerPage));
+      setUsers(response.data);
+      setTotalUsers(response.pagination?.totalCount ?? 0);
+      setTotalPages(response.pagination?.totalPages ?? Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
     } catch (err: unknown) {
       console.error("Failed to fetch users:", err);
@@ -135,13 +137,13 @@ export function UsersList() {
     try {
       setBlockingUserId(handlingUser.userId);
 
-      const response = await userServices.toggleUserBlock(handlingUser.userId);
+      const response: ApiResponse<UserStatusUpdateData> = await userServices.toggleUserBlock(handlingUser.userId);
       toast.success(response.message);
 
       setUsers(prev =>
         prev.map(u =>
           u.userId === handlingUser.userId
-            ? { ...u, status: response.updatedStatus }
+            ? { ...u, status: response.data.status }
             : u
         )
       );
@@ -162,7 +164,7 @@ export function UsersList() {
     try {
       setDeletingUserId(deleteUser.userId);
 
-      const response = await userServices.deleteUser(deleteUser.userId);
+      const response: ApiResponse<void> = await userServices.deleteUser(deleteUser.userId);
       toast.success(response.message);
 
       setUsers(prev => prev.filter(user => user.userId !== deleteUser.userId));

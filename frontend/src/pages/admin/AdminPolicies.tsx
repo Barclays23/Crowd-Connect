@@ -9,7 +9,12 @@ import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { Plus, Trash2, Save, Loader2 } from "lucide-react";
-import { POLICY_SECTIONS, type IPlatformSettings } from "@/types/platformSettings.types";
+import { type IPlatformSettings } from "@/types/platformSettings.types";
+import { POLICY_SECTIONS } from "@/constants/platformSettings.constants";
+import type { ApiResponse } from "@/types/common.types";
+
+
+
 
 
 
@@ -21,9 +26,8 @@ export default function AdminPolicies() {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res: any = await platformSettingsService.getSettings();
-                const data = res?.settingsData || res?.data || res;
-                setSettings(data);
+                const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
+                setSettings(response.data);
                 
             } catch (error: unknown) {
                 toast.error(getApiErrorMessage(error) || "Failed to load policies");

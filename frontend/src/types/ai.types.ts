@@ -10,8 +10,6 @@ export interface GeneratePosterPayload {
 }
 
 
-export interface GeneratePosterResponse {
-    success: boolean;
-    message: string;
+export interface GeneratePosterData {
     aiPosterData: string; // The fully formatted base64 data URL
 }

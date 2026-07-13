@@ -31,7 +31,7 @@ const stats = [
 export function PlatformStats() {
   return (
     <section className="py-16 bg-(--bg-tertiary)/30">
-      <div className="container px-4">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-(--heading-primary) mb-2">Our Platform Impact</h2>
           <p className="text-(--text-secondary)">Join thousands of event organizers and attendees in our growing community</p>

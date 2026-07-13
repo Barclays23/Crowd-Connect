@@ -202,6 +202,7 @@ export const USER_MESSAGES = {
     PROFILE_PICTURE_CHANGED : "Profile picture changed successfully",
     SUCCESS_BLOCK_USER : "User has been blocked.",
     SUCCESS_GET_USERS : "Users fetched successfully.",
+    SUCCESS_GET_USER_PROFILE : "User profile retrieved successfully",
     SUCCESS_CREATE_USER : "User account created.",
     SUCCESS_UPDATE_USER : "User details updated.",
     SUCCESS_UPDATE_PROFILE : "Profile updated successfully.",

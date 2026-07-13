@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Camera, CheckCircle, Edit, KeyRound, Loader2 } from 'lucide-react';
-import { userServices, type UserBasicInfo } from '@/services/userServices';
+import { userServices } from '@/services/userServices';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
-import type { UserState } from '@/types/user.types';
+import type { ProfilePicUpdateData, UserBasicInfoPayload, UserState } from '@/types/user.types';
 import { capitalize } from '@/utils/namingConventions';
 import { authService } from '@/services/authServices';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
@@ -19,6 +19,8 @@ import { FieldError } from '@/components/ui/FieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ChangePassword from '@/components/auth/ChangePassword';
+import type { AuthEmailRequestData } from '@/types/auth.types';
+import type { ApiResponse } from '@/types/common.types';
 
 
 
@@ -78,10 +80,10 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
       try {
          setIsUpdatingProfilePic(true);
-         const response = await userServices.updateProfilePicture(formData);
+         const response: ApiResponse<ProfilePicUpdateData> = await userServices.updateProfilePicture(formData);
 
-         setProfile((prev) => (prev ? { ...prev, profilePic: response.updatedProfilePic } : null));
-         setUser((prev) => (prev ? { ...prev, profilePic: response.updatedProfilePic } : null));
+         setProfile((prev) => (prev ? { ...prev, profilePic: response.data.profilePic } : null));
+         setUser((prev) => (prev ? { ...prev, profilePic: response.data.profilePic } : null));
 
          toast.success(response.message);
 
@@ -117,7 +119,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       }
 
       setBasicInfoErrors({});
-      const updateData: UserBasicInfo = {
+      const updateData: UserBasicInfoPayload = {
          ...validation.data,
          name: validation.data.name.trim(),
       };
@@ -125,11 +127,11 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       try {
          setIsUpdatingBasicInfo(true);
 
-         const response = await userServices.editUserBasicInfo(updateData);
+         const response: ApiResponse<UserBasicInfoPayload> = await userServices.editUserBasicInfo(updateData);
          console.log('response in handleUpdateBasicInfo: ', response)
 
-         setProfile(prev => prev ? { ...prev, ...response.updatedUser } : null);
-         setUser(prev => prev ? { ...prev, ...response.updatedUser } : null);
+         setProfile(prev => prev ? { ...prev, ...response.data } : null);
+         setUser(prev => prev ? { ...prev, ...response.data } : null);
          setIsEditingBasicInfo(false);
 
          toast.success(response.message);
@@ -159,7 +161,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       try {
          setIsUpdatingEmail(true);
 
-         const response = await authService.requestAuthenticateEmail({ email });
+         const response: ApiResponse<AuthEmailRequestData> = await authService.requestAuthenticateEmail({ email });
 
          toast.info(response.message);
 

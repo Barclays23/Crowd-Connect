@@ -7,14 +7,13 @@ import type {
     AuthState, 
     RegisterPayload, 
     LoginPayload, 
-    RegisterResponse, 
-    LoginResponse, 
-    LogoutResponse
+    EmailResponseData,
+    AuthTokensData,
+    AuthUserData
 } from '@/types/auth.types';
 import { setAuthInterceptors } from '@/config/axios';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '@/constants/apiEndpoints.constants';
+import type { ApiResponse } from '@/types/common.types';
 // import { toast } from 'react-toastify';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
@@ -23,10 +22,10 @@ import { API_ENDPOINTS } from '@/constants/apiEndpoints.constants';
 
 
 interface AuthContextType extends AuthState {
-    login: (credentials: LoginPayload) => Promise<LoginResponse>;
-    register: (data: RegisterPayload) => Promise<RegisterResponse>;
+    login: (credentials: LoginPayload) => Promise<ApiResponse<AuthTokensData>>;
+    register: (data: RegisterPayload) => Promise<ApiResponse<EmailResponseData>>;
     loginWithGoogle: () => Promise<void>;
-    logout: () => Promise<LogoutResponse>;
+    logout: () => Promise<ApiResponse<void>>;
     setAccessToken: React.Dispatch <React.SetStateAction <string | null>>; 
     setUser: React.Dispatch <React.SetStateAction <UserState | null>>;
 }
@@ -83,16 +82,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // --- CENTRALIZED LOGOUT LOGIC ---
     // Clears client state and performs server-side logout.
     // This function is used by both manual logout and the Axios interceptor.
-    const fullLogout = async (): Promise<LogoutResponse> => {
+    const fullLogout = async (): Promise<ApiResponse<void>> => {
         try {
             // 1. Call server logout to clear HTTP-only cookie/session
-            const response: LogoutResponse = await authService.logoutService();
+            const response: ApiResponse<void> = await authService.logoutService();
             console.log('fullLogout response:', response);
             return response;
+
         } catch (error) {
             console.error("Error in fullLogout:", error);
             // Non-fatal if client state is cleared, just log it.
             throw error;
+
         } finally {
             // 2. Clear client-side state/storage
             setAccessToken(null);
@@ -149,11 +150,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 // 5. If refresh token also expires / fails → interceptor should throw error or log out.
                 
                 console.log('getAuthUser calling...');
-                const response = await authService.getAuthUser();
+                const response: ApiResponse<AuthUserData> = await authService.getAuthUser();
                 console.log('✅ response in validateSession:', response);
             
-                if (isMounted && response.authUser) {
-                    setUser(response.authUser);
+                if (isMounted && response.data.authUser) {
+                    setUser(response.data.authUser);
                 }
             
             } catch (err: unknown) {
@@ -181,14 +182,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const login = async (credentials: LoginPayload): Promise<LoginResponse> => {
+    const login = async (credentials: LoginPayload): Promise<ApiResponse<AuthTokensData>> => {
         try {
-            const response = await authService.loginService(credentials);
+            const response: ApiResponse<AuthTokensData> = await authService.loginService(credentials);
             // console.log('response from authContext login:', response);
-            const { accessToken, authUser } = response; 
 
-            setAccessToken(accessToken);
-            setUser(authUser);
+            setAccessToken(response.data.accessToken);
+            setUser(response.data.authUser);
             return response;
 
         } catch (err: unknown) {
@@ -199,10 +199,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
 
-    const register = async (data: RegisterPayload): Promise<RegisterResponse> => {
+    const register = async (data: RegisterPayload): Promise<ApiResponse<EmailResponseData>> => {
         try {
             // Backend must set HTTP-Only refresh cookie here
-            const response: RegisterResponse = await authService.registerService(data);
+            const response: ApiResponse<EmailResponseData> = await authService.registerService(data);
             console.log('response in authContext register:', response);
             
             return response;
@@ -225,10 +225,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Public logout function for components (e.g., Navbar).
     // It uses the centralized fullLogout logic.
-    const logout = async (): Promise<LogoutResponse> => {
+    const logout = async (): Promise<ApiResponse<void>> => {
         try {
-            const response: LogoutResponse = await fullLogout();
+            const response: ApiResponse<void> = await fullLogout();
             return response;
+
         } catch (error) {
             console.error("Error in AuthContext logout:", error);
             // Even if the server call fails, we ensure client state is cleared in fullLogout.finally

@@ -8,7 +8,7 @@ import { Search, MapPin, Calendar, Filter } from "lucide-react"
 export function HeroSection() {
   return (
     <section className="relative py-24 bg-linear-to-br from-(--bg-primary) to-(--bg-secondary)">
-      <div className="container px-4">
+      <div className="container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-(--heading-primary)">
             Discover and Host

@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatNumberToINR } from "@/utils/UI.utils";
-import type { IPayoutRequest } from "@/types/payout.types";
+import type { IPayoutState } from "@/types/payout.types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RejectPayoutSchema, type RejectPayoutFormValues } from "@/schemas/payout.schema";
@@ -12,7 +12,7 @@ import { FieldError } from "@/components/ui/FieldError";
 
 interface PayoutRejectModalProps {
    isOpen      : boolean;
-   payout      : IPayoutRequest | null;
+   payout      : IPayoutState | null;
    onClose     : () => void;
    onConfirm   : (reason: string) => void;
    isRejecting : boolean;

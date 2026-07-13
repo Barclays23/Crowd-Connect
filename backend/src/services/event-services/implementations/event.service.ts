@@ -1,4 +1,4 @@
-// backend/src/services/event-services/implementations/eventManagement.service.ts
+// backend/src/services/event-services/implementations/event.service.ts
 import { 
     deleteFromCloudinary, 
     uploadBase64ToCloudinary, 

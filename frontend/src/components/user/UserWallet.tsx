@@ -16,10 +16,9 @@ import { toast }              from "react-toastify";
 
 import {
   type ITransactionState,
-  type WalletOverviewResponse,
   type TransactionSortField,
   type GetTransactionsParams,
-  type GetTransactionsResponse,
+  type WalletOverviewData,
 } from "@/types/wallet.types";
 import { 
   formatTransactionAmount, 
@@ -28,14 +27,22 @@ import {
 } from "@/utils/UI.utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { toTitleCase } from "@/utils/namingConventions";
-import { TRANSACTION_DIRECTION, TRANSACTION_STATUS, TRANSACTION_TYPE, type TransactionDirection, type TransactionStatus, type TransactionType } from "@/constants/transaction.constants";
+import { 
+  TRANSACTION_DIRECTION, 
+  TRANSACTION_STATUS, 
+  TRANSACTION_TYPE, 
+  type TransactionDirection, 
+  type TransactionStatus, 
+  type TransactionType 
+} from "@/constants/transaction.constants";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
 
 
 function UserWallet() {
-  const [walletOverview, setOverview]   = useState<WalletOverviewResponse | null>(null);
+  const [walletOverview, setOverview]   = useState<WalletOverviewData | null>(null);
   const [transactions, setTransactions] = useState<ITransactionState[]>([]);
   const [totalCount,   setTotalCount]   = useState(0);
   const [totalPages,   setTotalPages]   = useState(1);
@@ -63,11 +70,11 @@ function UserWallet() {
     const fetchOverview = async () => {
       setLoading(true);
       try {
-        const response: WalletOverviewResponse = await walletServices.getWalletOverview();
+        const response: ApiResponse<WalletOverviewData> = await walletServices.getWalletOverview();
         console.log('fetchOverview response :', response)
-        setOverview(response);
-        setTransactions(response.recentTransactions);
-        setTotalCount(response.recentTransactions.length);
+        setOverview(response.data);
+        setTransactions(response.data.recentTransactions);
+        setTotalCount(response.data.recentTransactions.length);
 
       } catch (error: unknown) {
         const errorMessage = getApiErrorMessage(error);
@@ -97,10 +104,10 @@ function UserWallet() {
         ...(statusFilter    !== "all" && { status    : statusFilter }),
       };
 
-      const response: GetTransactionsResponse = await walletServices.getTransactions(params);
-      setTransactions(response.transactions);
-      setTotalCount(response.pagination.totalCount);
-      setTotalPages(response.pagination.totalPages);
+      const response: ApiResponse<ITransactionState[]> = await walletServices.getTransactions(params);
+      setTransactions(response.data);
+      setTotalCount(response.pagination?.totalCount ?? 0);
+      setTotalPages(response.pagination?.totalPages ?? Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
     } catch (error: unknown) {
       const errorMessages = getApiErrorMessage(error);

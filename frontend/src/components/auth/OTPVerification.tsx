@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import type { ApiResponse } from "@/types/common.types";
+import type { AuthTokensData, EmailResponseData } from "@/types/auth.types";
 
 type OtpFormData = z.infer<typeof OtpSchema>;
 
@@ -94,12 +96,13 @@ export function OTPVerification() {
       sessionStorage.setItem(`otpSentAt:${userEmail}`, String(startedAt));
       setCountdown(60);
 
-      const response = await authService.resendOtpService({ email: userEmail });
+      const response: ApiResponse<EmailResponseData> = await authService.resendOtpService({ email: userEmail });
       
       // Clear the OTP input when resending
       setValue("otpCode", "", { shouldValidate: false });
       
       toast.success(response.message || "OTP resent successfully");
+
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error)
       if (errorMessage) toast.error(errorMessage);
@@ -124,20 +127,19 @@ export function OTPVerification() {
     try {
       setServerError(null);
 
-      const response = await authService.verifyAccountService({
+      const response: ApiResponse<AuthTokensData> = await authService.verifyAccountService({
         otpCode: data.otpCode,
         email: userEmail,
       });
 
-      const { accessToken, authUser } = response;
-
-      setAccessToken(accessToken);
-      setUser(authUser);
+      setAccessToken(response.data.accessToken);
+      setUser(response.data.authUser);
 
       toast.success(response.message || "Account verified successfully");
 
       // Most common pattern after verification → dashboard/home
       navigate(successPath || "/", { replace: true });
+
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
       if (errorMessage) toast.error(errorMessage);

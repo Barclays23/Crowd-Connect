@@ -21,7 +21,11 @@ export class WalletController implements IWalletController {
          const userId = req.user!.userId;
          const transactionData: WalletOverviewResponse = await this._walletService.getWalletOverview(userId);
 
-         res.status(HTTP_STATUS.OK).json({ success: true, data: transactionData });
+         res.status(HTTP_STATUS.OK).json({ 
+            success: true, 
+            message: "Wallet overview retrieved successfully",
+            data: transactionData 
+         });
 
       } catch (error) {
          next(error);
@@ -36,7 +40,12 @@ export class WalletController implements IWalletController {
 
          const transactionData: GetTransactionsResponse = await this._walletService.getTransactions(filters);
 
-         res.status(HTTP_STATUS.OK).json({ success: true, data: transactionData });
+         res.status(HTTP_STATUS.OK).json({ 
+            success: true, 
+            message: "Transactions retrieved successfully",
+            data: transactionData.transactions,
+            pagination: transactionData.pagination
+         });
 
       } catch (error: unknown) {
          next(error);

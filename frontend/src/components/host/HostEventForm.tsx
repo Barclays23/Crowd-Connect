@@ -28,8 +28,9 @@ import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlaces
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { generatePosterSchema } from "@/schemas/ai.schema";
-import type { GeneratePosterPayload, GeneratePosterResponse } from "@/types/ai.types";
+import type { GeneratePosterData, GeneratePosterPayload } from "@/types/ai.types";
 import { aiServices } from "@/services/aiServices";
+import type { ApiResponse } from "@/types/common.types";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };
@@ -209,11 +210,11 @@ export const HostEventForm = ({
             locationName: currentValues.locationName || (currentValues.format === "online" ? "Virtual Event" : ""),
          };
 
-         const response: GeneratePosterResponse = await aiServices.generateEventPoster(payload);
+         const response: ApiResponse<GeneratePosterData> = await aiServices.generateEventPoster(payload);
 
-         if (response.aiPosterData) {
+         if (response.data.aiPosterData) {
             // Use the returned data URL directly
-            setValue("aiGeneratedImage", response.aiPosterData, { 
+            setValue("aiGeneratedImage", response.data.aiPosterData, { 
                shouldValidate: true, 
                shouldDirty: true 
             });

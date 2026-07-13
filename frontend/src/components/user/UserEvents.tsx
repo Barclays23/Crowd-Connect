@@ -34,11 +34,10 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
    type EventSortDirection,
    type EventSortField,
-   type GetEventsApiResponse,
    type IEventState,
+   type UpdateEventStatusPayload,
 } from "@/types/event.types";
 import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
-import { ViewEventModal } from "@/components/admin/view-event-modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { type EventFormValues } from "@/schemas/event.schema";
 import EditEventForm from "@/components/user/EditEventForm";
@@ -47,6 +46,7 @@ import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -94,7 +94,7 @@ export default function UserEvents() {
       const formData: FormData = buildEventFormData(data);
 
       try {
-         const response = await eventServices.updateEventByHost({eventId: editEvent.eventId, formData});
+         const response: ApiResponse<IEventState> = await eventServices.updateEventByHost({eventId: editEvent.eventId, formData});
          toast.success(response.message);
          setEditModalOpen(false);
          setEditEvent(null);
@@ -130,14 +130,12 @@ export default function UserEvents() {
          });
 
          console.log('params :', params.toString())
+         
+         const response: ApiResponse<IEventState[]> = await eventServices.getMyEvents(params.toString());
 
-         const response: GetEventsApiResponse = await eventServices.getMyEvents(params.toString());
-
-         setEvents(response.eventsData ?? []);
-         setTotalEvents(response.pagination.totalCount ?? 0);
-         setTotalPages(
-            response.pagination.totalPages ?? Math.ceil((response.pagination.totalCount ?? 0) / itemsPerPage)
-         );
+         setEvents(response.data ?? []);
+         setTotalEvents(response.pagination?.totalCount ?? 0);
+         setTotalPages(response.pagination?.totalPages ?? Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
@@ -183,12 +181,14 @@ export default function UserEvents() {
 
       try {
          setIsPublishing(true);
-         const response = await eventServices.publishEvent(eventToPublish);
+         const response: ApiResponse<void> = await eventServices.publishEvent(eventToPublish);
          toast.success(response.message);
          fetchMyEvents();
+
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
+         
       } finally {
          setPublishModalOpen(false);
          setEventToPublish(null);
@@ -207,9 +207,10 @@ export default function UserEvents() {
 
       try {
          setIsCancelling(true);
-         const response = await eventServices.cancelEvent(eventToCancel, cancelReason);
+         const response: ApiResponse<UpdateEventStatusPayload> = await eventServices.cancelEvent(eventToCancel, cancelReason);
          toast.success(response.message);
          fetchMyEvents();
+
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);

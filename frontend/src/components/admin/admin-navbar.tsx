@@ -18,7 +18,6 @@ import { ThemeToggle } from "../ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitials } from "@/utils/namingConventions";
 import { useNavigate } from "react-router-dom";
-import type { LogoutResponse } from "@/types/auth.types";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
@@ -32,7 +31,7 @@ export function AdminNavbar() {
 
   const handleLogout =  async () => {
     try {
-      const response: LogoutResponse = await logout();
+      const response = await logout();
       navigate('/');
       toast.info(response.message);
 

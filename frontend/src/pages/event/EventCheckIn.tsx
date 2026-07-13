@@ -18,10 +18,11 @@ import type {
     AttendanceRecord, 
     CheckInResult, 
     CheckInScanState, 
-    GetAttendanceResponse, 
-    GetAttendanceResult 
+    GetAttendanceResult, 
+    ScanQRCodePayload
 } from "@/types/checkin.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -61,8 +62,8 @@ export function EventCheckIn({ event }: EventCheckInProps) {
         setAttendanceLoading(true);
         
         try {
-            const res: GetAttendanceResponse = await checkinServices.getAttendance(event.eventId);
-            setAttendance(res.data);
+            const response: ApiResponse<GetAttendanceResult> = await checkinServices.getAttendance(event.eventId);
+            setAttendance(response.data);
 
         } catch(error: unknown) {
             const errorMessage = getApiErrorMessage(error)
@@ -159,9 +160,15 @@ export function EventCheckIn({ event }: EventCheckInProps) {
         if (!pendingToken) return;
         setScanState({ status: "loading" });
 
+        const payload: ScanQRCodePayload = {
+            eventId:    event.eventId,
+            qrToken:    pendingToken,
+            entryCount: entryCount
+        }
+
         try {
-            const res = await checkinServices.scanQRCode(event.eventId, pendingToken, entryCount);
-            setScanState({ status: "success", result: res.data });
+            const response: ApiResponse<CheckInResult> = await checkinServices.scanQRCode(payload);
+            setScanState({ status: "success", result: response.data });
             fetchAttendance();
 
             // Auto-resume scanning after delay

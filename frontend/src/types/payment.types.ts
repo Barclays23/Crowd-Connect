@@ -8,3 +8,11 @@ export interface BasePaymentOrderDetails {
   currency  : string;
   keyId     : string;   // Razorpay/stripe key_id frontend SDK
 }
+
+
+
+export interface VerifyPaymentPayload {
+  paymentOrderId: string;
+  paymentId: string;
+  signature: string;
+}

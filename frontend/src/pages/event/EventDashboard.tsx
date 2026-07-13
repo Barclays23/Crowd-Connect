@@ -12,6 +12,7 @@ import type { IEventState } from "@/types/event.types";
 import EventOverview from "@/components/event/EventOverview";
 import { EventBookingsList } from "@/components/admin/event-bookings-list";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
+import type { ApiResponse } from "@/types/common.types";
 
 type Tab = "overview" | "bookings" | "checkin";
 
@@ -29,14 +30,16 @@ export default function EventDashboard() {
    const fetchEventDetails = useCallback(async () => {
       if (!eventId) return;
       setLoading(true);
+
       try {
-         // Using the correct API service method you provided
-         const response = await eventServices.getEventDetails(eventId);
-         setEvent(response.eventDetails);
+         const response: ApiResponse<IEventState> = await eventServices.getEventDetails(eventId);
+         setEvent(response.data);
+
       } catch (error: unknown) {
          const errorMessage = getApiErrorMessage(error);
          if (errorMessage) toast.error(errorMessage);
          navigate(-1); // Go back if event not found or unauthorized
+
       } finally {
          setLoading(false);
       }

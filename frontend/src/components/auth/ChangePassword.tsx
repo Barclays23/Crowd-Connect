@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { calculatePasswordStrength, passwordRules, passwordStrengthLevels } from '@/utils/password.utils';
+import type { ApiResponse } from '@/types/common.types';
 
 type FieldKey = keyof ChangePasswordData;
 
@@ -94,7 +95,7 @@ const ChangePassword = ({ onCancel }: Props) => {
       try {
          setIsSubmitting(true);
 
-         const response = await userServices.changePassword({
+         const response: ApiResponse<void> = await userServices.changePassword({
             currentPassword: validation.data.currentPassword,
             newPassword: validation.data.newPassword,
          });
@@ -105,6 +106,7 @@ const ChangePassword = ({ onCancel }: Props) => {
          setErrors({});
          setShowFields({ currentPassword: false, newPassword: false, confirmPassword: false });
          onCancel?.();
+         
       } catch (err) {
          const errorMessage = getApiErrorMessage(err);
          if (errorMessage) toast.error(errorMessage);

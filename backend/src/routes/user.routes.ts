@@ -44,7 +44,7 @@ userRouter.use(authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN));
 
 
 userRouter.get(USER_ROUTES.GET_PROFILE, userController.getUserProfile.bind(userController));
-userRouter.patch(USER_ROUTES.EDIT_BASIC_INFO, userController.editUserBasicInfo.bind(userController));
+userRouter.patch(USER_ROUTES.BASIC_INFO, userController.editUserBasicInfo.bind(userController));
 userRouter.patch(USER_ROUTES.CHANGE_PASSWORD, validateBody(changePasswordSchema), userController.changeUserPassword.bind(userController));
 userRouter.put(USER_ROUTES.UPDATE_PROFILE_PIC, uploadImage.single("profileImage"), userController.updateProfilePicture.bind(userController));
 

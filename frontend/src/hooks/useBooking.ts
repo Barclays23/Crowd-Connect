@@ -13,6 +13,7 @@ import { openRazorpayCheckout } from "@/utils/razorpay.utils";
 import { logger } from "@/utils/logger";
 import { initiateBookingSchema } from "@/schemas/booking.schema";
 import { PAYMENT_METHODS } from "@/constants/payment.constants";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -49,14 +50,14 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                 contact     : userPhone 
             },
             onVerify    : async (response) => {
-                const booking: IBookingState = await bookingServices.verifyBookingPayment({
+                const apiResponse: ApiResponse<IBookingState> = await bookingServices.verifyBookingPayment({
                     bookingId      : order.bookingId,
                     paymentOrderId : response.razorpay_order_id,
                     paymentId      : response.razorpay_payment_id,
                     signature      : response.razorpay_signature,
                 });
-                setConfirmedBooking(booking);
-                onSuccess?.(booking);
+                setConfirmedBooking(apiResponse.data);
+                onSuccess?.(apiResponse.data);
             }
         });
     };
@@ -78,21 +79,20 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                 paymentMethod: paymentMethod
             });
 
-            const response: InitiateBookingResponse = await bookingServices.initiateBooking(eventId, selectedQuantity, paymentMethod);
+            const response: ApiResponse<InitiateBookingResponse> = await bookingServices.initiateBooking(eventId, selectedQuantity, paymentMethod);
             // console.log('response from initiateBooking :', response);
             logger.info("response from initiateBooking :", response);
 
-
-            if (response.paymentMethod === PAYMENT_METHODS.ONLINE) {
+            if (response.data.paymentMethod === PAYMENT_METHODS.ONLINE) {
                 // Open Razorpay passing the order details
-                await handleCheckout(response.order, eventTitle, userName, userEmail, userPhone);
+                await handleCheckout(response.data.order, eventTitle, userName, userEmail, userPhone);
                 return;
             }
 
-            if (response.paymentMethod === PAYMENT_METHODS.NONE || response.paymentMethod === PAYMENT_METHODS.WALLET) {
+            if (response.data.paymentMethod === PAYMENT_METHODS.NONE || response.data.paymentMethod === PAYMENT_METHODS.WALLET) {
                 // Free or Wallet — successfully deducted and confirmed by backend via ACID transaction
-                setConfirmedBooking(response.populatedBooking);
-                onSuccess?.(response.populatedBooking);
+                setConfirmedBooking(response.data.populatedBooking);
+                onSuccess?.(response.data.populatedBooking);
                 return;
             }
 
@@ -121,18 +121,18 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
         const { bookingId, eventTitle, paymentMethod, userName, userEmail, userPhone } = params;
 
         try {
-            const response: InitiateBookingResponse = await bookingServices.retryBookingPayment(bookingId, paymentMethod);
+            const response: ApiResponse<InitiateBookingResponse> = await bookingServices.retryBookingPayment(bookingId, paymentMethod);
             
             logger.info("response from retryPayment :", response);
 
-            if (response.paymentMethod === PAYMENT_METHODS.ONLINE) {
-                await handleCheckout(response.order, eventTitle, userName, userEmail, userPhone);
+            if (response.data.paymentMethod === PAYMENT_METHODS.ONLINE) {
+                await handleCheckout(response.data.order, eventTitle, userName, userEmail, userPhone);
                 return;
             }
 
-            if (response.paymentMethod === PAYMENT_METHODS.WALLET) {
-                setConfirmedBooking(response.populatedBooking);
-                onSuccess?.(response.populatedBooking);
+            if (response.data.paymentMethod === PAYMENT_METHODS.WALLET) {
+                setConfirmedBooking(response.data.populatedBooking);
+                onSuccess?.(response.data.populatedBooking);
                 return;
             }
 

@@ -4,11 +4,13 @@ import { PayoutEventFormCard } from "@/components/payout/PayoutEventFormCard";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { payoutServices } from "@/services/payoutServices";
-import type { GetEligibleEventsApiResponse, IPayoutEligibleEvent } from "@/types/payout.types";
+import type { ApiResponse } from "@/types/common.types";
+import type { EligibleEventsData, IPayoutEligibleEvent } from "@/types/payout.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
 
 
 interface RequestPayoutModalProps {
@@ -32,11 +34,11 @@ export function RequestPayoutModal({ isOpen, onClose, onRequested }: RequestPayo
         const fetchEligibleEvents = async () => {
             setLoading(true);
             try {
-                const res: GetEligibleEventsApiResponse = await payoutServices.getEligibleEvents();
+                const response: ApiResponse<EligibleEventsData> = await payoutServices.getEligibleEvents();
 
-                setEligibleEvents(res.events);
-                setCommissionRate(res.commissionRate);
-                setMinAttendance(res.minAttendancePercent);
+                setEligibleEvents(response.data.events);
+                setCommissionRate(response.data.commissionRate);
+                setMinAttendance(response.data.minAttendancePercent);
 
             } catch (error: unknown) {
                 const errorMessage = getApiErrorMessage(error);

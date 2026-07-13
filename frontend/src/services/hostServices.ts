@@ -1,5 +1,13 @@
 import axiosInstance from "@/config/axios";
-import type { AxiosError } from "axios";
+import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
+import { USER_ROLES } from "@/constants/user-system.constants";
+import type { ApiResponse } from "@/types/common.types";
+import type { 
+  GetHostsQueryParams, 
+  HostStatusUpdateData, 
+  ManageHostPayload, 
+  UserState 
+} from "@/types/user.types";
 
 
 
@@ -7,124 +15,98 @@ import type { AxiosError } from "axios";
 export const hostServices = {
 
   // apply by user to upgrade to host
-  applyHostUpgrade: async (data: FormData) => {
-      try {
-          const response = await axiosInstance.post("/api/host/apply-upgrade", data, {
-              headers: {
-                  "Content-Type": "multipart/form-data",
-              },
-              withCredentials: true,
-          });
-          return response.data;
-      } catch (error: unknown) {
-          const err = error as AxiosError<{ error: string }>;
-          throw err;
+  applyHostUpgrade: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.post<ApiResponse<UserState>>(
+      API_ENDPOINTS.HOST.APPLY_UPGRADE, 
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
       }
+    );
+
+    return response.data;
   },
 
 
-  manageHostRequest: async ({hostId, action, reason}: {
-    hostId: string, 
-    action: "approve" | "reject",
-    reason?: string
-  }) => {
-    console.log('hostId:', hostId, ' - action:', action, ' - reason:', reason);
-    try {
-        const url = `/api/admin/hosts/${hostId}/manage-host-request`;
-        const response = await axiosInstance.patch(
-          url, 
-          { action, reason }, 
-          { withCredentials: true}
-        );
-        return response.data;
-    } catch (error: unknown) {
-        const err = error as AxiosError<{ error: string }>;
-        throw err;
-    }
+
+  manageHostRequest: async (hostId: string, payload: ManageHostPayload): Promise<ApiResponse<HostStatusUpdateData>> => {
+    const response = await axiosInstance.patch<ApiResponse<HostStatusUpdateData>>(
+      API_ENDPOINTS.ADMIN.MANAGE_HOST_REQUEST(hostId), 
+      payload, 
+      { withCredentials: true }
+    );
+
+    return response.data;
   },
 
 
-  getAllHosts: async (queryParams?: string) => {
-      try {
-          const url = queryParams ? `/api/admin/hosts?${queryParams}` : `/api/admin/hosts`;
-          const response = await axiosInstance.get(url, {
-              withCredentials: true,
-          });
-          return response.data;
-      } catch (error: unknown) {
-          const err = error as AxiosError<{ error: string }>;
-          throw err;
-      }
+
+  getAllHosts: async (params: GetHostsQueryParams = {}): Promise<ApiResponse<UserState[]>> => {
+    // Isolate URL serialization within the service layer
+    const searchParams = new URLSearchParams({
+      page:  String(params.page  ?? 1),
+      limit: String(params.limit ?? 10),
+      role: USER_ROLES.HOST,
+      ...(params.search                                 && { search:     params.search }),
+      ...(params.status && params.status !== "all"      && { status:     params.status }),
+      ...(params.hostStatus && params.hostStatus !== "all" && { hostStatus: params.hostStatus }),
+    });
+
+    const queryString: string  = searchParams.toString();
+    const endpoint = `${API_ENDPOINTS.ADMIN.HOSTS}?${queryString}`;
+
+    const response = await axiosInstance.get<ApiResponse<UserState[]>>(
+      endpoint,
+      { withCredentials: true },
+    );
+
+    return response.data;
   },
 
 
   // convert to host by admin
-  convertToHost: async (userId: string, formData: FormData) => {
-    try {
-      const response = await axiosInstance.post(
-        `/api/admin/users/${userId}/convert-host`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ error: string | { message: string } }>;
-      throw err.response?.data || { error: "Failed to convert user to host" };
-    }
+  convertToHost: async (userId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.post<ApiResponse<UserState>>(
+      API_ENDPOINTS.ADMIN.CONVERT_TO_HOST(userId),
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
+
+    return response.data;
   },
-  
+
+
 
   // update host details by admin
-  updateHostDetailsByAdmin: async (userId: string, formData: FormData) => {
-    try {
-      const response = await axiosInstance.put(
-        `/api/admin/hosts/${userId}/update-host`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ error: string | { message: string } }>;
-      throw err.response?.data || { error: "Failed to update host details (admin)" };
-    }
+  updateHostDetailsByAdmin: async (userId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.put<ApiResponse<UserState>>(
+      API_ENDPOINTS.ADMIN.UPDATE_HOST(userId),
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
+
+    return response.data;
   },
-  
-    
+
+
+
   // update host details by host user
-  updateHostDetailsByHost: async (formData: FormData) => {
-    try {
-      const response = await axiosInstance.patch(
-        "/api/host/my-details",  // or 
-        // "/api/host/host-profile",  and delete updateHostDetails function below
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (error: unknown) {
-      const err = error as AxiosError<{ error: string | { message: string } }>;
-      throw err.response?.data || { error: "Failed to update host details" };
-    }
-  },
-
-
-
-  updateHostDetails: async (formData: FormData) => {
-    const response = await axiosInstance.put('/user/host-profile', formData);
+  updateHostDetailsByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.patch<ApiResponse<UserState>>(
+      API_ENDPOINTS.HOST.UPDATE_DETAILS,  // or "/api/host/host-profile"
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
     return response.data;
   },
 

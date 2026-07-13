@@ -1,16 +1,14 @@
 import { USER_ROLES } from "@/constants/user-system.constants";
 import { EVENT_ROUTES } from "@/constants/routes.constants";
-import { BookingController } from "@/controllers/implementations/booking.controller";
 import { EventController } from "@/controllers/implementations/event.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
-import { uploadDocument, uploadEventPoster } from "@/middlewares/file-upload.middleware";
+import { uploadEventPoster } from "@/middlewares/file-upload.middleware";
 import { validateParams, validateRequest } from "@/middlewares/validate.middleware";
 import { BookingRepository } from "@/repositories/implementations/booking.repository";
 import { EventRepository } from "@/repositories/implementations/event.repository";
 import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
 import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
 import { UserRepository } from "@/repositories/implementations/user.repository";
-import { initiateBookingSchema } from "@/schemas/booking.schema";
 import { CreateEventFormSchema, UpdateEventFormSchema } from "@/schemas/event.schema";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { BookingService } from "@/services/booking-services/implementations/booking.service";
@@ -34,6 +32,7 @@ const userRepo          = new UserRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
 
+
 // PROVIDERS
 const razorPayProvider = new RazorpayProvider();
 
@@ -51,7 +50,6 @@ const eventService      = new EventManagementServices(eventRepo, bookingService,
 
 // CONTROLLER
 const eventController   = new EventController(eventService, bookingService);
-const bookingController = new BookingController(bookingService);
 
 
 
@@ -104,11 +102,7 @@ eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER
     eventController.getAllBookingsOfEvent.bind(eventController)
 );
 
-eventRouter.post(
-  EVENT_ROUTES.INITIATE_BOOKING, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
-  validateRequest({body: initiateBookingSchema, params: EventIdParamSchema}), 
-  bookingController.initiateBooking.bind(bookingController)
-);
+
 
 
 export default eventRouter;

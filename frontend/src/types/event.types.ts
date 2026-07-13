@@ -6,10 +6,6 @@ import type { IPagination } from "@/types/common.types";
 
 
 
-// move to constants like location.constants ??
-export const DEFAULT_RADIUS_KM = 25
-
-
 export interface IEventState {
   eventId             : string;
   title               : string;
@@ -58,11 +54,6 @@ export interface IEventState {
 
 
 
-// Based on your plan (5-10%)
-// Also check the same percentage value in backend
-// export const ADMIN_COMMISSION_PERCENT = 10;
-
-
 
 // move to constants
 export const POSTER_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -70,12 +61,45 @@ export const POSTER_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 
 
+// move to constants like location.constants ??
+export const DEFAULT_RADIUS_KM = 25
 
-export interface GetEventsApiResponse {
-  eventsData: IEventState[];
-  pagination: IPagination;
-}
 
 
 export type EventSortField = "createdAt" | "startDateTime" | "endDateTime" | "title" | "ticketPrice" | "grossTicketRevenue";
 export type EventSortDirection = "asc" | "desc";
+
+
+
+
+
+// PAYLOAD TYPES _______________________________________________
+
+export interface UpdateEventStatusPayload {
+  eventStatus: EventStatus;
+}
+
+
+
+export type PublicEventsSortOption = "upcoming" | "newest" | "popular" | "price_asc" | "price_desc";
+
+export interface GetPublicEventsParams {
+  page?       : number;
+  limit?      : number;
+  search?     : string;
+  startDate?  : string;
+  endDate?    : string;
+  category?   : string;
+  format?     : string;
+  ticketType? : string;
+  lat?        : number;
+  lng?        : number;
+  radiusKm?   : number;
+  sortBy?     : PublicEventsSortOption; 
+}
+
+
+
+
+// RESPONSE TYPES _______________________________________________
+

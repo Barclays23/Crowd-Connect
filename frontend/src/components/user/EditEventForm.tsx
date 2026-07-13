@@ -2,8 +2,9 @@ import { HostEventForm } from "@/components/host/HostEventForm";
 import type { EventStatus } from "@/constants/event.constants";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import { platformSettingsService } from "@/services/platformSettingsService";
+import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
-import type { SettingsResponse } from "@/types/platformSettings.types";
+import type { IPlatformSettings } from "@/types/platformSettings.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,9 +30,9 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const response: SettingsResponse = await platformSettingsService.getSettings();
+        const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
         console.log('fetched settings:', response);
-        setCommissionPercent(response?.settingsData?.commissionPercent ?? commissionPercent);
+        setCommissionPercent(response?.data?.commissionPercent ?? commissionPercent);
 
       } catch (error: unknown) {
         console.warn("Could not load platform settings, using default commission :", error);

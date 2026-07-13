@@ -9,6 +9,7 @@ import type { UserState } from '@/types/user.types';
 
 import UserPersonalProfile from './UserPersonalProfile';
 import UserHostProfile from './UserHostProfile';
+import type { ApiResponse } from '@/types/common.types';
 
 
 
@@ -31,10 +32,10 @@ const UserProfile = () => {
         setIsLoading(true);
         setError(null);
 
-        const response = await userServices.getUserProfile();
+        const response: ApiResponse<UserState> = await userServices.getUserProfile();
 
-        setProfile(response.userProfile);
-        setUser(response.userProfile);
+        setProfile(response.data);
+        setUser(response.data);
 
       } catch (err: unknown) {
         const errorMessage = getApiErrorMessage(err);

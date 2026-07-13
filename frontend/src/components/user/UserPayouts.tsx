@@ -13,8 +13,6 @@ import {
     TrendingUp,
     Ticket,
     AlertTriangle,
-    BadgeCheck,
-    Ban,
     Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,20 +33,22 @@ import { formatDate2, formatDate5 } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { payoutServices } from "@/services/payoutServices";
 import {
-    type IPayoutRequest,
+    type IPayoutState,
     type PayoutSortField,
     type PayoutSortDirection,
     PAYOUT_REQUEST_STATUSES,
+    type GetPayoutsQueryParams,
 } from "@/types/payout.types";
 import { formatNumberToINR, formatNumberToINRWithDecimal } from "@/utils/UI.utils";
 import { RequestPayoutModal } from "@/components/payout/request-payout-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 import { PayoutStatCard } from "@/components/admin/payout/payout-stat-card";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
 export default function UserPayouts() {
-    const [payouts, setPayouts]           = useState<IPayoutRequest[]>([]);
+    const [payouts, setPayouts]           = useState<IPayoutState[]>([]);
     const [loading, setLoading]           = useState(true);
     const [error, setError]               = useState<string | null>(null);
 
@@ -69,19 +69,19 @@ export default function UserPayouts() {
         setError(null);
 
         try {
-            const params = new URLSearchParams({
-                page     : currentPage.toString(),
-                limit    : itemsPerPage.toString(),
+            const params: GetPayoutsQueryParams = {
+                page     : currentPage,
+                limit    : itemsPerPage,
                 sortBy,
                 sortOrder,
                 ...(statusFilter !== "all" && { status: statusFilter }),
-            });
+            };
 
-            const res = await payoutServices.getMyPayouts(params.toString());
+            const response: ApiResponse<IPayoutState[]> = await payoutServices.getMyPayouts(params);
 
-            setPayouts(res.payouts ?? []);
-            setTotalPayouts(res.pagination.totalCount ?? 0);
-            setTotalPages(res.pagination.totalPages ?? 1);
+            setPayouts(response.data ?? []);
+            setTotalPayouts(response.pagination?.totalCount ?? 0);
+            setTotalPages(response.pagination?.totalPages ?? 1);
             
         } catch (error: unknown) {
             const errorMessages = getApiErrorMessage(error);

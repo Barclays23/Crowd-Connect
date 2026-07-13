@@ -3,6 +3,18 @@
 import type { BookingStatus } from "@/constants/booking.constants";
 
 
+
+// ─── Request Payloads ─────────────────────────────────────────────────────────
+
+export interface ScanQRCodePayload {
+  eventId:    string;
+  qrToken:    string;
+  entryCount: number;
+}
+
+
+
+// ─── Resonse Data Payloads (The 'T' in ApiResponse<T>) ────────────────────────────────
 export interface CheckInResult {
   bookingId:        string;
   ticketNo:         string;
@@ -38,12 +50,10 @@ export interface GetAttendanceResult {
   totalChecked      : number;
 }
 
-export interface GetAttendanceResponse {
-  success : true;
-  data    : GetAttendanceResult
-}
 
 
+
+// ─── Component States ─────────────────────────────────────────────────────────
 
 export type CheckInScanState =
   | { status: "idle" }

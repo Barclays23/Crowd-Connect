@@ -35,9 +35,10 @@ import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { payoutServices } from "@/services/payoutServices";
 import type {
-   IPayoutRequest,
+   IPayoutState,
    PayoutSortField,
    PayoutSortDirection,
+   GetPayoutsQueryParams,
 } from "@/types/payout.types";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { formatNumberToINR, formatNumberToINRWithDecimal } from "@/utils/UI.utils";
@@ -46,10 +47,11 @@ import { PayoutStatCard } from "./payout/payout-stat-card";
 import { PayoutDetailModal } from "./payout/payout-detail-modal";
 import { PayoutRejectModal } from "./payout/payout-reject-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
+import type { ApiResponse } from "@/types/common.types";
 
 
 export function PayoutRequestsList() {
-    const [payouts, setPayouts]           = useState<IPayoutRequest[]>([]);
+    const [payouts, setPayouts]           = useState<IPayoutState[]>([]);
     const [loading, setLoading]           = useState(true);
     const [error, setError]               = useState<string | null>(null);
 
@@ -64,12 +66,12 @@ export function PayoutRequestsList() {
     const [totalPages, setTotalPages]     = useState(1);
     const itemsPerPage = 10;
 
-    const [viewPayout, setViewPayout]     = useState<IPayoutRequest | null>(null);
+    const [viewPayout, setViewPayout]     = useState<IPayoutState | null>(null);
 
-    const [approveTarget, setApproveTarget] = useState<IPayoutRequest | null>(null);
+    const [approveTarget, setApproveTarget] = useState<IPayoutState | null>(null);
     const [isApproving, setIsApproving]     = useState(false);
 
-    const [rejectTarget, setRejectTarget]   = useState<IPayoutRequest | null>(null);
+    const [rejectTarget, setRejectTarget]   = useState<IPayoutState | null>(null);
     const [isRejecting, setIsRejecting]     = useState(false);
 
     // Debounce search
@@ -83,20 +85,20 @@ export function PayoutRequestsList() {
         setError(null);
 
         try {
-            const params = new URLSearchParams({
-                page     : currentPage.toString(),
-                limit    : itemsPerPage.toString(),
+            const params: GetPayoutsQueryParams = {
+                page     : currentPage,
+                limit    : itemsPerPage,
                 sortBy,
                 sortOrder,
                 ...(debouncedSearch && { search: debouncedSearch }),
                 ...(statusFilter !== "all" && { status: statusFilter }),
-            });
+            };
 
-            const res = await payoutServices.getAllPayouts(params.toString());
+            const response: ApiResponse<IPayoutState[]> = await payoutServices.getAllPayouts(params);
 
-            setPayouts(res.payouts ?? []);
-            setTotalPayouts(res.pagination.totalCount ?? 0);
-            setTotalPages(res.pagination.totalPages ?? 1);
+            setPayouts(response.data ?? []);
+            setTotalPayouts(response.pagination?.totalCount ?? 0);
+            setTotalPages(response.pagination?.totalPages ?? 1);
 
         } catch (error: unknown) {
             const errorMessages = getApiErrorMessage(error);
@@ -130,7 +132,7 @@ export function PayoutRequestsList() {
         setIsApproving(true);
 
         try {
-            const res = await payoutServices.reviewPayout(approveTarget.payoutId, { action: "approve" });
+            const res: ApiResponse<IPayoutState> = await payoutServices.reviewPayout(approveTarget.payoutId, { action: "approve" });
             toast.success(res.message);
             fetchPayouts();
 
@@ -152,7 +154,7 @@ export function PayoutRequestsList() {
         setIsRejecting(true);
 
         try {
-            const res = await payoutServices.reviewPayout(rejectTarget.payoutId, { action: "reject", rejectionReason: reason });
+            const res: ApiResponse<IPayoutState> = await payoutServices.reviewPayout(rejectTarget.payoutId, { action: "reject", rejectionReason: reason });
             toast.success(res.message);
             fetchPayouts();
             

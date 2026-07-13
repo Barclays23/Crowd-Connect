@@ -5,7 +5,6 @@ import type {
   TransactionStatus, 
   TransactionType 
 } from "@/constants/transaction.constants";
-import type { IPagination } from "@/types/common.types";
 
 
 
@@ -23,15 +22,9 @@ export interface ITransactionState {
 }
 
 
-export interface WalletOverviewResponse {
-  walletBalance      : number;
-  recentTransactions : ITransactionState[];
-}
 
-
-export interface GetTransactionsResponse {
+export interface GetTransactions {
   transactions : ITransactionState[];
-  pagination   : IPagination;
 }
 
 
@@ -40,12 +33,27 @@ export type TransactionSortField = "createdAt" | "amount";
 
 
 
+
+// ─── REQUEST PAYLOADS ─────────────────────────────────────────────────────────
+
 export interface GetTransactionsParams {
-  page       : number;
-  limit      : number;
-  sortBy    ?: TransactionSortField;
-  sortOrder ?: "asc" | "desc";
-  direction ?: TransactionDirection | "all";
-  type      ?: TransactionType | "all";
-  status    ?: TransactionStatus | "all";
+  page        : number;
+  limit       : number;
+  sortBy     ?: TransactionSortField;
+  sortOrder  ?: "asc" | "desc";
+  direction  ?: TransactionDirection | "all";
+  type       ?: TransactionType | "all";
+  status     ?: TransactionStatus | "all";
+}
+
+
+
+
+// ─── RESPONSE DATA PAYLOADS (The 'T' in ApiResponse<T>) ────────────────────────────────
+
+
+
+export interface WalletOverviewData {
+  walletBalance      : number;
+  recentTransactions : ITransactionState[];
 }

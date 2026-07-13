@@ -32,7 +32,7 @@ function formatEventDate(start: string) {
   };
 }
 
-function EventCard({ event }: { event: IEventState }) {
+function EventCard3({ event }: { event: IEventState }) {
   if (!event) return null;
 
   const navigate = useNavigate();
@@ -207,4 +207,4 @@ function EventCard({ event }: { event: IEventState }) {
   );
 }
 
-export default EventCard;
+export default EventCard3;

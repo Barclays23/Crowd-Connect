@@ -14,6 +14,8 @@ import { type z } from "zod";
 import { LoadingSpinner1 } from "../common/LoadingSpinner1";
 import { maskEmail } from "@/utils/namingConventions";
 import { FieldError } from "../ui/FieldError";
+import type { ApiResponse } from "@/types/common.types";
+import type { AuthEmailRequestData, EmailResponseData } from "@/types/auth.types";
 
 
 type OtpFormData = z.infer<typeof OtpSchema>;
@@ -79,7 +81,7 @@ const EmailVerification = () => {
       setIsSendingOtp(true);
       setServerError(null);
 
-      const response = await authService.requestAuthenticateEmail({ email });
+      const response: ApiResponse<AuthEmailRequestData> = await authService.requestAuthenticateEmail({ email });
       
       toast.success(response.message);
       setOtpSent(true);
@@ -90,6 +92,7 @@ const EmailVerification = () => {
       const errorMessage = getApiErrorMessage(error);
       if (errorMessage) toast.error(errorMessage);
       setServerError(errorMessage);
+
     } finally {
       setIsSendingOtp(false);
     }
@@ -101,7 +104,7 @@ const EmailVerification = () => {
     try {
       setServerError(null);
 
-      const response = await authService.verifyEmailService({
+      const response: ApiResponse<EmailResponseData> = await authService.verifyEmailService({
         otpCode: data.otpCode,
         email: data.email,
       });
@@ -112,7 +115,7 @@ const EmailVerification = () => {
         setUser({
           ...user,
           isEmailVerified: true,
-          email: response.email ?? user.email,
+          email: response.data.email ?? user.email,
         });
       }
 

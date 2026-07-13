@@ -1,8 +1,5 @@
 // frontend/src/types/payout.types.ts
 
-import type { IPagination } from "@/types/common.types";
-
-
 
 // move to constants
 export const PAYOUT_REQUEST_STATUSES = {
@@ -19,7 +16,8 @@ export type PayoutSortField = "requestedAt" | "grossAmount" | "netAmount" | "sta
 export type PayoutSortDirection = "asc" | "desc";
 
 
-export interface IPayoutRequest {
+
+export interface IPayoutState {
    payoutId       : string;
    eventId        : string;
    eventTitle     : string;
@@ -42,6 +40,7 @@ export interface IPayoutRequest {
    proofUrls?     : string[];
 }
 
+
 export interface IPayoutEligibleEvent {
    eventId        : string;
    title          : string;
@@ -56,24 +55,40 @@ export interface IPayoutEligibleEvent {
    canReapply?    : boolean;
 }
 
-export interface GetPayoutsApiResponse {
-   payouts      : IPayoutRequest[];
-   pagination   : IPagination
+
+
+
+// ─── REQUEST PAYLOADS ─────────────────────────────────────────────────────────
+
+export interface GetPayoutsQueryParams {
+   page?: number;
+   limit?: number;
+   sortBy?: PayoutSortField;
+   sortOrder?: PayoutSortDirection;
+   status?: string;
+   search?: string;
 }
 
-export interface GetEligibleEventsApiResponse {
-  commissionRate        : number;
-  minAttendancePercent  : number;
-  events                : IPayoutEligibleEvent[];
-}
 
-
-export interface RequestPayoutBody {
-   eventId     : string;
-   proofUrls?  : string[];
-}
-
-export interface ReviewPayoutBody {
-   action          : "approve" | "reject";
+export interface ReviewPayoutPayload {
+   action: "approve" | "reject";
    rejectionReason?: string;
 }
+
+
+
+
+
+// ─── RESPONSE DATA PAYLOADS (The 'T' in ApiResponse<T>) ────────────────────────────────
+
+export interface EligibleEventsData {
+  commissionRate       : number;
+  minAttendancePercent : number;
+  events               : IPayoutEligibleEvent[];
+}
+
+
+
+
+
+

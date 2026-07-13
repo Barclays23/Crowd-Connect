@@ -20,6 +20,7 @@ import type { UserState, UserUpsertResult } from "@/types/user.types"
 import { cn } from "@/lib/utils"
 import { getApiErrorMessage } from "@/utils/errorMessages.utils"
 import { USER_ROLES, USER_STATUS, type UserRole, type UserStatus } from "@/constants/user-system.constants"
+import type { ApiResponse } from "@/types/common.types"
 
 
 
@@ -143,7 +144,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
       setIsSubmitting(true);
       onSubmitting?.(true);
 
-      let response;
+      let response: ApiResponse<UserState>;
 
       if (isEditMode && user) {
         response = await userServices.editUserService(user.userId, formData);
@@ -154,7 +155,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
         toast.success(response.message);
       }
       
-      onSuccess?.(response?.userData);
+      onSuccess?.(response?.data);
 
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);

@@ -8,8 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'react-toastify';
 import UserAvatar from "../ui/userAvatar";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import type { LogoutResponse } from "@/types/auth.types";
 import logo from "@/assets/crowdconnect-logo-1.png";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -52,7 +52,7 @@ export function Navbar() {
 
    const handleLogout =  async () => {
       try {
-         const response: LogoutResponse = await logout();
+         const response: ApiResponse<void> = await logout();
          closeDrawer();
          navigate('/');
          toast.info(response.message);

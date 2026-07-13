@@ -5,47 +5,6 @@ import type { UserState } from "./user.types";
 
 
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-
-export interface RegisterPayload {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agreeTerms: boolean;
-}
-
-
-
-export interface LoginResponse {
-  authUser: UserState;
-  accessToken: string;
-  message: string;
-}
-
-export interface RegisterResponse {
-  message: string;
-  email: string;
-}
-
-export interface LogoutResponse {
-  message: string;
-}
-
-
-
-
-export interface AuthState {
-  user            : UserState | null;
-  accessToken     : string | null
-  isAuthenticated : boolean
-  isLoading       : boolean
-}
-
 
 /**
  * Defines the shape of React Router's location state object.
@@ -64,8 +23,72 @@ export type RouterLocationState = {
 };
 
 
-// export interface AuthResponse {   // replace this AuthResponse with AuthResponseDTO ??
-//   accessToken?: string;
-//   user?: UserState;
-//   message?: string;
-// }
+
+
+// PAYLOAD TYPES _______________________________________________
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agreeTerms: boolean;
+}
+
+
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+
+export interface AuthState {
+  user            : UserState | null;
+  accessToken     : string | null
+  isAuthenticated : boolean
+  isLoading       : boolean
+}
+
+
+
+
+// RESPONSE TYPES _______________________________________________
+
+
+export interface AuthTokensData {
+  authUser: UserState;
+  accessToken: string;
+}
+
+
+export interface AuthUserData {
+  authUser: UserState;
+}
+
+
+export interface EmailResponseData {
+  email: string;
+}
+
+
+export interface TokenValidationData {
+  isValid: boolean;
+}
+
+
+export interface AuthEmailRequestData {
+  requiresVerification: boolean;
+  email: string;
+}
+
+
+export interface RefreshTokenData {
+  newAccessToken: string;
+}

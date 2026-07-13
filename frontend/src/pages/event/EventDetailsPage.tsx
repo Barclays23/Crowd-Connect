@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -43,8 +44,9 @@ function EventDetailsPage() {
         (async () => {
             try {
                 setLoading(true);
-                const response = await eventServices.getEventDetails(eventId);
-                setEvent(response.eventDetails ?? response);
+                const response: ApiResponse<IEventState> = await eventServices.getEventDetails(eventId);
+                setEvent(response.data);
+
             } catch (error: unknown) {
                 const errorMessage = getApiErrorMessage(error);
                 if (errorMessage) toast.error(errorMessage);

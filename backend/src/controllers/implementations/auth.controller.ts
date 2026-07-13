@@ -5,7 +5,7 @@ import {IAuthController} from "../interfaces/IAuthController";
 import { createHttpError } from "@/utils/httpError.utils";
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from "@/utils/refreshCookie.utils";
 import { 
-    AuthResponseDto, 
+    AuthTokensData, 
     AuthUserResponseDto, 
     ResetPasswordDto, 
     SignInRequestDto 
@@ -45,13 +45,16 @@ export class AuthController implements IAuthController {
 
             setRefreshTokenCookie(res, refreshToken);
 
-            const authResponse: AuthResponseDto = {
+            const authData: AuthTokensData = {
                 authUser: safeUser,
                 accessToken: accessToken,
-                message: `${AUTH_MESSAGES.LOGIN_SUCCESS}`,
             };
 
-            res.status(HTTP_STATUS.OK).json(authResponse);
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: AUTH_MESSAGES.LOGIN_SUCCESS,
+                data: authData
+            });
 
 
         } catch (err: unknown) {
@@ -65,8 +68,9 @@ export class AuthController implements IAuthController {
             const userEmail = await this._registrationService.signUp(req.body);
 
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: `${AUTH_MESSAGES.OTP_SENT} ${AUTH_MESSAGES.VERIFY_ACCOUNT}`,
-                email: userEmail
+                data: { email: userEmail }
             });
 
         } catch (err: unknown) {
@@ -109,8 +113,9 @@ export class AuthController implements IAuthController {
 
             res.status(HTTP_STATUS.OK).json({
                 // even if the email is not registered, respond with success to avoid email enumeration
+                success: true,
                 message: AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
-                email: userEmail
+                data: { email: userEmail }
             });
 
         } catch (err: unknown) {
@@ -126,7 +131,9 @@ export class AuthController implements IAuthController {
             const isValid: boolean = await this._recoveryService.validateResetLink(token);
 
             res.status(HTTP_STATUS.OK).json({
-                isValid
+                success: true,
+                message: "Token validated successfully",
+                data: { isValid }
             });
 
         } catch (err: unknown) {
@@ -142,6 +149,7 @@ export class AuthController implements IAuthController {
             await this._passwordService.resetPassword({ token, newPassword });
 
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: AUTH_MESSAGES.PASSWORD_RESET_SUCCESS,
             });
 
@@ -164,9 +172,11 @@ export class AuthController implements IAuthController {
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                requiresVerification: true,
                 message: AUTH_MESSAGES.EMAIL_VERIFICATION_SENT,
-                email: userEmail
+                data: {
+                    requiresVerification: true,
+                    email: userEmail
+                }
             });
 
         } catch (err: unknown) {
@@ -195,7 +205,7 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: AUTH_MESSAGES.EMAIL_VERIFIED,
-                email: userEmail
+                data: { email: userEmail }
             });
 
         } catch (err: unknown) {
@@ -219,13 +229,17 @@ export class AuthController implements IAuthController {
 
             setRefreshTokenCookie(res, refreshToken);
 
-            const authResponse: AuthResponseDto = {
+            const authData: AuthTokensData = {
                 authUser: safeUser,
-                accessToken: accessToken,
-                message: AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS + ' ' + USER_MESSAGES.USER_CREATION_SUCCESS,
-            };
+                accessToken: accessToken
+            }
 
-            res.status(HTTP_STATUS.CREATED).json(authResponse);
+            res.status(HTTP_STATUS.CREATED).json({
+                success: true,
+                message: `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`,
+                data: authData    
+            });
+        
 
         } catch (err: unknown) {
             next(err);
@@ -238,8 +252,9 @@ export class AuthController implements IAuthController {
             const userEmail = await this._registrationService.resendOtp(req.body.email);
 
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: AUTH_MESSAGES.OTP_RESENT,
-                email: userEmail
+                data: { email: userEmail }
             });
 
         } catch (err: unknown) {
@@ -265,8 +280,9 @@ export class AuthController implements IAuthController {
             const newAccessToken = await this._sessionService.refreshAccessToken(refreshToken);
 
             res.status(HTTP_STATUS.OK).json({
+                success: true,
                 message: AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED,
-                newAccessToken: newAccessToken
+                data: { newAccessToken: newAccessToken }
             });
 
         } catch (err: unknown) {
@@ -285,8 +301,11 @@ export class AuthController implements IAuthController {
             }
 
             clearRefreshTokenCookie(res);
-            
-            res.status(HTTP_STATUS.OK).json({message: AUTH_MESSAGES.LOGOUT_SUCCESS});
+
+            res.status(HTTP_STATUS.OK).json({
+                success: true, 
+                message: AUTH_MESSAGES.LOGOUT_SUCCESS
+            });
 
         } catch (err: unknown) {
             next(err);
@@ -309,8 +328,9 @@ export class AuthController implements IAuthController {
             const userData: AuthUserResponseDto = await this._sessionService.getAuthUser(userId);
 
             res.status(HTTP_STATUS.OK).json({
-                // message: HttpResponse.AUTH_USER_FETCHED,
-                authUser: userData
+                success: true,
+                message: "User fetched successfully",
+                data: { authUser: userData }
             });
             
 

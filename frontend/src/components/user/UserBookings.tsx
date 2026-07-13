@@ -33,7 +33,7 @@ import { ConfirmationModal }   from "@/components/admin/confirmation-modal";
 import {
   type IBookingState,
   type BookingSortField,
-  type GetMyBookingsResponse,
+  type GetBookingsQueryParams,
 } from "@/types/booking.types";
 import BookingDetails              from "@/components/booking/BookingDetails";
 import { getBookingStatusVariant, getPaymentStatusVariant } from "@/utils/UI.utils";
@@ -45,6 +45,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constants";
 import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 import { BookingModal } from "@/components/booking/BookingModal";
+import type { ApiResponse } from "@/types/common.types";
 
 
 
@@ -95,31 +96,32 @@ function UserBookings() {
     setLoading(true);
     setError(null);
 
-    try {
-      const response: GetMyBookingsResponse = await bookingServices.getMyBookings({
-        page:      currentPage,
-        limit:     itemsPerPage,
-        sortBy,
-        sortOrder,
-        ...(statusFilter    !== "all" && { status:      statusFilter }),
-        ...(formatFilter !== "all" && { eventFormat: formatFilter }),
-        ...(debouncedSearch           && { search:      debouncedSearch }),
-      });
+    const params: GetBookingsQueryParams = {
+      page:      currentPage,
+      limit:     itemsPerPage,
+      sortBy,
+      sortOrder,
+      ...(statusFilter    !== "all" && { status:      statusFilter }),
+      ...(formatFilter    !== "all" && { eventFormat: formatFilter }),
+      ...(debouncedSearch           && { search:      debouncedSearch }),
+    };
 
-      setBookings(response.bookings ?? []);
-      setTotalBookings(response.pagination.totalCount ?? 0);
-      setTotalPages(
-        response.pagination.totalPages ??
-        Math.ceil((response.pagination.totalCount ?? 0) / itemsPerPage)
-      );
+    try {
+      const response: ApiResponse<IBookingState[]> = await bookingServices.getMyBookings(params);
+
+      setBookings(response.data ?? []);
+      setTotalBookings(response.pagination?.totalCount ?? 0);
+      setTotalPages(response.pagination?.totalPages ?? Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
+
     } catch (err: unknown) {
       const errorMessage = getApiErrorMessage(err);
       if (errorMessage) toast.error(errorMessage);
       setError(errorMessage ?? null);
+
     } finally {
       setLoading(false);
     }
-  }, [currentPage, statusFilter, formatFilter, debouncedSearch, sortBy, sortOrder]);
+  }, [currentPage, itemsPerPage, statusFilter, formatFilter, debouncedSearch, sortBy, sortOrder]);
 
 
 
@@ -169,7 +171,7 @@ function UserBookings() {
 
     try {
       setIsCancelling(true);
-      const response = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
+      const response: ApiResponse<void> = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
       toast.success(response.message);
       fetchMyBookings();
 

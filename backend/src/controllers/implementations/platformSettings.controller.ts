@@ -18,7 +18,11 @@ export class PlatformSettingsController implements ISettingsController {
             const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
             console.log('platform settings fetched :', settings)
 
-            res.status(HTTP_STATUS.OK).json({ success: true, settingsData: settings });
+            res.status(HTTP_STATUS.OK).json({ 
+                success: true, 
+                message: "Platform settings retrieved successfully",
+                data: settings 
+            });
 
         } catch (error) {
             next(error);
@@ -35,9 +39,13 @@ export class PlatformSettingsController implements ISettingsController {
             }
             
             const adminId: string = req.user.userId;
-            const updated: PlatformSettingsEntity = await this._settingsService.updatePlatformSettings(req.body, adminId);
+            const updatedSettings: PlatformSettingsEntity = await this._settingsService.updatePlatformSettings(req.body, adminId);
 
-            res.status(HTTP_STATUS.OK).json({ success: true, data: updated });
+            res.status(HTTP_STATUS.OK).json({ 
+                success: true, 
+                message: "Platform settings updated successfully",
+                data: updatedSettings 
+            });
             
         } catch (error) {
             next(error);
