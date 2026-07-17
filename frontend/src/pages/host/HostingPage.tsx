@@ -1,4 +1,4 @@
-// frontend/src/pages/host/HostPage.tsx
+// frontend/src/pages/host/HostingPage.tsx
 import { useEffect, useRef, useState } from 'react';
 import HostHeroSection from '@/pages/host/HostHeroSection';
 import HostEventSection from '@/pages/host/HostEventSection';
@@ -13,7 +13,7 @@ import type { UserState } from '@/types/user.types';
 
 
 
-const HostPage = () => {
+const HostingPage = () => {
    const hostEventRef = useRef<HTMLDivElement | null>(null);
    const [isLoading, setIsLoading] = useState(false);
    const { isAuthenticated, setUser } = useAuth();
@@ -29,7 +29,7 @@ const HostPage = () => {
          try {
             setIsLoading(true);
             const response: ApiResponse<UserState> = await userServices.getUserProfile();
-            console.log('Host User Profile data in HostPage:', response.data);
+            console.log('Host User Profile data in HostingPage:', response.data);
             toast.success(response.message)
             setUser(response.data);
 
@@ -81,4 +81,4 @@ const HostPage = () => {
    );
 };
 
-export default HostPage;
+export default HostingPage;

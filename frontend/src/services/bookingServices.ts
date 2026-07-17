@@ -61,13 +61,13 @@ export const bookingServices = {
       });
 
       const queryString: string  = searchParams.toString();
-      const endpoint: string     = `${API_ENDPOINTS.BOOKING.MY_BOOKINGS}?${queryString}`;
-      // const endpoint = queryString 
+      const endPoint: string     = `${API_ENDPOINTS.BOOKING.MY_BOOKINGS}?${queryString}`;
+      // const endPoint = queryString 
       //    ? `${API_ENDPOINTS.BOOKING.MY_BOOKINGS}?${queryString}` 
       //    : API_ENDPOINTS.BOOKING.MY_BOOKINGS;
 
       const response = await axiosInstance.get<ApiResponse<IBookingState[]>>(
-         endpoint,
+         endPoint,
          { withCredentials: true }
       );
       return response.data;
@@ -98,13 +98,13 @@ export const bookingServices = {
       });
 
       const queryString: string  = searchParams.toString();
-      const endpoint: string     = `${API_ENDPOINTS.ADMIN.BOOKINGS}?${queryString}`;
-      // const endpoint = queryString 
+      const endPoint: string     = `${API_ENDPOINTS.ADMIN.BOOKINGS}?${queryString}`;
+      // const endPoint = queryString 
       //    ? `${API_ENDPOINTS.ADMIN.BOOKINGS}?${queryString}` 
       //    : API_ENDPOINTS.ADMIN.BOOKINGS;
 
       const response = await axiosInstance.get<ApiResponse<IBookingState[]>>(
-         endpoint,
+         endPoint,
          { withCredentials: true }
       );
       
@@ -122,12 +122,12 @@ export const bookingServices = {
          ...(params.sortBy                               && { sortBy:    params.sortBy }),
          ...(params.sortOrder                            && { sortOrder: params.sortOrder }),
       });
-
+      
       const queryString: string = searchParams.toString();
-      const endpoint: string     = `${API_ENDPOINTS.EVENT}/${eventId}/bookings?${queryString}`;
+      const endPoint: string    = `${API_ENDPOINTS.EVENT.BOOKINGS_OF_EVENT(eventId)}?${queryString}`;
 
       const response = await axiosInstance.get<ApiResponse<IBookingState[]>>(
-         endpoint,
+         endPoint,
          { withCredentials: true }
       );
       return response.data;

@@ -9,6 +9,8 @@ import {
     CreateEventRequestDTO, 
     EventResponseDTO, 
     GetDiscoveryEventsResult, 
+    GetOrganiserEventsResult, 
+    OrganiserEventResponseDTO, 
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
 import { 
@@ -20,6 +22,7 @@ import {
 import { 
     mapCreateEventRequestDtoToInput, 
     mapEventEntityToEventResponseDto, 
+    mapOrganiserEventEntityToDTO, 
     mapToEventStatusUpdateInput, 
     mapUpdateEventRequestDtoToInput 
 } from "@/mappers/event.mapper";
@@ -30,7 +33,8 @@ import {
     EventFilterQuery, 
     GetEventsFilter, 
     GetAllEventsResult, 
-    GetPublicEventsFilter 
+    GetPublicEventsFilter, 
+    GetOrganiserEventsFilter
 } from "@/types/event.types";
 import { 
     buildChangeSummary, 
@@ -560,6 +564,27 @@ export class EventManagementServices implements IEventServices {
             pagination: {
                 totalCount: totalCount,
                 limit: limit,
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        };
+    }
+
+
+
+    async getOrganiserEvents(filters: GetOrganiserEventsFilter): Promise<GetOrganiserEventsResult> {
+        const { hostId, page, limit } = filters;
+        const skip = (page - 1) * limit;
+
+        const { events, totalCount } = await this._eventRepository.findOrganiserEvents(hostId, skip, limit);
+
+        const eventsData: OrganiserEventResponseDTO[] = events.map(mapOrganiserEventEntityToDTO);
+
+        return {
+            eventsData,
+            pagination: {
+                totalCount,
+                limit,
                 currentPage: page,
                 totalPages: Math.ceil(totalCount / limit)
             }

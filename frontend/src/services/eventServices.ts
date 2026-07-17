@@ -1,7 +1,7 @@
 import axiosInstance from "@/config/axios";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
 import type { ApiResponse } from "@/types/common.types";
-import type { GetPublicEventsParams, IEventState, UpdateEventStatusPayload } from "@/types/event.types";
+import type { GetOrganiserEventsResult, GetPublicEventsParams, IEventState, UpdateEventStatusPayload } from "@/types/event.types";
 
 
 
@@ -132,11 +132,11 @@ export const eventServices = {
    
    // for events listing in admin dashboard
    getAllEvents: async (queryString: string = ""): Promise<ApiResponse<IEventState[]>> => {
-      const endpoint = queryString 
+      const endPoint = queryString 
          ? `${API_ENDPOINTS.ADMIN.EVENTS}?${queryString}` 
          : API_ENDPOINTS.ADMIN.EVENTS;
                 
-      const response = await axiosInstance.get<ApiResponse<IEventState[]>>(endpoint, {
+      const response = await axiosInstance.get<ApiResponse<IEventState[]>>(endPoint, {
          withCredentials: true,
       });
       return response.data;
@@ -145,12 +145,12 @@ export const eventServices = {
 
    // for events listing in user dashboard
    getMyEvents: async (queryString: string = ""): Promise<ApiResponse<IEventState[]>> => {
-      const endpoint = queryString 
+      const endPoint = queryString 
          ? `${API_ENDPOINTS.EVENT.MY_EVENTS}?${queryString}` 
          : API_ENDPOINTS.EVENT.MY_EVENTS;
 
       const response = await axiosInstance.get<ApiResponse<IEventState[]>>(
-         endpoint, 
+         endPoint, 
          { withCredentials: true }
       );
       return response.data;
@@ -175,9 +175,9 @@ export const eventServices = {
       });
 
       const queryString: string  = searchParams.toString();
-      const endpoint = `${API_ENDPOINTS.EVENT.PUBLIC_EVENTS}?${queryString}`;
+      const endPoint = `${API_ENDPOINTS.EVENT.PUBLIC_EVENTS}?${queryString}`;
 
-      const response = await axiosInstance.get<ApiResponse<IEventState[]>>(endpoint);
+      const response = await axiosInstance.get<ApiResponse<IEventState[]>>(endPoint);
       return response.data;
    },
 
@@ -188,6 +188,22 @@ export const eventServices = {
          API_ENDPOINTS.EVENT.TRENDING,
          { withCredentials: true }
       );
+      return response.data;
+   },
+
+
+
+   getOrganiserEvents: async (params: { hostId: string; page?: number; limit?: number }): Promise<ApiResponse<GetOrganiserEventsResult>> => {
+      const searchParams = new URLSearchParams({
+         page: String(params.page ?? 1),
+         limit: String(params.limit ?? 10)
+      });
+
+      const queryString: string  = searchParams.toString();
+      const endpoint: string     = `${API_ENDPOINTS.EVENT.ORGANISER_EVENTS(params.hostId)}?${queryString}`;
+      
+      const response = await axiosInstance.get<ApiResponse<GetOrganiserEventsResult>>(endpoint);
+
       return response.data;
    },
 

@@ -8,6 +8,7 @@ import { CheckinController } from "@/controllers/implementations/checkin.control
 import { EventRepository } from "@/repositories/implementations/event.repository";
 import { requireEventOwner } from "@/middlewares/eventOwner.middleware";
 import { USER_ROLES } from "@/constants/user-system.constants";
+import { CHECKIN_ROUTES } from "@/constants/routes.constants";
 
 
 
@@ -35,8 +36,8 @@ const checkinRouter = Router({ mergeParams: true }); // mergeParams = carry :eve
 checkinRouter.use(authenticate, authorize(USER_ROLES.HOST), requireEventOwner);
 
 
-checkinRouter.post("/", checkinController.scanQRCode.bind(checkinController));
-checkinRouter.get("/attendance", checkinController.getEventAttendance.bind(checkinController));
+checkinRouter.post(CHECKIN_ROUTES.QR_SCAN, checkinController.scanQRCode.bind(checkinController));
+checkinRouter.get(CHECKIN_ROUTES.ATTENDEES, checkinController.getEventAttendance.bind(checkinController));
 
 
 

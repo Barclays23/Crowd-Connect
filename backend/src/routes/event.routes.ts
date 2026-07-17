@@ -92,6 +92,7 @@ eventRouter.get(EVENT_ROUTES.TRENDING_EVENTS,
     eventController.getTrendingEvents.bind(eventController)
 );
 
+
 // for public event details
 eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
     eventController.getEventDetails.bind(eventController)
@@ -100,6 +101,13 @@ eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
 
 eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER_ROLES.HOST, USER_ROLES.ADMIN),
     eventController.getAllBookingsOfEvent.bind(eventController)
+);
+
+
+// Public route for Organiser Portfolio
+eventRouter.get(
+    EVENT_ROUTES.ORGANISER_EVENTS, 
+    eventController.getOrganiserEvents.bind(eventController)
 );
 
 

@@ -16,6 +16,7 @@ export interface IEventController {
     getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void>
     getDiscoveryEvents(req: Request, res: Response, next: NextFunction): Promise<void>;
     getTrendingEvents(req: Request, res: Response, next: NextFunction): Promise<void>;
+    getOrganiserEvents(req: Request, res: Response, next: NextFunction): Promise<void>
 
     getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void>;
 

@@ -68,10 +68,10 @@ export const userServices = {
         });
 
         const queryString: string  = searchParams.toString();
-        const endpoint = `${API_ENDPOINTS.ADMIN.USERS}?${queryString}`;
+        const endPoint = `${API_ENDPOINTS.ADMIN.USERS}?${queryString}`;
 
         const response = await axiosInstance.get<ApiResponse<UserState[]>>(
-            endpoint, 
+            endPoint, 
             { withCredentials: true }
         );
         return response.data;

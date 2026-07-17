@@ -23,6 +23,7 @@ import { USER_STATUS } from "@/constants/user-system.constants";
 
 
 
+
 export class UserProfileService implements IUserProfileService {
     constructor(
         private _userRepository: IUserRepository
@@ -147,6 +148,7 @@ export class UserProfileService implements IUserProfileService {
             throw error;
         }
     }
+
 
 
 

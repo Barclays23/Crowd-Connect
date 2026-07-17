@@ -129,7 +129,9 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: USER_MESSAGES.PROFILE_PICTURE_CHANGED,
-                data: { profilePic: updatedUser.profilePic },
+                data: { 
+                    profilePic: updatedUser.profilePic,
+                },
             });
 
         } catch (err: unknown) {

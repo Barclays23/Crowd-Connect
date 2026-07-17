@@ -4,7 +4,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
     Calendar, MapPin, Users, Tag, Wifi, Clock, ChevronLeft,
     Share2, Heart, Ticket, AlertCircle, CheckCircle,
-    Info, CalendarX
+    Info, CalendarX,
+    Star
 } from "lucide-react";
 import { eventServices } from "@/services/eventServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -245,16 +246,46 @@ function EventDetailsPage() {
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* Organiser + Category */}
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-(--bg-tertiary) border border-(--card-border) flex items-center justify-center text-(--text-tertiary)">
-                                <Users size={18} />
+                        <div className="flex items-center gap-4">
+                            {/* Clickable Host / Organiser Profile Area */}
+                            <div 
+                                onClick={() => navigate(`/organiser/${event.organizer?.hostId}`)}
+                                className="flex items-center gap-3 cursor-pointer group hover:bg-(--bg-secondary) p-2 -ml-2 rounded-xl transition-colors"
+                            >
+                                {/* Avatar */}
+                                <div className="w-12 h-12 rounded-full overflow-hidden bg-(--bg-tertiary) border border-(--card-border) flex items-center justify-center text-(--text-tertiary) shrink-0">
+                                    {event.organizer?.profilePic ? (
+                                        <img src={event.organizer.profilePic} alt={event.organizer.organizerName} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Users size={20} />
+                                    )}
+                                </div>
+                                
+                                {/* Host Info & Rating */}
+                                <div>
+                                    <p className="text-[10px] text-(--text-tertiary) uppercase tracking-wider font-semibold mb-0.5">Organised by</p>
+                                    <p className="text-sm font-bold text-(--heading-primary) group-hover:text-(--brand-primary) transition-colors">
+                                        {event.organizer?.organizerName}
+                                    </p>
+                                    {/* Star Rating */}
+                                    {event.organizer?.ratingAverage > 0 ? (
+                                        <div className="flex items-center gap-1 mt-0.5 text-xs font-semibold text-amber-500">
+                                            <Star size={12} fill="currentColor" />
+                                            {event.organizer.ratingAverage.toFixed(1)} 
+                                            <span className="text-(--text-tertiary) font-normal">({event.organizer.totalReviews} reviews)</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1 mt-1 text-[10px] font-medium text-(--text-tertiary)">
+                                            <Star size={10} className="text-(--border-muted)" />
+                                            No reviews yet
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-xs text-(--text-tertiary) uppercase tracking-wider">Organised by</p>
-                                <p className="text-sm font-semibold text-(--heading-primary)">{event.organizer?.organizerName}</p>
-                            </div>
+
+                            {/* Category Badge on the right */}
                             <div className="ml-auto">
-                                <Badge variant={categoryBadgeVariant} size="md" className="gap-1.5">
+                                <Badge variant={categoryBadgeVariant} size="md" className="gap-1.5 shadow-sm">
                                     <Tag size={12} />
                                     {event.category}
                                 </Badge>

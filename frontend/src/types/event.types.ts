@@ -6,6 +6,7 @@ import type { IPagination } from "@/types/common.types";
 
 
 
+
 export interface IEventState {
   eventId             : string;
   title               : string;
@@ -17,7 +18,10 @@ export interface IEventState {
   organizer           : {
     hostId        : string;
     hostName      : string;
+    profilePic?   : string;
     organizerName : string;
+    ratingAverage : number; 
+    totalReviews  : number;
   };
 
   startDateTime       : string;
@@ -73,7 +77,7 @@ export type EventSortDirection = "asc" | "desc";
 
 
 
-// PAYLOAD TYPES _______________________________________________
+// REQUEST PAYLOAD TYPES ------------------------------------------------------------
 
 export interface UpdateEventStatusPayload {
   eventStatus: EventStatus;
@@ -101,5 +105,22 @@ export interface GetPublicEventsParams {
 
 
 
-// RESPONSE TYPES _______________________________________________
+// RESPONSE PAYLOAD TYPES ------------------------------------------------------------
 
+export interface OrganiserEventsData {
+  eventId: string;
+  title: string;
+  category: string;
+  posterUrl: string;
+  startDateTime: string;
+  format: string;
+  eventStatus: string;
+  ratingAverage: number; 
+  totalReviews: number;
+}
+
+
+export interface GetOrganiserEventsResult {
+  eventsData: OrganiserEventsData[];
+  pagination: IPagination;
+}

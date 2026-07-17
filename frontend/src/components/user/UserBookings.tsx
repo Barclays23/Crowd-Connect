@@ -9,6 +9,7 @@ import {
   Hash,
   Ticket,
   Search,
+  Star,
 } from "lucide-react";
 import { Button }   from "@/components/ui/button";
 import { Input }    from "@/components/ui/input";
@@ -46,6 +47,7 @@ import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constant
 import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 import { BookingModal } from "@/components/booking/BookingModal";
 import type { ApiResponse } from "@/types/common.types";
+import { ReviewModal } from "@/components/review/ReviewModal";
 
 
 
@@ -73,6 +75,10 @@ function UserBookings() {
   const [cancelError, setCancelError] = useState<string | null>(null);
 
   const [activeRetryBooking, setActiveRetryBooking] = useState<IBookingState | null>(null);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [bookingToReview, setBookingToReview] = useState<IBookingState | null>(null);
+
 
   const itemsPerPage = 10;
 
@@ -187,6 +193,13 @@ function UserBookings() {
       setCancelError(null);
       setIsCancelling(false);
     }
+  };
+
+
+
+  const openReviewModal = (booking: IBookingState) => {
+    setBookingToReview(booking);
+    setReviewModalOpen(true);
   };
 
 
@@ -342,6 +355,8 @@ function UserBookings() {
                 const isFree    = booking.totalAmount === 0;
                 const canCancel = canCancelBooking(booking);
                 const isEventExpired = new Date(booking.event.endDateTime) < new Date();
+                // const canReview = isEventExpired && booking.bookingStatus === BOOKING_STATUS.ATTENDED;
+                const canReview = isEventExpired && !!booking.checkedInAt;
 
                 return (
                   <TableRow key={booking.bookingId}>
@@ -413,6 +428,19 @@ function UserBookings() {
                     {/* Action Buttons */}
                     <TableCell className="text-right pr-5">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Review Button */}
+                        {canReview && (
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                            onClick={() => openReviewModal(booking)}
+                          >
+                            <Star size={14} className="mr-1" />
+                            Rate Event
+                          </Button>
+                        )}
+
                         <Button
                           variant="primaryOutline"
                           size="xs"
@@ -523,6 +551,21 @@ function UserBookings() {
           {cancelError && <FieldError message={cancelError}/>}
         </div>
       </ConfirmationModal>
+
+
+      {/* REVIEW AND RATING MODAL */}
+      {bookingToReview && (
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setBookingToReview(null);
+          }}
+          bookingId={bookingToReview.bookingId}
+          eventTitle={bookingToReview.event.title}
+          onSuccess={() => fetchMyBookings()}
+        />
+      )}
     </div>
   );
 }

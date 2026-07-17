@@ -18,7 +18,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6965ff22a0d2f36cb12c983f',
       hostName: 'Review User',
-      organizerName: 'Brototype Update'
+      organizerName: 'Brototype Update',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'Wertyuio',
     category: 'Education & Workshops',
@@ -49,7 +51,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6965ff22a0d2f36cb12c983f',
       hostName: 'Review User',
-      organizerName: 'Brototype Update'
+      organizerName: 'Brototype Update',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'Wertyuiop Changed',
     category: 'Film & Media',
@@ -76,7 +80,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6965ff22a0d2f36cb12c983f',
       hostName: 'Review User',
-      organizerName: 'Brototype Update'
+      organizerName: 'Brototype Update',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'April Fool',
     category: 'Fashion & Beauty',
@@ -103,7 +109,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6965ff22a0d2f36cb12c983f',
       hostName: 'Review User',
-      organizerName: 'Brototype Update'
+      organizerName: 'Brototype Update',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'New Event 2026',
     category: 'Kids & Family',
@@ -135,7 +143,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6965ff22a0d2f36cb12c983f',
       hostName: 'Review User',
-      organizerName: 'Brototype Update'
+      organizerName: 'Brototype Update',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'ABDCIUYT',
     category: 'Weddings & Social Gatherings',
@@ -162,7 +172,9 @@ const featuredEvents: IEventState[] = [
     organizer: {
       hostId: '6953c1b1e1e167fd8026dec5',
       hostName: 'werty',
-      organizerName: 'Thanal Club'
+      organizerName: 'Thanal Club',
+      ratingAverage: 4.8, // <-- ADD THIS
+      totalReviews: 124,  // <-- ADD THIS
     },
     title: 'Test Event',
     category: 'Art & Exhibitions',

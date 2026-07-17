@@ -80,6 +80,8 @@ export interface IUserRepository {
 
     decrementWalletBalance(userId: string, debitAmount: number, options?: { session?: ClientSession }): Promise<number | null>;
 
+    updateHostRatingStats(hostId: string, ratingAverage: number, totalReviews: number): Promise<void>;
+
     startSession(): Promise<ClientSession>;
 
 }

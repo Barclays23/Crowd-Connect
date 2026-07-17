@@ -5,6 +5,7 @@ import {
     HostManageRequestDto,
     HostStatusUpdateResponseDto, 
     HostUpgradeRequestDto, 
+    OrganiserProfileResponseDTO, 
     UserProfileResponseDto 
 } from "@/dtos/user.dto";
 
@@ -27,5 +28,7 @@ export interface IHostManagementServices {
         updateDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File | undefined;
     }): Promise<UserProfileResponseDto>;
+
+    getOrganiserProfile(hostId: string): Promise<OrganiserProfileResponseDTO>
 
 }

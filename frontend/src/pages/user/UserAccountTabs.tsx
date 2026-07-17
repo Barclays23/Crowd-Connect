@@ -1,3 +1,4 @@
+// frontend/src/pages/user/UserAccountTabs.tsx
 import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -20,17 +21,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import UserFavourites from '@/components/user/UserFavourites';
 
+
+
 const ALL_TABS = [
-  { id: 'profile',    label: 'My Profile',  icon: User,             path: '/my-account' },
-  { id: 'dashboard',  label: 'Dashboard',   icon: LayoutDashboard,  path: '/dashboard' },
-  { id: 'events',     label: 'My Events',   icon: Calendar,         path: '/my-events' },
-  { id: 'bookings',   label: 'My Bookings', icon: BookOpen,         path: '/my-bookings' },
-  { id: 'favourites', label: 'Favourites',    icon: Heart,            path: '/my-favourites' },
-  { id: 'wallet',     label: 'Wallet',      icon: Wallet,           path: '/my-wallet' },
-  { id: 'payouts',    label: "Payouts",     icon: IndianRupee,      path: "/my-payouts" }
+  { id: 'profile',    label: 'Profile',         icon: User,             path: '/my-account' },
+  { id: 'dashboard',  label: 'Dashboard',       icon: LayoutDashboard,  path: '/dashboard' },
+  { id: 'events',     label: 'Hosted Events',   icon: Calendar,         path: '/my-events' },
+  { id: 'bookings',   label: 'Bookings',        icon: BookOpen,         path: '/my-bookings' },
+  { id: 'favourites', label: 'Favourites',      icon: Heart,            path: '/my-favourites' },
+  { id: 'wallet',     label: 'Wallet',          icon: Wallet,           path: '/my-wallet' },
+  { id: 'payouts',    label: "Payouts",         icon: IndianRupee,      path: "/my-payouts" }
 ] as const;
 
+
 type TabId = (typeof ALL_TABS)[number]['id'];
+
+
 
 const pathToTab: Record<string, TabId> = {
   '/my-account'     : 'profile',

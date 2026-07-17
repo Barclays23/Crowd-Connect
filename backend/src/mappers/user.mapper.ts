@@ -6,7 +6,8 @@ import {
    HostUpgradeRequestDto, 
    BaseUserResponseDto,
    HostManageRequestDto,
-   HostStatusUpdateResponseDto, 
+   HostStatusUpdateResponseDto,
+   OrganiserProfileResponseDTO, 
 } from "@/dtos/user.dto";
 
 import { AuthUserResponseDto, SignUpRequestDto } from "@/dtos/auth.dto";
@@ -79,11 +80,9 @@ export const mapUserModelToHostEntity = (doc: IUserModel): HostEntity => {
       appliedAt: doc.hostAppliedAt ?? undefined,
       reviewedAt: doc.hostReviewedAt ?? undefined,
       hostRejectionReason: doc.hostRejectionReason ?? undefined,
-      
-      // certificateUrl: doc.certificateUrl,
-      // hostRejectionReason: doc.hostRejectionReason,
-      // appliedAt: doc.hostAppliedAt,
-      // reviewedAt: doc.hostReviewedAt,
+
+      ratingAverage: doc.ratingAverage ?? 0,
+      totalReviews: doc.totalReviews ?? 0,
    };
 };
 
@@ -99,7 +98,23 @@ export const mapUserModelToProfileEntity = (doc: IUserModel): UserProfileEntity 
       ...hostEntity,
    };
 };
-   
+
+
+
+
+export const mapToOrganiserProfileDTO = (host: HostEntity): OrganiserProfileResponseDTO => {
+   return {
+      hostId: host.userId,
+      organizerName: host.organizationName || host.name,
+      email: host.email,
+      mobile: host.mobile,
+      profilePic: host.profilePic,
+      businessAddress: host.businessAddress,
+      ratingAverage: host.ratingAverage || 0,
+      totalReviews: host.totalReviews || 0,
+   };
+};
+
 
 
 
@@ -168,6 +183,8 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
          hostStatus: host.hostStatus ?? null,
          hostAppliedAt: host.appliedAt ? host.appliedAt.toISOString() : null,
          hostRejectionReason: host.hostRejectionReason ?? undefined,
+         ratingAverage: host.ratingAverage ?? 0,
+         totalReviews: host.totalReviews ?? 0,
       };
 
       return hostProfile;
@@ -263,22 +280,7 @@ export const mapUpdateUserRequestDtoToInput = ({updateDto, profilePicUrl}: {
 
 
 
-// only for host upgrade / apply application
-// export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
-//    upgradeDto: HostUpgradeRequestDto,
-//    hostDocumentUrl?: string
-// }): UpgradeHostInput => {
-//    const hostEntity: Partial<HostEntity> = {
-//       organizationName: upgradeDto.organizationName,
-//       registrationNumber: upgradeDto.registrationNumber,
-//       businessAddress: upgradeDto.businessAddress,
-//       hostStatus: "pending",
-//    };
-//    if (hostDocumentUrl !== undefined) hostEntity.certificateUrl = hostDocumentUrl;
-//    return hostEntity;
-// }
-
-
+// for host upgrade / apply application
 export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
   upgradeDto: HostUpgradeRequestDto;
   hostDocumentUrl?: string;  // when re-apply, mandatory or not??

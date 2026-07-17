@@ -7,6 +7,7 @@ import DetailItem from '../ui/detail-item';
 import { capitalize } from '@/utils/namingConventions';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
 import { hostServices } from '@/services/hostServices';
+import { Star } from 'lucide-react';
 
 
 
@@ -144,38 +145,54 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
             <div className="space-y-6">
                <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
                <DetailItem label="Registration Number" value={profile.registrationNumber || '—'} />
-               <DetailItem
-               label="Business Address"
-               value={profile.businessAddress || '—'}
-               isMultiline
-               />
+               <DetailItem label="Business Address" value={profile.businessAddress || '—'} isMultiline/>
+
+               {/* RATINGS BLOCK */}
+               {profile.hostStatus === 'approved' && (
+                 <div>
+                    <label className="block text-sm font-medium text-(--text-secondary) mb-1.5">
+                       Your Host Rating
+                    </label>
+                    <div className="flex items-center gap-3">
+                       <div className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-sm font-bold w-fit">
+                          <Star size={16} fill="currentColor" />
+                          {profile.ratingAverage && profile.ratingAverage > 0 ? profile.ratingAverage.toFixed(1) : "No rating yet"}
+                       </div>
+                       {(profile.totalReviews ?? 0) > 0 && (
+                          <span className="text-sm font-medium text-(--text-tertiary)">
+                             based on {profile.totalReviews} ovations
+                          </span>
+                       )}
+                    </div>
+                 </div>
+               )}
 
                <div className="pt-4 border-t border-(--card-border)/60">
-               <div className="flex flex-wrap gap-x-10 gap-y-5">
-                  <DetailItem
-                     label="Host Status"
-                     value={capitalize(profile.hostStatus || '—')}
-                     accent={
-                     profile.hostStatus === 'approved'
-                        ? 'text-(--status-success) font-semibold'
-                        : profile.hostStatus === 'rejected' || profile.hostStatus === 'blocked'
-                        ? 'text-(--status-error) font-semibold'
-                        : 'text-(--badge-warning-text) font-semibold'
-                     }
-                  />
-                  {profile.hostAppliedAt && (
+                  <div className="flex flex-wrap gap-x-10 gap-y-5">
                      <DetailItem
-                     label="Applied On"
-                     value={formatDate1(profile.hostAppliedAt)}
+                        label="Host Status"
+                        value={capitalize(profile.hostStatus || '—')}
+                        accent={
+                        profile.hostStatus === 'approved'
+                           ? 'text-(--status-success) font-semibold'
+                           : profile.hostStatus === 'rejected' || profile.hostStatus === 'blocked'
+                           ? 'text-(--status-error) font-semibold'
+                           : 'text-(--badge-warning-text) font-semibold'
+                        }
                      />
-                  )}
-                  {profile.reviewedAt && (
-                     <DetailItem
-                        label="Reviewed On"
-                        value={formatDate1(profile.reviewedAt)}
-                     />
-                  )}
-               </div>
+                     {profile.hostAppliedAt && (
+                        <DetailItem
+                        label="Applied On"
+                        value={formatDate1(profile.hostAppliedAt)}
+                        />
+                     )}
+                     {profile.reviewedAt && (
+                        <DetailItem
+                           label="Reviewed On"
+                           value={formatDate1(profile.reviewedAt)}
+                        />
+                     )}
+                  </div>
                </div>
 
                {profile.hostStatus === 'rejected' && profile.hostRejectionReason && (

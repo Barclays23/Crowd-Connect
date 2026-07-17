@@ -1,6 +1,6 @@
 // frontend/src/types/user.types.ts
 import type { HostStatus, UserRole, UserStatus } from "@/constants/user-system.constants";
-import type { IPagination } from "@/types/common.types";
+
 
 
 // move to constants
@@ -30,6 +30,8 @@ export interface UserState {
   hostStatus?: HostStatus;
   hostRejectionReason?: string;
   reviewedAt?: string;
+  ratingAverage?: number;
+  totalReviews?: number;
 
   createdAt: string;
 }
@@ -107,4 +109,16 @@ export interface HostStatusUpdateData {
   hostStatus: HostStatus;
   hostReviewedAt?: string;
   hostRejectionReason?: string;
+}
+
+
+export interface OrganiserProfileData {
+  hostId: string;
+  organizerName: string;
+  profilePic?: string;
+  ratingAverage: number;
+  totalReviews: number;
+  businessAddress?: string;
+  email: string;
+  mobile?: string;
 }

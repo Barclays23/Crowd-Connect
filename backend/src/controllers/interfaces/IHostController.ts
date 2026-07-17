@@ -6,4 +6,5 @@ export interface IHostController {
     getAllHosts (req: Request, res: Response, next: NextFunction): Promise<void>
     manageHostStatus (req: Request, res: Response, next: NextFunction): Promise<void>
     updateHostByAdmin (req: Request, res: Response, next: NextFunction): Promise<void>
+    getOrganiserProfile (req: Request, res: Response, next: NextFunction): Promise<void>
 }

@@ -5,6 +5,40 @@
 
 
 
+export const ADMIN_ROUTES = {
+    // User Management
+    GET_USERS           : '/users',
+    CREATE_USER         : '/users',
+    EDIT_USER           : '/users/:id',
+    DELETE_USER         : '/users/:id',
+    TOGGLE_BLOCK_USER   : '/users/:id/toggle-block',
+
+    // Host Management
+    GET_HOSTS           : '/hosts',
+    MANAGE_HOST_REQUEST : '/hosts/:hostId/manage-host-request',
+    UPDATE_HOST         : '/hosts/:hostId/update-host',
+    
+    
+    // Event Mangement
+    GET_EVENTS      : '/events',
+    SUSPEND_EVENT   : '/events/:eventId/suspend',
+    UPDATE_EVENT    : '/events/:eventId/update',
+    DELETE_EVENT    : '/events/:eventId',
+    
+    
+    // Booking Mangement
+    GET_BOOKINGS    : '/bookings',
+    CANCEL_BOOKING  : '/bookings/:bookingId/cancel',
+
+
+    // Payout Mangement
+    GET_PAYOUTS     : '/payouts',
+    REVIEW_PAYOUT   : '/payouts/:payoutId/review',
+
+} as const;
+
+
+
 export const AI_ROUTES = {
     GENERATE_EVENT_POSTER   : "/generate-event-poster",
 } as const;
@@ -38,20 +72,23 @@ export const AUTH_ROUTES = {
 
 
 
-export const USER_ROUTES = {
-    GET_PROFILE         : '/profile',
-    BASIC_INFO          : '/basic-info',
-    UPDATE_PROFILE_PIC  : '/profile-pic',
-    CHANGE_PASSWORD     : '/change-password',
+
+export const BOOKING_ROUTES = {
+    CANCEL_BOOKING      : '/:bookingId/cancel',
+    MY_BOOKINGS         : '/my-bookings',
+    INITIATE_BOOKING    : '/initiate/:eventId',
+    BOOKING_DETAILS     : '/:bookingId',
+    VERIFY_PAYMENT      : '/:bookingId/verify-payment',
+    RETRY_PAYMENT       : '/:bookingId/retry-payment', 
 } as const;
 
 
 
 
 
-export const HOST_ROUTES = {
-    APPLY_UPGRADE       : '/apply-upgrade',
-    UPDATE_HOST_DETAILS : '/update-details',
+export const CHECKIN_ROUTES = {
+    QR_SCAN    : '/scan',
+    ATTENDEES  : '/attendees',
 } as const;
 
 
@@ -67,17 +104,59 @@ export const EVENT_ROUTES = {
     TRENDING_EVENTS         : '/trending-events',
     EVENT_DETAILS           : '/events/:eventId',
     GET_BOOKINGS_OF_EVENT   : '/:eventId/bookings',
+    ORGANISER_EVENTS        : '/organiser/:hostId/events',
 } as const;
 
 
 
-export const BOOKING_ROUTES = {
-    CANCEL_BOOKING      : '/:bookingId/cancel',
-    MY_BOOKINGS         : '/my-bookings',
-    INITIATE_BOOKING    : '/initiate/:eventId',
-    BOOKING_DETAILS     : '/:bookingId',
-    VERIFY_PAYMENT      : '/:bookingId/verify-payment',
-    RETRY_PAYMENT       : '/:bookingId/retry-payment', 
+
+
+export const HOST_ROUTES = {
+    APPLY_UPGRADE       : '/apply-upgrade',
+    UPDATE_HOST_DETAILS : '/update-details',
+    ORGANISER_PROFILE   : '/organiser/:hostId',
+} as const;
+
+
+
+
+
+
+export const PAYOUT_ROUTES = {
+    ELIGIBLE_EVENTS : '/eligible-events',
+    REQUEST_PAYOUT  : '/events/:eventId/request',
+    MY_PAYOUTS      : '/my-payouts'
+}
+
+
+
+export const PUBLIC_ROUTES = {
+    ORGANISER_PROFILE : '/organiser/:hostId',
+} as const;
+
+
+
+
+export const REVIEW_ROUTES = {
+    SUBMIT_REVIEW       : '/',          // bookingId is passed in body
+    MANAGE_REVIEW       : '/:reviewId', // for edit/delete (put/delete),
+    GET_HOST_REVIEWS    : '/host/:hostId',
+} as const;
+
+
+
+export const SETTINGS_ROUTES = {
+    GET_SETTINGS    : '/',
+    UPDATE_SETTINGS : '/',
+} as const;
+
+
+
+export const USER_ROUTES = {
+    GET_PROFILE         : '/profile',
+    BASIC_INFO          : '/basic-info',
+    UPDATE_PROFILE_PIC  : '/profile-pic',
+    CHANGE_PASSWORD     : '/change-password',
 } as const;
 
 
@@ -86,6 +165,7 @@ export const WALLET_ROUTES = {
     MY_WALLET           : '/my-wallet',
     WALLET_TRANSACTIONS : '/transactions'
 } as const;
+
 
 
 export const WEBHOOK_ROUTES = {
@@ -98,51 +178,3 @@ export const WEBHOOK_ROUTES = {
 } as const;
 
 
-
-
-export const SETTINGS_ROUTES = {
-    GET_SETTINGS    : '/',
-    UPDATE_SETTINGS : '/',
-} as const;
-
-
-export const PAYOUT_ROUTES = {
-    ELIGIBLE_EVENTS : '/eligible-events',
-    REQUEST_PAYOUT  : '/events/:eventId/request',
-    MY_PAYOUTS      : '/my-payouts'
-}
-
-
-
-
-export const ADMIN_ROUTES = {
-    // User Management
-    GET_USERS           : '/users',
-    CREATE_USER         : '/users',
-    EDIT_USER           : '/users/:id',
-    DELETE_USER         : '/users/:id',
-    TOGGLE_BLOCK_USER   : '/users/:id/toggle-block',
-
-    // Host Management
-    GET_HOSTS           : '/hosts',
-    MANAGE_HOST_REQUEST : '/hosts/:hostId/manage-host-request',
-    UPDATE_HOST         : '/hosts/:hostId/update-host',
-    
-    
-    // Event Mangement
-    GET_EVENTS      : '/events',
-    SUSPEND_EVENT   : '/events/:eventId/suspend',
-    UPDATE_EVENT    : '/events/:eventId/update',
-    DELETE_EVENT    : '/events/:eventId',
-    
-    
-    // Booking Mangement
-    GET_BOOKINGS    : '/bookings',
-    CANCEL_BOOKING  : '/bookings/:bookingId/cancel',
-
-
-    // Payout Mangement
-    GET_PAYOUTS     : '/payouts',
-    REVIEW_PAYOUT   : '/payouts/:payoutId/review',
-
-} as const;

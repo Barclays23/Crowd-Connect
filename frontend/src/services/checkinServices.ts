@@ -30,7 +30,6 @@ export const checkinServices = {
 
     async getAttendance(eventId: string): Promise<ApiResponse<GetAttendanceResult>> {
         const res = await axiosInstance.get<ApiResponse<GetAttendanceResult>>(
-            // `/api/event/${eventId}/checkin/attendance`,
             API_ENDPOINTS.CHECKIN.ATTENDEES(eventId),
             { withCredentials: true }
         );

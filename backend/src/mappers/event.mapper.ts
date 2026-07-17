@@ -1,4 +1,10 @@
-import { DEFAULT_RADIUS_KM, EVENT_STATUSES, EventCategory, EventFormat, TicketType } from "@/constants/event.constants";
+import { 
+   DEFAULT_RADIUS_KM, 
+   EVENT_STATUSES, 
+   EventCategory, 
+   EventFormat, 
+   TicketType 
+} from "@/constants/event.constants";
 import { 
    CreateEventRequestDTO, 
    EventResponseDTO, 
@@ -21,6 +27,11 @@ import { getEventDisplayStatus } from "@/utils/eventStatus.utils";
 import { capitalize, toTitleCase } from "@/utils/string.utils";
 import { Request } from "express";
 import { Types } from "mongoose";
+import { OrganiserEventEntity } from "@/entities/event.entity";
+import { OrganiserEventResponseDTO } from "@/dtos/event.dto";
+
+
+
 
 
 /* ────────────────────────────────── HTTP REQUEST → DTO / FILTER ────────────────────────────────── */
@@ -154,6 +165,23 @@ export const mapEventModelToEventEntity = (
       createdAt: doc.createdAt,
    }
 };
+
+
+
+// Mongoose Document -> Entity (Repo to Service)
+export const mapDocToOrganiserEventEntity = (doc: IEventModel): OrganiserEventEntity => {
+   return {
+      eventId: doc._id.toString(),
+      title: doc.title,
+      category: doc.category,
+      posterUrl: doc.posterUrl,
+      startDateTime: doc.startDateTime,
+      format: doc.format,
+      eventStatus: doc.eventStatus,
+      ratingAverage: doc.ratingAverage || 0,
+      totalReviews: doc.totalReviews || 0
+   };
+};
    
 
 
@@ -162,9 +190,7 @@ export const mapEventModelToEventEntity = (
 
 /* ────────────────────────────────── ENTITY → RESPONSE DTO ────────────────────────────────── */
 
-export const mapEventEntityToEventResponseDto = (
-  entity: EventEntity
-): EventResponseDTO => ({
+export const mapEventEntityToEventResponseDto = (entity: EventEntity): EventResponseDTO => ({
    
    eventId: entity.eventId,
    // hostRef: entity.hostRef,
@@ -208,6 +234,24 @@ export const mapEventEntityToEventResponseDto = (
    
    createdAt: entity.createdAt.toISOString(),
 });
+
+
+
+
+// Map Entity -> Response DTO (Service to Controller)
+export const mapOrganiserEventEntityToDTO = (entity: OrganiserEventEntity): OrganiserEventResponseDTO => {
+   return {
+      eventId: entity.eventId,
+      title: entity.title,
+      category: entity.category,
+      posterUrl: entity.posterUrl,
+      startDateTime: entity.startDateTime.toISOString(),
+      format: entity.format,
+      eventStatus: entity.eventStatus,
+      ratingAverage: entity.ratingAverage,
+      totalReviews: entity.totalReviews
+   };
+};
 
 
 

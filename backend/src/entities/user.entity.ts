@@ -1,7 +1,6 @@
-// // backend/src/entities/user.entity.ts
+// backend/src/entities/user.entity.ts
 
 import { 
-  USER_ROLES, HOST_STATUS, 
   UserRole, HostStatus, UserStatus 
 } from "@/constants/user-system.constants";
 import { AuthProvider } from "@/types/user.types";
@@ -80,6 +79,8 @@ export interface HostEntity extends UserEntity {
   hostRejectionReason?: string;
   appliedAt?          : Date;
   reviewedAt?         : Date;
+  ratingAverage?      : number;
+  totalReviews?       : number;
 }
 
 export interface UserProfileEntity extends HostEntity, UserEntity {}

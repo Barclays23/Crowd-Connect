@@ -44,6 +44,8 @@ export interface IUserModel {
   hostReviewedAt?     : Date;
   hostReviewedBy?     : Types.ObjectId;
   hostRejectionReason?: string;
+  ratingAverage?      : number;
+  totalReviews?       : number;
 
   createdAt : Date;
   updatedAt : Date;

@@ -53,6 +53,21 @@ export interface EventEntity {
 
 
 
+// The slim entity for the organiser events portfolio
+export interface OrganiserEventEntity {
+  eventId: string;
+  title: string;
+  category: EventCategory;
+  posterUrl: string;
+  startDateTime: Date;
+  format: EventFormat;
+  eventStatus: EventStatus;
+  ratingAverage: number;
+  totalReviews: number;
+}
+
+
+
 
 
 /* ───────────────── DB INPUTS ENTITY ───────────────── */

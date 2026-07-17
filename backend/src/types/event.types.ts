@@ -55,7 +55,9 @@ export interface IEventModel {
   // Status & Views
   eventStatus: EventStatus;
   views: number;       // for trending/popular calculation
-   
+  ratingAverage: number;
+  totalReviews: number;
+
   // Event Cancellation
   cancellation?: {
     reason: string;
@@ -191,6 +193,17 @@ export const allowedEventSortFields = [
 // rename to SortOrder
 export type SortQuery = Record<string, 1 | -1>;
 
+
+
+
+
+
+// for fetching an organiser's past and present events
+export interface GetOrganiserEventsFilter {
+  page: number;
+  limit: number;
+  hostId: string;
+}
 
 
 

@@ -397,6 +397,27 @@ export class EventController implements IEventController {
 
 
 
+    async getOrganiserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const hostId = req.params.hostId as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const result = await this._eventServices.getOrganiserEvents({ hostId, page, limit });
+
+            res.status(200).json({
+                success: true,
+                message: "Organiser events fetched successfully",
+                data: result
+            });
+            
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
     async getEventDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const eventId = req.params.eventId as string;

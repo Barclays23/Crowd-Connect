@@ -4,12 +4,14 @@ import {
     CreateEventRequestDTO, 
     EventResponseDTO, 
     GetDiscoveryEventsResult, 
+    GetOrganiserEventsResult, 
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
 import { 
     GetEventsFilter, 
     GetAllEventsResult, 
-    GetPublicEventsFilter 
+    GetPublicEventsFilter, 
+    GetOrganiserEventsFilter
 } from "@/types/event.types";
 
 
@@ -45,6 +47,8 @@ export interface IEventServices {
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     
     getEventsForDiscovery(filters: GetPublicEventsFilter): Promise<GetDiscoveryEventsResult>;
+
+    getOrganiserEvents(filters: GetOrganiserEventsFilter): Promise<GetOrganiserEventsResult>
 
     getTrendingEvents(limit: number): Promise<EventResponseDTO[]>;
     

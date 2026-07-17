@@ -6,6 +6,7 @@ import type {
   GetHostsQueryParams, 
   HostStatusUpdateData, 
   ManageHostPayload, 
+  OrganiserProfileData, 
   UserState 
 } from "@/types/user.types";
 
@@ -54,10 +55,10 @@ export const hostServices = {
     });
 
     const queryString: string  = searchParams.toString();
-    const endpoint = `${API_ENDPOINTS.ADMIN.HOSTS}?${queryString}`;
+    const endPoint = `${API_ENDPOINTS.ADMIN.HOSTS}?${queryString}`;
 
     const response = await axiosInstance.get<ApiResponse<UserState[]>>(
-      endpoint,
+      endPoint,
       { withCredentials: true },
     );
 
@@ -109,6 +110,15 @@ export const hostServices = {
     );
     return response.data;
   },
+
+  
+
+  getOrganiserProfile: async (hostId: string): Promise<ApiResponse<OrganiserProfileData>> => {
+    const response = await axiosInstance.get<ApiResponse<OrganiserProfileData>>(
+      API_ENDPOINTS.HOST.ORGANISER_PROFILE(hostId)
+    );
+    return response.data;
+  }
 
 
 

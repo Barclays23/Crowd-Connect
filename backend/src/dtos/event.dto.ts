@@ -104,8 +104,30 @@ export interface EventResponseDTO {
 
 
 
+// smaller, lightweight DTO for the organiser's portfolio
+export interface OrganiserEventResponseDTO {
+  eventId: string;
+  title: string;
+  category: string;
+  posterUrl: string;
+  startDateTime: string;
+  format: string;
+  eventStatus: string;
+  ratingAverage: number;
+  totalReviews: number;
+}
+
+
+
+
 export interface GetDiscoveryEventsResult {
   eventsData: EventResponseDTO[];
   pagination: IPagination;
 }
 
+
+
+export interface GetOrganiserEventsResult {
+  eventsData: OrganiserEventResponseDTO[];
+  pagination: IPagination;
+}

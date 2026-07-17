@@ -395,6 +395,18 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
 
 
+  async hasUserAttendedEvent(userId: string, eventId: string): Promise<boolean> {
+    const attendedBooking = await this.findOneQuery({
+      userRef: new Types.ObjectId(userId),
+      eventRef: new Types.ObjectId(eventId),
+      checkedInAt: { $exists: true, $ne: null } // True if they scanned in at least once! (if any of the tickets scanned for this event by this user)
+    }).lean();
+
+    return !!attendedBooking;
+  }
+
+
+
   async bulkCancelBookings(bookingIds: string[], updateInput: BulkCancelBookingsInput): Promise<void> {
     await this.updateMany(
       { _id: { $in: bookingIds.map(id => new Types.ObjectId(id)) } },

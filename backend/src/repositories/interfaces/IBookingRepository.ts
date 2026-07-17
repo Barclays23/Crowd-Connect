@@ -72,5 +72,7 @@ export interface IBookingRepository {
   findPendingBookingsForEvent(eventId: string):   Promise<BookingEntityPopulated[]>;
   bulkCancelBookings(bookingIds: string[], updateInput: BulkCancelBookingsInput): Promise<void>;
   
+  hasUserAttendedEvent(userId: string, eventId: string): Promise<boolean>;
+  
   startSession(): Promise<ClientSession>;
 }

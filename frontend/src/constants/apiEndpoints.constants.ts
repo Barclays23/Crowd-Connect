@@ -14,6 +14,7 @@ const API_PREFIX = {
     EVENT    : "/api/event",
     HOST     : "/api/host",
     PAYOUT   : "/api/payout",
+    REVIEW   : "/api/reviews",
     SETTINGS : "/api/settings",
     USER     : "/api/user",
     WALLET   : "/api/wallet",
@@ -23,13 +24,7 @@ const API_PREFIX = {
 
 // exact endpoints using the prefixes
 export const API_ENDPOINTS = {
-    USER: {
-        PROFILE         : `${API_PREFIX.USER}/profile`,
-        BASIC_INFO      : `${API_PREFIX.USER}/basic-info`,
-        PROFILE_PIC     : `${API_PREFIX.USER}/profile-pic`,
-        CHANGE_PASSWORD : `${API_PREFIX.USER}/change-password`,
-    },
-    
+
     ADMIN: {
         // user management
         USERS           : `${API_PREFIX.ADMIN}/users`,
@@ -58,29 +53,8 @@ export const API_ENDPOINTS = {
 
     },
 
-    EVENT: {
-        CREATE          : `${API_PREFIX.EVENT}/create-event`,
-        TRENDING        : `${API_PREFIX.EVENT}/trending-events`,
-        MY_EVENTS       : `${API_PREFIX.EVENT}/my-events`,
-        PUBLIC_EVENTS   : `${API_PREFIX.EVENT}/public-events`,
-        DETAILS         : (eventId: string) => `${API_PREFIX.EVENT}/events/${eventId}`,
-        UPDATE          : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/update`,
-        PUBLISH         : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/publish`,
-        CANCEL          : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/cancel`,
-    },
-
-    BOOKING: {
-        MY_BOOKINGS     : `${API_PREFIX.BOOKING}/my-bookings`,
-        // INITIATE        : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/initiate-booking`,
-        INITIATE        : (eventId: string) => `${API_PREFIX.BOOKING}/initiate/${eventId}`,
-        DETAILS         : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}`,
-        VERIFY_PAYMENT  : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/verify-payment`, 
-        RETRY_PAYMENT   : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/retry-payment`, 
-        CANCEL          : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/cancel`,
-    },
-
-    SETTINGS: {
-        BASE            : API_PREFIX.SETTINGS,
+    AI: {
+        GENERATE_EVENT_POSTER : `${API_PREFIX.AI}/generate-event-poster`,
     },
 
     AUTH: {
@@ -98,6 +72,36 @@ export const API_ENDPOINTS = {
         LOGOUT              : `${API_PREFIX.AUTH}/logout`,
 
         GOOGLE_LOGIN_URL    : `${BACKEND_BASE_URL}${API_PREFIX.AUTH}/google`,
+    },   
+    
+    BOOKING: {
+        MY_BOOKINGS     : `${API_PREFIX.BOOKING}/my-bookings`,
+        // INITIATE        : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/initiate-booking`,
+        INITIATE        : (eventId: string) => `${API_PREFIX.BOOKING}/initiate/${eventId}`,
+        DETAILS         : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}`,
+        VERIFY_PAYMENT  : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/verify-payment`, 
+        RETRY_PAYMENT   : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/retry-payment`, 
+        CANCEL          : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/cancel`,
+    },
+
+    CHECKIN: {
+        QR_SCAN         : (eventId: string) => `${API_PREFIX.CHECKIN}/${eventId}/scan`,
+        VERIFY          : (bookingId: string) => `${API_PREFIX.CHECKIN}/verify/${bookingId}`,  // using this route anywhare??
+        ATTENDEES       : (eventId: string) => `${API_PREFIX.CHECKIN}/${eventId}/attendees`,  // or attendance
+        // ATTENDEES       : (eventId: string): string => `${API_PREFIX.CHECKIN}/events/${eventId}/attendees`,
+    },
+
+    EVENT: {
+        CREATE              : `${API_PREFIX.EVENT}/create-event`,
+        TRENDING            : `${API_PREFIX.EVENT}/trending-events`,
+        MY_EVENTS           : `${API_PREFIX.EVENT}/my-events`,
+        PUBLIC_EVENTS       : `${API_PREFIX.EVENT}/public-events`,
+        DETAILS             : (eventId: string) => `${API_PREFIX.EVENT}/events/${eventId}`,
+        UPDATE              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/update`,
+        PUBLISH             : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/publish`,
+        CANCEL              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/cancel`,
+        BOOKINGS_OF_EVENT   : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/bookings`,
+        ORGANISER_EVENTS    : (hostId: string) => `${API_PREFIX.EVENT}/organiser/${hostId}/events`,
     },
 
     HOST: {
@@ -106,12 +110,31 @@ export const API_ENDPOINTS = {
         // ONBOARDING          : `${API_PREFIX.HOST}/onboarding`,  // using anywhere ??
         APPLY_UPGRADE       : `${API_PREFIX.HOST}/apply-upgrade`,
         UPDATE_DETAILS      : `${API_PREFIX.HOST}/update-details`,
+        ORGANISER_PROFILE   : (hostId: string) => `${API_PREFIX.HOST}/organiser/${hostId}`,
     },
 
     PAYOUT: {
         ELIGIBLE_EVENTS    : `${API_PREFIX.PAYOUT}/eligible-events`,
         MY_PAYOUTS         : `${API_PREFIX.PAYOUT}/my-payouts`,
         REQUEST            : (eventId: string) => `${API_PREFIX.PAYOUT}/events/${eventId}/request`,
+    },
+
+    REVIEW: {
+        // SUBMIT_REVIEW   : (bookingId: string) => `${API_PREFIX.REVIEW}/bookings/${bookingId}`,
+        SUBMIT_REVIEW   : `${API_PREFIX.REVIEW}`,
+        MANAGE_REVIEW   : (reviewId: string) => `${API_PREFIX.REVIEW}/${reviewId}`,  // edit or delete review
+        HOST_REVIEWS    : (hostId: string) => `${API_PREFIX.REVIEW}/host/${hostId}`,
+    },
+
+    SETTINGS: {
+        BASE            : API_PREFIX.SETTINGS,
+    },
+
+    USER: {
+        PROFILE         : `${API_PREFIX.USER}/profile`,
+        BASIC_INFO      : `${API_PREFIX.USER}/basic-info`,
+        PROFILE_PIC     : `${API_PREFIX.USER}/profile-pic`,
+        CHANGE_PASSWORD : `${API_PREFIX.USER}/change-password`,
     },
 
     WALLET: {
@@ -121,14 +144,7 @@ export const API_ENDPOINTS = {
         // ADD_FUNDS       : `${API_PREFIX.WALLET}/add-funds`,
     },
 
-    AI: {
-        GENERATE_EVENT_POSTER : `${API_PREFIX.AI}/generate-event-poster`,
-    },
 
-    CHECKIN: {
-        QR_SCAN         : (eventId: string) => `${API_PREFIX.CHECKIN}/${eventId}/scan`,
-        VERIFY          : (bookingId: string) => `${API_PREFIX.CHECKIN}/verify/${bookingId}`,  // using this route anywhare??
-        ATTENDEES       : (eventId: string) => `${API_PREFIX.CHECKIN}/${eventId}/attendees`,
-        // ATTENDEES       : (eventId: string): string => `${API_PREFIX.CHECKIN}/events/${eventId}/attendees`,
-    }
+
+
 };

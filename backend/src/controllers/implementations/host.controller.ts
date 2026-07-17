@@ -95,6 +95,24 @@ export class HostController implements IHostController {
     }
 
 
+    async getOrganiserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const hostId = req.params.hostId as string;
+            
+            const organizerProfile = await this._hostService.getOrganiserProfile(hostId);
+
+            res.status(200).json({
+                success: true,
+                message: "Organiser profile fetched successfully",
+                data: organizerProfile
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
     async manageHostStatus (req: Request, res: Response, next: NextFunction) : Promise<void> {
         try {
             const hostId = req.params?.hostId as string;

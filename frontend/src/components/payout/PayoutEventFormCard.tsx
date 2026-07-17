@@ -1,5 +1,4 @@
 // frontend/src/components/payout/PayoutEventFormCard.tsx
-// frontend/src/components/payout/PayoutEventFormCard.tsx
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/FieldError";
 import { PayoutRequestSchema, type PayoutRequestFormValues } from "@/schemas/payout.schema";

@@ -53,10 +53,10 @@ export const payoutServices = {
         });
 
         const queryString: string  = searchParams.toString();
-        const endpoint = `${API_ENDPOINTS.PAYOUT.MY_PAYOUTS}?${queryString}`;
+        const endPoint = `${API_ENDPOINTS.PAYOUT.MY_PAYOUTS}?${queryString}`;
 
         const response = await axiosInstance.get<ApiResponse<IPayoutState[]>>(
-            endpoint, 
+            endPoint, 
             { withCredentials: true }
         );
         return response.data;
@@ -76,10 +76,10 @@ export const payoutServices = {
         });
 
         const queryString: string  = searchParams.toString();
-        const endpoint = `${API_ENDPOINTS.ADMIN.PAYOUTS}?${queryString}`;
+        const endPoint = `${API_ENDPOINTS.ADMIN.PAYOUTS}?${queryString}`;
 
         const response = await axiosInstance.get<ApiResponse<IPayoutState[]>>(
-            endpoint, 
+            endPoint, 
             { withCredentials: true }
         );
         return response.data;

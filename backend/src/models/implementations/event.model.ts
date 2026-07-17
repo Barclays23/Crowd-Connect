@@ -1,8 +1,12 @@
 // src/models/implementations/event.model.ts
-
-import { ALL_EVENT_CATEGORIES, EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
 import { IEventModel } from "@/types/event.types";
 import { model, Model, Schema, HydratedDocument } from "mongoose";
+import { 
+   ALL_EVENT_CATEGORIES, 
+   EVENT_FORMATS, 
+   EVENT_STATUSES, 
+   TICKET_TYPES 
+} from "@/constants/event.constants";
 
 
 
@@ -112,6 +116,19 @@ const eventSchema = new Schema<IEventModel>(
          required: true
       },
       views: {
+         type: Number,
+         default: 0,
+         min: 0,
+      },
+
+      // --- Reviews & Ratings ---
+      ratingAverage: {
+         type: Number,
+         default: 0,
+         min: 0,
+         max: 5,
+      },
+      totalReviews: {
          type: Number,
          default: 0,
          min: 0,

@@ -91,6 +91,9 @@ export interface HostResponseDto {
   hostRejectionReason?: string;
   appliedAt?: string | null;
   reviewedAt?: string | null;
+
+  ratingAverage?: number;
+  totalReviews?: number;
 }
 
 
@@ -110,3 +113,17 @@ export interface HostStatusUpdateResponseDto {
 }
 
 
+
+
+
+// for the public Organiser Profile
+export interface OrganiserProfileResponseDTO {
+  hostId: string;
+  organizerName: string;
+  email: string;
+  mobile?: string;
+  profilePic?: string;
+  ratingAverage: number;
+  totalReviews: number;
+  businessAddress?: string;
+}

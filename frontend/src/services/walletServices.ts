@@ -36,10 +36,10 @@ export const walletServices = {
       });
 
       const queryString: string  = searchParams.toString();
-      const endpoint: string     = `${API_ENDPOINTS.WALLET.TRANSACTIONS}?${queryString}`;
+      const endPoint: string     = `${API_ENDPOINTS.WALLET.TRANSACTIONS}?${queryString}`;
 
       const response = await axiosInstance.get<ApiResponse<ITransactionState[]>>(
-         endpoint, 
+         endPoint, 
          { withCredentials: true }
       );
       return response.data;

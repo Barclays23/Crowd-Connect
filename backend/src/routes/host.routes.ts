@@ -37,7 +37,11 @@ hostRouter.post(HOST_ROUTES.APPLY_UPGRADE, authenticate, authorize(USER_ROLES.US
     hostController.applyHostUpgrade.bind(hostController)
 );
 
-
+// Public route for Organiser Profile
+hostRouter.get(
+    HOST_ROUTES.ORGANISER_PROFILE, 
+    hostController.getOrganiserProfile.bind(hostController)
+);
 
 
 

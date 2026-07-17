@@ -28,6 +28,7 @@ import Login from "@/pages/auth/Login";
 import Registration from "@/pages/auth/Registration";
 import { OTPVerification } from "@/components/auth/OTPVerification";
 import ResetPasswordPage from "@/pages/user/ResetPasswordPage";
+import GoogleAuthSuccess from "@/components/auth/GoogleAuthSuccess";
 
 
 // User Pages
@@ -40,8 +41,9 @@ import EventDetailsPage from "@/pages/event/EventDetailsPage";
 
 
 // Host pages
-import HostPage from "@/pages/host/HostPage";
-
+import HostingPage from "@/pages/host/HostingPage";
+import OrganiserDetailsPage from "@/pages/host/OrganiserDetailsPage";
+import EventDashboard from "@/pages/event/EventDashboard";
 
 
 // admin pages
@@ -52,8 +54,10 @@ import AdminEventList from "@/pages/admin/AdminEvents";
 import AdminBookingsList from "@/pages/admin/AdminBookingsList";
 import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
 import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
-import GoogleAuthSuccess from "@/components/auth/GoogleAuthSuccess";
-import EventDashboard from "@/pages/event/EventDashboard";
+
+
+
+
 
 
 
@@ -78,7 +82,8 @@ function App() {
                               <Route path="/" element={<HomePage />} />
                               <Route path="/events" element={<EventsDiscoveryPage />} />
                               <Route path="/events/:eventId" element={<EventDetailsPage />} />
-                              <Route path="/host" element={<HostPage />} />
+                              <Route path="/host" element={<HostingPage />} />
+                              <Route path="/organiser/:hostId" element={<OrganiserDetailsPage />} />
                               <Route path="/otp-verification" element={<OTPVerification />} />
                               <Route path="/reset-password" element={<ResetPasswordPage />} />
 

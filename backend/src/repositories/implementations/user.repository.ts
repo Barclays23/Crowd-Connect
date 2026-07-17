@@ -245,7 +245,15 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
         );
 
         return updated ? updated.walletBalance : null;
-    }    
+    }
+
+
+
+    async updateHostRatingStats(hostId: string, ratingAverage: number, totalReviews: number): Promise<void> {
+        await this.findByIdAndUpdate(hostId, { 
+            $set: { ratingAverage, totalReviews } 
+        });
+    }
 
     
 

@@ -4,6 +4,7 @@ import {
     HostManageRequestDto, 
     HostStatusUpdateResponseDto, 
     HostUpgradeRequestDto, 
+    OrganiserProfileResponseDTO, 
     UserProfileResponseDto 
 } from "@/dtos/user.dto";
 import { createHttpError } from "@/utils/httpError.utils";
@@ -23,7 +24,8 @@ import {
     mapHostUpgradeRequestDtoToInput, 
     mapUserEntityToProfileDto,
     mapToHostStatusUpdateResponseDto,
-    mapUpdateHostDTOToInput, 
+    mapUpdateHostDTOToInput,
+    mapToOrganiserProfileDTO, 
 } from "@/mappers/user.mapper";
 import { HOST_STATUS, HostStatus, USER_ROLES, UserRole } from "@/constants/user-system.constants";
 import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "@/types/user.types";
@@ -280,6 +282,16 @@ export class HostManagementServices implements IHostManagementServices {
         } catch (error: unknown) {
             throw error;
         }
+    }
+
+
+    async getOrganiserProfile(hostId: string): Promise<OrganiserProfileResponseDTO> {
+        const host = await this._userRepository.getHostById(hostId);
+        if (!host || host.role !== USER_ROLES.HOST) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Organiser not found.");
+        }
+
+        return mapToOrganiserProfileDTO(host);
     }
 
 

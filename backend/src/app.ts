@@ -59,17 +59,18 @@ app.use(passport.initialize());
 
 
 // Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/user', userRouter);
-app.use('/api/host', hostRouter);
-app.use('/api/event', eventRouter);
-app.use('/api/booking', bookingRouter);
-app.use('/api/wallet', walletRouter);
-app.use('/api/settings', settingsRouter);
-app.use('/api/event/:eventId/checkin', checkinRouter);
-app.use('/api/payout', payoutRouter);
 app.use("/api/ai", aiRouter);
+app.use('/api/auth', authRoutes);
+app.use('/api/booking', bookingRouter);
+app.use('/api/checkin/:eventId', checkinRouter);
+app.use('/api/event', eventRouter);
+app.use('/api/host', hostRouter);
+app.use('/api/payout', payoutRouter);
+app.use("/api/reviews", aiRouter);
+app.use('/api/settings', settingsRouter);
+app.use('/api/user', userRouter);
+app.use('/api/wallet', walletRouter);
 
 
 

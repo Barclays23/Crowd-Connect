@@ -5,9 +5,10 @@ import {
    CreateEventInput, 
    EventEntity, 
    EventStatusUpdateInput, 
+   OrganiserEventEntity, 
    UpdateEventInput 
 } from "@/entities/event.entity";
-import { mapEventModelToEventEntity } from "@/mappers/event.mapper";
+import { mapDocToOrganiserEventEntity, mapEventModelToEventEntity } from "@/mappers/event.mapper";
 import Event from "@/models/implementations/event.model";
 import { BaseRepository } from "@/repositories/base.repository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
@@ -18,7 +19,7 @@ import {
    SortQuery 
 } from "@/types/event.types";
 import { isGeoNearQuery } from "@/utils/general.utils";
-import { ClientSession } from "mongoose";
+import { ClientSession, Types } from "mongoose";
 
 
 
@@ -181,10 +182,40 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
 
 
+   async findOrganiserEvents(hostId: string, skip: number, limit: number): Promise<{ events: OrganiserEventEntity[], totalCount: number }> {
+      const query = {
+         hostRef: new Types.ObjectId(hostId),
+         eventStatus: { $in: [EVENT_STATUSES.PUBLISHED, EVENT_STATUSES.COMPLETED] }
+      };
+
+      const [docs, totalCount]: [IEventModel[], number] = await Promise.all([
+         this.findManyQuery(query)
+            .sort({ startDateTime: -1 }) // Most recent events first
+            .skip(skip)
+            .limit(limit)
+            .select('title category posterUrl startDateTime format eventStatus ratingAverage totalReviews') // Only fetch needed fields
+            .lean()
+            .exec(),
+         this.countDocuments(query)
+      ]);
+
+      const events: OrganiserEventEntity[] = docs.map(mapDocToOrganiserEventEntity);
+
+      return { events, totalCount };
+   }
+
+
+
    async updateEvent(eventId: string, updateInput: UpdateEventInput): Promise<EventEntity|null> {
       const updatedEventData: IEventModel | null = await this.findByIdAndUpdate(eventId, { $set: updateInput });
       const updatedEvent: EventEntity | null = updatedEventData ? mapEventModelToEventEntity(updatedEventData) : null;
       return updatedEvent;
+   }
+
+
+   
+   async deleteEvent(eventId: string): Promise<void> {
+      await this.findByIdAndDelete(eventId);
    }
 
 
@@ -245,10 +276,12 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
 
 
-
-   async deleteEvent(eventId: string): Promise<void> {
-      await this.findByIdAndDelete(eventId);
+   async updateEventRatingStats(eventId: string, ratingAverage: number, totalReviews: number): Promise<void> {
+      await this.findByIdAndUpdate(eventId, { 
+         $set: { ratingAverage, totalReviews } 
+      });
    }
+
    
 
     
