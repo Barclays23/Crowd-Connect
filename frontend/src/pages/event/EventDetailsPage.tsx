@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
 import type { ApiResponse } from "@/types/common.types";
+import ReviewsSection from "@/components/review/ReviewsSection";
+import { StarRating } from "@/components/common/StarRating";
 
 
 
@@ -47,6 +49,7 @@ function EventDetailsPage() {
                 setLoading(true);
                 const response: ApiResponse<IEventState> = await eventServices.getEventDetails(eventId);
                 setEvent(response.data);
+                console.log('EventDetailsPage response :', response)
 
             } catch (error: unknown) {
                 const errorMessage = getApiErrorMessage(error);
@@ -214,26 +217,53 @@ function EventDetailsPage() {
 
                     {/* Bottom info overlay */}
                     <div className="absolute bottom-5 left-5 right-5">
-                        <div className="flex flex-wrap gap-2 mb-3">
-                            <Badge
-                                variant={isFree ? "success" : "primary"}
-                                size="md"
-                                className="backdrop-blur-sm"
-                            >
-                                {isFree ? "Free Entry" : `₹${event.ticketPrice?.toLocaleString("en-IN")} / ticket`}
-                            </Badge>
-                            <Badge
-                                variant={isOnline ? "info" : "secondary"}
-                                size="md"
-                                className="flex items-center gap-1 backdrop-blur-sm"
-                            >
-                                {isOnline ? <Wifi size={11} /> : <MapPin size={11} />}
-                                {isOnline ? "Online Event" : "In-Person"}
-                            </Badge>
+                        <div className="flex flex-wrap items-end justify-between gap-4">
+                            
+                            {/* Left Side: Badges & Title */}
+                            <div>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    <Badge
+                                        variant={isFree ? "success" : "primary"}
+                                        size="md"
+                                        className="backdrop-blur-sm"
+                                    >
+                                        {isFree ? "Free Entry" : `₹${event.ticketPrice?.toLocaleString("en-IN")} / ticket`}
+                                    </Badge>
+                                    <Badge
+                                        variant={isOnline ? "info" : "secondary"}
+                                        size="md"
+                                        className="flex items-center gap-1 backdrop-blur-sm"
+                                    >
+                                        {isOnline ? <Wifi size={11} /> : <MapPin size={11} />}
+                                        {isOnline ? "Online Event" : "In-Person"}
+                                    </Badge>
+                                </div>
+                                <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight drop-shadow-lg">
+                                    {event.title}
+                                </h1>
+                            </div>
+
+                            {/* Right Side: Rating Block inside Hero */}
+                            {event.ratingAverage > 0 && (
+                                <div className="flex flex-col items-center justify-center shrink-0 bg-black/40 backdrop-blur-md border border-white/20 p-3 sm:px-5 rounded-xl">
+                                    <span className="text-xl sm:text-2xl font-black text-(--overlay-text) leading-none mb-1.5">
+                                        {event.ratingAverage.toFixed(1)}
+                                    </span>
+                                    
+                                    <StarRating 
+                                        rating={event.ratingAverage} 
+                                        size={14} 
+                                        className="text-(--badge-warning-text)" 
+                                        emptyColorClassName="text-(--overlay-text)/30" 
+                                    />
+                                    
+                                    <span className="text-[10px] text-(--overlay-text)/80 font-medium tracking-wide uppercase mt-1.5">
+                                        {event.totalReviews} {event.totalReviews === 1 ? "Review" : "Reviews"}
+                                    </span>
+                                </div>
+                            )}
+
                         </div>
-                        <h1 className="text-2xl sm:text-4xl font-extrabold text-white leading-tight drop-shadow-lg">
-                            {event.title}
-                        </h1>
                     </div>
                 </div>
             </div>
@@ -254,8 +284,8 @@ function EventDetailsPage() {
                             >
                                 {/* Avatar */}
                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-(--bg-tertiary) border border-(--card-border) flex items-center justify-center text-(--text-tertiary) shrink-0">
-                                    {event.organizer?.profilePic ? (
-                                        <img src={event.organizer.profilePic} alt={event.organizer.organizerName} className="w-full h-full object-cover" />
+                                    {event.organizer?.organizationLogo ? (
+                                        <img src={event.organizer?.organizationLogo} alt={event.organizer.organizationName} className="w-full h-full object-cover" />
                                     ) : (
                                         <Users size={20} />
                                     )}
@@ -265,12 +295,15 @@ function EventDetailsPage() {
                                 <div>
                                     <p className="text-[10px] text-(--text-tertiary) uppercase tracking-wider font-semibold mb-0.5">Organised by</p>
                                     <p className="text-sm font-bold text-(--heading-primary) group-hover:text-(--brand-primary) transition-colors">
-                                        {event.organizer?.organizerName}
+                                        {event.organizer?.organizationName}
                                     </p>
                                     {/* Star Rating */}
                                     {event.organizer?.ratingAverage > 0 ? (
                                         <div className="flex items-center gap-1 mt-0.5 text-xs font-semibold text-amber-500">
-                                            <Star size={12} fill="currentColor" />
+                                            <StarRating 
+                                                rating={event.organizer.ratingAverage} 
+                                                size={12} 
+                                            />
                                             {event.organizer.ratingAverage.toFixed(1)} 
                                             <span className="text-(--text-tertiary) font-normal">({event.organizer.totalReviews} reviews)</span>
                                         </div>
@@ -492,6 +525,17 @@ function EventDetailsPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* ── Event Reviews Section (Only for Past Events) ── */}
+                {isEnded && !isCancelled && (
+                    <div className="mt-16 pt-10">
+                        <ReviewsSection 
+                            eventId={event.eventId} 
+                            averageRating={event.ratingAverage} 
+                            totalReviews={event.totalReviews} 
+                        />
+                    </div>
+                )}
             </div>
 
             {user && (

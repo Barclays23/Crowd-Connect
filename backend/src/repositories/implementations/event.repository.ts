@@ -58,7 +58,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
 
       const query = this.findManyQuery(filters)
          .select('-onlineLink') // don't fetch link for public users
-         .populate("hostRef", "name organizationName");
+         .populate("hostRef", "organizationName organizationLogo ratingAverage totalReviews");
 
       const isGeospatial = filters.location && isGeoNearQuery(filters.location);
 
@@ -193,7 +193,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
             .sort({ startDateTime: -1 }) // Most recent events first
             .skip(skip)
             .limit(limit)
-            .select('title category posterUrl startDateTime format eventStatus ratingAverage totalReviews') // Only fetch needed fields
+            .select('title category posterUrl startDateTime endDateTime format eventStatus ratingAverage totalReviews') // Only fetch needed fields
             .lean()
             .exec(),
          this.countDocuments(query)

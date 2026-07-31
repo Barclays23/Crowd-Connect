@@ -11,9 +11,11 @@ export interface EventEntity {
   eventId       : string;
   // hostRef: string;
   organizer     : {
-    hostId        : string;
-    hostName      : string;
-    organizerName : string;
+    hostId            : string;
+    organizationName  : string;
+    organizationLogo? : string;
+    ratingAverage     : number;
+    totalReviews      : number;
   };
 
   title         : string;
@@ -41,6 +43,10 @@ export interface EventEntity {
   eventStatus   : EventStatus;
   views         : number;       // for trending/popular calculation
 
+  // Event-Level Ratings
+  ratingAverage : number;
+  totalReviews  : number;
+
   // Event Cancellation
   cancellation? : {
     reason        : string;
@@ -60,6 +66,7 @@ export interface OrganiserEventEntity {
   category: EventCategory;
   posterUrl: string;
   startDateTime: Date;
+  endDateTime: Date;
   format: EventFormat;
   eventStatus: EventStatus;
   ratingAverage: number;

@@ -89,10 +89,11 @@ export class HostManagementServices implements IHostManagementServices {
     }
 
 
-    async applyHostUpgrade({ userId, upgradeDto, documentFile }: {
+    async applyHostUpgrade({ userId, upgradeDto, documentFile, logoFile }: {
         userId: string;
         upgradeDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File;
+        logoFile: Express.Multer.File;
     }): Promise<UserProfileResponseDto> {
         try {
             console.log("✅✅✅✅✅ received data in HostManagementServices.applyHostUpgrade ----");
@@ -121,12 +122,9 @@ export class HostManagementServices implements IHostManagementServices {
             }
 
             let hostDocumentUrl: string | undefined;
+            let organizationLogoUrl: string | undefined;
 
-            // if (!documentFile){
-            //     throw createHttpError(HTTP_STATUS.BAD_REQUEST, 'File is not attached for upgrading.')
-            // }
-
-
+            // Handle Document Upload
             if (documentFile){
                 hostDocumentUrl = await uploadToCloudinary({
                     fileBuffer: documentFile.buffer,
@@ -145,7 +143,20 @@ export class HostManagementServices implements IHostManagementServices {
                 }
             }
 
-            const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl});
+
+            // Handle Logo Upload
+            if (logoFile) {
+                organizationLogoUrl = await uploadToCloudinary({
+                    fileBuffer: logoFile.buffer,
+                    folderPath: 'host-logos',
+                    fileType: 'image',
+                });
+                if (existingUser.organizationLogo) {
+                    await deleteFromCloudinary({ fileUrl: existingUser.organizationLogo, resourceType: 'image' }).catch(() => {});
+                }
+            }
+
+            const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl, organizationLogoUrl});
 
             const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(userId, upgradeInput);
 

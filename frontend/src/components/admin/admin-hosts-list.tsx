@@ -1,4 +1,4 @@
-// frontend/src/components/admin/hosts-list.tsx
+// frontend/src/components/admin/admin-hosts-list.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
@@ -33,7 +33,6 @@ import { AdminPagination } from "./admin-pagination";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import { Modal } from "../ui/modal";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
-
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";
@@ -46,7 +45,7 @@ import type { ApiResponse } from "@/types/common.types";
 
 
 
-export function HostsList() {
+export function AdminHostsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [hostStatusFilter, setHostStatusFilter] = useState("all");
   const [accountStatusFilter, setAccountStatusFilter] = useState("all");

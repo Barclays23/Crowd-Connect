@@ -75,6 +75,8 @@ export const mapUserModelToHostEntity = (doc: IUserModel): HostEntity => {
       organizationName: doc.organizationName ?? '',
       registrationNumber: doc.registrationNumber ?? '',
       businessAddress: doc.businessAddress ?? '',
+      organizationDescription: doc.organizationDescription ?? '',
+      organizationLogo: doc.organizationLogo ?? '',
       certificateUrl: doc.certificateUrl ?? '',
       hostStatus: doc.hostStatus ?? HOST_STATUS.PENDING,
       appliedAt: doc.hostAppliedAt ?? undefined,
@@ -105,11 +107,12 @@ export const mapUserModelToProfileEntity = (doc: IUserModel): UserProfileEntity 
 export const mapToOrganiserProfileDTO = (host: HostEntity): OrganiserProfileResponseDTO => {
    return {
       hostId: host.userId,
-      organizerName: host.organizationName || host.name,
+      organizationName: host.organizationName,
       email: host.email,
       mobile: host.mobile,
-      profilePic: host.profilePic,
       businessAddress: host.businessAddress,
+      organizationDescription: host.organizationDescription,
+      organizationLogo: host.organizationLogo,
       ratingAverage: host.ratingAverage || 0,
       totalReviews: host.totalReviews || 0,
    };
@@ -179,6 +182,8 @@ export const mapUserEntityToProfileDto = (entity: UserEntity | HostEntity | User
          organizationName: host.organizationName ?? null,
          registrationNumber: host.registrationNumber ?? null,
          businessAddress: host.businessAddress ?? null,
+         organizationDescription: host.organizationDescription ?? null,
+         organizationLogo: host.organizationLogo ?? null,
          certificateUrl: host.certificateUrl ?? null,
          hostStatus: host.hostStatus ?? null,
          hostAppliedAt: host.appliedAt ? host.appliedAt.toISOString() : null,
@@ -281,20 +286,22 @@ export const mapUpdateUserRequestDtoToInput = ({updateDto, profilePicUrl}: {
 
 
 // for host upgrade / apply application
-export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl}: {
+export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl, organizationLogoUrl}: {
   upgradeDto: HostUpgradeRequestDto;
-  hostDocumentUrl?: string;  // when re-apply, mandatory or not??
+  hostDocumentUrl?: string;
+  organizationLogoUrl?: string;
 }): UpgradeHostInput => {
    const udgradeInput: UpgradeHostInput = {
       role: USER_ROLES.HOST,
       organizationName: upgradeDto.organizationName,
       registrationNumber: upgradeDto.registrationNumber,
+      organizationDescription: upgradeDto.organizationDescription,
       businessAddress: upgradeDto.businessAddress,
       hostStatus: HOST_STATUS.PENDING,
       hostAppliedAt: new Date(),
    };
    if (hostDocumentUrl) udgradeInput.certificateUrl = hostDocumentUrl;
-   // if (hostDocumentUrl !== undefined) udgradeInput.certificateUrl = hostDocumentUrl;
+   if (organizationLogoUrl) udgradeInput.organizationLogo = organizationLogoUrl;
 
    return udgradeInput;
 };
@@ -337,10 +344,11 @@ export const mapToHostManageInput = (
 
 
 // to update host details (eg: change host name, regNo, address, document etc) by user or admin
-export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentUrl}:{
+export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentUrl, organizationLogoUrl}:{
    isDoneByAdmin: boolean,
    updateDto: HostUpgradeRequestDto,
-   hostDocumentUrl?: string
+   hostDocumentUrl?: string,
+   organizationLogoUrl?: string
 }): HostUpdateInput => {
    const updateInput: HostUpdateInput = {};
 
@@ -348,6 +356,7 @@ export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentU
    if (updateDto.registrationNumber !== undefined) updateInput.registrationNumber = updateDto.registrationNumber;
    if (updateDto.businessAddress !== undefined) updateInput.businessAddress = updateDto.businessAddress;
    if (hostDocumentUrl !== undefined) updateInput.certificateUrl = hostDocumentUrl;
+   if (organizationLogoUrl !== undefined) updateInput.organizationLogo = organizationLogoUrl;
    if (!isDoneByAdmin) updateInput.hostStatus = HOST_STATUS.PENDING;
 
    return updateInput;

@@ -1,4 +1,5 @@
 import { EditReviewRequestDTO, GetReviewsResponseDTO, SubmitReviewRequestDTO } from "@/dtos/review.dto";
+import { GetReviewsAdminFilter } from "@/types/review.types";
 
 
 
@@ -10,5 +11,9 @@ export interface IReviewService {
     deleteReview(userId: string, role: string, reviewId: string): Promise<void>
 
     getReviewsForHost(hostId: string, page: number, limit: number): Promise<GetReviewsResponseDTO>
+
+    getReviewsForEvent(eventId: string, page: number, limit: number): Promise<GetReviewsResponseDTO>
+
+    getAllReviewsForAdmin(filters: GetReviewsAdminFilter): Promise<GetReviewsResponseDTO>;
 
 }

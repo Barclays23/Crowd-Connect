@@ -54,7 +54,7 @@ import { ICacheService } from "@/services/cache-services/interfaces/ICacheServic
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { CreateOrderResult, RefundResult } from "@/types/payment.types";
 import { IPlatformSettingsService } from "@/services/platform-settings-services/interfaces/IPlatformSettingsService";
-import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { QRTokenPayload } from "@/types/ticket.types";
 import { PAYMENT_GATEWAY_CONFIG, PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMethod } from "@/constants/payment.constants";
 import { TICKET_TYPES } from "@/constants/event.constants";
@@ -165,9 +165,9 @@ export class BookingService implements IBookingService {
          if (booking.bookingStatus === BOOKING_STATUSES.CONFIRMED) {
             console.log(`Booking ${booking.bookingId} is already confirmed by frontend api. Returning existing data.`);
 
-            const [confirmedBooking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
+            const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
                this._bookingRepository.getBookingById(booking.bookingId),
-               this._settingsService.getPlatformSettings(),
+               this._settingsService.getOperationalSettingsDomain(),
             ]);
 
             return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
@@ -202,9 +202,9 @@ export class BookingService implements IBookingService {
       try {
          console.log("filters in BookingService.getMyBookings:", filters);
 
-         const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
+         const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.findBookings({ ...filters, userId }),
-            this._settingsService.getPlatformSettings(),
+            this._settingsService.getOperationalSettingsDomain(),
          ]);
 
          return {
@@ -226,9 +226,9 @@ export class BookingService implements IBookingService {
       try {
          console.log("filters in BookingService.getBookingsList:", filters);
 
-         const [result, settings]: [GetBookingsResult, PlatformSettingsEntity] = await Promise.all([
+         const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.findBookings(filters),
-            this._settingsService.getPlatformSettings(),
+            this._settingsService.getOperationalSettingsDomain(),
          ]);
 
          return {
@@ -246,9 +246,9 @@ export class BookingService implements IBookingService {
 
    async getBookingById(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO> {
       try {
-         const [booking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
+         const [booking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(bookingId),
-            this._settingsService.getPlatformSettings(),
+            this._settingsService.getOperationalSettingsDomain(),
          ]);
 
          if (!booking) {
@@ -393,7 +393,7 @@ export class BookingService implements IBookingService {
 
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(bookingEntity.bookingId),
-         this._settingsService.getPlatformSettings(),
+         this._settingsService.getOperationalSettingsDomain(),
       ]);
 
       const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated!, settings);
@@ -454,7 +454,7 @@ export class BookingService implements IBookingService {
 
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(newBookingId),
-         this._settingsService.getPlatformSettings(),
+         this._settingsService.getOperationalSettingsDomain(),
       ]);
 
       const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated!, settings);
@@ -554,7 +554,7 @@ export class BookingService implements IBookingService {
 
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(booking.bookingId),
-         this._settingsService.getPlatformSettings(),
+         this._settingsService.getOperationalSettingsDomain(),
       ]);
 
       return {
@@ -632,9 +632,9 @@ export class BookingService implements IBookingService {
 
          await this._cacheService.deleteKeyValue("trending_events");
 
-         const [confirmedBooking, settings]:[BookingEntityPopulated | null, PlatformSettingsEntity] = await Promise.all([
+         const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(booking.bookingId),
-            this._settingsService.getPlatformSettings(),
+            this._settingsService.getOperationalSettingsDomain(),
          ]);
          
          return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
@@ -654,7 +654,7 @@ export class BookingService implements IBookingService {
       cancelReason:   string,
       context:  RefundContext,
    ): Promise<void> {
-      const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
+      const settings: OperationalSettingsEntity = await this._settingsService.getOperationalSettingsDomain();
       const refundAmount: number = calculateRefundAmount(booking, context, settings);
 
       let refundId: string | undefined;

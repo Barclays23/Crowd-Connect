@@ -1,4 +1,4 @@
-// frontend/src/components/admin/users-list.tsx
+// frontend/src/components/admin/admin-users-list.tsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Filter, Download, UserPlus, Eye, Edit, Ban, CheckCircle, XCircle, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,12 @@ import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
-import type { GetUsersQueryParams, UserState, UserStatusUpdateData, UserUpsertResult } from "@/types/user.types";
+import type { 
+  GetUsersQueryParams, 
+  UserState, 
+  UserStatusUpdateData, 
+  UserUpsertResult 
+} from "@/types/user.types";
 import { HostManageForm } from "./host-manage-form";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { ConfirmationModal } from "./confirmation-modal";
@@ -36,7 +41,7 @@ import type { UserRole, UserStatus } from "@/constants/user-system.constants";
 
 
 
-export function UsersList() {
+export function AdminUsersList() {
   // Filters & UI state
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { BOOKING_CONSTRAINTS } from "@/constants/booking.constants";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/constants/payment.constants";
 import { EVENT_FORMATS, TICKET_TYPES, type EventFormat } from "@/constants/event.constants";
+import { TermsModal } from "@/components/common/TermsModal";
 
 
 type EmbeddedEventSnapshot = IBookingState["event"];
@@ -54,14 +55,12 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
       ? retryBooking.quantity
       : getMaxBookingQuantity(event.format as EventFormat, ticketsLeft);
 
-   console.log('fullEvent.capacity :', fullEvent.capacity)
-   console.log('fullEvent.soldTickets :', fullEvent.soldTickets)
-   console.log('ticketsLeft :', ticketsLeft)
-
    const [step, setStep]                           = useState<1 | 2>(1);
    const [selectedQuantity, setSelectedQuantity]   = useState(1);
    const [error, setError]                         = useState<string | null>(null);
    const [paymentMethod, setPaymentMethod]         = useState<PaymentMethod>(isFree ? PAYMENT_METHODS.NONE : PAYMENT_METHODS.ONLINE);
+   const [agreedToTerms, setAgreeToTerms] = useState(false);
+   const [showTermsModal, setShowTermsModal] = useState(false);
 
 
 
@@ -136,6 +135,7 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
       if (isLoading) return;
       setStep(1);
       setSelectedQuantity(1);
+      setAgreeToTerms(false);
       setError(null);
       reset();
       onClose();
@@ -154,6 +154,11 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
 
    const handleConfirm = () => {
       setError(null);
+
+      if (!agreedToTerms) {
+         toast.error("You must agree to the Booking Policies to continue.");
+         return;
+      }
       
       // retry Payment for Pending Booking
       if (retryBooking) {
@@ -537,10 +542,25 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
                               </div>
                            </div>
 
-                           <p className="text-xs text-(--text-tertiary) text-center leading-relaxed pb-1">
-                              By confirming, you agree to CrowdConnect's booking policy.
-                              {!isFree && " Cancellations accepted up to 24 hours before the event."}
-                           </p>
+                           {/* Checkbox for Terms */}
+                           <div className="flex items-start gap-3 pt-2 pb-1">
+                              <input 
+                                 type="checkbox" 
+                                 id="bookingTerms" 
+                                 checked={agreedToTerms}
+                                 onChange={(e) => setAgreeToTerms(e.target.checked)}
+                                 className="mt-1 shrink-0 w-4 h-4 rounded border-(--border-muted) text-(--brand-primary) focus:ring-(--brand-primary)"
+                              />
+                              <label htmlFor="bookingTerms" className="text-xs text-(--text-tertiary) leading-relaxed">
+                                 I have read and agree to the 
+                                 <span 
+                                    onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }}
+                                    className="text-(--brand-primary) hover:underline cursor-pointer font-medium ml-1"
+                                 >
+                                    Booking & Cancellation Policies
+                                 </span>.
+                              </label>
+                           </div>
                         </div>
                      )}
                   </>
@@ -593,6 +613,14 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
                   )}
                </div>
             )}
+
+            {/* TermsModal */}
+            <TermsModal 
+               isOpen={showTermsModal}
+               onClose={() => setShowTermsModal(false)}
+               termTypes={["bookingTerms", "cancellationTerms"]}
+               title="Booking & Cancellation Policies"
+            />
          </div>
       </div>
    );

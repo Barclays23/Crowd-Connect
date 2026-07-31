@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { HostController } from "@/controllers/implementations/host.controller";
-import { uploadDocument, uploadImage } from "@/middlewares/file-upload.middleware";
+import { uploadDocument } from "@/middlewares/file-upload.middleware";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { validateRequest } from "@/middlewares/validate.middleware";
 import { HostUpgradeSchema } from "@/schemas/host.schema";
@@ -33,7 +33,12 @@ const hostRouter = Router();
 
 
 hostRouter.post(HOST_ROUTES.APPLY_UPGRADE, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), 
-    uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
+    // uploadDocument.single('hostDocument'),
+    uploadDocument.fields([
+        { name: 'hostDocument', maxCount: 1 }, 
+        { name: 'organizationLogo', maxCount: 1 }
+    ]),
+     validateRequest({body: HostUpgradeSchema}), 
     hostController.applyHostUpgrade.bind(hostController)
 );
 

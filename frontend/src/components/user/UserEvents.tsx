@@ -11,6 +11,7 @@ import {
    Rocket,
    Ban,
    ScanLine,
+   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,13 +41,14 @@ import {
 import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { type EventFormValues } from "@/schemas/event.schema";
-import EditEventForm from "@/components/user/EditEventForm";
+import EditEventForm from "@/components/host/EditEventForm";
 import { capitalize } from "@/utils/namingConventions";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
+import { StarRating } from "@/components/common/StarRating";
 
 
 
@@ -64,7 +66,6 @@ export default function UserEvents() {
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
 
-   // const [viewEvent, setViewEvent] = useState<IEventState | null>(null);
    const [editEvent, setEditEvent] = useState<IEventState | null>(null);
    const [editModalOpen, setEditModalOpen] = useState(false);
 
@@ -330,33 +331,46 @@ export default function UserEvents() {
                               {(currentPage - 1) * itemsPerPage + idx + 1}
                            </TableCell>
 
-                           {/* Sleek Event Details with Badges */}
+                           {/* Sleek Event Details with Badges & Rating */}
                            <TableCell>
                               <div className="flex flex-col gap-2 py-1">
                                  <span className="font-bold text-[15px] text-(--text-primary) group-hover:text-(--brand-primary) transition-colors line-clamp-1">
                                     {event.title}
                                  </span>
                                  <div className="flex flex-wrap items-center gap-2">
-                                    {/* Format Badge */}
-                                    <Badge 
-                                       variant={event.format?.toLowerCase() === "online" ? "success" : "neutral"} 
-                                       size="sm"
-                                       className="uppercase tracking-widest text-[9px]"
-                                    >
+                                    <Badge variant={event.format?.toLowerCase() === "online" ? "success" : "neutral"} size="sm" className="uppercase tracking-widest text-[9px]">
                                        {event.format}
                                     </Badge>
-                                    
-                                    {/* Category Badge */}
                                     {event.category && (
-                                       <Badge 
-                                          variant={getEventCategoryBadgeVariant(event.category)}
-                                          size="sm"
-                                          className="font-medium"
-                                       >
+                                       <Badge variant={getEventCategoryBadgeVariant(event.category)} size="sm" className="font-medium">
                                           {event.category}
                                        </Badge>
                                     )}
                                  </div>
+
+                                 {/* ── ADDED REPUTATION BLOCK ── */}
+                                 {event.ratingAverage !== undefined && event.ratingAverage > 0 ? (
+                                    <div className="flex items-center gap-1.5 mt-1 text-xs font-bold">
+                                       <StarRating 
+                                          rating={event.ratingAverage} 
+                                          size={12} 
+                                       />
+                                       <span className="text-(--badge-warning-text)">
+                                          {event.ratingAverage.toFixed(1)}
+                                       </span>
+                                       
+                                       
+                                       <span className="text-(--text-tertiary) font-medium ml-0.5">
+                                          ({event.totalReviews} {event.totalReviews === 1 ? "review" : "reviews"})
+                                       </span>
+                                    </div>
+                                 ) : (
+                                    <div className="flex items-center gap-1 mt-1 text-[10px] text-(--text-tertiary) font-medium">
+                                       {/* Render 5 empty stars for the 'No reviews' state */}
+                                       <StarRating rating={0} size={10} /> 
+                                       <span className="ml-0.5">No reviews yet</span>
+                                    </div>
+                                 )}
                               </div>
                            </TableCell>
 

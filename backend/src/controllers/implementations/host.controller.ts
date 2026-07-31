@@ -37,9 +37,12 @@ export class HostController implements IHostController {
 
             const userId = req.user?.userId;
             const upgradeDto: HostUpgradeRequestDto = req.body;
-            const documentFile: Express.Multer.File | undefined = req.file;
 
-            const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile});
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+            const documentFile: Express.Multer.File | undefined = files?.hostDocument?.[0];
+            const logoFile: Express.Multer.File | undefined = files?.organizationLogo?.[0];
+
+            const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostUpgrade({userId, upgradeDto, documentFile, logoFile});
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,

@@ -13,7 +13,6 @@ const reviewSchema = new Schema<IReviewModel>(
 
     rating          : { type: Number, required: true, min: 1, max: 5 },
     reviewText      : { type: String, trim: true },
-    isRewardClaimed : { type: Boolean, default: false }
   },
   { timestamps: true }
 );

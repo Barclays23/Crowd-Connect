@@ -1,9 +1,11 @@
 // src/controllers/implementations/review.controller.ts
 import { Request, Response, NextFunction } from "express";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
-import { IReviewController } from "@/controllers/interfaces/IReviewContoller";
+import { IReviewController } from "@/controllers/interfaces/IReviewController";
 import { IReviewService } from "@/services/review-services/interfaces/IReviewService";
 import { UserRole } from "@/constants/user-system.constants";
+import { GetReviewsResponseDTO } from "@/dtos/review.dto";
+import { GetReviewsAdminFilter } from "@/types/review.types";
 
 
 
@@ -31,7 +33,6 @@ export class ReviewController implements IReviewController {
             next(error);
         }
     }
-
 
 
 
@@ -74,20 +75,64 @@ export class ReviewController implements IReviewController {
 
 
 
-
     async getHostReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const hostId = req.params.hostId as string;
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
-            const data = await this._reviewService.getReviewsForHost(hostId, page, limit);
+            const result = await this._reviewService.getReviewsForHost(hostId, page, limit);
             
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: "Reviews fetched successfully",
-                data: data.reviews,
-                pagination: data.pagination
+                data: result.reviews,
+                pagination: result.pagination
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+    async getEventReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const result = await this._reviewService.getReviewsForEvent(eventId, page, limit);
+            
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "Event reviews fetched successfully",
+                data: result.reviews,
+                pagination: result.pagination
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+    async getAllReviewsForAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const filters: GetReviewsAdminFilter = {
+                page: parseInt(req.query.page as string) || 1,
+                limit: parseInt(req.query.limit as string) || 10,
+                rating: req.query.rating ? parseInt(req.query.rating as string) : undefined,
+                search: req.query.search as string
+            };
+
+            const result: GetReviewsResponseDTO = await this._reviewService.getAllReviewsForAdmin(filters);
+            
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "All reviews fetched successfully",
+                data: result.reviews,
+                pagination: result.pagination
             });
 
         } catch (error) {

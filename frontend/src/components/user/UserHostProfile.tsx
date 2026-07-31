@@ -25,7 +25,9 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
       organizationName: profile.organizationName || '',
       registrationNumber: profile.registrationNumber || '',
       businessAddress: profile.businessAddress || '',
+      organizationDescription: profile.organizationDescription || '',
    });
+   const [logoFile, setLogoFile] = useState<File | null>(null);
    const [isUpdatingHostDetails, setIsUpdatingHostDetails] = useState(false);
 
 
@@ -37,6 +39,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
          updateData.append('organizationName', editFormData.organizationName.trim() || '');
          updateData.append('registrationNumber', editFormData.registrationNumber.trim() || '');
          updateData.append('businessAddress', editFormData.businessAddress.trim() || '');
+         updateData.append('organizationDescription', editFormData.organizationDescription.trim());
+         if (logoFile) updateData.append('organizationLogo', logoFile);
 
          await hostServices.updateHostDetailsByHost(updateData);
          setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
@@ -59,6 +63,7 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
          organizationName: profile.organizationName || '',
          registrationNumber: profile.registrationNumber || '',
          businessAddress: profile.businessAddress || '',
+         organizationDescription: profile.organizationDescription || '',
       });
    };
 
@@ -93,36 +98,59 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
          {editingField === 'host' ? (
             <div className="space-y-6">
                <div className="space-y-2">
-               <label className="text-sm font-medium text-(--text-secondary)">Organization Name</label>
-               <input
-                  type="text"
-                  name="organizationName"
-                  value={editFormData.organizationName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
-               />
+                  <label className="text-sm font-medium text-(--text-secondary)">Organization Name</label>
+                  <input
+                     type="text"
+                     name="organizationName"
+                     value={editFormData.organizationName}
+                     onChange={handleInputChange}
+                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
+                  />
+               </div>
+
+               {/* Description Input */}
+               <div className="space-y-2">
+                  <label className="text-sm font-medium text-(--text-secondary)">Organization Description</label>
+                  <textarea
+                     name="organizationDescription"
+                     value={editFormData.organizationDescription}
+                     onChange={handleInputChange}
+                     rows={4}
+                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary) resize-none"
+                  />
+               </div>
+
+               {/* Logo File Input */}
+               <div className="space-y-2">
+                  <label className="text-sm font-medium text-(--text-secondary)">Update Logo</label>
+                  <input
+                     type="file"
+                     accept="image/jpeg,image/png,image/webp"
+                     onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                     className="w-full text-sm text-(--text-secondary) file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-(--brand-primary)/10 file:text-(--brand-primary) hover:file:bg-(--brand-primary)/20"
+                  />
                </div>
 
                <div className="space-y-2">
-               <label className="text-sm font-medium text-(--text-secondary)">Registration Number</label>
-               <input
-                  type="text"
-                  name="registrationNumber"
-                  value={editFormData.registrationNumber}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
-               />
+                  <label className="text-sm font-medium text-(--text-secondary)">Registration Number</label>
+                  <input
+                     type="text"
+                     name="registrationNumber"
+                     value={editFormData.registrationNumber}
+                     onChange={handleInputChange}
+                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
+                  />
                </div>
 
                <div className="space-y-2">
-               <label className="text-sm font-medium text-(--text-secondary)">Business Address</label>
-               <textarea
-                  name="businessAddress"
-                  value={editFormData.businessAddress}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary) resize-none"
-               />
+                  <label className="text-sm font-medium text-(--text-secondary)">Business Address</label>
+                  <textarea
+                     name="businessAddress"
+                     value={editFormData.businessAddress}
+                     onChange={handleInputChange}
+                     rows={3}
+                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary) resize-none"
+                  />
                </div>
 
                <div className="flex gap-2 pt-4">
@@ -146,6 +174,14 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
                <DetailItem label="Registration Number" value={profile.registrationNumber || '—'} />
                <DetailItem label="Business Address" value={profile.businessAddress || '—'} isMultiline/>
+               <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
+               <DetailItem label="Description" value={profile.organizationDescription || '—'} isMultiline />
+               {profile.organizationLogo && (
+                  <div className="py-3">
+                     <label className="block text-sm font-medium text-(--text-secondary) mb-2">Organization Logo</label>
+                     <img src={profile.organizationLogo} alt="Logo" className="w-16 h-16 rounded-full object-cover border border-(--border-muted)" />
+                  </div>
+               )}
 
                {/* RATINGS BLOCK */}
                {profile.hostStatus === 'approved' && (
@@ -196,28 +232,28 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                </div>
 
                {profile.hostStatus === 'rejected' && profile.hostRejectionReason && (
-               <div className="mt-4">
-                  <label className="block text-sm font-medium text-(--text-secondary) mb-2">
-                     Rejection Reason
-                  </label>
-                  <div className="p-4 bg-(--badge-error-bg) border border-(--badge-error-border) rounded-xl text-(--badge-error-text) text-sm">
-                     {profile.hostRejectionReason}
+                  <div className="mt-4">
+                     <label className="block text-sm font-medium text-(--text-secondary) mb-2">
+                        Rejection Reason
+                     </label>
+                     <div className="p-4 bg-(--badge-error-bg) border border-(--badge-error-border) rounded-xl text-(--badge-error-text) text-sm">
+                        {profile.hostRejectionReason}
+                     </div>
                   </div>
-               </div>
                )}
 
                {profile.certificateUrl && (
-               <div className="mt-3">
-                  <a
-                     href={profile.certificateUrl}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     className="inline-flex items-center gap-2 text-(--brand-primary) hover:text-(--brand-primary-hover) font-medium"
-                  >
-                     <span>View Registration Certificate</span>
-                     <span aria-hidden>→</span>
-                  </a>
-               </div>
+                  <div className="mt-3">
+                     <a
+                        href={profile.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-(--brand-primary) hover:text-(--brand-primary-hover) font-medium"
+                     >
+                        <span>View Registration Certificate</span>
+                        <span aria-hidden>→</span>
+                     </a>
+                  </div>
                )}
             </div>
          )}

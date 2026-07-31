@@ -22,3 +22,15 @@ export interface IPlatformSettings {
     reviewTerms?                : string[];
 }
 
+
+export type ITermsAndConditions = Pick<
+    IPlatformSettings,
+    "generalTerms" | "bookingTerms" | "hostTerms" | "cancellationTerms" | "reviewTerms"
+>;
+
+
+
+export type IOperationalSettings = Omit<
+    IPlatformSettings,
+    "generalTerms" | "bookingTerms" | "hostTerms" | "cancellationTerms" | "reviewTerms"
+>;

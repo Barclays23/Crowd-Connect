@@ -2,7 +2,7 @@
 
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 
-import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 
 
 
@@ -24,7 +24,7 @@ export type RefundBookingInput = {
 export function calculateRefundAmount(
     booking: BookingEntityPopulated,
     context: RefundContext,
-    settings: PlatformSettingsEntity
+    settings: OperationalSettingsEntity
 ): number {
     console.log('booking.ticketRate     :', booking.ticketRate)
     console.log('booking.quantity       :', booking.quantity)
@@ -34,9 +34,6 @@ export function calculateRefundAmount(
 
     // Free ticket — nothing to refund
     if (booking.totalAmount === 0) return 0;
-    
-
-    // let refundAmount: number;
 
 
     // Authority or event cancellation → always 100% refund (no commission deduction)
@@ -73,7 +70,7 @@ export function calculateRefundAmount(
 
 export function getRefundPercentage(
     booking: BookingEntityPopulated, 
-    settings: PlatformSettingsEntity
+    settings: OperationalSettingsEntity
 ): number {
 
     const now               = new Date();

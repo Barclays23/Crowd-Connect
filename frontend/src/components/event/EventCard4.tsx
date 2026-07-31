@@ -187,7 +187,7 @@ function EventCard4({ event }: { event: IEventState }) {
           {/* Footer CTA */}
           <div className="mt-4 flex items-center justify-between text-sm">
             <span className="text-(--text-tertiary) truncate max-w-[60%]">
-              {event.organizer?.organizerName || "—"}
+              {event.organizer?.organizationName || "—"}
             </span>
 
             <motion.span

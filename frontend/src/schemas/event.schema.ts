@@ -166,6 +166,13 @@ export const base64ImageBase = z
 
 
 
+export const agreeTermsBase = z
+   .boolean()
+   .refine((val) => val === true, {
+      message: "You must agree to the Host Guidelines & Terms of Service.",
+   });
+
+
 export const rejectReasonBase = z
    .string()
    .trim()
@@ -226,6 +233,7 @@ export const eventFormSchemaFactory = (
       uploadedImage: imageFileBase,
       aiGeneratedImage: base64ImageBase,
       useAI: z.boolean(),
+      agreeTerms: agreeTermsBase,
    })
    .superRefine((data, ctx) => {
       

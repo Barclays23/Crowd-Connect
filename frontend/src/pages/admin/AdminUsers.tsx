@@ -1,11 +1,11 @@
-// frontend/src/pages/admin/AdminUserList.tsx
+// frontend/src/pages/admin/AdminUsers.tsx
 import { AdminLayout } from "@/components/layouts/AdminLayout"
 import AdminBanner from "@/components/admin/admin-banner"
-import { HostsList } from "@/components/admin/hosts-list"
+import { AdminUsersList } from "@/components/admin/admin-users-list";
 
 
 
-const AdminHostsList = () => {
+const AdminUsers = () => {
    return (
       <AdminLayout 
          // title="Dashboard" 
@@ -21,10 +21,10 @@ const AdminHostsList = () => {
                className=""
             />
 
-            <HostsList />
+            <AdminUsersList />
          </div>
       </AdminLayout>
    )
 }
 
-export default AdminHostsList
+export default AdminUsers;

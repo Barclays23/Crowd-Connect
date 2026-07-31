@@ -1,7 +1,7 @@
 // src/components/host/HostEventForm.tsx
 
 import React, { useMemo, useRef, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { toast } from "react-toastify";
 import {
   Calendar, Clock, MapPin, Users, Upload, Globe, Building2,
@@ -31,6 +31,8 @@ import { generatePosterSchema } from "@/schemas/ai.schema";
 import type { GeneratePosterData, GeneratePosterPayload } from "@/types/ai.types";
 import { aiServices } from "@/services/aiServices";
 import type { ApiResponse } from "@/types/common.types";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { TermsModal } from "@/components/common/TermsModal";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };
@@ -62,6 +64,7 @@ export const HostEventForm = ({
       watch,
       trigger,
       setError,
+      control,
       formState: { errors, isSubmitting },
    } = useFormContext<EventFormValues>();
 
@@ -101,6 +104,7 @@ export const HostEventForm = ({
    const [showMapModal, setShowMapModal] = useState(false); // For map picker modal
    const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 }); // Default center
    const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null); // Temp for modal
+   const [showTermsModal, setShowTermsModal] = useState(false);
 
    // poster image preview
    const uploadedPreviewUrl = currentUploadedImage
@@ -776,6 +780,36 @@ export const HostEventForm = ({
             <FieldError message={errors.uploadedImage?.message || errors.aiGeneratedImage?.message} />
          </div>
 
+         {/* 6. HOST TERMS & CONDITIONS */}
+         <div className="space-y-2">
+            <div className="flex items-start space-x-3 pt-2">
+               <Controller
+                  name="agreeTerms"
+                  control={control} // Ensure you destructure 'control' from useFormContext() at the top
+                  render={({ field }) => (
+                     <Checkbox
+                        id="hostAgreeTerms"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 border-(--border-muted) data-[state=checked]:bg-(--brand-primary) data-[state=checked]:border-(--brand-primary)"
+                     />
+                  )}
+               />
+               <Label htmlFor="hostAgreeTerms" className="text-sm text-(--text-secondary) leading-relaxed cursor-pointer font-normal">
+                   I agree to the platform's
+                   <span 
+                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowTermsModal(true); }}
+                       className="text-(--brand-primary) hover:underline ml-1 font-medium"
+                   >
+                       Host Guidelines & Terms of Service
+                   </span>
+                   , confirming that the details provided are accurate and I hold all necessary rights for this event.
+               </Label>
+            </div>
+            
+            <FieldError message={errors.agreeTerms?.message} />
+         </div>
+
 
          {/* Submit / Cancel buttons */}
          <div className="flex justify-end gap-4 pt-6">
@@ -795,6 +829,15 @@ export const HostEventForm = ({
                </ButtonLoader>
             </Button>
          </div>
+
+         {/* TermsModal */}
+         <TermsModal 
+            isOpen={showTermsModal}
+            onClose={() => setShowTermsModal(false)}
+            termTypes={["hostTerms"]}
+            title="Host Guidelines & Terms of Service"
+         />
+
       </form>
    );
 };

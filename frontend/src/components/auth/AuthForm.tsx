@@ -18,6 +18,7 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import type { LoginPayload, RegisterPayload, RouterLocationState } from "@/types/auth.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
+import { TermsModal } from "@/components/common/TermsModal";
 
 
 
@@ -53,6 +54,7 @@ export function AuthForm(props: AuthFormProps) {
    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
    const [isSubmittingForm, setIsSubmittingForm] = useState(false);
    const [showForgotPassword, setShowForgotPassword] = useState(openForgotPassword);
+   const [showTermsModal, setShowTermsModal] = useState(false);
 
 
    const isRegister = mode === "register";
@@ -249,30 +251,33 @@ export function AuthForm(props: AuthFormProps) {
                {/* Terms Checkbox - Register Only */}
                {isRegister && (
                   <div className="space-y-2">
-                  <div className="flex items-start space-x-2 pt-2">
-                     <Controller
-                        name="agreeTerms"
-                        control={registerForm.control}
-                        render={({ field }) => (
-                        <Checkbox
-                           id="agreeTerms"
-                           checked={field.value}
-                           onCheckedChange={field.onChange}
-                           className="border-auth-input data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-1"
+                     <div className="flex items-start space-x-2 pt-2">
+                        <Controller
+                           name="agreeTerms"
+                           control={registerForm.control}
+                           render={({ field }) => (
+                           <Checkbox
+                              id="agreeTerms"
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              className="border-auth-input data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-1"
+                           />
+                           )}
                         />
-                        )}
-                     />
-                     <Label
-                        htmlFor="agreeTerms"
-                        className="text-sm text-auth-text-muted cursor-pointer leading-tight"
-                     >
-                        I agree to{" "}
-                        <a href="#" className="text-primary hover:underline">
-                        Terms & Conditions
-                        </a>
-                     </Label>
-                  </div>
-                  <FieldError message={(errors as typeof registerForm.formState.errors).agreeTerms?.message} />
+                        <Label
+                           htmlFor="agreeTerms"
+                           className="text-sm text-auth-text-muted cursor-pointer leading-tight"
+                        >
+                           I agree to{" "}
+                           <span 
+                              onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }}
+                              className="text-primary hover:underline"
+                           >
+                              Terms & Conditions
+                           </span>
+                        </Label>
+                     </div>
+                     <FieldError message={(errors as typeof registerForm.formState.errors).agreeTerms?.message} />
                   </div>
                )}
 
@@ -366,6 +371,13 @@ export function AuthForm(props: AuthFormProps) {
                onClose={() => setShowForgotPassword(false)}
             />
          </Modal>
+
+         <TermsModal 
+            isOpen={showTermsModal}
+            onClose={() => setShowTermsModal(false)}
+            termTypes={["generalTerms"]}
+            title="General Terms & Conditions"
+         />
 
       </Card>
       

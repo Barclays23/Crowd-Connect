@@ -1,5 +1,5 @@
 import { EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
-import { EventEntity } from "@/entities/event.entity";
+import { EventEntity, OrganiserEventEntity } from "@/entities/event.entity";
 import { EventFilterQuery } from "@/types/event.types";
 
 
@@ -15,7 +15,7 @@ export interface DateQueryOperator {
 
 
 // for response: converting DB status into display status
-export function getEventDisplayStatus(event: EventEntity): EventStatus {
+export function getEventDisplayStatus(event: EventEntity | OrganiserEventEntity): EventStatus {
    const now = new Date();
 
    if (event.eventStatus === EVENT_STATUSES.DRAFT)     return EVENT_STATUSES.DRAFT;

@@ -1,7 +1,7 @@
 // backend/src/repositories/interfaces/IReviewRepository.ts
 
-import { CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity"
-import { GetReviewsFilter } from "@/types/review.types"
+import { AdminPopulatedReviewEntity, CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity"
+import { GetReviewsAdminFilter, GetReviewsFilter } from "@/types/review.types"
 
 
 
@@ -13,6 +13,8 @@ export interface IReviewRepository {
     deleteReview(reviewId: string): Promise<void>;
 
     findReviews(filters: GetReviewsFilter): Promise<{ reviews: PopulatedReviewEntity[]; totalCount: number }>
+
+    findAllReviewsForAdmin(filters: GetReviewsAdminFilter): Promise<{ reviews: AdminPopulatedReviewEntity[]; totalCount: number }>;
 
     getReviewById(reviewId: string): Promise<ReviewEntity | null>
 

@@ -48,7 +48,6 @@ export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess 
             const response: ApiResponse<void> = await reviewServices.submitReview(payload);
 
             toast.success(response.message);
-            toast.success(".....Review submitted successfully! Thank you for your feedback.");
             onSuccess();
             onClose();
 

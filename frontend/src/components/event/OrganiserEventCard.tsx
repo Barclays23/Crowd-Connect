@@ -3,6 +3,11 @@ import { CalendarDays, Star, Tag } from "lucide-react";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import type { OrganiserEventsData } from "@/types/event.types";
 import { EVENT_STATUSES } from "@/constants/event.constants";
+import { Badge } from "@/components/ui/badge";
+import { getEventStatusBadgeVariant } from "@/utils/UI.utils";
+import { capitalize } from "@/utils/namingConventions";
+
+
 
 
 interface OrganiserEventCardProps {
@@ -12,8 +17,9 @@ interface OrganiserEventCardProps {
 
 
 
+
 export default function OrganiserEventCard({ event, onClick }: OrganiserEventCardProps) {
-    const isCompleted = event.eventStatus === EVENT_STATUSES.COMPLETED || new Date(event.startDateTime) < new Date();
+    const isCompleted = event.eventStatus === EVENT_STATUSES.COMPLETED || new Date(event.endDateTime) < new Date();
 
     return (
         <div 
@@ -41,9 +47,20 @@ export default function OrganiserEventCard({ event, onClick }: OrganiserEventCar
 
             {/* Details */}
             <div className="flex-1 min-w-0 flex flex-col justify-center py-0.5">
-                <div className="flex items-center gap-1.5 text-[10px] text-(--text-tertiary) font-semibold uppercase tracking-wider mb-1">
-                    <Tag size={10} className="text-(--brand-primary)" />
-                    <span className="truncate">{event.category}</span>
+                
+                {/* Top Row: Category (Left) & Status Badge (Right) */}
+                <div className="flex items-center justify-between mb-1 gap-2">
+                    <div className="flex items-center gap-1.5 text-[10px] text-(--text-tertiary) font-semibold uppercase tracking-wider min-w-0">
+                        <Tag size={10} className="text-(--brand-primary) shrink-0" />
+                        <span className="truncate">{event.category}</span>
+                    </div>
+                    
+                    <Badge 
+                        variant={getEventStatusBadgeVariant(event.eventStatus)} 
+                        className="text-[9px] px-1.5 py-0 h-4 uppercase tracking-wider shrink-0"
+                    >
+                        {capitalize(event.eventStatus)}
+                    </Badge>
                 </div>
                 
                 <h3 className="text-sm font-bold text-(--heading-primary) line-clamp-2 leading-snug group-hover:text-(--brand-primary) transition-colors">
@@ -56,10 +73,10 @@ export default function OrganiserEventCard({ event, onClick }: OrganiserEventCar
 
                 {/* Rating display or No Rating state */}
                 {event.ratingAverage > 0 ? (
-                    <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 w-fit px-2 py-0.5 rounded-full border border-amber-100">
+                    <div className="flex items-center gap-1 text-xs font-bold text-(--badge-warning-text) bg-(--badge-warning-bg) w-fit px-2 py-0.5 rounded-full border border-(--badge-warning-border)">
                         <Star size={12} fill="currentColor" />
-                        {event.ratingAverage} 
-                        <span className="text-(--text-tertiary) font-medium ml-0.5">({event.totalReviews})</span>
+                        {event.ratingAverage.toFixed(1)} 
+                        <span className="text-(--badge-warning-text) opacity-80 font-medium ml-0.5">({event.totalReviews})</span>
                     </div>
                 ) : (
                     <span className="text-[10px] text-(--text-tertiary) bg-(--bg-secondary) px-2 py-1 rounded-md w-fit">

@@ -46,10 +46,10 @@ export default function OrganiserEventsSection({ hostId }: OrganiserEventsSectio
 
     return (
         <div>
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2 mb-6 border-b border-(--border-muted) pb-3">
                 <Calendar size={22} className="text-(--brand-primary)" />
-                <h2 className="text-xl font-bold text-(--heading-primary)">Event Portfolio</h2>
-                <span className="bg-(--bg-secondary) text-(--text-secondary) px-2.5 py-0.5 rounded-full text-xs font-bold border border-(--border-muted)">
+                <h2 className="text-xl font-bold text-(--heading-primary)">Hosted Events</h2>
+                <span className="bg-(--bg-secondary) text-(--text-secondary) px-3 py-0.5 rounded-full text-lg font-bold border border-(--border-muted) ml-2">
                     {events.length}
                 </span>
             </div>
@@ -63,8 +63,8 @@ export default function OrganiserEventsSection({ hostId }: OrganiserEventsSectio
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {events.map((event) => (
                         <OrganiserEventCard 
-                            key={event.eventId} 
-                            event={event} 
+                            key={event.eventId}
+                            event={event}
                             onClick={() => navigate(`/events/${event.eventId}`)}
                         />
                     ))}

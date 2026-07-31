@@ -25,6 +25,8 @@ export interface UserState {
   organizationName?: string | null;
   registrationNumber?: string | null;
   businessAddress?: string | null;
+  organizationDescription?: string;
+  organizationLogo?: string;
   certificateUrl?: string | null;
   hostAppliedAt?: string | null;
   hostStatus?: HostStatus;
@@ -114,11 +116,12 @@ export interface HostStatusUpdateData {
 
 export interface OrganiserProfileData {
   hostId: string;
-  organizerName: string;
-  profilePic?: string;
+  organizationName: string;
+  businessAddress?: string;
+  organizationDescription?: string;
+  organizationLogo?: string;
   ratingAverage: number;
   totalReviews: number;
-  businessAddress?: string;
   email: string;
   mobile?: string;
 }

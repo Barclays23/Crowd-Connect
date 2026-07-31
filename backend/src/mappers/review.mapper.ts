@@ -1,12 +1,43 @@
 // backend/src/mappers/review.mapper.ts
 
 import { ReviewResponseDTO, SubmitReviewRequestDTO } from "@/dtos/review.dto";
-import { CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity";
-import { IReviewModel, IReviewPopulatedUser, MapCreateReviewParams } from "@/types/review.types";
+import { 
+    AdminPopulatedReviewEntity, 
+    CreateReviewInput, 
+    PopulatedReviewEntity, 
+    ReviewEntity 
+} from "@/entities/review.entity";
+import { 
+    IReviewModel, 
+    IReviewPopulatedAdmin, 
+    IReviewPopulatedUser, 
+    MapCreateReviewParams 
+} from "@/types/review.types";
 import { Types } from "mongoose";
 
 
 
+// Maps raw data to the Database Input Entity
+export const mapToCreateReviewInput = ({
+    userId,
+    eventId,
+    hostId,
+    reviewDto
+}: MapCreateReviewParams): CreateReviewInput => {
+    return {
+        eventRef        : new Types.ObjectId(eventId),
+        hostRef         : new Types.ObjectId(hostId),
+        userRef         : new Types.ObjectId(userId),
+        bookingRef      : new Types.ObjectId(reviewDto.bookingId),
+        rating          : reviewDto.rating,
+        reviewText      : reviewDto.reviewText,
+    };
+};
+
+
+
+
+// Document -> Entity ----------------------------------------------------------------
 
 export const mapReviewDocToEntity = (doc: IReviewModel): ReviewEntity => {
     return {
@@ -18,7 +49,6 @@ export const mapReviewDocToEntity = (doc: IReviewModel): ReviewEntity => {
 
         rating          : doc.rating,
         reviewText      : doc.reviewText,
-        isRewardClaimed : doc.isRewardClaimed,
         
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt,
@@ -40,7 +70,6 @@ export const mapPopulatedReviewDocToEntity = (doc: IReviewPopulatedUser): Popula
         },
         rating          : doc.rating,
         reviewText      : doc.reviewText,
-        isRewardClaimed : doc.isRewardClaimed,
 
         createdAt   : doc.createdAt,
         updatedAt   : doc.updatedAt,
@@ -49,29 +78,32 @@ export const mapPopulatedReviewDocToEntity = (doc: IReviewPopulatedUser): Popula
 
 
 
-// Maps raw data to the Database Input Entity
-export const mapToCreateReviewInput = ({
-    userId,
-    eventId,
-    hostId,
-    reviewDto,
-    isEligibleForReward
-}: MapCreateReviewParams): CreateReviewInput => {
+export const mapAdminPopulatedReviewDocToEntity = (doc: IReviewPopulatedAdmin): AdminPopulatedReviewEntity => {
     return {
-        eventRef        : new Types.ObjectId(eventId),
-        hostRef         : new Types.ObjectId(hostId),
-        userRef         : new Types.ObjectId(userId),
-        bookingRef      : new Types.ObjectId(reviewDto.bookingId),
-        rating          : reviewDto.rating,
-        reviewText      : reviewDto.reviewText,
-        isRewardClaimed : isEligibleForReward,
+        reviewId: doc._id.toString(),
+        eventRef: doc.eventRef?._id?.toString() || doc.eventRef?.toString() || "unknown",
+        eventTitle: doc.eventRef?.title,
+        hostRef: doc.hostRef?._id?.toString() || doc.hostRef?.toString() || "unknown",
+        hostName: doc.hostRef?.organizationName,
+        user: {
+            userId: doc.userRef._id.toString(),
+            name: doc.userRef.name,
+            email: doc.userRef.email,
+            profilePic: doc.userRef.profilePic,
+        },
+        rating: doc.rating,
+        reviewText: doc.reviewText,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
     };
 };
 
 
 
 
-// Populated Database Entity to the Frontend Response DTO
+
+// Entity -> Response DTO -------------------------------------------------------------
+
 export const mapPopulatedReviewEntityToResponseDTO = (
     entity: PopulatedReviewEntity
 ): ReviewResponseDTO => {
@@ -82,7 +114,28 @@ export const mapPopulatedReviewEntityToResponseDTO = (
         user            : entity.user,
         rating          : entity.rating,
         reviewText      : entity.reviewText,
-        isRewardClaimed : entity.isRewardClaimed,
         createdAt       : entity.createdAt.toISOString(),
+    };
+};
+
+
+
+
+export const mapAdminPopulatedReviewEntityToDTO = (entity: AdminPopulatedReviewEntity): ReviewResponseDTO => {
+    return {
+        reviewId: entity.reviewId,
+        eventId: entity.eventRef,
+        eventTitle: entity.eventTitle,
+        hostId: entity.hostRef,
+        hostName: entity.hostName,
+        user: {
+            userId: entity.user.userId,
+            name: entity.user.name,
+            email: entity.user.email,
+            profilePic: entity.user.profilePic,
+        },
+        rating: entity.rating,
+        reviewText: entity.reviewText,
+        createdAt: entity.createdAt.toISOString(),
     };
 };

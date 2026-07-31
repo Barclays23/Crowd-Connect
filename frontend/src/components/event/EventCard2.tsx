@@ -163,7 +163,7 @@ export default function EventCard2({ event }: { event: IEventState }) {
                         </div>
                     ) : (
                         <div className="flex items-center gap-1 text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-                            <span className="truncate max-w-28">{event.organizer?.organizerName}</span>
+                            <span className="truncate max-w-28">{event.organizer?.organizationName}</span>
                         </div>
                     )}
 

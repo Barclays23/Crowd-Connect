@@ -51,6 +51,13 @@ import { PayoutController } from '@/controllers/implementations/payout.controlle
 import { ReviewPayoutBodySchema } from '@/schemas/payout.schema';
 import { EventQueueService } from '@/services/queue-services/implementaions/eventQueue.service';
 import { USER_ROLES } from '@/constants/user-system.constants';
+import { AdminReviewQuerySchema } from '@/schemas/review.schema';
+import { ReviewController } from '@/controllers/implementations/review.controller';
+import { ReviewService } from '@/services/review-services/implementations/review.service';
+import { ReviewRepository } from '@/repositories/implementations/review.repository';
+import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
+import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
+import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
 
 
 
@@ -64,12 +71,14 @@ const bookingRepo       = new BookingRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
 const payoutRepo        = new PayoutRepository()
+const reviewRepo        = new ReviewRepository()
+const faqKnowledgeRepo  = new MongoFaqRepository();
 
 
 
 // ──  PROVIDERS
 const razorPayProvider = new RazorpayProvider();
-
+const aiChatProvider   = new GeminiAiChatProvider();
 
 
 
@@ -82,7 +91,8 @@ const hostManagementServices    = new HostManagementServices(userRepo);
 const walletService             = new WalletService(userRepo, transactionRepo);
 const cacheService              = new RedisCacheService();
 const eventQueueService         = new EventQueueService();
-const settingsService           = new PlatformSettingsService(settingsRepo);
+const faqIngestionService       = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService           = new PlatformSettingsService(settingsRepo, faqIngestionService);
 
 
 
@@ -90,7 +100,7 @@ const bookingServices           = new BookingService(bookingRepo, eventRepo, use
 const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService, eventQueueService);
 const passwordService           = new PasswordService(userRepo, cacheService);
 const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
-
+const reviewService             = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo)
 
 
 // ──  CONTROLLERS ──
@@ -98,7 +108,8 @@ const userController        = new UserController(userProfileServices, userManage
 const hostController        = new HostController(hostManagementServices);
 const eventController       = new EventController(eventServices, bookingServices);
 const bookingController     = new BookingController(bookingServices);
-const payoutController      = new PayoutController(payoutService)
+const payoutController      = new PayoutController(payoutService);
+const reviewController      = new ReviewController(reviewService)
 
 
 
@@ -164,6 +175,11 @@ adminRouter.put(ADMIN_ROUTES.REVIEW_PAYOUT,
     validateRequest({ body: ReviewPayoutBodySchema, params: PayoutIdParamSchema }), 
     payoutController.reviewPayout.bind(payoutController)
 );
+
+
+
+// review & rating management
+adminRouter.get(ADMIN_ROUTES.GET_REVIEWS, validateRequest({ query: AdminReviewQuerySchema }), reviewController.getAllReviewsForAdmin.bind(reviewController));
 
 
 

@@ -13,7 +13,7 @@ import {
   MapBookingParams, 
 } from "@/types/booking.types";
 import { Types } from "mongoose";
-import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { getRefundPercentage } from "@/utils/refundCalculator";
 import { PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMethod } from "@/constants/payment.constants";
 import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
@@ -161,7 +161,7 @@ export function mapPopulatedBookingModelToEntity(
 
 export function mapBookingEntityToResponseDTO(
   entity: BookingEntityPopulated,
-  settings: PlatformSettingsEntity
+  settings: OperationalSettingsEntity
 ): BookingResponseDTO {
   const isGraceRefundActive = !!entity.gracePeriodEnd && new Date() <= new Date(entity.gracePeriodEnd);
 

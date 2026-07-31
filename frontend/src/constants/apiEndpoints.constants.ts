@@ -10,6 +10,7 @@ const API_PREFIX = {
     AI       : "/api/ai",
     AUTH     : "/api/auth",
     BOOKING  : "/api/booking",
+    CHAT     : "/api/chat",
     CHECKIN  : "/api/checkin",
     EVENT    : "/api/event",
     HOST     : "/api/host",
@@ -50,7 +51,9 @@ export const API_ENDPOINTS = {
         // payout management
         PAYOUTS         : `${API_PREFIX.ADMIN}/payouts`,
         REVIEW_PAYOUT   : (payoutId: string) => `${API_PREFIX.ADMIN}/payouts/${payoutId}/review`,
-
+        
+        // review & rating management
+        REVIEWS : `${API_PREFIX.ADMIN}/reviews`,
     },
 
     AI: {
@@ -82,6 +85,10 @@ export const API_ENDPOINTS = {
         VERIFY_PAYMENT  : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/verify-payment`, 
         RETRY_PAYMENT   : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/retry-payment`, 
         CANCEL          : (bookingId: string) => `${API_PREFIX.BOOKING}/${bookingId}/cancel`,
+    },
+
+    CHAT: {
+        ASK             : `${API_PREFIX.CHAT}/ask`,
     },
 
     CHECKIN: {
@@ -124,10 +131,14 @@ export const API_ENDPOINTS = {
         SUBMIT_REVIEW   : `${API_PREFIX.REVIEW}`,
         MANAGE_REVIEW   : (reviewId: string) => `${API_PREFIX.REVIEW}/${reviewId}`,  // edit or delete review
         HOST_REVIEWS    : (hostId: string) => `${API_PREFIX.REVIEW}/host/${hostId}`,
+        EVENT_REVIEWS   : (eventId: string) => `${API_PREFIX.REVIEW}/events/${eventId}`,
+        
     },
 
     SETTINGS: {
-        BASE            : API_PREFIX.SETTINGS,
+        BASE            : API_PREFIX.SETTINGS, // GET all settings
+        OPERATIONAL     : `${API_PREFIX.SETTINGS}/operational`,
+        TERMS           : `${API_PREFIX.SETTINGS}/terms`,
     },
 
     USER: {

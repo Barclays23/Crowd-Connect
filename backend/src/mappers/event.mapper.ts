@@ -94,41 +94,24 @@ export const mapEventDiscoveryQueryToFilters = (req: Request): GetPublicEventsFi
 export const mapEventModelToEventEntity = (
   doc: IEventModel | IEventModelPopulatedHost
 ): EventEntity => {
-   const isPopulated = typeof doc.hostRef === 'object' && doc.hostRef !== null && 'name' in doc.hostRef;
+   const isPopulated = typeof doc.hostRef === 'object' && doc.hostRef !== null && 'organizationName' in doc.hostRef;
 
-   let organizer = {
-      hostId: '',
-      hostName: '',
-      organizerName: '',
-   };
-
-   if (isPopulated) {
-      const host = doc.hostRef as IHostPopulatedFromEvent;
-      organizer = {
-         hostId: host._id.toString(),
-         hostName: host.name || '',
-         organizerName: host.organizationName || '',
-      };
-   } else {
-      organizer = {
-         hostId: doc.hostRef.toString(),
-         hostName: '',
-         organizerName: '',
-      };
-   }
-
-   const host = isPopulated
-      ? (doc.hostRef as IHostPopulatedFromEvent)
-      : { _id: doc.hostRef as Types.ObjectId, name: '', organizationName: undefined };
+   const host = isPopulated ? (doc.hostRef as IHostPopulatedFromEvent) : null;
+   
+   const hostIdStr = isPopulated 
+      ? host!._id.toString() 
+      : (doc.hostRef as Types.ObjectId).toString();
 
    return {
       eventId: doc._id.toString(),
       // hostRef: doc.hostRef.toString(),
 
       organizer: {
-         hostId: host._id.toString(),
-         hostName: host.name ?? '',
-         organizerName: host.organizationName ?? '',
+         hostId: hostIdStr,
+         organizationName: host?.organizationName ?? '',
+         organizationLogo: host?.organizationLogo ?? undefined,
+         ratingAverage: host?.ratingAverage ?? 0,
+         totalReviews: host?.totalReviews ?? 0,
       },
       
       title: doc.title,
@@ -155,6 +138,9 @@ export const mapEventModelToEventEntity = (
       
       eventStatus: doc.eventStatus,
       views: doc.views,
+      // Event-level ratings
+      ratingAverage: doc.ratingAverage ?? 0,
+      totalReviews: doc.totalReviews ?? 0,
 
       cancellation: doc.cancellation ? {
          reason:       doc.cancellation.reason,
@@ -176,13 +162,14 @@ export const mapDocToOrganiserEventEntity = (doc: IEventModel): OrganiserEventEn
       category: doc.category,
       posterUrl: doc.posterUrl,
       startDateTime: doc.startDateTime,
+      endDateTime: doc.endDateTime,
       format: doc.format,
       eventStatus: doc.eventStatus,
       ratingAverage: doc.ratingAverage || 0,
       totalReviews: doc.totalReviews || 0
    };
 };
-   
+
 
 
 
@@ -196,8 +183,10 @@ export const mapEventEntityToEventResponseDto = (entity: EventEntity): EventResp
    // hostRef: entity.hostRef,
    organizer: {
       hostId: entity.organizer.hostId,
-      hostName: entity.organizer.hostName,
-      organizerName: entity.organizer.organizerName,
+      organizationName: entity.organizer.organizationName,
+      organizationLogo: entity.organizer.organizationLogo,
+      ratingAverage: entity.organizer.ratingAverage,
+      totalReviews: entity.organizer.totalReviews,
    },
 
    title: entity.title,
@@ -224,6 +213,9 @@ export const mapEventEntityToEventResponseDto = (entity: EventEntity): EventResp
    
    eventStatus: getEventDisplayStatus(entity),
 
+   ratingAverage: entity.ratingAverage,
+   totalReviews: entity.totalReviews,
+
    cancellation: entity.cancellation?.cancelledBy
       ? {
             reason: entity.cancellation.reason,
@@ -246,8 +238,9 @@ export const mapOrganiserEventEntityToDTO = (entity: OrganiserEventEntity): Orga
       category: entity.category,
       posterUrl: entity.posterUrl,
       startDateTime: entity.startDateTime.toISOString(),
+      endDateTime: entity.endDateTime.toISOString(),
       format: entity.format,
-      eventStatus: entity.eventStatus,
+      eventStatus: getEventDisplayStatus(entity),
       ratingAverage: entity.ratingAverage,
       totalReviews: entity.totalReviews
    };

@@ -13,10 +13,11 @@ import {
 
 
 export interface IHostManagementServices {
-    applyHostUpgrade({ userId, upgradeDto, documentFile }: {
+    applyHostUpgrade({ userId, upgradeDto, documentFile, logoFile }: {
         userId: string;
         upgradeDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File | undefined;
+        logoFile: Express.Multer.File | undefined;
     }): Promise<UserProfileResponseDto>;
 
     getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult>;

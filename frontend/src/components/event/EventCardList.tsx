@@ -41,7 +41,7 @@ function EventCardList({ event }: { event: IEventState }) {
                     <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full border ${isFree ? "bg-(--badge-success-bg) text-(--badge-success-text) border-(--badge-success-border)" : "bg-(--badge-primary-bg) text-(--badge-primary-text) border-(--badge-primary-border)"}`}>
                         {isFree ? "Free" : `₹${event.ticketPrice?.toLocaleString("en-IN")}`}
                     </span>
-                    <span className="text-xs text-(--text-tertiary)">by {event.organizer?.organizerName}</span>
+                    <span className="text-xs text-(--text-tertiary)">by {event.organizer?.organizationName}</span>
                 </div>
             </div>
 

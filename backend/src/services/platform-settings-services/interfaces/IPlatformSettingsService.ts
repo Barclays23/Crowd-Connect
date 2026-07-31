@@ -1,9 +1,22 @@
 // backend/src/services/platform-settings-services/interfaces/IPlatformSettingsService.ts
 
-import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { 
+    OperationalSettingsResponseDTO,
+    PublicTermsResponseDTO, 
+    UpdateOperationalSettingsDTO, 
+    UpdateTermsDTO 
+} from "@/dtos/settings.dto";
+import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+
 
 
 export interface IPlatformSettingsService {
-    getPlatformSettings(): Promise<PlatformSettingsEntity>;
-    updatePlatformSettings(data: Partial<PlatformSettingsEntity>, adminId: string): Promise<PlatformSettingsEntity>;
+    // For Internal Services like BookingService, EventService, refundCalculations etc (returns the Domain Entity)
+    getOperationalSettingsDomain(): Promise<OperationalSettingsEntity>;
+
+    getOperationalSettings(): Promise<OperationalSettingsResponseDTO>;
+    getTermsAndConditions(): Promise<PublicTermsResponseDTO>;
+
+    updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<PlatformSettingsEntity>
+    updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PlatformSettingsEntity>;
 }

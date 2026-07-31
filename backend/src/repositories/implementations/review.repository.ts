@@ -2,10 +2,10 @@
 import Review from "@/models/implementations/review.model";
 import { Types } from "mongoose";
 import { BaseRepository } from "@/repositories/base.repository";
-import { GetReviewsFilter, IReviewModel, IReviewPopulatedUser } from "@/types/review.types";
-import { CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity";
+import { GetReviewsAdminFilter, GetReviewsFilter, IReviewModel, IReviewPopulatedAdmin, IReviewPopulatedUser } from "@/types/review.types";
+import { AdminPopulatedReviewEntity, CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity";
 import { IReviewRepository } from "@/repositories/interfaces/IReviewRepository";
-import { mapPopulatedReviewDocToEntity, mapReviewDocToEntity } from "@/mappers/review.mapper";
+import { mapAdminPopulatedReviewDocToEntity, mapPopulatedReviewDocToEntity, mapReviewDocToEntity } from "@/mappers/review.mapper";
 
 
 
@@ -53,6 +53,33 @@ export class ReviewRepository extends BaseRepository<IReviewModel> implements IR
         ]);
 
         const reviews: PopulatedReviewEntity[] = docs.map(mapPopulatedReviewDocToEntity);
+
+        return { reviews, totalCount };
+    }
+
+
+    async findAllReviewsForAdmin(filters: GetReviewsAdminFilter): Promise<{ reviews: AdminPopulatedReviewEntity[]; totalCount: number }> {
+        const { page, limit, rating, search } = filters;
+        const query: Record<string, unknown> = {};
+
+        if (rating) query.rating = rating;
+        if (search) query.reviewText = { $regex: search, $options: "i" };
+
+        const skip = (page - 1) * limit;
+
+        const [docs, totalCount] = await Promise.all([
+            this.model.find(query)
+                .populate("userRef", "name email profilePic")
+                .populate("eventRef", "title category")
+                .populate("hostRef", "organizationName")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean<IReviewPopulatedAdmin[]>(),
+            this.model.countDocuments(query),
+        ]);
+
+        const reviews: AdminPopulatedReviewEntity[] = docs.map(mapAdminPopulatedReviewDocToEntity);
 
         return { reviews, totalCount };
     }

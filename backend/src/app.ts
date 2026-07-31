@@ -15,6 +15,7 @@ import eventRouter from '@/routes/event.routes';
 import bookingRouter from '@/routes/booking.routes';
 import walletRouter from '@/routes/wallet.routes';
 import settingsRouter from '@/routes/settings.routes';
+import reviewRouter from '@/routes/review.routes';
 
 
 import morganMiddleware from '@/config/morgan.config';
@@ -24,6 +25,7 @@ import payoutRouter from '@/routes/payout.routes';
 import { configurePassport } from '@/config/passport.config';
 import passport from 'passport';
 import aiRouter from '@/routes/ai.routes';
+import chatRouter from '@/routes/chat.routes';
 
 
 const app = express();
@@ -63,11 +65,12 @@ app.use('/api/admin', adminRoutes);
 app.use("/api/ai", aiRouter);
 app.use('/api/auth', authRoutes);
 app.use('/api/booking', bookingRouter);
+app.use('/api/chat', chatRouter);
 app.use('/api/checkin/:eventId', checkinRouter);
 app.use('/api/event', eventRouter);
 app.use('/api/host', hostRouter);
 app.use('/api/payout', payoutRouter);
-app.use("/api/reviews", aiRouter);
+app.use("/api/reviews", reviewRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/wallet', walletRouter);

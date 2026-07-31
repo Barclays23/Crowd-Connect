@@ -1,4 +1,5 @@
 // frontend/src/components/event/EventCard1.tsx
+import { StarRating } from "@/components/common/StarRating";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 import { type IEventState } from "@/types/event.types";
 import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp, Star } from "lucide-react";
@@ -162,12 +163,18 @@ function EventCard1({ event }: { event: IEventState }) {
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 text-xs text-(--text-tertiary)">
                         <Users size={13} />
-                        <span className="truncate max-w-32">{event.organizer?.organizerName}</span>
+                        <span className="truncate max-w-32">{event.organizer?.organizationName}</span>
                     </div>
                     {/* HOST RATING */}
                     {event.organizer?.ratingAverage > 0 ? (
                         <div className="flex items-center gap-1 text-xs font-semibold text-amber-500">
-                            <Star size={11} fill="currentColor" />
+                            {/* <Star size={11} fill="currentColor" /> */}
+                            <StarRating 
+                                rating={event.organizer.ratingAverage} 
+                                size={11} 
+                                className="text-(--badge-warning-text)" 
+                                emptyColorClassName="text-white/20" 
+                            />
                             {event.organizer.ratingAverage.toFixed(1)} 
                             <span className="text-(--text-tertiary) font-normal">({event.organizer.totalReviews})</span>
                         </div>

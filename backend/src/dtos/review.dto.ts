@@ -25,15 +25,17 @@ export interface EditReviewRequestDTO {
 export interface ReviewResponseDTO {
   reviewId  : string;
   eventId   : string;
+  eventTitle?: string;
   hostId    : string;
+  hostName?: string;
   user      : {
     userId      : string;
     name        : string;
+    email?      : string;
     profilePic? : string;
   };
   rating            : number;
   reviewText?       : string;
-  isRewardClaimed   : boolean;
   createdAt         : string;
 }
 

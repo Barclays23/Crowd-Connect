@@ -11,7 +11,6 @@ export interface ReviewEntity {
 
   rating            : number;
   reviewText?       : string;
-  isRewardClaimed   : boolean;
 
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +29,26 @@ export interface PopulatedReviewEntity extends Omit<ReviewEntity, "userRef"> {
 
 
 
+export interface AdminPopulatedReviewEntity {
+  reviewId: string;
+  eventRef: string;
+  eventTitle?: string;
+  hostRef: string;
+  hostName?: string;
+  user: {
+    userId: string;
+    name: string;
+    email?: string;
+    profilePic?: string;
+  };
+  rating: number;
+  reviewText?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+
 export interface CreateReviewInput {
   eventRef      : Types.ObjectId;
   hostRef       : Types.ObjectId;
@@ -38,5 +57,4 @@ export interface CreateReviewInput {
 
   rating            : number;
   reviewText?       : string;
-  isRewardClaimed   : boolean;
 }

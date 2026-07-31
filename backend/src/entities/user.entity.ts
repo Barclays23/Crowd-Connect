@@ -74,8 +74,10 @@ export interface HostEntity extends UserEntity {
   organizationName    : string;
   registrationNumber  : string;
   businessAddress     : string;
-  hostStatus          : HostStatus;
+  organizationDescription?: string;
+  organizationLogo?   : string;
   certificateUrl?     : string;
+  hostStatus          : HostStatus;
   hostRejectionReason?: string;
   appliedAt?          : Date;
   reviewedAt?         : Date;
@@ -156,6 +158,8 @@ export interface UpgradeHostInput {
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
+  organizationDescription?: string;
+  organizationLogo?   : string;
   certificateUrl?: string;  // when host re-apply (upgrading), is it mandatory or not??
   hostStatus: HostStatus;  // 'pending' on upgrade request
   hostAppliedAt: Date;
@@ -167,6 +171,8 @@ export interface HostUpdateInput {
   organizationName?: string;
   registrationNumber?: string;
   businessAddress?: string;
+  organizationDescription?: string;
+  organizationLogo?   : string;
   certificateUrl?: string;
   hostStatus?: HostStatus;  // no need to change if update by admin; 'pending' if update by host;
 }

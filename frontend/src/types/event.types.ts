@@ -17,9 +17,8 @@ export interface IEventState {
 
   organizer           : {
     hostId        : string;
-    hostName      : string;
-    profilePic?   : string;
-    organizerName : string;
+    organizationName : string;
+    organizationLogo?: string;
     ratingAverage : number; 
     totalReviews  : number;
   };
@@ -44,12 +43,16 @@ export interface IEventState {
 
   cancellation?       : {
     reason      : string;
-    cancelledBy : string;  // organizer.organizerName or 'Admin'
+    cancelledBy : string;  // organizer.organizationName or 'Admin'
     cancelledAt : string;
   };
 
   views?              : number;           // Needed for the Trending/Popular filter [cite: 459, 640]
   checkedInCount      : number;  // Useful if you ever need to show "filling up fast!" logic [cite: 646, 647]
+
+  // Event-Level Ratings
+  ratingAverage       : number;
+  totalReviews        : number;
 
   createdAt           : string;
   updatedAt?          : string;
@@ -113,6 +116,7 @@ export interface OrganiserEventsData {
   category: string;
   posterUrl: string;
   startDateTime: string;
+  endDateTime: string;
   format: string;
   eventStatus: string;
   ratingAverage: number; 

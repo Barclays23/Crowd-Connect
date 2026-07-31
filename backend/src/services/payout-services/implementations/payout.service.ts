@@ -80,7 +80,7 @@ export class PayoutService implements IPayoutService {
             eventRef      : eventId,
             hostRef       : hostId,
             eventTitle    : event.title,
-            hostName      : event.organizer?.organizerName ?? "Unknown Host",
+            hostName      : event.organizer?.organizationName ?? "Unknown Host",
             grossAmount,
             commissionRate,
             commissionAmount,

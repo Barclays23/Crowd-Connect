@@ -81,6 +81,13 @@ const userSchema = new Schema<IUserModel>(
     businessAddress: {
       type: String,
     },
+    organizationDescription: {
+      type: String,
+      trim: true,
+    },
+    organizationLogo: {
+      type: String,
+    },
     certificateUrl: {
       type: String,
     },

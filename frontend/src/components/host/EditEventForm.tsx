@@ -1,10 +1,11 @@
+// src/components/host/EditEventForm.tsx
 import { HostEventForm } from "@/components/host/HostEventForm";
 import type { EventStatus } from "@/constants/event.constants";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
-import type { IPlatformSettings } from "@/types/platformSettings.types";
+import type { IOperationalSettings, IPlatformSettings } from "@/types/platformSettings.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +31,7 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
     const fetchSettings = async () => {
       try {
         setLoading(true);
-        const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
+        const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
         console.log('fetched settings:', response);
         setCommissionPercent(response?.data?.commissionPercent ?? commissionPercent);
 
@@ -38,7 +39,6 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
         console.warn("Could not load platform settings, using default commission :", error);
         const errorMessage = getApiErrorMessage(error);
         toast.error(errorMessage);
-        toast.error("Failed to load platform settings----------");
 
       } finally {
         setLoading(false);
@@ -81,6 +81,7 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
       useAI:            false,
       uploadedImage:    null,
       aiGeneratedImage: null,
+      agreeTerms: false,
     },
   });
 

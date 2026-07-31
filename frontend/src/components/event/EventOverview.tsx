@@ -1,5 +1,4 @@
 // frontend/src/components/event/EventOverview.tsx
-
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatDate3, formatDate1 } from "@/utils/dateAndTimeFormats";
@@ -13,9 +12,12 @@ import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/util
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/common/EventMap";
 
+
+
 interface EventOverviewProps {
    event: IEventState;
 }
+
 
 export default function EventOverview({ event }: EventOverviewProps) {
    const isOnline = event.format?.toLowerCase() === "online";
@@ -38,60 +40,6 @@ export default function EventOverview({ event }: EventOverviewProps) {
 
    return (
       <div className="space-y-6 pb-6 text-(--text-primary)">
-         {/* POSTER HERO */}
-         <div className="relative rounded-2xl overflow-hidden mb-8 bg-(--bg-tertiary) border border-(--card-border)">
-            {event.posterUrl ? (
-               <img
-                  src={event.posterUrl}
-                  alt={event.title}
-                  className={["w-full object-cover", isCancelled ? "grayscale-[0.6] brightness-75" : "brightness-60"].join(" ")}
-                  style={{ maxHeight: 320 }}
-               />
-            ) : (
-               <div className="w-full h-48 flex flex-col items-center justify-center gap-3 text-(--text-tertiary)">
-                  <ImageOff size={40} className="opacity-30" />
-                  <span className="text-xs tracking-widest uppercase opacity-50">No poster provided</span>
-               </div>
-            )}
-
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 30%, transparent 100%)" }} />
-
-            <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-               <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant={getEventStatusBadgeVariant(event.eventStatus)} className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                     {capitalize(event.eventStatus)}
-                  </Badge>
-                  <Badge variant={isOnline ? "secondary" : "default"} className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                     {capitalize(event.format)}
-                  </Badge>
-                  <Badge variant={isFree ? "success" : "destructive"} className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                     {isFree ? "Free" : `₹${(event.ticketPrice || 0).toLocaleString("en-IN")}`}
-                  </Badge>
-                  {event.category && (
-                     <Badge variant={getEventCategoryBadgeVariant(event.category)} className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                        {capitalize(event.category)}
-                     </Badge>
-                  )}
-               </div>
-
-               <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight tracking-tight">
-                  {event.title}
-               </h2>
-
-               {event.organizer?.organizerName && (
-                  <div className="flex items-center gap-2 mt-3">
-                     <UserCircle size={16} className="text-white opacity-70" />
-                     <span className="text-sm text-white/80 font-medium">
-                        {event.organizer.organizerName}
-                        {event.organizer.hostName && event.organizer.hostName !== event.organizer.organizerName && (
-                           <span className="opacity-60"> · {event.organizer.hostName}</span>
-                        )}
-                     </span>
-                  </div>
-               )}
-            </div>
-         </div>
-
          {/* QUICK STATS */}
          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {[

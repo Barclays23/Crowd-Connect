@@ -65,8 +65,10 @@ export interface EventResponseDTO {
   // hostRef: string;
   organizer: {
     hostId: string;
-    hostName: string;
-    organizerName: string;
+    organizationName: string;
+    organizationLogo?: string;
+    ratingAverage: number;
+    totalReviews: number;
   };
 
   title: string;
@@ -92,6 +94,12 @@ export interface EventResponseDTO {
   grossTicketRevenue: number;
 
   eventStatus: EventStatus;
+  ratingAverage: number;
+  totalReviews: number;
+
+  // Event-Level Ratings
+  // ratingAverage: number;
+  // totalReviews: number;
 
   cancellation?: {
     reason: string;
@@ -111,6 +119,7 @@ export interface OrganiserEventResponseDTO {
   category: string;
   posterUrl: string;
   startDateTime: string;
+  endDateTime: string;
   format: string;
   eventStatus: string;
   ratingAverage: number;

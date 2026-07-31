@@ -1,8 +1,8 @@
-// frontend/src/pages/admin/AdminPlatformSettings.tsx
+// frontend/src/pages/admin/AdminOperationalSettings.tsx
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { toast } from "react-toastify";
-import type { IPlatformSettings } from "@/types/platformSettings.types";
+import type { IOperationalSettings } from "@/types/platformSettings.types";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -92,10 +92,11 @@ function SettingsSection({
 
 
 
+
 // ── Main Component ───────────────────────────────────────────────────────────
-const AdminPlatformSettings = () => {
-    const [savedSettings, setSavedSettings] = useState<IPlatformSettings | null>(null);
-    const [draftSettings, setDraftSettings] = useState<Partial<IPlatformSettings>>({});
+const AdminOperationalSettings = () => {
+    const [savedSettings, setSavedSettings] = useState<IOperationalSettings | null>(null);
+    const [draftSettings, setDraftSettings] = useState<Partial<IOperationalSettings>>({});
 
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -106,15 +107,15 @@ const AdminPlatformSettings = () => {
         const fetchSettings = async () => {
             try {
                 setLoading(true);
-                const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
+                const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
 
                 setSavedSettings(response.data);
                 setDraftSettings({ ...response.data });
 
             } catch (error: unknown) {
-                console.error("Failed to load settings:", error);
-                const errorMessage: string = getApiErrorMessage(error)
-                toast.error(errorMessage || "Failed to load settings");
+                console.error("Failed to load operational settings:", error);
+                const errorMessage: string = getApiErrorMessage(error);
+                if (errorMessage) toast.error(errorMessage);
 
             } finally {
                 setLoading(false);
@@ -138,7 +139,7 @@ const AdminPlatformSettings = () => {
         setIsEditing(false);
     };
 
-    const updateDraft = (key: keyof IPlatformSettings, value: number) => {
+    const updateDraft = (key: keyof IOperationalSettings, value: number) => {
         setDraftSettings((prev) => ({ ...prev, [key]: value }));
     };
 
@@ -147,18 +148,18 @@ const AdminPlatformSettings = () => {
         setSaving(true);
 
         try {
-            const response: ApiResponse<IPlatformSettings> = await platformSettingsService.updateSettings(draftSettings as IPlatformSettings);
+            const response: ApiResponse<IOperationalSettings> = await platformSettingsService.updateOperationalSettings(draftSettings as IOperationalSettings);
 
             setSavedSettings(response.data);
             setDraftSettings({ ...response.data });
             setIsEditing(false);
             
-            toast.success("Settings saved successfully");
+            toast.success(response.message);
 
         } catch (error: unknown) {
-            console.error("Failed to save settings:", error);
-            const errorMessage: string = getApiErrorMessage(error)
-            toast.error(errorMessage || "Failed to save settings");
+            console.error("Failed to update operational settings:", error);
+            const errorMessage: string = getApiErrorMessage(error);
+            if (errorMessage) toast.error(errorMessage);
 
         } finally {
             setSaving(false);
@@ -174,6 +175,7 @@ const AdminPlatformSettings = () => {
             </AdminLayout>
         );
     }
+
 
     return (
         <AdminLayout>
@@ -326,9 +328,10 @@ const AdminPlatformSettings = () => {
                         max={100}
                     />
                 </SettingsSection>
+                
             </div>
         </AdminLayout>
     );
 };
 
-export default AdminPlatformSettings;
+export default AdminOperationalSettings;

@@ -14,7 +14,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { eventServices } from "@/services/eventServices";
 import { useEffect, useState } from "react";
 import { platformSettingsService } from "@/services/platformSettingsService";
-import type { IPlatformSettings } from "@/types/platformSettings.types";
+import type { IOperationalSettings, IPlatformSettings } from "@/types/platformSettings.types";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
@@ -32,7 +32,7 @@ const HostYourEvent = () => {
     const fetchCommissionPercent = async () => {
         try {
           setLoading(true);
-          const response: ApiResponse<IPlatformSettings> = await platformSettingsService.getSettings();
+          const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
           setCommissionPercent(response.data.commissionPercent ?? commissionPercent);
 
         } catch (error: unknown) {
@@ -65,6 +65,7 @@ const HostYourEvent = () => {
       uploadedImage: null,
       aiGeneratedImage: null, // will hold data URL (base64 preview)
       useAI: false,
+      agreeTerms: false,
     },
   });
 

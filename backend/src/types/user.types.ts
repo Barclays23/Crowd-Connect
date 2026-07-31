@@ -38,6 +38,8 @@ export interface IUserModel {
   organizationName?   : string;
   registrationNumber? : string;
   businessAddress?    : string;
+  organizationDescription?: string;
+  organizationLogo?   : string;
   certificateUrl?     : string;
   hostStatus?         : HostStatus;
   hostAppliedAt?      : Date;

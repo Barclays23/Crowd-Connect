@@ -58,7 +58,9 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          organizationName: "",
          registrationNumber: "",
          businessAddress: "",
+         organizationDescription: "",
          hostDocument: undefined,
+         organizationLogo: undefined,
       },
    });
 
@@ -69,7 +71,9 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
             organizationName: user.organizationName || "",
             registrationNumber: user.registrationNumber || "",
             businessAddress: user.businessAddress || "",
+            organizationDescription: user.businessAddress || "",
             hostDocument: undefined, // Don't pre-fill file - force re-upload
+            organizationLogo: undefined, // Don't pre-fill file - force re-upload
          });
       }
    }, [isReapply, user, reset]);
@@ -90,6 +94,9 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          
          if (data.hostDocument instanceof File) {
             formData.append("hostDocument", data.hostDocument);
+         }
+         if (data.organizationLogo instanceof File) {
+            formData.append("organizationLogo", data.organizationLogo);
          }
 
          // console.log("Submitting host upgrade data:", data);
@@ -216,6 +223,48 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                            />
                         </div>
                         <FieldError message={errors.businessAddress?.message} />
+                     </div>
+
+                     {/* Organization Description */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           Organization Description *
+                        </label>
+                        <div className="relative">
+                           <FileText className="absolute left-4 top-4 w-5 h-5 text-(--text-tertiary) z-10" />
+                           <TextArea
+                              {...register("organizationDescription")}
+                              placeholder="Tell attendees about your organization, what kind of events you host, and your mission..."
+                              rows={4}
+                              className="pl-12 min-h-24"
+                           />
+                        </div>
+                        <FieldError message={errors.organizationDescription?.message} />
+                     </div>
+
+                     {/* Logo Upload */}
+                     <div>
+                        <label className="block text-sm font-medium mb-2 text-(--text-primary)">
+                           Organization Logo *
+                        </label>
+                        <div className={`relative rounded-xl p-4 text-center cursor-pointer transition-all border-2 border-dashed ${errors.organizationLogo ? 'border-destructive bg-destructive/5' : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'}`}>
+                           <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={(e) => {
+                                 const file = e.target.files?.[0];
+                                 if (file) setValue('organizationLogo', file, { shouldValidate: true });
+                              }}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           />
+                           <Upload className="w-6 h-6 mx-auto mb-2 text-(--text-tertiary)" />
+                           {watch("organizationLogo") ? (
+                              <p className="font-medium text-sm text-(--brand-primary)">{(watch("organizationLogo") as File).name}</p>
+                           ) : (
+                              <p className="text-sm text-(--text-secondary)">Upload your logo (JPG, PNG, WEBP)</p>
+                           )}
+                        </div>
+                        <FieldError message={errors.organizationLogo?.message} />
                      </div>
 
                      {/* Certificate Upload */}

@@ -2,7 +2,12 @@
 import axiosInstance from "@/config/axios";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
 import type { ApiResponse } from "@/types/common.types";
-import type { EditReviewPayload, GetReviewsResponse, SubmitReviewPayload } from "@/types/review.types";
+import type { 
+    AdminReviewQueryParams, 
+    EditReviewPayload, 
+    IReviewState, 
+    SubmitReviewPayload 
+} from "@/types/review.types";
 
 
 
@@ -41,7 +46,7 @@ export const reviewServices = {
     },
   
 
-    getHostReviews: async (hostId: string, page = 1, limit = 10): Promise<ApiResponse<GetReviewsResponse>> => {
+    getHostReviews: async (hostId: string, page = 1, limit = 10): Promise<ApiResponse<IReviewState[]>> => {
         const searchParams = new URLSearchParams({
             page: String(page),
             limit: String(limit)
@@ -49,7 +54,41 @@ export const reviewServices = {
         const queryString = searchParams.toString();
         const endpoint = `${API_ENDPOINTS.REVIEW.HOST_REVIEWS(hostId)}?${queryString}`;
 
-        const response = await axiosInstance.get<ApiResponse<any>>(endpoint);
+        const response = await axiosInstance.get<ApiResponse<IReviewState[]>>(endpoint);
+
+        return response.data;
+    },
+
+
+    getEventReviews: async (eventId: string, page = 1, limit = 10): Promise<ApiResponse<IReviewState[]>> => {
+        const searchParams = new URLSearchParams({
+            page: String(page),
+            limit: String(limit)
+        });
+        const queryString = searchParams.toString();
+        const endpoint = `${API_ENDPOINTS.REVIEW.EVENT_REVIEWS(eventId)}?${queryString}`;
+
+        const response = await axiosInstance.get<ApiResponse<IReviewState[]>>(endpoint);
+        return response.data;
+    },
+
+
+    getAllReviewsForAdmin: async (params: AdminReviewQueryParams): Promise<ApiResponse<IReviewState[]>> => {
+        const searchParams = new URLSearchParams({
+            page: String(params.page),
+            limit: String(params.limit)
+        });
+        
+        if (params.rating && params.rating !== "all") searchParams.append("rating", params.rating);
+        if (params.search) searchParams.append("search", params.search);
+
+        const queryString = searchParams.toString();
+        const endpoint = `${API_ENDPOINTS.ADMIN.REVIEWS}?${queryString}`;
+
+        const response = await axiosInstance.get<ApiResponse<IReviewState[]>>(
+            endpoint, 
+            { withCredentials: true }
+        );
 
         return response.data;
     }

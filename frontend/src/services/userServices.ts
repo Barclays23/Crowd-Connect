@@ -109,7 +109,7 @@ export const userServices = {
     toggleUserBlock: async (userId: string): Promise<ApiResponse<UserStatusUpdateData>> => {
         const response = await axiosInstance.patch<ApiResponse<UserStatusUpdateData>>(
             API_ENDPOINTS.ADMIN.TOGGLE_BLOCK(userId), 
-            {}, // Empty body
+            {},
             { withCredentials: true }
         );
         return response.data;

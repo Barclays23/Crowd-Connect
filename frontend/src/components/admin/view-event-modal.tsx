@@ -100,14 +100,11 @@ export function ViewEventModal({ event }: ViewEventModalProps) {
                         {event.title}
                     </h2>
 
-                    {event.organizer?.organizerName && (
+                    {event.organizer?.organizationName && (
                         <div className="flex items-center gap-2 mt-2">
                             <UserCircle size={14} className="text-white opacity-60" />
                             <span className="text-sm text-white/70">
-                                {event.organizer.organizerName}
-                                {event.organizer.hostName && event.organizer.hostName !== event.organizer.organizerName && (
-                                    <span className="opacity-50"> · {event.organizer.hostName}</span>
-                                )}
+                                {event.organizer.organizationName}
                             </span>
                         </div>
                     )}

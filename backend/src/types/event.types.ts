@@ -75,8 +75,10 @@ export interface IEventModel {
 
 export interface IHostPopulatedFromEvent {
   _id: Types.ObjectId;
-  name: string;
   organizationName?: string;
+  organizationLogo?: string;
+  ratingAverage?: number;
+  totalReviews?: number;
 }
 
 

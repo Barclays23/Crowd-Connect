@@ -190,7 +190,7 @@ function EventCard3({ event }: { event: IEventState }) {
         {/* Footer CTA */}
         <div className="px-6 py-4 border-t border-gray-800/50 bg-linear-to-r from-gray-950 to-gray-900/80 flex items-center justify-between">
           <div className="text-sm text-gray-400 truncate max-w-[60%]">
-            {event.organizer?.organizerName || "Hosted by"}
+            {event.organizer?.organizationName || "Annonimous Host"}
           </div>
 
           <motion.div

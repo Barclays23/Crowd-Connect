@@ -24,6 +24,9 @@ import { TicketService } from '@/services/ticket-services/implementations/ticket
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 import { PlatformSettingsService } from '@/services/platform-settings-services/implementations/platformSettings.service';
 import { PlatformSettingsRepository } from '@/repositories/implementations/platformSettings.repository';
+import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
+import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
+import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
 
 
 
@@ -33,7 +36,12 @@ const eventRepo             = new EventRepository();
 const userRepo              = new UserRepository();
 const transactionRepo       = new TransactionRepository();
 const settingsRepo          = new PlatformSettingsRepository();
+const faqKnowledgeRepo      = new MongoFaqRepository();
 
+
+
+// AI PROVIDERS
+const aiChatProvider   = new GeminiAiChatProvider();
 
 
 // PAYMENT PROVIDER & SERVICE
@@ -61,7 +69,8 @@ const webhookService        = new WebhookService(successStrategies, failedStrate
 const paymentService        = new PaymentService(razorpayProvider);
 const ticketService         = new TicketService(bookingRepo, eventRepo);
 const cacheService          = new RedisCacheService();
-const settingsService       = new PlatformSettingsService(settingsRepo);
+const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
 const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
 
 

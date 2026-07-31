@@ -1,10 +1,10 @@
-// frontend/src/pages/admin/AdminBookingsList.tsx
+// frontend/src/pages/admin/AdminBookings.tsx
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import AdminBanner from "@/components/admin/admin-banner";
-import { BookingsList } from "@/components/admin/bookings-list";
+import { AdminBookingsList } from "@/components/admin/booking/admin-bookings-list";
 
 
-const AdminBookingsList = () => {
+const AdminBookings = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
@@ -13,10 +13,10 @@ const AdminBookingsList = () => {
           description="Manage users, events, bookings and more from your comprehensive dashboard"
           className=""
         />
-        <BookingsList />
+        <AdminBookingsList />
       </div>
     </AdminLayout>
   );
 };
 
-export default AdminBookingsList;
+export default AdminBookings;

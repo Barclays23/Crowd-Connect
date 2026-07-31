@@ -25,6 +25,9 @@ import { RedisCacheService } from "@/services/cache-services/implementations/red
 import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
 import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
 import { USER_ROLES } from "@/constants/user-system.constants";
+import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
+import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
+import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 
 
 
@@ -36,17 +39,22 @@ const userRepo          = new UserRepository();
 const transactionRepo   = new TransactionRepository();
 // const payoutRequestRepo   = new PayoutRequestRepository();
 const settingsRepo      = new PlatformSettingsRepository();
+const faqKnowledgeRepo  = new MongoFaqRepository();
+
 
 
 const razorpayProvider = new RazorpayProvider();
+const aiChatProvider   = new GeminiAiChatProvider();
 
 
-const paymentService    = new PaymentService(razorpayProvider);
-const ticketService     = new TicketService(bookingRepo, eventRepo);
-const walletService     = new WalletService(userRepo, transactionRepo);
-const cacheService      = new RedisCacheService();
-const settingsService   = new PlatformSettingsService(settingsRepo);
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
+
+const paymentService        = new PaymentService(razorpayProvider);
+const ticketService         = new TicketService(bookingRepo, eventRepo);
+const walletService         = new WalletService(userRepo, transactionRepo);
+const cacheService          = new RedisCacheService();
+const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
+const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
 
 
 const bookingController = new BookingController(bookingService);

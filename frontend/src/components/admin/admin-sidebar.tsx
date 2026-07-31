@@ -37,7 +37,9 @@ const menuItems = [
   { title: "Payments", url: "/admin/payments", icon: IndianRupee },
   { title: "Payout Requests", url: "/admin/payout-requests", icon: FileText },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
+  // { title: "Settings", url: "/admin/settings", icon: Settings },
+  { title: "Operational Settings", url: "/admin/settings/operational", icon: Settings },
+  { title: "Policies (T&C)", url: "/admin/settings/policies", icon: FileText },
 ]
 
 

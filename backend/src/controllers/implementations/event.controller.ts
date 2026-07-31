@@ -337,11 +337,10 @@ export class EventController implements IEventController {
             };
             console.log('✅ Parsed filters for getUserEvents:', filters);
 
-            const result = await this._eventServices.getUserEvents({userId, filters});
+            const result: GetAllEventsResult = await this._eventServices.getUserEvents({userId, filters});
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
-                // eventsData: result.events,
                 data: result.events,
                 pagination: result.pagination
             });
@@ -410,7 +409,7 @@ export class EventController implements IEventController {
                 message: "Organiser events fetched successfully",
                 data: result
             });
-            
+
         } catch (error) {
             next(error);
         }
@@ -425,7 +424,6 @@ export class EventController implements IEventController {
             const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
 
             res.status(HTTP_STATUS.OK).json({
-                // eventDetails
                 success: true,
                 data: eventDetails
             });

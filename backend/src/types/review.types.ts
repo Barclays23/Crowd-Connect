@@ -13,7 +13,6 @@ export interface IReviewModel {
 
   rating            : number;
   reviewText?       : string;
-  isRewardClaimed   : boolean;
 
   createdAt : Date;
   updatedAt : Date;
@@ -23,11 +22,31 @@ export interface IReviewModel {
 
 
 export interface IReviewPopulatedUser extends Omit<IReviewModel, 'userRef'> {
-    userRef: {
-        _id: Types.ObjectId;
-        name: string;
-        profilePic?: string;
-    };
+  userRef: {
+    _id: Types.ObjectId;
+    name: string;
+    profilePic?: string;
+  };
+}
+
+
+
+export interface IReviewPopulatedAdmin extends Omit<IReviewModel, 'userRef' | 'eventRef' | 'hostRef'> {
+  userRef: {
+    _id: Types.ObjectId;
+    name: string;
+    email?: string;
+    profilePic?: string;
+  };
+  eventRef?: {
+    _id: Types.ObjectId;
+    title: string;
+    category: string;
+  };
+  hostRef?: {
+    _id: Types.ObjectId;
+    organizationName: string;
+  };
 }
 
 
@@ -39,11 +58,19 @@ export interface GetReviewsFilter {
 }
 
 
+export interface GetReviewsAdminFilter {
+  page: number;
+  limit: number;
+  rating?: number;
+  search?: string;
+}
+
+
+
 
 export interface MapCreateReviewParams {
     userId: string;
     eventId: string;
     hostId: string;
     reviewDto: SubmitReviewRequestDTO;
-    isEligibleForReward: boolean;
 }

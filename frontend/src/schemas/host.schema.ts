@@ -1,7 +1,9 @@
 // frontend/src/schemas/host.schema.ts
 import { z } from "zod";
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_FILE_SIZE       = 5 * 1024 * 1024; // 5MB
+export const MAX_DOCUMENT_SIZE   = 5 * 1024 * 1024; // 5MB
+export const MAX_LOGO_SIZE       = 2 * 1024 * 1024; // 2MB
 
 
 const ALLOWED_FILE_TYPES = [
@@ -71,10 +73,32 @@ export const businessAddressBase = z
 
 
 
+
+export const organizationDescriptionBase = z
+   .string()
+   .trim()
+   .min(1, "Organization description is required")
+   .min(50, "Description must be at least 50 characters to give attendees a good idea of who you are")
+   .max(500, "Description cannot exceed 500 characters");
+
+export const logoBase = z
+   .instanceof(File, { message: "Organization logo is required" })
+   .optional() // Optional for re-applying so they don't have to re-upload if they just want to change text
+   .refine(
+      (file) => !file || file.size <= MAX_FILE_SIZE,
+      `Logo must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+   )
+   .refine(
+      (file) => !file || ["image/jpeg", "image/png", "image/webp"].includes(file.type),
+      "Logo must be a JPG, PNG, or WEBP image"
+   );
+
+
+
 export const hostDocumentBase = z
-   .instanceof(File, {
-      message: "Business document/certificate is required",
-   })
+.instanceof(File, {
+   message: "Business document/certificate is required",
+})
    .optional()
    .refine(
       (file) => !file || file.size <= MAX_FILE_SIZE,
@@ -108,7 +132,9 @@ export const HostUpgradeSchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
+   organizationDescription: organizationDescriptionBase,
    hostDocument: hostDocumentBase,
+   organizationLogo: logoBase,
 });
 
 

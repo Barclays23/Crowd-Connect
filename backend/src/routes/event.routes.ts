@@ -21,6 +21,9 @@ import { EventQueueService } from "@/services/queue-services/implementaions/even
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
+import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
+import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
+import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
 
 
 
@@ -31,21 +34,25 @@ const bookingRepo       = new BookingRepository();
 const userRepo          = new UserRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
+const faqKnowledgeRepo  = new MongoFaqRepository();
+
 
 
 // PROVIDERS
 const razorPayProvider = new RazorpayProvider();
+const aiChatProvider   = new GeminiAiChatProvider();
 
 
 // SERVICES
-const ticketService     = new TicketService(bookingRepo, eventRepo);
-const paymentService    = new PaymentService(razorPayProvider);
-const walletService     = new WalletService(userRepo, transactionRepo);
-const cacheService      = new RedisCacheService();
-const eventQueueService = new EventQueueService();
-const settingsService   = new PlatformSettingsService(settingsRepo);
-const bookingService    = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService      = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService, eventQueueService);
+const ticketService         = new TicketService(bookingRepo, eventRepo);
+const paymentService        = new PaymentService(razorPayProvider);
+const walletService         = new WalletService(userRepo, transactionRepo);
+const cacheService          = new RedisCacheService();
+const eventQueueService     = new EventQueueService();
+const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
+const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
+const eventService          = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService, eventQueueService);
 
 
 // CONTROLLER

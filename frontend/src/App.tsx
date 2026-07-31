@@ -43,17 +43,19 @@ import EventDetailsPage from "@/pages/event/EventDetailsPage";
 // Host pages
 import HostingPage from "@/pages/host/HostingPage";
 import OrganiserDetailsPage from "@/pages/host/OrganiserDetailsPage";
-import EventDashboard from "@/pages/event/EventDashboard";
+import OrgainiserEventDashboard from "@/pages/event/OrgainiserEventDashboard";
 
 
 // admin pages
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminUserList from "@/pages/admin/AdminUserList";
-import AdminHostsList from "./pages/admin/AdminHostsList";
-import AdminEventList from "@/pages/admin/AdminEvents";
-import AdminBookingsList from "@/pages/admin/AdminBookingsList";
-import AdminPlatformSettings from "@/pages/admin/AdminPlatformSettings";
+import AdminUsers from "@/pages/admin/AdminUsers";
+import AdminHosts from "./pages/admin/AdminHosts";
+import AdminEvents from "@/pages/admin/AdminEvents";
+import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
+import AdminReviews from "@/pages/admin/AdminReviews";
+import AdminOperationalSettings from "@/pages/admin/AdminOperationalSettings";
+import AdminPolicies from "@/pages/admin/AdminPolicies";
 
 
 
@@ -100,7 +102,7 @@ function App() {
                                  <Route path="/my-account" element={<UserAccountTabs />} />
                                  <Route path="/dashboard" element={<UserAccountTabs />} />
                                  <Route path="/my-events" element={<UserAccountTabs />} />
-                                 <Route path="/my-events/:eventId" element={<EventDashboard />} />
+                                 <Route path="/my-events/:eventId" element={<OrgainiserEventDashboard />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
                                  <Route path="/my-favourites" element={<UserAccountTabs />} />
                                  <Route path="/my-wallet" element={<UserAccountTabs />} />
@@ -112,13 +114,15 @@ function App() {
                            {/* ----------- Protected Admin Routes ---------- */}
                            <Route element={<ProtectedRoute requireAdmin={true} />} >
                               <Route path="/admin" element={<AdminDashboard />} />
-                              <Route path="/admin/users" element={<AdminUserList />} />
-                              <Route path="/admin/hosts" element={<AdminHostsList />} />
-                              <Route path="/admin/events" element={<AdminEventList />} />
-                              <Route path="/admin/events/:eventId" element={<EventDashboard />} />
-                              <Route path="/admin/bookings" element={<AdminBookingsList />} />
-                              <Route path="/admin/settings" element={<AdminPlatformSettings />} />
+                              <Route path="/admin/bookings" element={<AdminBookings />} />
+                              <Route path="/admin/events" element={<AdminEvents />} />
+                              <Route path="/admin/events/:eventId" element={<OrgainiserEventDashboard />} />
+                              <Route path="/admin/hosts" element={<AdminHosts />} />
                               <Route path="/admin/payout-requests" element={<AdminPayoutRequests />} />
+                              <Route path="/admin/reviews" element={<AdminReviews />} />
+                              <Route path="/admin/settings/operational" element={<AdminOperationalSettings />} />
+                              <Route path="/admin/settings/policies" element={<AdminPolicies />} />
+                              <Route path="/admin/users" element={<AdminUsers />} />
                            </Route>
 
 

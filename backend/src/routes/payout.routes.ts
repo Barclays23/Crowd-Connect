@@ -15,6 +15,9 @@ import { PAYOUT_ROUTES } from "@/constants/routes.constants";
 import { uploadImage, uploadPayoutProof } from "@/middlewares/file-upload.middleware";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { validateParams } from "@/middlewares/validate.middleware";
+import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
+import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
+import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 
 
 
@@ -24,14 +27,20 @@ const eventRepo         = new EventRepository()
 const settingsRepo      = new PlatformSettingsRepository()
 const userRepo          = new UserRepository()
 const transactionRepo   = new TransactionRepository()
+const faqKnowledgeRepo  = new MongoFaqRepository();
 
+
+
+// PROVIDERS
+const aiChatProvider   = new GeminiAiChatProvider();
 
 
 
 //service layers
-const settingsService   = new PlatformSettingsService(settingsRepo)
-const walletService     = new WalletService(userRepo, transactionRepo)
-const payoutService     = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
+const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
+const walletService         = new WalletService(userRepo, transactionRepo)
+const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
 
 
 

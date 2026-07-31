@@ -29,8 +29,6 @@ const HostingPage = () => {
          try {
             setIsLoading(true);
             const response: ApiResponse<UserState> = await userServices.getUserProfile();
-            console.log('Host User Profile data in HostingPage:', response.data);
-            toast.success(response.message)
             setUser(response.data);
 
          } catch (error) {

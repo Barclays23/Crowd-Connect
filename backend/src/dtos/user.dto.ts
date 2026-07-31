@@ -40,6 +40,8 @@ export interface HostUpgradeRequestDto {
   organizationName: string;
   registrationNumber: string;
   businessAddress: string;
+  organizationDescription?: string;
+  // organizationLogo?   : Express.Multer.File;
   // hostDocument: Express.Multer.File;
 }
 
@@ -85,6 +87,8 @@ export interface HostResponseDto {
   organizationName?: string | null;
   registrationNumber?: string | null;
   businessAddress?: string | null;
+  organizationDescription?: string | null;
+  organizationLogo?   : string | null;
   certificateUrl?: string | null;
   hostStatus?: HostStatus;
   hostAppliedAt?: string | null;
@@ -119,11 +123,12 @@ export interface HostStatusUpdateResponseDto {
 // for the public Organiser Profile
 export interface OrganiserProfileResponseDTO {
   hostId: string;
-  organizerName: string;
+  organizationName: string;
   email: string;
   mobile?: string;
-  profilePic?: string;
+  businessAddress?: string;
+  organizationDescription?: string;
+  organizationLogo?   : string;
   ratingAverage: number;
   totalReviews: number;
-  businessAddress?: string;
 }

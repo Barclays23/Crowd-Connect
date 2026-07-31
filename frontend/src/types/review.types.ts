@@ -7,15 +7,17 @@ import type { IPagination } from "@/types/common.types";
 export interface IReviewState {
     reviewId    : string;
     eventId     : string;
+    eventTitle? : string; 
     hostId      : string;
+    hostName?   : string;
     user        : {
         userId      : string;
         name        : string;
+        email?      : string;
         profilePic? : string;
     };
     rating          : number;
     reviewText?     : string;
-    isRewardClaimed : boolean;
 
     createdAt       : string;
 }
@@ -37,11 +39,18 @@ export interface EditReviewPayload {
 }
 
 
+export interface AdminReviewQueryParams {
+    page: number;
+    limit: number;
+    rating?: string;
+    search?: string;
+}
+
+
 
 
 // RESPONSE DATA TYPES ------------------------------------------------------------
 
 export interface GetReviewsResponse {
     reviews: IReviewState[];
-    pagination: IPagination;
 }

@@ -1,4 +1,4 @@
-// frontend/src/components/admin/bookings-list.tsx
+// frontend/src/components/admin/admin-bookings-list.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Search, Download, Eye, Ban, Loader2, Trash2, 
    ArrowUpDown, ArrowUp, ArrowDown, Hash,
@@ -25,11 +25,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { bookingServices } from "@/services/bookingServices";
 import { toast } from "react-toastify";
-import { AdminPagination } from "./admin-pagination";
+import { AdminPagination } from "../admin-pagination";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
-import { Modal } from "../ui/modal";
-import { ConfirmationModal } from "./confirmation-modal";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { Modal } from "../../ui/modal";
+import { ConfirmationModal } from "../confirmation-modal";
+import { LoadingSpinner1 } from "../../common/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
   type IBookingState,
@@ -50,7 +50,7 @@ import type { ApiResponse } from "@/types/common.types";
 
 
 
-export function BookingsList() {
+export function AdminBookingsList() {
    // Filters & UI state
    const [searchTerm, setSearchTerm] = useState("");
    const [statusFilter, setStatusFilter] = useState<"all" | EventFormat>("all");

@@ -35,6 +35,10 @@ export const ADMIN_ROUTES = {
     GET_PAYOUTS     : '/payouts',
     REVIEW_PAYOUT   : '/payouts/:payoutId/review',
 
+
+    // Reviews & Ratings Mangement
+    GET_REVIEWS     : '/reviews',
+
 } as const;
 
 
@@ -82,6 +86,13 @@ export const BOOKING_ROUTES = {
     RETRY_PAYMENT       : '/:bookingId/retry-payment', 
 } as const;
 
+
+
+
+
+export const CHAT_ROUTES = {
+    ASK    : '/ask',
+} as const;
 
 
 
@@ -146,8 +157,9 @@ export const REVIEW_ROUTES = {
 
 
 export const SETTINGS_ROUTES = {
-    GET_SETTINGS    : '/',
-    UPDATE_SETTINGS : '/',
+    ALL_SETTINGS    : '/',
+    OPERATIONAL     : '/operational',
+    TERMS           : '/terms',
 } as const;
 
 

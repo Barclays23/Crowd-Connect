@@ -1,35 +1,89 @@
 // backend/src/services/platformSettings-services/implementations/platformSettings.service.ts
 import { IPlatformSettingsRepository } from '@/repositories/interfaces/IPlatformSettingsRepository';
 import { IPlatformSettingsService } from '../interfaces/IPlatformSettingsService';
-import { PlatformSettingsEntity } from '@/entities/platformSettings.entity';
+import { OperationalSettingsEntity, PlatformSettingsEntity, TermsSettingsEntity } from '@/entities/platformSettings.entity';
 import { createHttpError } from '@/utils/httpError.utils';
 import { HTTP_STATUS } from '@/constants/http-status.constants';
+import { 
+    OperationalSettingsResponseDTO,
+    PublicTermsResponseDTO, 
+    UpdateOperationalSettingsDTO, 
+    UpdateTermsDTO 
+} from '@/dtos/settings.dto';
+import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
+import { 
+    extractOperationalSettings, 
+    extractTermsSettings, 
+    mapEntityToOperationalDTO, 
+    mapEntityToPublicTermsDTO 
+} from '@/mappers/platformSettings.mapper';
 
 
 
 export class PlatformSettingsService implements IPlatformSettingsService {
     constructor(
-        private readonly _settingsRepo: IPlatformSettingsRepository
+        private readonly _settingsRepo: IPlatformSettingsRepository,
+        private readonly _faqIngestionService: FaqIngestionService
     ) {}
 
 
-    async getPlatformSettings(): Promise<PlatformSettingsEntity> {
-        return this._settingsRepo.getSettings();
+    async getOperationalSettings(): Promise<OperationalSettingsResponseDTO> {
+        const settings: PlatformSettingsEntity = await this._settingsRepo.getSettings();
+
+        const operationalSettings = mapEntityToOperationalDTO(settings);
+
+        return operationalSettings;
     }
 
 
-    async updatePlatformSettings(
-        updateData: Partial<PlatformSettingsEntity>,
-        adminId: string
-    ): Promise<PlatformSettingsEntity> {
-        this._validateSettings(updateData);
+    async getTermsAndConditions(): Promise<PublicTermsResponseDTO> {
+        const settings: PlatformSettingsEntity = await this._settingsRepo.getSettings();
 
-        return this._settingsRepo.updateSettings(updateData, adminId);
+        const termsSettings: PublicTermsResponseDTO = mapEntityToPublicTermsDTO(settings);
+
+        return termsSettings;
+    }
+
+
+    async getOperationalSettingsDomain(): Promise<OperationalSettingsEntity> {
+        const settings: PlatformSettingsEntity = await this._settingsRepo.getSettings();
+        return extractOperationalSettings(settings);
+    }
+
+
+    async updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<PlatformSettingsEntity> {
+        this._validateOperationalSettings(updateData);
+
+        const updatedSettings: Promise<PlatformSettingsEntity> = this._settingsRepo.updateSettings(updateData, adminId);
+
+        return updatedSettings;
     }
 
 
 
-    private _validateSettings(data: Partial<PlatformSettingsEntity>): void {
+    async updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PlatformSettingsEntity> {
+        // Save standard settings to database
+        const updatedSettings: PlatformSettingsEntity = await this._settingsRepo.updateSettings(
+            termsData,
+            adminId
+        );
+
+        // Trigger the AI Vector ingestion asynchronously
+        const domainTerms: TermsSettingsEntity = extractTermsSettings(updatedSettings);
+
+        // Synchronize Vector DB in background (does not block HTTP response)
+        this._faqIngestionService
+            .reindexTermsKnowledgeBase(domainTerms)
+            .catch((error: unknown) => {
+                console.error("[PlatformSettingsService] Vector re-indexing ingestion failed in background:", error);
+            });
+
+        return updatedSettings;
+    }
+
+
+
+    private _validateOperationalSettings(data: UpdateOperationalSettingsDTO): void {
         if (data.commissionPercent !== undefined) {
             if (data.commissionPercent < 0 || data.commissionPercent > 100) {
                 throw createHttpError(HTTP_STATUS.BAD_REQUEST, 'Commission must be between 0 and 100');
@@ -75,6 +129,18 @@ export class PlatformSettingsService implements IPlatformSettingsService {
                     HTTP_STATUS.BAD_REQUEST,
                     'Tier 2 refund % should be >= Tier 3 refund %'
                 );
+            }
+        }
+    }
+
+
+
+    private _validateTerms(data: UpdateTermsDTO): void {
+        const termKeys = ['generalTerms', 'bookingTerms', 'cancellationTerms', 'hostTerms', 'reviewTerms'] as const;
+        
+        for (const key of termKeys) {
+            if (data[key] && !Array.isArray(data[key])) {
+                throw createHttpError(HTTP_STATUS.BAD_REQUEST, `${key} must be an array of strings.`);
             }
         }
     }

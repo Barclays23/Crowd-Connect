@@ -50,7 +50,7 @@ import {
 } from "@/schemas/event.schema";
 import { FieldError } from "@/components/ui/FieldError";
 import { TextArea } from "@/components/ui/text-area";
-import EditEventForm from "@/components/user/EditEventForm";
+import EditEventForm from "@/components/host/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";

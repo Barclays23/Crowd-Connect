@@ -10,47 +10,43 @@ import { IReviewRepository } from "@/repositories/interfaces/IReviewRepository";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
-import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
 import { IReviewService } from "@/services/review-services/interfaces/IReviewService";
 import { 
     SubmitReviewRequestDTO, 
     EditReviewRequestDTO, 
-    GetReviewsResponseDTO 
+    GetReviewsResponseDTO, 
+    ReviewResponseDTO
 } from "@/dtos/review.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
-import { 
-    TRANSACTION_TYPES, 
-    TRANSACTION_REFERENCE_TYPES 
-} from "@/constants/transaction.constants";
 import { CreateReviewInput, ReviewEntity } from "@/entities/review.entity";
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 import { 
+    mapAdminPopulatedReviewEntityToDTO,
     mapPopulatedReviewEntityToResponseDTO, 
     mapToCreateReviewInput 
 } from "@/mappers/review.mapper";
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { USER_ROLES } from "@/constants/user-system.constants";
+import { GetReviewsAdminFilter } from "@/types/review.types";
 
 
 
 
-interface IProfanityFilter {
-    isProfane(text: string): boolean;
-}
+// interface IProfanityFilter {
+//     isProfane(text: string): boolean;
+// }
 
 
 export class ReviewService implements IReviewService {
     // private profanityFilter: IProfanityFilter;
     private profanityFilter: Filter;
-    private readonly REWARD_AMOUNT = 15; // ₹15 reward for 5-star reviews
 
     constructor(
         private _reviewRepository: IReviewRepository,
         private _bookingRepository: IBookingRepository,
         private _eventRepository: IEventRepository,
         private _userRepository: IUserRepository,
-        private _walletService: IWalletService
     ) {
         // this.profanityFilter = new BadWords();
         this.profanityFilter = new Filter();
@@ -88,35 +84,17 @@ export class ReviewService implements IReviewService {
         }
         const hostId = eventEntity.organizer.hostId;
 
-        const isEligibleForReward: boolean = reviewDto.rating === 5;
-
         const createInput: CreateReviewInput = mapToCreateReviewInput({
             userId      : userId,
             eventId     : booking.event.eventId,
             hostId      : hostId,
             reviewDto   : reviewDto,
-            isEligibleForReward: isEligibleForReward
         });
 
         const newReview = await this._reviewRepository.createReview(createInput);
 
         await this._updateEventAndHostAggregates(booking.event.eventId, hostId);
 
-        if (isEligibleForReward) {
-            try {
-                await this._walletService.creditToWallet({
-                    userId          : userId,
-                    amount          : this.REWARD_AMOUNT,
-                    transactionType : TRANSACTION_TYPES.CASHBACK,
-                    referenceType   : TRANSACTION_REFERENCE_TYPES.REVIEW,
-                    referenceId     : newReview.reviewId,
-                    description     : `Ovation Reward (5-star review) on event: ${booking.event.title}`,
-                });
-
-            } catch (error) {
-                console.warn("Failed to credit reward for review, but review was saved:", error);
-            }
-        }
     }
 
 
@@ -129,10 +107,6 @@ export class ReviewService implements IReviewService {
         const review: ReviewEntity | null = await this._reviewRepository.getReviewById(reviewId);
         if (!review || review.userRef !== userId) {
             throw createHttpError(HTTP_STATUS.NOT_FOUND, "Review not found or unauthorized.");
-        }
-
-        if (review.isRewardClaimed) {
-            throw createHttpError(HTTP_STATUS.FORBIDDEN, "This review is locked because a reward was claimed for it.");
         }
 
         await this._reviewRepository.updateReview(reviewId, dto.rating, dto.reviewText);
@@ -154,9 +128,6 @@ export class ReviewService implements IReviewService {
         if (role !== USER_ROLES.ADMIN) {
             if (review.userRef !== userId) {
                 throw createHttpError(HTTP_STATUS.FORBIDDEN, "You are not authorized to delete this review.");
-            }
-            if (review.isRewardClaimed) {
-                throw createHttpError(HTTP_STATUS.FORBIDDEN, "You cannot delete a review after claiming a wallet reward for it.");
             }
         }
 
@@ -190,6 +161,40 @@ export class ReviewService implements IReviewService {
                 limit,
                 currentPage: page,
                 totalPages: Math.ceil(result.totalCount / limit)
+            }
+        };
+    }
+
+
+
+    async getReviewsForEvent(eventId: string, page: number, limit: number): Promise<GetReviewsResponseDTO> {
+        const result = await this._reviewRepository.findReviews({ page, limit, eventId });
+        
+        return {
+            reviews: result.reviews.map(mapPopulatedReviewEntityToResponseDTO),
+            pagination: {
+                totalCount: result.totalCount,
+                limit,
+                currentPage: page,
+                totalPages: Math.ceil(result.totalCount / limit)
+            }
+        };
+    }
+
+
+
+    async getAllReviewsForAdmin(filters: GetReviewsAdminFilter): Promise<GetReviewsResponseDTO> {
+        const {reviews, totalCount} = await this._reviewRepository.findAllReviewsForAdmin(filters);
+
+        const populatedReviews: ReviewResponseDTO[] = reviews.map(mapAdminPopulatedReviewEntityToDTO);
+        
+        return {
+            reviews: populatedReviews,
+            pagination: {
+                totalCount: totalCount,
+                limit: filters.limit,
+                currentPage: filters.page,
+                totalPages: Math.ceil(totalCount / filters.limit)
             }
         };
     }

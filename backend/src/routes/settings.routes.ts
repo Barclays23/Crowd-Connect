@@ -7,17 +7,24 @@ import { USER_ROLES } from "@/constants/user-system.constants";
 import { PlatformSettingsController } from "@/controllers/implementations/platformSettings.controller";
 import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
 import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
-
-
+import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
+import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
+import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
 
 
 
 // REPOS
 const settingsRepo          = new PlatformSettingsRepository();
+const faqKnowledgeRepo      = new MongoFaqRepository();  //  which ever the FaqKnowledgeRepository used
+
+
+// PROVIDERS
+const aiChatProvider            = new GeminiAiChatProvider();   // which ever the AI chat provider used
 
 
 // SERVICES
-const settingsService       = new PlatformSettingsService(settingsRepo);
+const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
+const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
 
 
 // CONTROLLER
@@ -28,8 +35,14 @@ const settingsController    = new PlatformSettingsController(settingsService);
 const settingsRouter = Router();
 
 
-settingsRouter.get(SETTINGS_ROUTES.GET_SETTINGS, authenticate, authorize(USER_ROLES.ADMIN, USER_ROLES.HOST), settingsController.getSettings.bind(settingsController));
-settingsRouter.put(SETTINGS_ROUTES.UPDATE_SETTINGS, authenticate, authorize(USER_ROLES.ADMIN), settingsController.updateSettings.bind(settingsController));
+
+settingsRouter.get(SETTINGS_ROUTES.TERMS, settingsController.getTermsAndConditions);
+settingsRouter.get(SETTINGS_ROUTES.OPERATIONAL, authenticate, settingsController.getOperationalSettings);
+
+// Updates the numeric/operational behavior of the platform
+settingsRouter.put(SETTINGS_ROUTES.OPERATIONAL, authenticate, authorize(USER_ROLES.ADMIN), settingsController.updateOperationalSettings);
+// Updates the string arrays for legal documents and syncs with AI
+settingsRouter.put(SETTINGS_ROUTES.TERMS, authenticate, authorize(USER_ROLES.ADMIN), settingsController.updateTerms);
 
 
 

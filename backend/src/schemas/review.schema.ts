@@ -25,7 +25,7 @@ export const ratingBase = z.coerce
 export const reviewTextBase = z
     .string()
     .trim()
-    .max(10, "Review must be at least 10 characters")
+    .min(10, "Review must be at least 10 characters")
     .max(200, "Review cannot exceed 200 characters.")
     // Optional: Prevent symbol spam
     .refine((value) => {
@@ -52,6 +52,14 @@ export const SubmitReviewSchema = z.object({
 export const EditReviewSchema = z.object({
     rating: ratingBase,
     reviewText: reviewTextBase,
+});
+
+
+export const AdminReviewQuerySchema = z.object({
+    page: z.string().optional().transform(val => (val ? parseInt(val) : 1)),
+    limit: z.string().optional().transform(val => (val ? parseInt(val) : 10)),
+    rating: z.string().optional().transform(val => (val && val !== 'all' ? parseInt(val) : undefined)),
+    search: z.string().optional(),
 });
 
 
