@@ -1,4 +1,4 @@
-// frontend/src/types/common.types.ts
+// backend/src/types/common.types.ts
 
 
 
