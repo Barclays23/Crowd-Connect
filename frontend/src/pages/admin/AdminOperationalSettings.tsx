@@ -13,9 +13,7 @@ import { platformSettingsService } from "@/services/platformSettingsService";
 import { Pencil, X, Check } from "lucide-react";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { ApiResponse } from "@/types/common.types";
-
-
-
+import AdminBanner from "@/components/admin/admin-banner";
 
 // ── Setting Row ──────────────────────────────────────────────────────────────
 function SettingRow({
@@ -53,7 +51,7 @@ function SettingRow({
                         max={max}
                         value={editValue}
                         onChange={(e) => onChange(Number(e.target.value) || 0)}
-                        className="w-24 text-center"
+                        className="w-24 text-center bg-(--form-input-bg) text-(--form-input-text) border-(--form-input-border) focus:ring-(--form-focus-ring)"
                     />
                 ) : (
                     <span className="w-24 text-center text-sm font-semibold text-(--text-primary) bg-(--bg-tertiary) rounded-lg px-3 py-1.5 border border-(--border-muted)">
@@ -66,9 +64,6 @@ function SettingRow({
     );
 }
 
-
-
-
 // ── Section wrapper ──────────────────────────────────────────────────────────
 function SettingsSection({
     title,
@@ -80,18 +75,13 @@ function SettingsSection({
     children: React.ReactNode;
 }) {
     return (
-        <section className="rounded-xl border border-(--border-default) bg-(--card-secondary) p-6">
+        <section className="rounded-xl border border-(--border-default) bg-(--card-secondary) p-6 shadow-(--shadow-sm)">
             <h2 className="font-semibold text-(--heading-primary) mb-1">{title}</h2>
             <p className="text-xs text-(--text-secondary) mb-4">{description}</p>
             <div className="space-y-1">{children}</div>
         </section>
     );
 }
-
-
-
-
-
 
 // ── Main Component ───────────────────────────────────────────────────────────
 const AdminOperationalSettings = () => {
@@ -101,7 +91,6 @@ const AdminOperationalSettings = () => {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
-    
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -154,7 +143,7 @@ const AdminOperationalSettings = () => {
             setDraftSettings({ ...response.data });
             setIsEditing(false);
             
-            toast.success(response.message);
+            toast.success(response.message || "Settings updated successfully");
 
         } catch (error: unknown) {
             console.error("Failed to update operational settings:", error);
@@ -176,45 +165,55 @@ const AdminOperationalSettings = () => {
         );
     }
 
-
     return (
         <AdminLayout>
-            <div className="max-w-2xl space-y-6">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-(--heading-primary)">Platform Settings</h1>
-                        <p className="text-sm text-(--text-secondary) mt-1">
-                            Configure refund policies and commission. Changes apply immediately.
-                        </p>
-                    </div>
+            <div className="max-w-5xl mx-auto space-y-6 pb-32 relative">
+                
+                {/* AdminBanner */}
+                <AdminBanner
+                    title="Operational Settings"
+                    description="Configure platform commission, refund policies, and payout requirements. Changes apply immediately."
+                />
 
-                    <div className="flex items-center gap-2">
-                        {!isEditing ? (
-                            <Button onClick={handleEdit} variant="secondary" className="flex items-center gap-2">
-                                <Pencil className="w-4 h-4" />
-                                Edit
+                {/* Action Buttons Container */}
+                <div className="flex items-center justify-end">
+                    {!isEditing ? (
+                        <Button 
+                            onClick={handleEdit} 
+                            variant="outline" 
+                            className="flex items-center gap-2 bg-(--btn-neutral) hover:bg-(--btn-neutral-hover) text-(--text-primary) border-(--border-default)"
+                        >
+                            <Pencil className="w-4 h-4" />
+                            Edit Settings
+                        </Button>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Button 
+                                onClick={handleCancel} 
+                                variant="ghost" 
+                                disabled={saving}
+                                className="text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-tertiary)"
+                            >
+                                <X className="w-4 h-4 mr-1" />
+                                Cancel
                             </Button>
-                        ) : (
-                            <>
-                                <Button onClick={handleCancel} variant="secondary" disabled={saving}>
-                                    <X className="w-4 h-4 mr-1" />
-                                    Cancel
-                                </Button>
-                                <Button onClick={handleSave} disabled={saving}>
-                                    <ButtonLoader loading={saving} loadingText="Saving...">
-                                        <Check className="w-4 h-4 mr-1" />
-                                        Save
-                                    </ButtonLoader>
-                                </Button>
-                            </>
-                        )}
-                    </div>
+                            <Button 
+                                onClick={handleSave} 
+                                disabled={saving}
+                                className="bg-(--btn-primary-bg) hover:bg-(--btn-primary-hover) text-(--btn-primary-text)"
+                            >
+                                <ButtonLoader loading={saving} loadingText="Saving...">
+                                    <Check className="w-4 h-4 mr-1" />
+                                    Save Changes
+                                </ButtonLoader>
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {isEditing && (
-                    <div className="bg-(--bg-secondary) border border-(--border-muted) rounded-lg px-4 py-3 text-sm flex items-center gap-2 text-(--text-secondary)">
-                        <Pencil className="w-4 h-4" />
+                    <div className="bg-(--bg-secondary) border border-(--border-muted) rounded-lg px-4 py-3 text-sm flex items-center gap-2 text-(--text-secondary) animate-scaleIn">
+                        <Pencil className="w-4 h-4 text-(--brand-primary)" />
                         You are in edit mode. Make your changes and click Save.
                     </div>
                 )}
@@ -258,7 +257,6 @@ const AdminOperationalSettings = () => {
                         onChange={(v) => updateDraft("refundTier1Percent", v)}
                         max={100}
                     />
-                    {/* Add other rows similarly with nullish coalescing */}
                     <SettingRow
                         label="Tier 2 cutoff"
                         description="Users get Tier 2 refund if cancelling between Tier 2 and Tier 1 cutoff"

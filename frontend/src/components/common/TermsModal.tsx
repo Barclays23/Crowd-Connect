@@ -1,11 +1,14 @@
 // frontend/src/components/common/TermsModal.tsx
+
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import { FormatMarkdown } from "@/components/common/FormatMarkdown";
 import type { ITermsAndConditions } from "@/types/platformSettings.types";
+
 
 
 interface TermsModalProps {
@@ -14,6 +17,7 @@ interface TermsModalProps {
     termTypes: Array<keyof ITermsAndConditions>;
     title: string;
 }
+
 
 
 export function TermsModal({ isOpen, onClose, termTypes, title }: TermsModalProps) {
@@ -26,10 +30,8 @@ export function TermsModal({ isOpen, onClose, termTypes, title }: TermsModalProp
         const fetchTerms = async () => {
             try {
                 setIsLoading(true);
-                // Fetches the lightweight terms arrays via the public GET /terms endpoint
                 const response = await platformSettingsService.getTerms();
                 
-                // Combine the requested term types into a single array
                 let combinedTerms: string[] = [];
                 termTypes.forEach(type => {
                     const termsArray = response.data[type];
@@ -54,21 +56,29 @@ export function TermsModal({ isOpen, onClose, termTypes, title }: TermsModalProp
             isOpen={isOpen}
             onClose={onClose}
             title={title}
-            size="md"
+            size="lg"
         >
-            <div className="p-1 max-h-[60vh] overflow-y-auto overscroll-contain">
+            <div className="p-4 max-h-[70vh] overflow-y-auto overscroll-contain bg-(--modal-content-bg) rounded-b-lg">
                 {isLoading ? (
                     <div className="flex justify-center py-10">
                         <LoadingSpinner1 message="Loading terms..." size="md" />
                     </div>
                 ) : termsText.length > 0 ? (
-                    <ul className="space-y-4 text-sm text-(--text-secondary) list-disc pl-5">
+                    <div className="space-y-8 p-2">
                         {termsText.map((paragraph, index) => (
-                            <li key={index} className="leading-relaxed text-justify">
-                                {paragraph}
-                            </li>
+                            <div key={index} className="flex gap-4">
+                                {/* Theme-compliant Number Badge */}
+                                <div className="shrink-0 w-8 h-8 rounded-full bg-(--badge-primary-bg) text-(--badge-primary-text) border border-(--badge-primary-border) flex items-center justify-center font-bold text-sm shadow-(--shadow-xs)">
+                                    {index + 1}
+                                </div>
+                                
+                                {/* Formatted text wrapper */}
+                                <div className="flex-1 mt-1">
+                                    <FormatMarkdown text={paragraph} />
+                                </div>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 ) : (
                     <div className="py-8 text-center text-sm text-(--text-tertiary) italic">
                         No terms available at the moment.

@@ -50,7 +50,7 @@ export class ChatService implements IChatService {
          ${userText}`;
 
          // 4. Generate the final answer
-         const answer = await this._chatProvider.generateText(prompt);
+         const answer = await this._chatProvider.generateAnswer(prompt);
 
          console.log('answer done')
 

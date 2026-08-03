@@ -12,11 +12,15 @@ import {
 const pathToTitle: Record<string, string> = {
   "/admin": "Dashboard",
   "/": "Home",
-  "/admin/users": "Users",
-  "/admin/categories": "Categories", 
-  "/admin/host-slabs": "Host Slabs",
-  "/admin/events": "Events",
   "/admin/bookings": "Bookings",
+  "/admin/categories": "Categories", 
+  "/admin/events": "Events",
+  "/admin/hosts": "Hosts",
+  "/admin/operational-settings": "Operational Settings",
+  "/admin/payout-requests": "Payout Requests",
+  "/admin/policies": "Policies (T&C)",
+  "/admin/reviews": "Reviews",
+  "/admin/users": "Users",
 }
 
 export function BreadcrumbNav() {
@@ -24,7 +28,7 @@ export function BreadcrumbNav() {
   const pathSegments = location.pathname.split("/").filter(Boolean)
   
   return (
-    <div className="px-6 py-3 border-b border-[var(--card-border)] bg-[var(--card-bg)]">
+    <div className="px-6 py-3 border-b border-(--card-border) bg-(--card-bg)">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -17,6 +17,7 @@ import {
     mapEntityToOperationalDTO, 
     mapEntityToPublicTermsDTO 
 } from '@/mappers/platformSettings.mapper';
+import { SEED_TERMS_DATA } from '@/constants/termAndConditions.constants';
 
 
 
@@ -62,9 +63,13 @@ export class PlatformSettingsService implements IPlatformSettingsService {
 
 
     async updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PlatformSettingsEntity> {
+        // TODO: REMOVE THIS LINE IMMEDIATELY AFTER SEEDING IS DONE!
+        // const temporarySeedData = SEED_TERMS_DATA;
+
         // Save standard settings to database
         const updatedSettings: PlatformSettingsEntity = await this._settingsRepo.updateSettings(
             termsData,
+            // temporarySeedData,
             adminId
         );
 

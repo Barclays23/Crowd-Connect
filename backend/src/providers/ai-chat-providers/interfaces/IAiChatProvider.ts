@@ -3,5 +3,5 @@
 
 export interface IAiChatProvider {
   createEmbedding(userText: string): Promise<number[]>;
-  generateText(prompt: string): Promise<string>;
+  generateAnswer(prompt: string): Promise<string>;
 }

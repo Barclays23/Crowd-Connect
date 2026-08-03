@@ -37,7 +37,7 @@ export class GeminiAiChatProvider implements IAiChatProvider {
 
 
 
-   async generateText(prompt: string): Promise<string> {
+   async generateAnswer(prompt: string): Promise<string> {
       try {
          const response = await this._genAI.models.generateContent({
             // model: 'gemini-2.5-flash',

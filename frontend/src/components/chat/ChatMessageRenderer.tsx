@@ -1,5 +1,4 @@
 // frontend/src/components/chat/ChatMessageRenderer.tsx
-// frontend/src/components/chat/ChatMessageRenderer.tsx
 import React from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
