@@ -110,7 +110,7 @@ const UserAccountTabs = () => {
 
 
   return (
-    <div className="min-h-screen bg p-6 md:p-10">
+    <div className="min-h-screen bg p-6 md:p-10 bg-animated-gradient1">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Tabs - horizontal scroll on mobile */}
         <div className="overflow-x-auto pb-2 scrollbar-thin">
@@ -134,7 +134,7 @@ const UserAccountTabs = () => {
         </div>
 
         {/* Content Area */}
-        <div className="mt-8 p-6 sm:p-8 rounded-2xl bg-(--card-bg) border border-(--card-border) shadow-(--card-shadow) min-h-100">
+        <div className="min-h-100 mt-8 p-6 sm:p-8 rounded-2xl bg-(--card-bg) bg-linear-to-br from-(--brand-primary)/50 to-(--brand-primary-dark) border border-(--card-border) shadow-(--card-shadow)">
           {renderContent()}
         </div>
       </div>

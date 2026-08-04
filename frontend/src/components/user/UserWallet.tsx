@@ -179,10 +179,10 @@ function UserWallet() {
           <Wallet className="h-6 w-6" />
           My Wallet
         </h2>
-        <Button variant="primaryOutline" size="sm" className="flex items-center gap-2">
+        {/* <Button variant="primaryOutline" size="sm" className="flex items-center gap-2">
           <ArrowDownToLine className="h-4 w-4" />
           Withdraw
-        </Button>
+        </Button> */}
       </div>
 
       {/* Summary cards */}

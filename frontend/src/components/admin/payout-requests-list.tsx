@@ -48,6 +48,7 @@ import { PayoutDetailModal } from "./payout/payout-detail-modal";
 import { PayoutRejectModal } from "./payout/payout-reject-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 import type { ApiResponse } from "@/types/common.types";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 export function PayoutRequestsList() {
@@ -302,40 +303,44 @@ export function PayoutRequestsList() {
                                 <TableCell className="text-right pr-5">
                                     <div className="flex items-center justify-end gap-1">
                                         {/* View */}
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            title="View Details"
-                                            className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)"
-                                            onClick={() => setViewPayout(payout)}
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-
-                                        {/* Approve — only pending */}
-                                        {payout.status === "pending" && (
+                                        <Tooltip content="View Details" side="top">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                title="Approve & Credit Wallet"
-                                                className="text-(--text-secondary) hover:text-(--status-success) hover:bg-(--status-success-bg)"
-                                                onClick={() => setApproveTarget(payout)}
+                                                title="View Details"
+                                                className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)"
+                                                onClick={() => setViewPayout(payout)}
                                             >
-                                                <CheckCircle2 className="h-4 w-4" />
+                                                <Eye className="h-4 w-4" />
                                             </Button>
+                                        </Tooltip>
+
+                                        {/* Approve — only pending */}
+                                        {payout.status === "pending" && (
+                                            <Tooltip content="Approve Request" side="top">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-(--status-success) hover:text-(--text-secondary) hover:bg-(--bg-accent)"
+                                                    onClick={() => setApproveTarget(payout)}
+                                                >
+                                                    <CheckCircle2 className="h-4 w-4" />
+                                                </Button>
+                                            </Tooltip>
                                         )}
 
                                         {/* Reject — only pending */}
                                         {payout.status === "pending" && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                title="Reject Request"
-                                                className="text-(--text-secondary) hover:text-(--status-error) hover:bg-(--badge-error-bg)"
-                                                onClick={() => setRejectTarget(payout)}
-                                            >
-                                                <XCircle className="h-4 w-4" />
-                                            </Button>
+                                            <Tooltip content="Reject Request" side="top">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-(--status-error) hover:text-(--text-secondary) hover:bg-(--bg-accent)"
+                                                    onClick={() => setRejectTarget(payout)}
+                                                >
+                                                    <XCircle className="h-4 w-4" />
+                                                </Button>
+                                            </Tooltip>
                                         )}
                                     </div>
                                 </TableCell>

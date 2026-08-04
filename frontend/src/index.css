@@ -129,7 +129,7 @@ body {
 
 
   /* Status */
-  --status-success: #10b981;          /* Green for Success */
+  --status-success: #00a133;          /* Green for Success */
   --status-success-bg: #d1fae5;
   --status-error: #ff4444;            /* Red for Error */
   --status-error-hover: #ff2222;
@@ -219,6 +219,7 @@ body {
   --shadow-md: 0 10px 15px rgb(0, 0, 0);
   --shadow-lg: 0 10px 25px -5px rgb(0, 0, 0);
   --shadow-xl: 0 20px 40px -10px rgb(0, 0, 0);
+
   
 
   /* Forms & Inputs */
@@ -349,7 +350,8 @@ body {
 
   
   /* Status */
-  --status-success: #10b981;
+  /* --status-success: #10b981; */
+  --status-success: #00e050;          /* Green for Success */
   --status-success-hover: #064e3b;
   --status-error: #ff4444;            /* Red for Error */
   --status-error-hover: #ff2222;
@@ -510,6 +512,34 @@ body {
     stroke-dasharray: 30;
     stroke-dashoffset: 0;
   }
+}
+
+
+@keyframes gradient-xy {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-animated-gradient1 {
+  background: linear-gradient(
+    -45deg, 
+    var(--brand-primary-hover), /* 1 */
+    var(--brand-primary-light), /* 2 */
+    /* var(--brand-primary-light), */
+    var(--bg-primary),
+    var(--bg-secondary),
+    var(--bg-neutral),
+    var(--bg-neutral)
+  );
+  background-size: 400% 400%;
+  animation: gradient-xy 5s ease infinite;
 }
 
 .animate-scaleIn {

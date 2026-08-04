@@ -46,6 +46,7 @@ import { canCancelBooking } from "@/utils/booking.utils";
 import { BOOKING_STATUS } from "@/constants/booking.constants";
 import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 import type { ApiResponse } from "@/types/common.types";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -453,39 +454,36 @@ export function AdminBookingsList() {
 
                                  <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                       <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          title="View"
-                                          onClick={() => setViewBooking(booking)}
-                                       >
-                                          <Eye className="h-4 w-4" />
-                                       </Button>
-
-                                       {canCancel && (
+                                       <Tooltip content="View Booking Details" side="top">
                                           <Button
                                              variant="ghost"
                                              size="icon"
-                                             title="Cancel Booking"
-                                             className="text-(--status-error)"
-                                             onClick={() => {
-                                                setCancelBookingId(booking.bookingId);
-                                                setCancelReason("");
-                                                setCancelError(null);
-                                             }}
-                                             disabled={cancellingId === booking.bookingId}
+                                             onClick={() => setViewBooking(booking)}
                                           >
-                                          {cancellingId === booking.bookingId ? (
-                                             <Loader2 className="h-4 w-4 animate-spin" />
-                                          ) : (
-                                             <Ban className="h-4 w-4" />
-                                          )}
+                                             <Eye className="h-4 w-4" />
                                           </Button>
+                                       </Tooltip>
+                                       {canCancel && (
+                                          <Tooltip content="Cancel Booking" side="top">
+                                             <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-(--status-error)"
+                                                onClick={() => {
+                                                   setCancelBookingId(booking.bookingId);
+                                                   setCancelReason("");
+                                                   setCancelError(null);
+                                                }}
+                                                disabled={cancellingId === booking.bookingId}
+                                             >
+                                             {cancellingId === booking.bookingId ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                             ) : (
+                                                <Ban className="h-4 w-4" />
+                                             )}
+                                             </Button>
+                                          </Tooltip>
                                        )}
-
-                                       <Button variant="ghost" size="icon" title="Delete Booking" className="text-(--status-error)">
-                                          <Trash2 className="h-4 w-4" />
-                                       </Button>
                                     </div>
                                  </TableCell>
                               </TableRow>

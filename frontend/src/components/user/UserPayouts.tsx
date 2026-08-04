@@ -44,6 +44,7 @@ import { RequestPayoutModal } from "@/components/payout/request-payout-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 import { PayoutStatCard } from "@/components/admin/payout/payout-stat-card";
 import type { ApiResponse } from "@/types/common.types";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -253,130 +254,135 @@ export default function UserPayouts() {
                                 : 0;
 
                             return (
-                            <Fragment key={payout.payoutId}>
-                                <TableRow
-                                    className="cursor-pointer border-(--table-row-border) hover:bg-(--table-row-hover)"
-                                    onClick={() => setExpandedRow(expandedRow === payout.payoutId ? null : payout.payoutId)}
-                                >
-                                    <TableCell className="font-medium text-(--text-primary)">
-                                        {(currentPage - 1) * itemsPerPage + idx + 1}
-                                    </TableCell>
-                                    <TableCell className="font-medium max-w-45 truncate text-(--text-primary)">
-                                        {payout.eventTitle}
-                                    </TableCell>
-                                    <TableCell className="text-(--text-secondary) text-right pr-10">
-                                        {formatNumberToINRWithDecimal(payout.grossAmount)}
-                                    </TableCell>
-                                    <TableCell className="text-(--status-error) text-right pr-10 font-medium">
-                                        − {formatNumberToINRWithDecimal(payout.commissionAmount)}
-                                    </TableCell>
-                                    <TableCell className="font-semibold text-(--status-success) text-right pr-10">
-                                        {formatNumberToINRWithDecimal(payout.netAmount)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={PAYOUT_STATUS_BADGE[payout.status]} className="gap-1 capitalize">
-                                            {PAYOUT_STATUS_ICON[payout.status]}
-                                            {payout.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-(--text-secondary) text-sm">
-                                        {formatDate2(payout.requestedAt)}
-                                    </TableCell>
-                                    <TableCell className="text-right pr-4">
-                                        {expandedRow === payout.payoutId
-                                            ? <ChevronUp   className="h-4 w-4 text-(--text-tertiary)" />
-                                            : <ChevronDown className="h-4 w-4 text-(--text-tertiary)" />
-                                        }
-                                    </TableCell>
-                                </TableRow>
-
-                                {/* Expanded detail row */}
-                                {expandedRow === payout.payoutId && (
-                                    <TableRow className="bg-(--table-row-even-bg) hover:bg-(--table-row-even-bg)">
-                                        <TableCell colSpan={8} className="px-6 py-5 border-b border-(--table-border)">
-                                            
-                                            {/* Grid layout expanded to accommodate Check-ins & Attendance */}
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 text-sm">
-                                                <div>
-                                                    <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Tickets Sold</p>
-                                                    <p className="font-medium text-(--text-primary)">{payout.ticketsSold}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Checked In</p>
-                                                    <p className="font-medium text-(--text-primary)">{payout.checkedInCount}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Attendance</p>
-                                                    <p className={`font-medium ${attendanceRate < 30 ? "text-(--status-error)" : "text-(--status-success)"}`}>
-                                                        {attendanceRate}%
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Platform Fee</p>
-                                                    <p className="font-medium text-(--text-primary)">{(payout.commissionRate * 100).toFixed(0)}%</p>
-                                                </div>
-                                                {payout.requestedAt && (
-                                                    <div>
-                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Requested At</p>
-                                                        <p className="font-medium text-(--text-primary)">{formatDate5(payout.requestedAt)}</p>
-                                                    </div>
-                                                )}
-                                                {payout.reviewedAt && (
-                                                    <div>
-                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">
-                                                            {payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "Paid At" : "Reviewed At"}
-                                                        </p>
-                                                        <p className={`font-medium ${payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "text-(--status-success)" : "text-(--text-primary)"}`}>
-                                                            {formatDate5(payout.reviewedAt)}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Rejection Reason Block */}
-                                            {payout.status === PAYOUT_REQUEST_STATUSES.REJECTED && payout.rejectionReason && (
-                                                <div className="mt-4 pt-4 border-t border-(--border-muted)">
-                                                    <p className="text-xs text-(--text-tertiary) mb-1.5 uppercase tracking-wider font-semibold">Rejection Reason</p>
-                                                    <div className="flex items-start gap-2 rounded-lg p-3 bg-(--badge-error-bg) border border-(--badge-error-border)">
-                                                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-(--badge-error-text)" />
-                                                        <p className="text-sm text-(--badge-error-text)">{payout.rejectionReason}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Proof Images Block */}
-                                            {payout.proofUrls && payout.proofUrls.length > 0 && (
-                                                <div className="mt-4 pt-4 border-t border-(--border-muted)">
-                                                    <p className="text-xs text-(--text-tertiary) mb-1.5 uppercase tracking-wider font-semibold">Proof Images</p>
-                                                    <div className="flex gap-3 overflow-x-auto pb-2">
-                                                        {payout.proofUrls.map((url, i) => (
-                                                            <a
-                                                                key={i}
-                                                                href={url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-md border border-(--border-muted) overflow-hidden group block"
-                                                                title="Click to view full size"
-                                                            >
-                                                                <img 
-                                                                    src={url} 
-                                                                    alt={`proof-${i}`} 
-                                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                                                                />
-                                                                <div className="absolute inset-0 bg-transparent group-hover:bg-(--image-overlay) transition-colors flex items-center justify-center">
-                                                                    <Eye className="text-(--overlay-text) opacity-0 group-hover:opacity-100 w-5 h-5 drop-shadow-md" />
-                                                                </div>
-                                                            </a>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
+                                <Fragment key={payout.payoutId}>
+                                    <TableRow
+                                        className="cursor-pointer border-(--table-row-border) hover:bg-(--table-row-hover)"
+                                        onClick={() => setExpandedRow(expandedRow === payout.payoutId ? null : payout.payoutId)}
+                                    >
+                                        <TableCell className="font-medium text-(--text-primary)">
+                                            {(currentPage - 1) * itemsPerPage + idx + 1}
+                                        </TableCell>
+                                        <TableCell className="font-medium max-w-45 truncate text-(--text-primary)">
+                                            {payout.eventTitle}
+                                        </TableCell>
+                                        <TableCell className="text-(--text-secondary) text-right pr-10">
+                                            {formatNumberToINRWithDecimal(payout.grossAmount)}
+                                        </TableCell>
+                                        <TableCell className="text-(--status-error) text-right pr-10 font-medium">
+                                            − {formatNumberToINRWithDecimal(payout.commissionAmount)}
+                                        </TableCell>
+                                        <TableCell className="font-semibold text-(--status-success) text-right pr-10">
+                                            {formatNumberToINRWithDecimal(payout.netAmount)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant={PAYOUT_STATUS_BADGE[payout.status]} className="gap-1 capitalize">
+                                                {PAYOUT_STATUS_ICON[payout.status]}
+                                                {payout.status}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-(--text-secondary) text-sm">
+                                            {formatDate2(payout.requestedAt)}
+                                        </TableCell>
+                                        <TableCell className="text-right pr-4">
+                                            {expandedRow === payout.payoutId ? 
+                                            <Tooltip content="Shrink" side="top">
+                                                <ChevronUp   className="h-4 w-4 text-(--text-tertiary)" />
+                                            </Tooltip>
+                                                : 
+                                                <Tooltip content="Expand" side="top">
+                                                    <ChevronDown className="h-4 w-4 text-(--text-tertiary)" />
+                                                </Tooltip>
+                                            }
                                         </TableCell>
                                     </TableRow>
-                                )}
-                            </Fragment>
-                        );
+
+                                    {/* Expanded detail row */}
+                                    {expandedRow === payout.payoutId && (
+                                        <TableRow className="bg-(--table-row-even-bg) hover:bg-(--table-row-even-bg)">
+                                            <TableCell colSpan={8} className="px-6 py-5 border-b border-(--table-border)">
+                                                
+                                                {/* Grid layout expanded to accommodate Check-ins & Attendance */}
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 text-sm">
+                                                    <div>
+                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Tickets Sold</p>
+                                                        <p className="font-medium text-(--text-primary)">{payout.ticketsSold}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Checked In</p>
+                                                        <p className="font-medium text-(--text-primary)">{payout.checkedInCount}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Attendance</p>
+                                                        <p className={`font-medium ${attendanceRate < 30 ? "text-(--status-error)" : "text-(--status-success)"}`}>
+                                                            {attendanceRate}%
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Platform Fee</p>
+                                                        <p className="font-medium text-(--text-primary)">{(payout.commissionRate * 100).toFixed(0)}%</p>
+                                                    </div>
+                                                    {payout.requestedAt && (
+                                                        <div>
+                                                            <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">Requested At</p>
+                                                            <p className="font-medium text-(--text-primary)">{formatDate5(payout.requestedAt)}</p>
+                                                        </div>
+                                                    )}
+                                                    {payout.reviewedAt && (
+                                                        <div>
+                                                            <p className="text-xs text-(--text-tertiary) mb-1 uppercase tracking-wider font-semibold">
+                                                                {payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "Paid At" : "Reviewed At"}
+                                                            </p>
+                                                            <p className={`font-medium ${payout.status === PAYOUT_REQUEST_STATUSES.PAID ? "text-(--status-success)" : "text-(--text-primary)"}`}>
+                                                                {formatDate5(payout.reviewedAt)}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Rejection Reason Block */}
+                                                {payout.status === PAYOUT_REQUEST_STATUSES.REJECTED && payout.rejectionReason && (
+                                                    <div className="mt-4 pt-4 border-t border-(--border-muted)">
+                                                        <p className="text-xs text-(--text-tertiary) mb-1.5 uppercase tracking-wider font-semibold">Rejection Reason</p>
+                                                        <div className="flex items-start gap-2 rounded-lg p-3 bg-(--badge-error-bg) border border-(--badge-error-border)">
+                                                            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-(--badge-error-text)" />
+                                                            <p className="text-sm text-(--badge-error-text)">{payout.rejectionReason}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Proof Images Block */}
+                                                {payout.proofUrls && payout.proofUrls.length > 0 && (
+                                                    <div className="mt-4 pt-4 border-t border-(--border-muted)">
+                                                        <p className="text-xs text-(--text-tertiary) mb-1.5 uppercase tracking-wider font-semibold">Proof Images</p>
+                                                        <div className="flex gap-3 overflow-x-auto pb-2">
+                                                            {payout.proofUrls.map((url, i) => (
+                                                                <a
+                                                                    key={i}
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-md border border-(--border-muted) overflow-hidden group block"
+                                                                    title="Click to view full size"
+                                                                >
+                                                                    <img 
+                                                                        src={url} 
+                                                                        alt={`proof-${i}`} 
+                                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-transparent group-hover:bg-(--image-overlay) transition-colors flex items-center justify-center">
+                                                                        <Eye className="text-(--overlay-text) opacity-0 group-hover:opacity-100 w-5 h-5 drop-shadow-md" />
+                                                                    </div>
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </Fragment>
+                            );
                         })
                     )}
                 </TableBody>

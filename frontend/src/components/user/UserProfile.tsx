@@ -76,13 +76,13 @@ const UserProfile = () => {
           setUser={setUser}
         />
 
-{/* Temporarily Not Showing in UI. Will show later. */}
-        {/* {profile.role === 'host' && (
+      {/* Temporarily Not Showing in UI. Will show later. */}
+        {profile.role === 'host' && (
           <UserHostProfile 
             profile={profile} 
             setProfile={setProfile}
           />
-        )} */}
+        )}
       </div>
     </div>
   );

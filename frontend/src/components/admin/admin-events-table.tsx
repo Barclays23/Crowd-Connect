@@ -56,6 +56,7 @@ import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -486,47 +487,54 @@ export function AdminEventsTable() {
                            </TableCell>
                            <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
-                                 <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => navigate(`/admin/events/${event.eventId}`)}
-                                    title="View Event Details"
-                                 >
-                                    <Eye className="h-4 w-4" />
-                                 </Button>
-                                 {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (                              
-                                    <Button variant="ghost" size="icon" onClick={() => setEditEvent(event)}>
-                                       <Edit className="h-4 w-4" />
+                                 <Tooltip content="View Event Details" side="top">
+                                    <Button 
+                                       variant="ghost" 
+                                       size="icon" 
+                                       onClick={() => navigate(`/admin/events/${event.eventId}`)}
+                                    >
+                                       <Eye className="h-4 w-4" />
                                     </Button>
+                                 </Tooltip>
+                                 {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (                              
+                                    <Tooltip content="Edit Event" side="top">
+                                       <Button variant="ghost" size="icon" onClick={() => setEditEvent(event)}>
+                                          <Edit className="h-4 w-4" />
+                                       </Button>
+                                    </Tooltip>
                                  )}
                                  {["ongoing", "upcoming"].includes(event.eventStatus) && (
+                                    <Tooltip content="Suspend Event" side="top">
+                                       <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="text-(--status-error)"
+                                          onClick={() => setSuspendEvent(event)}
+                                          disabled={suspendingEventId === event.eventId}
+                                       >
+                                          {suspendingEventId === event.eventId ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                          <Ban className="h-4 w-4" />
+                                          )}
+                                       </Button>
+                                    </Tooltip>
+                                 )}
+                                 <Tooltip content="Delete Event" side="top">
                                     <Button
                                        variant="ghost"
                                        size="icon"
                                        className="text-(--status-error)"
-                                       onClick={() => setSuspendEvent(event)}
-                                       disabled={suspendingEventId === event.eventId}
+                                       onClick={() => setDeleteEvent(event)}
+                                       disabled={deletingEventId === event.eventId}
                                     >
-                                       {suspendingEventId === event.eventId ? (
-                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                       {deletingEventId === event.eventId ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
                                        ) : (
-                                       <Ban className="h-4 w-4" />
+                                          <Trash2 className="h-4 w-4" />
                                        )}
                                     </Button>
-                                 )}
-                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-(--status-error)"
-                                    onClick={() => setDeleteEvent(event)}
-                                    disabled={deletingEventId === event.eventId}
-                                 >
-                                    {deletingEventId === event.eventId ? (
-                                       <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                       <Trash2 className="h-4 w-4" />
-                                    )}
-                                 </Button>
+                                 </Tooltip>
                               </div>
                            </TableCell>
                         </TableRow>

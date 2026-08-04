@@ -168,7 +168,6 @@ function EventCard1({ event }: { event: IEventState }) {
                     {/* HOST RATING */}
                     {event.organizer?.ratingAverage > 0 ? (
                         <div className="flex items-center gap-1 text-xs font-semibold text-amber-500">
-                            {/* <Star size={11} fill="currentColor" /> */}
                             <StarRating 
                                 rating={event.organizer.ratingAverage} 
                                 size={11} 

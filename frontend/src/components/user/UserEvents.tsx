@@ -49,6 +49,7 @@ import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import { StarRating } from "@/components/common/StarRating";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -229,7 +230,7 @@ export default function UserEvents() {
          {/* Header Section */}
          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
-               <h2 className="text-2xl font-bold tracking-tight text-(--heading-primary)">My Events</h2>
+               <h2 className="text-2xl font-bold tracking-tight text-(--heading-primary)">Hosted Events ({totalEvents})</h2>
                <p className="text-(--text-secondary) mt-1.5 text-sm flex items-center gap-2">
                   <span>Manage and track your hosted events</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-(--border-strong)"></span>
@@ -239,7 +240,7 @@ export default function UserEvents() {
          </div>
 
          {/* Filters Toolbar */}
-         <div className="flex flex-wrap gap-3 p-4 rounded-xl border border-(--border-default) bg-(--card-bg) shadow-(--card-shadow)">
+         <div className="flex flex-wrap gap-3 p-4 rounded-xl border border-(--border-default)">
             <div className="relative flex-1 min-w-60">
                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-(--text-tertiary)" />
                <Input
@@ -439,38 +440,47 @@ export default function UserEvents() {
                            {/* Action Buttons */}
                            <TableCell className="text-right pr-6">
                               <div className="flex items-center justify-end gap-0.5">
-                                 <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    title="Manage Event" 
-                                    onClick={() => navigate(`/my-events/${event.eventId}`)} 
-                                    className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)"
-                                 >
-                                    <Eye className="h-4.5 w-4.5" />
-                                 </Button>
+                                 <Tooltip content="View & Manage Event" side="top">
+                                    <Button 
+                                       variant="ghost" 
+                                       size="icon" 
+                                       onClick={() => navigate(`/my-events/${event.eventId}`)} 
+                                       className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)"
+                                    >
+                                       <Eye className="h-4.5 w-4.5" />
+                                    </Button>
+                                 </Tooltip>
 
                                  {(event.eventStatus === "draft" || event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
-                                    <Button variant="ghost" size="icon" title="Edit Event" onClick={() => { setEditEvent(event); setEditModalOpen(true); }} className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)">
-                                       <Edit className="h-4.5 w-4.5" />
-                                    </Button>
+                                    <Tooltip content="Edit Event" side="top">
+                                       <Button variant="ghost" size="icon" onClick={() => { setEditEvent(event); setEditModalOpen(true); }} className="text-(--text-secondary) hover:text-(--brand-primary) hover:bg-(--bg-accent)">
+                                          <Edit className="h-4.5 w-4.5" />
+                                       </Button>
+                                    </Tooltip>
                                  )}
 
                                  {event.eventStatus === "draft" && (
-                                    <Button variant="ghost" size="icon" title="Publish Event" onClick={() => requestPublish(event.eventId)} className="text-(--status-success) hover:bg-(--status-success-bg)">
-                                       <Rocket className="h-4.5 w-4.5" />
-                                    </Button>
+                                    <Tooltip content="Publish Event" side="top">
+                                       <Button variant="ghost" size="icon" onClick={() => requestPublish(event.eventId)} className="text-(--status-success) hover:bg-(--bg-accent)">
+                                          <Rocket className="h-4.5 w-4.5" />
+                                       </Button>
+                                    </Tooltip>
                                  )}
 
                                  {!(["completed", "cancelled", "suspended"].includes(event.eventStatus)) && (
-                                    <Button variant="ghost" size="icon" title="Cancel Event" onClick={() => requestCancel(event.eventId)} className="text-(--status-error) hover:bg-(--badge-error-bg)">
-                                       <Ban className="h-4.5 w-4.5" />
-                                    </Button>
+                                    <Tooltip content="Cancel Event" side="top">
+                                       <Button variant="ghost" size="icon" onClick={() => requestCancel(event.eventId)} className="text-(--status-error) hover:bg-(--bg-accent)">
+                                          <Ban className="h-4.5 w-4.5" />
+                                       </Button>
+                                    </Tooltip>
                                  )}
 
                                  {(event.eventStatus === "upcoming" || event.eventStatus === "ongoing") && (
-                                    <Button variant="ghost" size="icon" title="Gate Check-In" onClick={() => setCheckInEvent(event)} className="text-(--brand-primary) hover:bg-(--badge-primary-bg)">
-                                       <ScanLine className="h-4.5 w-4.5" />
-                                    </Button>
+                                    <Tooltip content="Gate Check-In" side="top">
+                                       <Button variant="ghost" size="icon" onClick={() => setCheckInEvent(event)} className="text-(--status-success) hover:bg-(--bg-accent)">
+                                          <ScanLine className="h-4.5 w-4.5" />
+                                       </Button>
+                                    </Tooltip>
                                  )}
                               </div>
                            </TableCell>

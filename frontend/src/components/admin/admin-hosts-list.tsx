@@ -42,6 +42,7 @@ import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { USER_ROLES, type HostStatus } from "@/constants/user-system.constants";
 import type { ApiResponse } from "@/types/common.types";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -378,68 +379,68 @@ export function AdminHostsList() {
                     </TableCell>
 
                     <TableCell className="text-right">
-                        <div className="flex flex-col items-end gap-2">
-                            {/* Primary actions (Approve / Reject) */}
-                            {host.hostStatus === "pending" && (
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    onClick={() => setApproveHostId(host.userId)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8
-                                        border-(--badge-success-border)
-                                        text-(--badge-success-text)
-                                        hover:bg-(--badge-success-bg)"
-                                >
-                                    <ThumbsUp className="h-3.5 w-3.5 mr-1" />
-                                    Approve
-                                </Button>
-
-                                <Button
-                                    onClick={() => setRejectHostId(host.userId)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8
-                                        border-(--badge-error-border)
-                                        text-(--badge-error-text)
-                                        hover:bg-(--badge-error-bg)"
-                                >
-                                    <ThumbsDown className="h-3.5 w-3.5 mr-1" />
-                                    Reject
-                                </Button>
-                            </div>
-                            )}
-
-                            {/* Secondary icon actions */}
-                            <div className="flex items-center gap-1">
+                      <div className="flex flex-col items-end gap-2">
+                        {/* Primary actions (Approve / Reject) */}
+                        {host.hostStatus === "pending" && (
+                          <div className="flex items-center gap-2">
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setViewHost(host)}
-                                className="h-9 w-9"
+                                  onClick={() => setApproveHostId(host.userId)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 border-(--badge-success-border) text-(--badge-success-text) hover:bg-(--badge-success-bg)"
                               >
-                                <Eye className="h-4 w-4 text-(--text-secondary)" />
+                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" />
+                                  Approve
                               </Button>
 
                               <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setEditHost(host)}
-                                className="h-9 w-9 text-(--text-secondary)"
+                                  onClick={() => setRejectHostId(host.userId)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 border-(--badge-error-border) text-(--badge-error-text) hover:bg-(--badge-error-bg)"
                               >
-                                <Edit className="h-4 w-4" />
+                                  <ThumbsDown className="h-3.5 w-3.5 mr-1" />
+                                  Reject
                               </Button>
+                          </div>
+                        )}
 
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-(--status-error)"
-                              >
-                                <Ban className="h-4 w-4" />
-                              </Button>
-                            </div>
+                        {/* Secondary icon actions */}
+                        <div className="flex items-center gap-1">
+                          <Tooltip content="View Host" side="top">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setViewHost(host)}
+                              className="h-9 w-9"
+                            >
+                              <Eye className="h-4 w-4 text-(--text-secondary)" />
+                            </Button>
+                          </Tooltip>
 
+                          <Tooltip content="Edit Host" side="top">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setEditHost(host)}
+                              className="h-9 w-9 text-(--text-secondary)"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Tooltip>
+
+                          <Tooltip content="Block Hosting Permission" side="top">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-(--status-error)"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                          </Tooltip>
                         </div>
+
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -462,25 +463,25 @@ export function AdminHostsList() {
 
         {/* Modals */}
         <Modal isOpen={!!viewHost} onClose={() => setViewHost(null)} title="Host Profile" size="lg">
-            {viewHost && <ViewHostModal host={viewHost} />}
+          {viewHost && <ViewHostModal host={viewHost} />}
         </Modal>
 
         {/* <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Host" size="lg">
-            <HostManageForm
-                onSuccess={handleFormSuccess}
-                onCancel={() => setIsCreateModalOpen(false)}
-            />
+          <HostManageForm
+            onSuccess={handleFormSuccess}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
         </Modal> */}
 
         <Modal isOpen={!!editHost} onClose={() => setEditHost(null)} title="Edit Host" size="lg">
-            {editHost && (
-              <HostManageForm
-                  host={editHost}
-                  mode="editMode"
-                  onSuccess={handleFormSuccess}
-                  onCancel={() => setEditHost(null)}
-              />
-            )}
+          {editHost && (
+            <HostManageForm
+              host={editHost}
+              mode="editMode"
+              onSuccess={handleFormSuccess}
+              onCancel={() => setEditHost(null)}
+            />
+          )}
         </Modal>
 
         <ConfirmationModal
@@ -497,10 +498,10 @@ export function AdminHostsList() {
           isOpen={!!rejectHostId}
           onClose={() => setRejectHostId(null)}
           onConfirm={(reason) => {
-              if (rejectHostId) {
-                handleHostApplication(rejectHostId, "reject", reason);
-                setRejectHostId(null);
-              }
+            if (rejectHostId) {
+              handleHostApplication(rejectHostId, "reject", reason);
+              setRejectHostId(null);
+            }
           }}
         />
 

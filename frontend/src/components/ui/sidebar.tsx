@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RadixTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/radix-tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -311,10 +311,10 @@ const SidebarMenuButton = React.forwardRef<
   const tooltipProps = typeof tooltip === "string" ? { children: tooltip } : tooltip;
 
   return (
-    <Tooltip>
+    <RadixTooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltipProps} />
-    </Tooltip>
+    </RadixTooltip>
   );
 });
 SidebarMenuButton.displayName = "SidebarMenuButton";

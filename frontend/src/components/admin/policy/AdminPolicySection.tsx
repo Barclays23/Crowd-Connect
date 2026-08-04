@@ -6,6 +6,7 @@ import { Plus, Trash2, Edit2 } from "lucide-react";
 import { FormatMarkdown } from "@/components/common/FormatMarkdown";
 import { type ITermsAndConditions } from "@/types/platformSettings.types";
 import { TextArea } from "@/components/ui/text-area";
+import { Tooltip } from "@/components/common/ToolTip";
 
 
 
@@ -103,22 +104,26 @@ export const AdminPolicySection: React.FC<PolicySectionProps> = ({
                             {/* Action Buttons */}
                             {!isEditing && (
                                 <div className="shrink-0 flex gap-2">
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        onClick={() => onStartEditing(sectionKey, index, term)}
-                                        className="text-(--text-secondary)"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                    </Button>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        onClick={() => onRemovePoint(sectionKey, index)}
-                                        className="text-(--status-error)"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    <Tooltip content="Edit" side="top">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => onStartEditing(sectionKey, index, term)}
+                                            className="text-(--text-secondary)"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </Button>
+                                    </Tooltip>
+                                    <Tooltip content="Delete" side="top">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => onRemovePoint(sectionKey, index)}
+                                            className="text-(--status-error)"
+                                            >
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </Tooltip>
                                 </div>
                             )}
                         </div>

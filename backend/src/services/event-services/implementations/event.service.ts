@@ -460,7 +460,6 @@ export class EventManagementServices implements IEventServices {
     }
 
 
-
     async deleteEvent(eventId: string): Promise<void> {
         try {
             const event = await this._eventRepository.getEventById(eventId);

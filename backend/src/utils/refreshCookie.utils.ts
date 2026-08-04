@@ -12,8 +12,9 @@ export const setRefreshTokenCookie = (res: Response, token: string): void => {
         secure: isProd,
         sameSite: 'lax',
         path: '/',
-        // maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days  (also check in jwt.utils.ts)
-        maxAge: 30 * 60 * 1000 // 30 minutes  (also check in jwt.utils.ts)
+        // maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day  (also check in jwt.utils.ts)
+        maxAge: 10 * 60 * 60 * 1000 // 10 hours  (also check in jwt.utils.ts)
+        // maxAge: 30 * 60 * 1000 // 30 minutes  (also check in jwt.utils.ts)
         // maxAge: 60 * 1000 // 60 seconds  (also check in jwt.utils.ts)
     });
 };

@@ -1,14 +1,20 @@
 // frontend/src/components/user/UserHostProfile.tsx
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { Camera, Edit, Loader2 } from 'lucide-react';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { UserState } from '@/types/user.types';
+import type { ApiResponse } from '@/types/common.types';
 import DetailItem from '../ui/detail-item';
 import { capitalize } from '@/utils/namingConventions';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
 import { hostServices } from '@/services/hostServices';
-import { Star } from 'lucide-react';
-
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tooltip } from '@/components/common/ToolTip';
+import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import { profilePicUploadSchema } from '@/schemas/user.schema';
+import { StarRating } from '@/components/common/StarRating';
 
 
 interface Props {
@@ -17,34 +23,68 @@ interface Props {
 }
 
 
-
-
 const UserHostProfile = ({ profile, setProfile }: Props) => {
-   const [editingField, setEditingField] = useState<string | null>(null);
+   const [isEditing, setIsEditing] = useState(false);
+   const [isUpdatingLogo, setIsUpdatingLogo] = useState(false);
    const [editFormData, setEditFormData] = useState({
       organizationName: profile.organizationName || '',
       registrationNumber: profile.registrationNumber || '',
       businessAddress: profile.businessAddress || '',
       organizationDescription: profile.organizationDescription || '',
    });
-   const [logoFile, setLogoFile] = useState<File | null>(null);
    const [isUpdatingHostDetails, setIsUpdatingHostDetails] = useState(false);
 
+   // Handle Logo Upload (similar logic to UserPersonalProfile)
+   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
+      const validation = profilePicUploadSchema.safeParse({
+         profileImage: file, // Re-using schema for validation rules (size/type)
+      });
+
+      if (!validation.success) {
+         toast.error(validation.error.issues[0].message);
+         return;
+      }
+
+      const formData = new FormData();
+      formData.append('organizationLogo', file);
+
+      try {
+         setIsUpdatingLogo(true);
+         // Assuming this service handles organization logo update
+         const response: ApiResponse<UserState> = await hostServices.updateHostLogo(formData);
+
+         setProfile((prev) => (prev ? { ...prev, organizationLogo: response.data.organizationLogo } : null));
+
+         toast.success('Organization logo updated successfully!');
+
+      } catch (err) {
+         const errorMessage = getApiErrorMessage(err);
+         if (errorMessage) toast.error(errorMessage);
+
+      } finally {
+         setIsUpdatingLogo(false);
+         e.target.value = ''; // Reset file input
+      }
+   };
 
    const handleUpdateHostDetails = async () => {
       try {
          setIsUpdatingHostDetails(true);
          const updateData = new FormData();
-         updateData.append('organizationName', editFormData.organizationName.trim() || '');
-         updateData.append('registrationNumber', editFormData.registrationNumber.trim() || '');
-         updateData.append('businessAddress', editFormData.businessAddress.trim() || '');
+         updateData.append('organizationName', editFormData.organizationName.trim());
+         updateData.append('registrationNumber', editFormData.registrationNumber.trim());
+         updateData.append('businessAddress', editFormData.businessAddress.trim());
          updateData.append('organizationDescription', editFormData.organizationDescription.trim());
-         if (logoFile) updateData.append('organizationLogo', logoFile);
-
-         await hostServices.updateHostDetailsByHost(updateData);
-         setProfile((prev) => (prev ? { ...prev, ...updateData } : null));
-         setEditingField(null);
+         
+         // Assuming this service handles non-file host details update
+         const response: ApiResponse<UserState> = await hostServices.updateHostDetailsByHost(updateData);
+         
+         setProfile((prev) => (prev ? { ...prev, ...response.data } : null));
+         
+         setIsEditing(false);
          toast.success('Host details updated successfully!');
 
       } catch (err) {
@@ -55,10 +95,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
       }
    };
 
-   const startEditing = () => setEditingField('host');
-
    const cancelEditing = () => {
-      setEditingField(null);
+      setIsEditing(false);
       setEditFormData({
          organizationName: profile.organizationName || '',
          registrationNumber: profile.registrationNumber || '',
@@ -74,125 +112,207 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
       setEditFormData((prev) => ({ ...prev, [name]: value }));
    };
 
-
-
-
-   
    return (
-      <div className="max-w-4xl mx-auto px-5 md:px-0 space-y-8">
-         <div className="bg-(--bg-tertiary) rounded-2xl border border-(--card-border) p-7 shadow-sm">
+      <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
+         
+         {/* Top Section: Avatar Logo */}
+         <div className="flex justify-center mb-8">
+            <div className="relative group">
+               {/* Avatar - rounded-full (circular) */}
+               {profile.organizationLogo ? (
+                  <img
+                     src={profile.organizationLogo}
+                     alt={profile.organizationName || "Organization"}
+                     referrerPolicy="no-referrer"
+                     className="w-24 h-24 md:w-32 md:h-32 rounded-full
+                        object-cover border-4 border-(--bg-primary)
+                        shadow-lg transition-transform group-hover:scale-[1.02]"
+                  />
+               ) : (
+                  <div
+                     className="w-24 h-24 md:w-32 md:h-32 rounded-full
+                        bg-(--bg-neutral)
+                        flex items-center justify-center
+                        text-(--brand-primary) text-4xl md:text-5xl font-bold
+                        border-4 border-(--bg-primary)
+                        shadow-lg"
+                     >
+                     {profile.organizationName?.charAt(0)?.toUpperCase() || "H"}
+                  </div>
+               )}
+
+               {/* Avatar Loading Overlay */}
+               {isUpdatingLogo && (
+                  <div
+                     className="absolute inset-0 z-10 rounded-full
+                        bg-(--bg-overlay2)
+                        flex items-center justify-center"
+                     >
+                     <LoadingSpinner1 size="md" />
+                  </div>
+               )}
+
+               {/* Hover Overlay */}
+               <div
+                  className="absolute inset-0 rounded-full
+                     bg-(--bg-overlay)/80
+                     opacity-0 group-hover:opacity-100
+                     transition-opacity
+                     flex items-center justify-center"
+               >
+                  {/* Camera Upload Button */}
+                  <label className="absolute -bottom-1 -right-1 cursor-pointer">
+                     <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                        disabled={isUpdatingLogo}
+                     />
+
+                     <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center
+                           bg-(--brand-primary)
+                           text-(--text-inverse)
+                           hover:bg-(--brand-primary)/90
+                           shadow-md border-2 border-(--bg-primary)
+                           transition"
+                     >
+                        {isUpdatingLogo ? (
+                           <Loader2
+                           className="h-4 w-4 animate-spin text-(--text-inverse)"
+                           />
+                        ) : (
+                           <Tooltip content="Choose Logo File" side="top">
+                              <Camera size={18} />
+                           </Tooltip>
+                        )}
+                     </div>
+                  </label>
+               </div>
+            </div>
+         </div>
+
+         {/* Section Header for Details */}
          <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-(--heading-primary)">
-               Organization / Host Details
+               Organization Details
             </h2>
-            {editingField !== 'host' && (
-               <button
-               onClick={startEditing}
-               className="px-4 py-2 bg-(--btn-primary-bg) text-(--btn-primary-text) rounded-lg hover:bg-(--btn-primary-hover) transition-colors font-medium"
-               >
-               Edit Host Details
-               </button>
+            
+            {!isEditing && (
+               <Tooltip content="Edit Host Details" side="top">
+                  <Button
+                     variant="ghost"
+                     onClick={() => setIsEditing(true)}
+                  >
+                     <Edit size={18} />
+                  </Button>
+               </Tooltip>
             )}
          </div>
 
-         {editingField === 'host' ? (
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="text-sm font-medium text-(--text-secondary)">Organization Name</label>
-                  <input
-                     type="text"
-                     name="organizationName"
-                     value={editFormData.organizationName}
-                     onChange={handleInputChange}
-                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
-                  />
+         {isEditing ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               {/* Left Column */}
+               <div className="space-y-4">
+                  <div className="space-y-1">
+                     <label className="text-sm font-medium text-(--text-secondary)">Organization Name</label>
+                     <Input
+                        type="text"
+                        name="organizationName"
+                        value={editFormData.organizationName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
+                     />
+                  </div>
+
+                  <div className="space-y-1">
+                     <label className="text-sm font-medium text-(--text-secondary)">Registration Number</label>
+                     <Input
+                        type="text"
+                        name="registrationNumber"
+                        value={editFormData.registrationNumber}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
+                     />
+                  </div>
                </div>
 
-               {/* Description Input */}
-               <div className="space-y-2">
-                  <label className="text-sm font-medium text-(--text-secondary)">Organization Description</label>
-                  <textarea
-                     name="organizationDescription"
-                     value={editFormData.organizationDescription}
-                     onChange={handleInputChange}
-                     rows={4}
-                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary) resize-none"
-                  />
+               {/* Right Column */}
+               <div className="space-y-4">
+                  <div className="space-y-1">
+                     <label className="text-sm font-medium text-(--text-secondary)">Organization Description</label>
+                     <textarea
+                        name="organizationDescription"
+                        value={editFormData.organizationDescription}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) resize-none"
+                     />
+                  </div>
+
+                  <div className="space-y-1">
+                     <label className="text-sm font-medium text-(--text-secondary)">Business Address</label>
+                     <textarea
+                        name="businessAddress"
+                        value={editFormData.businessAddress}
+                        onChange={handleInputChange}
+                        rows={2}
+                        className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) resize-none"
+                     />
+                  </div>
                </div>
 
-               {/* Logo File Input */}
-               <div className="space-y-2">
-                  <label className="text-sm font-medium text-(--text-secondary)">Update Logo</label>
-                  <input
-                     type="file"
-                     accept="image/jpeg,image/png,image/webp"
-                     onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
-                     className="w-full text-sm text-(--text-secondary) file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-(--brand-primary)/10 file:text-(--brand-primary) hover:file:bg-(--brand-primary)/20"
-                  />
-               </div>
-
-               <div className="space-y-2">
-                  <label className="text-sm font-medium text-(--text-secondary)">Registration Number</label>
-                  <input
-                     type="text"
-                     name="registrationNumber"
-                     value={editFormData.registrationNumber}
-                     onChange={handleInputChange}
-                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary)"
-                  />
-               </div>
-
-               <div className="space-y-2">
-                  <label className="text-sm font-medium text-(--text-secondary)">Business Address</label>
-                  <textarea
-                     name="businessAddress"
-                     value={editFormData.businessAddress}
-                     onChange={handleInputChange}
-                     rows={3}
-                     className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg) text-(--form-input-text) focus:outline-none focus:ring-2 focus:ring-(--brand-primary) resize-none"
-                  />
-               </div>
-
-               <div className="flex gap-2 pt-4">
-               <button
-                  onClick={handleUpdateHostDetails}
-                  disabled={isUpdatingHostDetails}
-                  className="px-6 py-2.5 bg-(--btn-primary-bg) text-(--btn-primary-text) rounded-lg hover:bg-(--btn-primary-hover) disabled:opacity-50 font-medium"
-               >
-                  {isUpdatingHostDetails ? 'Saving...' : 'Save Changes'}
-               </button>
-               <button
-                  onClick={cancelEditing}
-                  className="px-6 py-2.5 border border-(--card-border) rounded-lg hover:bg-(--bg-tertiary) font-medium text-(--text-primary)"
-               >
-                  Cancel
-               </button>
+               {/* Action Buttons */}
+               <div className="col-span-1 md:col-span-2 flex gap-3 pt-3">
+                  <Button
+                     onClick={handleUpdateHostDetails}
+                     disabled={isUpdatingHostDetails}
+                  >
+                     {isUpdatingHostDetails ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                     variant="outline"
+                     onClick={cancelEditing}
+                  >
+                     Cancel
+                  </Button>
                </div>
             </div>
          ) : (
             <div className="space-y-6">
-               <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
-               <DetailItem label="Registration Number" value={profile.registrationNumber || '—'} />
-               <DetailItem label="Business Address" value={profile.businessAddress || '—'} isMultiline/>
-               <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
-               <DetailItem label="Description" value={profile.organizationDescription || '—'} isMultiline />
-               {profile.organizationLogo && (
-                  <div className="py-3">
-                     <label className="block text-sm font-medium text-(--text-secondary) mb-2">Organization Logo</label>
-                     <img src={profile.organizationLogo} alt="Logo" className="w-16 h-16 rounded-full object-cover border border-(--border-muted)" />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left View Column */}
+                  <div className="space-y-6">
+                     <DetailItem label="Organization Name" value={profile.organizationName || '—'} />
+                     <DetailItem label="Registration Number" value={profile.registrationNumber || '—'} />
                   </div>
-               )}
+                  
+                  {/* Right View Column */}
+                  <div className="space-y-6">
+                     <DetailItem label="Description" value={profile.organizationDescription || '—'} isMultiline />
+                     <DetailItem label="Business Address" value={profile.businessAddress || '—'} isMultiline/>
+                  </div>
+               </div>
 
                {/* RATINGS BLOCK */}
                {profile.hostStatus === 'approved' && (
-                 <div>
-                    <label className="block text-sm font-medium text-(--text-secondary) mb-1.5">
+                 <div className="pt-2">
+                    <label className="block text-sm font-medium text-(--text-secondary) mb-2">
                        Your Host Rating
                     </label>
                     <div className="flex items-center gap-3">
-                       <div className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg text-sm font-bold w-fit">
-                          <Star size={16} fill="currentColor" />
-                          {profile.ratingAverage && profile.ratingAverage > 0 ? profile.ratingAverage.toFixed(1) : "No rating yet"}
+                       <div className="flex items-center gap-2.5 px-5 py-2.5 bg-(--bg-primary) rounded-full border border-(--border-default) shadow-md w-fit">
+                          {profile.ratingAverage && profile.ratingAverage > 0 ? (
+                             <>
+                                <span className="font-bold text-(--text-primary) text-lg leading-none">
+                                   {profile.ratingAverage.toFixed(1)}
+                                </span>
+                                <StarRating rating={profile.ratingAverage} size={18} />
+                             </>
+                          ) : (
+                             <span className="text-sm font-medium text-(--text-secondary)">No rating yet</span>
+                          )}
                        </div>
                        {(profile.totalReviews ?? 0) > 0 && (
                           <span className="text-sm font-medium text-(--text-tertiary)">
@@ -203,7 +323,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                  </div>
                )}
 
-               <div className="pt-4 border-t border-(--card-border)/60">
+               {/* HOST STATUS & METADATA */}
+               <div className="pt-5 mt-4 border-t border-(--border-muted)">
                   <div className="flex flex-wrap gap-x-10 gap-y-5">
                      <DetailItem
                         label="Host Status"
@@ -218,8 +339,8 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                      />
                      {profile.hostAppliedAt && (
                         <DetailItem
-                        label="Applied On"
-                        value={formatDate1(profile.hostAppliedAt)}
+                           label="Applied On"
+                           value={formatDate1(profile.hostAppliedAt)}
                         />
                      )}
                      {profile.reviewedAt && (
@@ -231,24 +352,26 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                   </div>
                </div>
 
+               {/* REJECTION REASON */}
                {profile.hostStatus === 'rejected' && profile.hostRejectionReason && (
                   <div className="mt-4">
                      <label className="block text-sm font-medium text-(--text-secondary) mb-2">
                         Rejection Reason
                      </label>
-                     <div className="p-4 bg-(--badge-error-bg) border border-(--badge-error-border) rounded-xl text-(--badge-error-text) text-sm">
+                     <div className="p-4 bg-(--badge-error-bg) border border-(--badge-error-border) rounded-xl text-(--badge-error-text) text-sm shadow-sm">
                         {profile.hostRejectionReason}
                      </div>
                   </div>
                )}
 
+               {/* CERTIFICATE LINK */}
                {profile.certificateUrl && (
-                  <div className="mt-3">
+                  <div className="mt-4">
                      <a
                         href={profile.certificateUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-(--brand-primary) hover:text-(--brand-primary-hover) font-medium"
+                        className="inline-flex items-center gap-2 text-(--brand-primary) hover:text-(--brand-primary-hover) font-medium transition-colors"
                      >
                         <span>View Registration Certificate</span>
                         <span aria-hidden>→</span>
@@ -257,7 +380,6 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
                )}
             </div>
          )}
-         </div>
       </div>
    );
 };

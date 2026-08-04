@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import ChangePassword from '@/components/auth/ChangePassword';
 import type { AuthEmailRequestData } from '@/types/auth.types';
 import type { ApiResponse } from '@/types/common.types';
+import { Tooltip } from '@/components/common/ToolTip';
 
 
 
@@ -195,7 +196,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       <>
          {/* Profile Header / Hero */}
          <div className="relative mb-10">
-            <div className="h-48 md:h-64 bg-linear-to-br from-(--brand-primary)/20 to-(--bg-secondary) rounded-3xl" />
+            <div className="h-48 md:h-64 bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-3xl border-2 border-(--border-focus)" />
                <div className="absolute inset-x-0 bottom-0 px-5 pb-8 md:px-12 md:pb-10">
                   <div className="flex flex-col sm:flex-row sm:items-end gap-5">
 
@@ -251,30 +252,32 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                            >
                               {/* Camera Upload Button */}
                               <label className="absolute -bottom-2 -right-2 cursor-pointer">
-                              <input
-                                 type="file"
-                                 accept="image/*"
-                                 className="hidden"
-                                 onChange={handleProfilePicUpload}
-                                 disabled={isUpdatingProfilePic}
-                              />
+                                 <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleProfilePicUpload}
+                                    disabled={isUpdatingProfilePic}
+                                 />
 
-                              <div
-                                 className="w-10 h-10 rounded-full flex items-center justify-center
-                                    bg-(--brand-primary)
-                                    text-(--text-inverse)
-                                    hover:bg-(--brand-primary)/90
-                                    shadow-lg border-2 border-(--bg-primary)
-                                    transition"
-                              >
-                                 {isUpdatingProfilePic ? (
-                                    <Loader2
-                                    className="h-4 w-4 animate-spin text-(--text-inverse)"
-                                    />
-                                 ) : (
-                                    <Camera size={18} />
-                                 )}
-                              </div>
+                                 <div
+                                    className="w-10 h-10 rounded-full flex items-center justify-center
+                                       bg-(--brand-primary)
+                                       text-(--text-inverse)
+                                       hover:bg-(--brand-primary)/90
+                                       shadow-lg border-2 border-(--bg-primary)
+                                       transition"
+                                 >
+                                    {isUpdatingProfilePic ? (
+                                       <Loader2
+                                       className="h-4 w-4 animate-spin text-(--text-inverse)"
+                                       />
+                                    ) : (
+                                       <Tooltip content="Choose File" side="top">
+                                          <Camera size={18} />
+                                       </Tooltip>
+                                    )}
+                                 </div>
                               </label>
                            </div>
                         </div>
@@ -350,7 +353,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
          {/* Personal Details Card */}
          <div className="max-w-4xl mx-auto px-5 md:px-0 space-y-8">
-            <div className="bg-(--bg-tertiary) rounded-2xl border border-(--card-border) p-7 shadow-sm">
+            <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
                <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-(--heading-primary)">
                      Personal Details
@@ -367,12 +370,14 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         </h3>
 
                         {!isEditingBasicInfo && (
-                           <Button
-                              variant="ghost"
-                              onClick={() => setIsEditingBasicInfo(true)}
-                           >
-                              <Edit size={18} />
-                           </Button>
+                           <Tooltip content="Edit Basic Info" side="top">
+                              <Button
+                                 variant="ghost"
+                                 onClick={() => setIsEditingBasicInfo(true)}
+                              >
+                                 <Edit size={18} />
+                              </Button>
+                           </Tooltip>
                         )}
                      </div>
 
@@ -455,13 +460,15 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                            Email
                         </label>
 
-                        {!isEditingEmail && (
-                           <Button
-                              variant='ghost'
-                              onClick={() => setIsEditingEmail(true)}
-                           >
-                              {/* <Edit size={18} /> */}
-                           </Button>
+                        {!profile.isEmailVerified && !isEditingEmail && (
+                           <Tooltip content="Edit Email" side="top">
+                              <Button
+                                 variant='ghost'
+                                 onClick={() => setIsEditingEmail(true)}
+                              >
+                                 <Edit size={18} />
+                              </Button>
+                           </Tooltip>
                         )}
                      </div>
 
@@ -513,7 +520,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
             {!showChangePassword ? (
                <div className="flex items-center justify-between
                   bg-(--bg-tertiary) rounded-2xl
-                  border border-(--card-border)
+                  border-2 border-(--border-focus)
                   px-7 py-5 shadow-sm"
                >
                   <div className="flex items-center gap-3">
