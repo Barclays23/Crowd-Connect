@@ -53,11 +53,9 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
 
       try {
          setIsUpdatingLogo(true);
-         // Assuming this service handles organization logo update
          const response: ApiResponse<UserState> = await hostServices.updateHostLogo(formData);
 
          setProfile((prev) => (prev ? { ...prev, organizationLogo: response.data.organizationLogo } : null));
-
          toast.success('Organization logo updated successfully!');
 
       } catch (err) {
@@ -73,13 +71,12 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
    const handleUpdateHostDetails = async () => {
       try {
          setIsUpdatingHostDetails(true);
-         const updateData = new FormData();
+         const updateData: FormData = new FormData();
          updateData.append('organizationName', editFormData.organizationName.trim());
          updateData.append('registrationNumber', editFormData.registrationNumber.trim());
          updateData.append('businessAddress', editFormData.businessAddress.trim());
          updateData.append('organizationDescription', editFormData.organizationDescription.trim());
          
-         // Assuming this service handles non-file host details update
          const response: ApiResponse<UserState> = await hostServices.updateHostDetailsByHost(updateData);
          
          setProfile((prev) => (prev ? { ...prev, ...response.data } : null));
@@ -112,6 +109,9 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
       setEditFormData((prev) => ({ ...prev, [name]: value }));
    };
 
+
+
+   
    return (
       <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
          

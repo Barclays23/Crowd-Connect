@@ -101,7 +101,18 @@ export const hostServices = {
   // update host details by host user
   updateHostDetailsByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
     const response = await axiosInstance.patch<ApiResponse<UserState>>(
-      API_ENDPOINTS.HOST.UPDATE_DETAILS,  // or "/api/host/host-profile"
+      API_ENDPOINTS.HOST.ORGANIZER_DETAILS,
+      formData,
+      { withCredentials: true },
+    );
+    return response.data;
+  },
+
+
+  // update host details by host user
+  updateHostLogoByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.patch<ApiResponse<UserState>>(
+      API_ENDPOINTS.HOST.ORGANIZER_LOGO,
       formData,
       {
         withCredentials: true,

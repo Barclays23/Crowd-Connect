@@ -171,4 +171,48 @@ export class HostController implements IHostController {
         };
     }
 
+
+    async updateHostDetailsByHost (req: Request, res: Response, next: NextFunction): Promise<void>{
+        try {
+            const hostId = req.params?.hostId as string;
+            const updateDto: HostUpdateRequestDto = req.body;
+
+            console.log("upgradeDto body: ", req.body);
+            console.log("hostId:", hostId);
+
+            const updatedHostProfile: UserProfileResponseDto = await this._hostService.updateHostDetailsByHost({hostId, updateDto});
+
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: HOST_MESSAGES.HOST_UPDATE_DETAILS_SUCCESS,
+                data: updatedHostProfile,
+            });
+
+        } catch (err: unknown) {
+            next(err);
+        };
+    }
+
+
+    async updateHostLogoByHost (req: Request, res: Response, next: NextFunction): Promise<void>{
+        try {
+            const hostId = req.params?.hostId as string;
+            const logoFile: Express.Multer.File | undefined = req.file;
+
+            console.log("hostId:", hostId);
+            console.log("fileName:", logoFile?.originalname);
+
+            const updatedHostProfile: UserProfileResponseDto = await this._hostService.updateHostLogoByHost({hostId, logoFile});
+
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: HOST_MESSAGES.HOST_UPDATE_LOGO_SUCCESS,
+                data: updatedHostProfile,
+            });
+
+        } catch (err: unknown) {
+            next(err);
+        };
+    }
+
 }

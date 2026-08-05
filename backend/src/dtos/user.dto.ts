@@ -37,15 +37,23 @@ export interface UpdateUserRequestDto {
 
 
 export interface HostUpgradeRequestDto {
-  organizationName: string;
-  registrationNumber: string;
-  businessAddress: string;
-  organizationDescription?: string;
-  // organizationLogo?   : Express.Multer.File;
-  // hostDocument: Express.Multer.File;
+  organizationName          : string;
+  registrationNumber        : string;
+  businessAddress           : string;
+  organizationDescription   : string;
+  hostDocument              : Express.Multer.File;
+  organizationLogo          : Express.Multer.File;
 }
 
-export type HostUpdateRequestDto = HostUpgradeRequestDto
+export interface HostUpdateRequestDto {
+  organizationName          : string;
+  registrationNumber        : string;
+  businessAddress           : string;
+  organizationDescription   : string;
+  hostDocument              : Express.Multer.File;
+  // organizationLogo          : Express.Multer.File;  // logo can be updated separately
+}
+
 
 
 export interface HostManageRequestDto {

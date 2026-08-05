@@ -48,6 +48,17 @@ hostRouter.get(
     hostController.getOrganiserProfile.bind(hostController)
 );
 
+hostRouter.patch(
+    HOST_ROUTES.ORGANIZER_DETAILS, 
+    hostController.updateHostDetailsByHost.bind(hostController)
+);
+
+hostRouter.patch(
+    // multer here
+    HOST_ROUTES.ORGANIZER_LOGO, 
+    hostController.updateHostLogoByHost.bind(hostController)
+);
+
 
 
 export default hostRouter;

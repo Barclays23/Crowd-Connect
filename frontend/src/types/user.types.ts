@@ -117,9 +117,9 @@ export interface HostStatusUpdateData {
 export interface OrganiserProfileData {
   hostId: string;
   organizationName: string;
-  businessAddress?: string;
-  organizationDescription?: string;
-  organizationLogo?: string;
+  businessAddress: string;
+  organizationDescription: string;
+  organizationLogo: string;
   ratingAverage: number;
   totalReviews: number;
   email: string;

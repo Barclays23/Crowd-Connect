@@ -115,9 +115,10 @@ export const API_ENDPOINTS = {
         // DASHBOARD           : `${API_PREFIX.HOST}/dashboard`,  // using anywhere ??
         // MY_LISTINGS         : `${API_PREFIX.HOST}/listings`,  // using anywhere ??
         // ONBOARDING          : `${API_PREFIX.HOST}/onboarding`,  // using anywhere ??
-        APPLY_UPGRADE       : `${API_PREFIX.HOST}/apply-upgrade`,
-        UPDATE_DETAILS      : `${API_PREFIX.HOST}/update-details`,
-        ORGANISER_PROFILE   : (hostId: string) => `${API_PREFIX.HOST}/organiser/${hostId}`,
+        APPLY_UPGRADE          : `${API_PREFIX.HOST}/apply-upgrade`,
+        ORGANIZER_DETAILS      : `${API_PREFIX.HOST}/organiser-details`,
+        ORGANIZER_LOGO         : `${API_PREFIX.HOST}/organiser-logo`,
+        ORGANISER_PROFILE      : (hostId: string) => `${API_PREFIX.HOST}/organiser/${hostId}`,
     },
 
     PAYOUT: {

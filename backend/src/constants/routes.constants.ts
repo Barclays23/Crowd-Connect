@@ -124,7 +124,8 @@ export const EVENT_ROUTES = {
 
 export const HOST_ROUTES = {
     APPLY_UPGRADE       : '/apply-upgrade',
-    UPDATE_HOST_DETAILS : '/update-details',
+    ORGANIZER_DETAILS   : '/organiser-details',
+    ORGANIZER_LOGO      : '/organiser-logo',
     ORGANISER_PROFILE   : '/organiser/:hostId',
 } as const;
 
