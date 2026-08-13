@@ -28,8 +28,9 @@ export interface IEventServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO>;
 
-    updateEventByAdmin({eventId, updateEventDto, imageFile }: { 
+    updateEventByAdmin({ eventId, adminId, updateEventDto, imageFile}: { 
         eventId: string;
+        adminId: string;
         updateEventDto: UpdateEventRequestDTO; 
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO>;
@@ -39,10 +40,10 @@ export interface IEventServices {
     getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult>;
 
     cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EventStatus | null>
+    suspendEvent({ eventId, adminId, suspendReason }: { eventId: string; adminId: string; suspendReason: string; }): Promise<EventStatus | null>
     
-    suspendEvent({eventId, suspendReason}: {eventId: string, suspendReason: string}): Promise<EventStatus | null>;
-    
-    deleteEvent(eventId: string): Promise<void>;
+    deleteEventByHost(eventId: string, hostId: string): Promise<void>
+    deleteEventByAdmin(eventId: string, adminId: string): Promise<void>
 
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     

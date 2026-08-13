@@ -48,7 +48,7 @@ import { PayoutDetailModal } from "./payout/payout-detail-modal";
 import { PayoutRejectModal } from "./payout/payout-reject-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 export function PayoutRequestsList() {

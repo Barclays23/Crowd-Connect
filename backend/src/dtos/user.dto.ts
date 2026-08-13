@@ -50,15 +50,19 @@ export interface HostUpdateRequestDto {
   registrationNumber        : string;
   businessAddress           : string;
   organizationDescription   : string;
-  hostDocument              : Express.Multer.File;
-  // organizationLogo          : Express.Multer.File;  // logo can be updated separately
 }
 
 
 
-export interface HostManageRequestDto {
+export interface HostManageApplicationDto {
   hostId: string;
-  action: 'approve' | 'reject' | 'block';  // can add 'block' later (and can also use HostStatus) 
+  action: 'approve' | 'reject';
+  reason?: string
+}
+
+export interface HostManagePermissionDto {
+  hostId: string;
+  action: 'block' | 'unblock';
   reason?: string
 }
 

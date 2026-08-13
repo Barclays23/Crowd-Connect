@@ -31,12 +31,14 @@ export const API_ENDPOINTS = {
         USERS           : `${API_PREFIX.ADMIN}/users`,
         USER_ACTION     : (userId: string) => `${API_PREFIX.ADMIN}/users/${userId}`,
         TOGGLE_BLOCK    : (userId: string) => `${API_PREFIX.ADMIN}/users/${userId}/toggle-block`,
-        CONVERT_TO_HOST : (userId: string) => `${API_PREFIX.ADMIN}/users/${userId}/convert-host`,
+        CONVERT_TO_HOST : (userId: string) => `${API_PREFIX.ADMIN}/users/${userId}/convert`,
 
         // host management
-        HOSTS               : `${API_PREFIX.ADMIN}/hosts`,
-        MANAGE_HOST_REQUEST : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/manage-host-request`,
-        UPDATE_HOST         : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/update-host`,
+        HOSTS                   : `${API_PREFIX.ADMIN}/hosts`,
+        MANAGE_HOST_APPLICATION : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/application`,
+        MANAGE_HOST_PERMISSION  : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/permission`,
+        UPDATE_HOST_DETAILS     : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/details`,
+        UPDATE_HOST_LOGO        : (hostId: string) => `${API_PREFIX.ADMIN}/hosts/${hostId}/logo`,
 
         // event management
         EVENTS          : `${API_PREFIX.ADMIN}/events`,
@@ -107,6 +109,7 @@ export const API_ENDPOINTS = {
         UPDATE              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/update`,
         PUBLISH             : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/publish`,
         CANCEL              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/cancel`,
+        DELETE              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}`,
         BOOKINGS_OF_EVENT   : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/bookings`,
         ORGANISER_EVENTS    : (hostId: string) => `${API_PREFIX.EVENT}/organiser/${hostId}/events`,
     },
@@ -128,11 +131,11 @@ export const API_ENDPOINTS = {
     },
 
     REVIEW: {
-        // SUBMIT_REVIEW   : (bookingId: string) => `${API_PREFIX.REVIEW}/bookings/${bookingId}`,
         SUBMIT_REVIEW   : `${API_PREFIX.REVIEW}`,
         MANAGE_REVIEW   : (reviewId: string) => `${API_PREFIX.REVIEW}/${reviewId}`,  // edit or delete review
         HOST_REVIEWS    : (hostId: string) => `${API_PREFIX.REVIEW}/host/${hostId}`,
         EVENT_REVIEWS   : (eventId: string) => `${API_PREFIX.REVIEW}/events/${eventId}`,
+        MY_REVIEWS      : `${API_PREFIX.REVIEW}/my-reviews`,
         
     },
 

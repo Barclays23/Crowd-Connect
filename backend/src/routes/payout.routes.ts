@@ -18,6 +18,7 @@ import { validateParams } from "@/middlewares/validate.middleware";
 import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
 import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
 import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
+import { GoogleGenAI } from "@google/genai";
 
 
 
@@ -31,8 +32,13 @@ const faqKnowledgeRepo  = new MongoFaqRepository();
 
 
 
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
 // PROVIDERS
-const aiChatProvider   = new GeminiAiChatProvider();
+const aiChatProvider   = new GeminiAiChatProvider(genAI);
 
 
 

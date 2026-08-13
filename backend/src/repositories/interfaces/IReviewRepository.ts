@@ -12,6 +12,7 @@ export interface IReviewRepository {
 
     deleteReview(reviewId: string): Promise<void>;
 
+    // finding reviews of specific user /organizer/ event
     findReviews(filters: GetReviewsFilter): Promise<{ reviews: PopulatedReviewEntity[]; totalCount: number }>
 
     findAllReviewsForAdmin(filters: GetReviewsAdminFilter): Promise<{ reviews: AdminPopulatedReviewEntity[]; totalCount: number }>;

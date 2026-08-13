@@ -19,28 +19,35 @@ export interface ReviewEntity {
 
 
 // Used when sending reviews to the frontend (includes user details)
-export interface PopulatedReviewEntity extends Omit<ReviewEntity, "userRef"> {
-  user: {
-    userId      : string;
-    name        : string;
-    profilePic? : string;
+export interface PopulatedReviewEntity extends Omit<ReviewEntity, "userRef" | "eventRef"> {
+  userRef : {
+    userId        : string;
+    name          : string;
+    profilePic?   : string;
   };
+  eventRef : {
+    eventId       : string;
+    eventTitle    : string; 
+  }
 }
 
 
 
 export interface AdminPopulatedReviewEntity {
-  reviewId: string;
-  eventRef: string;
-  eventTitle?: string;
-  hostRef: string;
-  hostName?: string;
-  user: {
-    userId: string;
-    name: string;
-    email?: string;
-    profilePic?: string;
+  reviewId  : string;
+  hostRef   : string;
+  hostName? : string;
+  userRef   : {
+    userId      : string;
+    name        : string;
+    email?      : string;
+    profilePic? : string;
   };
+  eventRef : {
+    eventId     : string;
+    eventTitle  : string;
+    // category    : string;
+  }
   rating: number;
   reviewText?: string;
   createdAt: Date;

@@ -44,7 +44,7 @@ import { RequestPayoutModal } from "@/components/payout/request-payout-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
 import { PayoutStatCard } from "@/components/admin/payout/payout-stat-card";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 

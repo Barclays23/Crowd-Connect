@@ -76,7 +76,7 @@ export const bookingServices = {
 
 
    // used anywhere?
-   getBookingById: async (bookingId: string): Promise<ApiResponse<IBookingState>> => {
+   getBookingDetails: async (bookingId: string): Promise<ApiResponse<IBookingState>> => {
       const response = await axiosInstance.get<ApiResponse<IBookingState>>(
          API_ENDPOINTS.BOOKING.DETAILS(bookingId),
          { withCredentials: true }

@@ -7,6 +7,7 @@ import {
     UserProfileResponseDto, 
 } from "@/dtos/user.dto";
 import { UserStatus } from "@/constants/user-system.constants";
+import { UserEntity } from "@/entities/user.entity";
 
 
 
@@ -18,14 +19,14 @@ export interface IUserManagementService {
       createDto: CreateUserRequestDto; 
       imageFile?: Express.Multer.File;
       currentAdminId: string;
-   }): Promise<UserProfileResponseDto>;
+   }): Promise<UserEntity>;
 
    editUserByAdmin({ targetUserId, currentAdminId, updateDto, imageFile}: {
       targetUserId: string;
       currentAdminId: string;
       updateDto: UpdateUserRequestDto;
       imageFile?: Express.Multer.File;
-   }): Promise<UserProfileResponseDto>;
+   }): Promise<UserEntity>;
 
 
    toggleUserBlock({ targetUserId, currentAdminId }: {

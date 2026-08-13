@@ -7,6 +7,7 @@ export interface IReviewController {
     submitReview(req: Request, res: Response, next: NextFunction): Promise<void>
     editReview(req: Request, res: Response, next: NextFunction): Promise<void>
     deleteReview(req: Request, res: Response, next: NextFunction): Promise<void>
+    getMyReviews(req: Request, res: Response, next: NextFunction): Promise<void>;
     getHostReviews(req: Request, res: Response, next: NextFunction): Promise<void>
     getEventReviews(req: Request, res: Response, next: NextFunction): Promise<void>
     getAllReviewsForAdmin(req: Request, res: Response, next: NextFunction): Promise<void>;

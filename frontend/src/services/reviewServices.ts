@@ -73,6 +73,25 @@ export const reviewServices = {
     },
 
 
+
+    getMyReviews: async (page = 1, limit = 10): Promise<ApiResponse<IReviewState[]>> => {
+        const searchParams = new URLSearchParams({
+            page: String(page),
+            limit: String(limit)
+        });
+
+        const queryString = searchParams.toString();
+        const endpoint = `${API_ENDPOINTS.REVIEW.MY_REVIEWS}?${queryString}`;
+
+        const response = await axiosInstance.get<ApiResponse<IReviewState[]>>(
+            endpoint,
+            { withCredentials: true }
+        );
+
+        return response.data;
+    },
+
+
     getAllReviewsForAdmin: async (params: AdminReviewQueryParams): Promise<ApiResponse<IReviewState[]>> => {
         const searchParams = new URLSearchParams({
             page: String(params.page),

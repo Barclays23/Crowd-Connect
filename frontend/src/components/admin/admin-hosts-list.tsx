@@ -42,7 +42,9 @@ import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { USER_ROLES, type HostStatus } from "@/constants/user-system.constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
+import { StarRating } from "@/components/common/StarRating";
+
 
 
 
@@ -64,7 +66,8 @@ export function AdminHostsList() {
   const [editHost, setEditHost] = useState<UserState | null>(null);
   const [approveHostId, setApproveHostId] = useState<string | null>(null);
   const [rejectHostId, setRejectHostId] = useState<string | null>(null);
-
+  const [blockHostId, setBlockHostId] = useState<string | null>(null);
+  const [unblockHostId, setUnblockHostId] = useState<string | null>(null);
 
   const itemsPerPage = 10;
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -92,17 +95,13 @@ export function AdminHostsList() {
         ...(accountStatusFilter !== "all" && { status: accountStatusFilter }),
       };
       
-      console.log("Fetching hosts with params:", params.toString());
-
       const response: ApiResponse<UserState[]> = await hostServices.getAllHosts(params);
-      console.log("Response in fetchHosts :", response);
 
       setHosts(response.data);
       setTotalHosts(response.pagination?.totalCount ?? 0);
       setTotalPages(response.pagination?.totalPages || Math.ceil((response.pagination?.totalCount ?? 0) / itemsPerPage));
 
     } catch (err: unknown) {
-      console.error("Failed to fetch hosts:", err);
       const errorMessage = getApiErrorMessage(err);
       if (errorMessage) toast.error(errorMessage);
       setError(errorMessage);
@@ -112,26 +111,22 @@ export function AdminHostsList() {
     }
   }, [currentPage, debouncedSearchTerm, hostStatusFilter, accountStatusFilter]);
 
-
   useEffect(() => {
     fetchHosts();
   }, [fetchHosts]);
-
 
   // Reset selection when filters/page change
   useEffect(() => {
     setSelectedHosts([]);
   }, [currentPage, debouncedSearchTerm, hostStatusFilter, accountStatusFilter]);
 
-
   const handleFormSuccess = () => {
-    // setIsCreateModalOpen(false);
     setEditHost(null);
     fetchHosts();
   };
 
 
-  // Approve / Reject host application
+  // Approve / Reject host application (Role Change)
   const handleHostApplication = async (hostId: string, action: "approve" | "reject", reason?: string) => {
     if (action === "reject" && !reason?.trim()) {
       toast.error("Rejection reason is required");
@@ -139,19 +134,21 @@ export function AdminHostsList() {
     }
 
     try {
-      const response: ApiResponse<HostStatusUpdateData> = await hostServices.manageHostRequest(hostId, {action, reason});
+      const response: ApiResponse<HostStatusUpdateData> = await hostServices.manageHostApplication(hostId, {action, reason});
 
-      toast.success(response.message || `Host ${action === "approve" ? "approved" : "rejected"} successfully`);
+      toast.success(response.message);
 
       if (action === "approve") setApproveHostId(null);
       if (action === "reject") setRejectHostId(null);
+
+      const newStatus = action === "approve" ? "approved" : "rejected";
 
       setHosts((prev) =>
         prev.map((hst) =>
           hst.userId === hostId
             ? {
                 ...hst,
-                hostStatus: action === "approve" ? "approved" : "rejected",
+                hostStatus: newStatus as HostStatus,
               }
             : hst
         )
@@ -166,6 +163,34 @@ export function AdminHostsList() {
   };
 
 
+  // Block / Unblock hosting permissions (Policy Violation)
+  const handleBlockUnblockHost = async (hostId: string, action: "block" | "unblock") => {
+    try {
+      const response: ApiResponse<HostStatusUpdateData> = await hostServices.manageHostPermissions(hostId, { action });
+
+      toast.success(response.message);
+
+      if (action === "block") setBlockHostId(null);
+      if (action === "unblock") setUnblockHostId(null);
+
+      const newStatus = action === "block" ? "blocked" : "pending";
+
+      setHosts((prev) =>
+        prev.map((hst) =>
+          hst.userId === hostId
+            ? { ...hst, hostStatus: newStatus as HostStatus }
+            : hst
+        )
+      );
+
+      fetchHosts();
+      
+    } catch (err: unknown) {
+      const errorMessage = getApiErrorMessage(err);
+      if (errorMessage) toast.error(errorMessage);
+    }
+  };
+
   const getHostStatusBadgeVariant = (status?: HostStatus) => {
     switch (status) {
       case "approved":
@@ -178,7 +203,6 @@ export function AdminHostsList() {
         return "secondary";
     }
   };
-
 
   const getHostStatusIcon = (status?: HostStatus) => {
     switch (status) {
@@ -193,22 +217,17 @@ export function AdminHostsList() {
     }
   };
 
-
   const toggleHostSelection = (hostId: string) => {
     setSelectedHosts((prev) =>
       prev.includes(hostId) ? prev.filter((id) => id !== hostId) : [...prev, hostId]
     );
   };
 
-
   const toggleAll = () => {
     setSelectedHosts((prev) =>
       prev.length === hosts.length && hosts.length > 0 ? [] : hosts.map((h) => h.userId)
     );
   };
-
-
-
 
   return (
     <Card className="shadow-(--shadow-sm) border border-(--border-default) rounded-2xl overflow-hidden">
@@ -283,11 +302,12 @@ export function AdminHostsList() {
                   />
                 </TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Sl No</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Host</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Organization</TableHead>
+                <TableHead className="text-(--text-secondary) font-semibold">Rating</TableHead>
+                <TableHead className="text-(--text-secondary) font-semibold">Account Owner</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Email</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Phone</TableHead>
-                <TableHead className="text-(--text-secondary) font-semibold">Account Status</TableHead>
+                <TableHead className="text-(--text-secondary) font-semibold">Account</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Host Status</TableHead>
                 <TableHead className="text-(--text-secondary) font-semibold">Applied Date</TableHead>
                 <TableHead className="text-right text-(--text-secondary) font-semibold">Actions</TableHead>
@@ -297,7 +317,7 @@ export function AdminHostsList() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-32 text-center">
+                  <TableCell colSpan={11} className="h-32 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-5 w-5 animate-spin" />
                       <span>Loading hosts...</span>
@@ -306,13 +326,13 @@ export function AdminHostsList() {
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-32 text-center text-(--status-error)">
+                  <TableCell colSpan={11} className="h-32 text-center text-(--status-error)">
                     {error}
                   </TableCell>
                 </TableRow>
               ) : hosts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-32 text-center">
+                  <TableCell colSpan={11} className="h-32 text-center">
                     No hosts found
                   </TableCell>
                 </TableRow>
@@ -329,35 +349,68 @@ export function AdminHostsList() {
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </TableCell>
 
+                    {/* Organization Column (Main) */}
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={host.profilePic} alt={host.name} />
+                        <Avatar className="h-9 w-9 border border-(--border-muted)">
+                          <AvatarImage src={host.organizationLogo} alt={host.organizationName || "Organization"} />
                           <AvatarFallback className="bg-(--brand-primary-light)/20 text-(--brand-primary)">
-                            {getInitials(host.name)}
+                            {getInitials(host.organizationName || "O")}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{host.name}</span>
+                        <span className="font-semibold text-(--text-primary) truncate max-w-37.5">
+                          {host.organizationName || "—"}
+                        </span>
                       </div>
                     </TableCell>
 
-                    <TableCell className="text-(--text-secondary)">
-                      {host.organizationName || "—"}
+                    {/* Rating Column */}
+                    <TableCell>
+                        {host.hostStatus === 'approved' ? (
+                            <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1">
+                                    <span className="font-semibold text-xs text-(--text-primary)">
+                                        {host.ratingAverage ? host.ratingAverage.toFixed(1) : "0.0"}
+                                    </span>
+                                    <StarRating rating={host.ratingAverage || 0} size={10} />
+                                </div>
+                                <span className="text-[10px] text-(--text-tertiary)">
+                                    ({host.totalReviews || 0} reviews)
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="text-(--text-tertiary) text-xs">—</span>
+                        )}
                     </TableCell>
 
+                    {/* Account Owner Column (Secondary) */}
+                    <TableCell className="text-(--text-secondary)">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={host.profilePic} alt={host.name || "Owner"} />
+                          <AvatarFallback className="bg-(--brand-primary-light)/20 text-(--brand-primary) text-[10px]">
+                            {getInitials(host.name || "U")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate max-w-30">{host.name}</span>
+                      </div>
+                    </TableCell>
+
+                    {/* Contact Details */}
                     <TableCell className="text-(--text-secondary)">
                       <div className="flex items-center gap-1">
-                        <span>{host.email}</span>
+                        <span className="truncate max-w-37.5" title={host.email}>{host.email}</span>
                         {host.isEmailVerified ? (
-                          <CheckCircle size={14} className="text-(--status-success)" />
+                          <CheckCircle size={14} className="text-(--status-success) shrink-0" />
                         ) : (
-                          <AlertCircle size={14} className="text-(--status-error)" />
+                          <AlertCircle size={14} className="text-(--status-error) shrink-0" />
                         )}
                       </div>
                     </TableCell>
 
                     <TableCell className="text-(--text-secondary)">{host.mobile || "—"}</TableCell>
 
+                    {/* Status Columns */}
                     <TableCell>
                         <Badge variant={host.status === "active" ? "success" : host.status === "blocked" ? "destructive" : "outline"}>
                             {capitalize(host.status)}
@@ -429,15 +482,31 @@ export function AdminHostsList() {
                             </Button>
                           </Tooltip>
 
-                          <Tooltip content="Block Hosting Permission" side="top">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-(--status-error)"
-                            >
-                              <Ban className="h-4 w-4" />
-                            </Button>
-                          </Tooltip>
+                          {/* BLOCK/UNBLOCK BUTTONS */}
+                          {host.hostStatus === "blocked" ? (
+                             <Tooltip content="Unblock Hosting Permission" side="top">
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 onClick={() => setUnblockHostId(host.userId)}
+                                 className="h-9 w-9 text-(--status-success)"
+                               >
+                                 {/* Import Unlock from lucide-react */}
+                                 <CheckCircle className="h-4 w-4" /> 
+                               </Button>
+                             </Tooltip>
+                          ) : (
+                             <Tooltip content="Block Hosting Permission" side="top">
+                               <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 onClick={() => setBlockHostId(host.userId)}
+                                 className="h-9 w-9 text-(--status-error)"
+                               >
+                                 <Ban className="h-4 w-4" />
+                               </Button>
+                             </Tooltip>
+                          )}
                         </div>
 
                       </div>
@@ -460,20 +529,12 @@ export function AdminHostsList() {
           />
         )}
 
-
         {/* Modals */}
-        <Modal isOpen={!!viewHost} onClose={() => setViewHost(null)} title="Host Profile" size="lg">
+        <Modal isOpen={!!viewHost} onClose={() => setViewHost(null)} title="Organizer Profile" size="lg">
           {viewHost && <ViewHostModal host={viewHost} />}
         </Modal>
 
-        {/* <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Host" size="lg">
-          <HostManageForm
-            onSuccess={handleFormSuccess}
-            onCancel={() => setIsCreateModalOpen(false)}
-          />
-        </Modal> */}
-
-        <Modal isOpen={!!editHost} onClose={() => setEditHost(null)} title="Edit Host" size="lg">
+        <Modal isOpen={!!editHost} onClose={() => setEditHost(null)} title="Edit Organizer" size="lg">
           {editHost && (
             <HostManageForm
               host={editHost}
@@ -503,6 +564,26 @@ export function AdminHostsList() {
               setRejectHostId(null);
             }
           }}
+        />
+
+        <ConfirmationModal
+          isOpen={!!blockHostId}
+          onClose={() => setBlockHostId(null)}
+          onConfirm={() => handleBlockUnblockHost(blockHostId!, "block")}
+          title="Block Host"
+          description="Are you sure you want to revoke hosting permissions? They will not be able to manage or create new events."
+          confirmText="Block Host"
+          variant="danger"
+        />
+
+        <ConfirmationModal
+          isOpen={!!unblockHostId}
+          onClose={() => setUnblockHostId(null)}
+          onConfirm={() => handleBlockUnblockHost(unblockHostId!, "unblock")}
+          title="Unblock Host"
+          description="Are you sure you want to unblock this host? Their status will return to Pending for re-evaluation."
+          confirmText="Unblock Host"
+          variant="default"
         />
 
       </CardContent>

@@ -244,7 +244,7 @@ export class BookingService implements IBookingService {
    }
 
 
-   async getBookingById(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO> {
+   async getBookingDetails(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO> {
       try {
          const [booking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(bookingId),

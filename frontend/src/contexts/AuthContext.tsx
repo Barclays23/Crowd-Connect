@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // --- CENTRALIZED LOGOUT LOGIC ---
     // Clears client state and performs server-side logout.
     // This function is used by both manual logout and the Axios interceptor.
-    const fullLogout = async (): Promise<ApiResponse<void>> => {
+    const fullLogout = async (isManualLogout: boolean = false): Promise<ApiResponse<void>> => {
         try {
             // 1. Call server logout to clear HTTP-only cookie/session
             const response: ApiResponse<void> = await authService.logoutService();
@@ -100,17 +100,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
             localStorage.removeItem('accessToken');
             localStorage.removeItem('user');
+
+            if (isManualLogout) {
+                localStorage.removeItem('last_active_user_email'); 
+            }
         };
     };
 
-
     // *** INJECT LOGOUT CALLBACK TO AXIOS INTERCEPTOR ***
     useEffect(() => {
-        // We pass the fullLogout function which handles server call and state clearing.
+        // Pass false so the interceptor PRESERVES the last_active_user_email on session expiry
         // The interceptor will use this when the refresh token fails.
-        setAuthInterceptors(fullLogout);
-    }, []); // Run only once on mount to setup the interceptor
-
+        setAuthInterceptors(() => fullLogout(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
 
 
@@ -227,7 +230,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // It uses the centralized fullLogout logic.
     const logout = async (): Promise<ApiResponse<void>> => {
         try {
-            const response: ApiResponse<void> = await fullLogout();
+            const response: ApiResponse<void> = await fullLogout(true);
             return response;
 
         } catch (error) {

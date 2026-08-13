@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { HostController } from "@/controllers/implementations/host.controller";
-import { uploadDocument } from "@/middlewares/file-upload.middleware";
+import { uploadDocument, uploadImage } from "@/middlewares/file-upload.middleware";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { validateRequest } from "@/middlewares/validate.middleware";
 import { HostUpgradeSchema } from "@/schemas/host.schema";
@@ -38,26 +38,18 @@ hostRouter.post(HOST_ROUTES.APPLY_UPGRADE, authenticate, authorize(USER_ROLES.US
         { name: 'hostDocument', maxCount: 1 }, 
         { name: 'organizationLogo', maxCount: 1 }
     ]),
-     validateRequest({body: HostUpgradeSchema}), 
-    hostController.applyHostUpgrade.bind(hostController)
+    validateRequest({body: HostUpgradeSchema}), 
+    hostController.applyHostRoleUpgrade.bind(hostController)
 );
 
-// Public route for Organiser Profile
-hostRouter.get(
-    HOST_ROUTES.ORGANISER_PROFILE, 
-    hostController.getOrganiserProfile.bind(hostController)
-);
+hostRouter.patch(HOST_ROUTES.ORGANIZER_DETAILS, authenticate, authorize(USER_ROLES.HOST), uploadDocument.single('hostDocument'), hostController.updateHostDetailsByHost.bind(hostController));
 
-hostRouter.patch(
-    HOST_ROUTES.ORGANIZER_DETAILS, 
-    hostController.updateHostDetailsByHost.bind(hostController)
-);
+hostRouter.patch(HOST_ROUTES.ORGANIZER_LOGO, authenticate,authorize(USER_ROLES.HOST),uploadImage.single('organizationLogo'),hostController.updateHostLogoByHost.bind(hostController));
 
-hostRouter.patch(
-    // multer here
-    HOST_ROUTES.ORGANIZER_LOGO, 
-    hostController.updateHostLogoByHost.bind(hostController)
-);
+// Public route for fetching Organiser Profile
+hostRouter.get(HOST_ROUTES.ORGANISER_PROFILE, hostController.getOrganiserProfile.bind(hostController));
+
+
 
 
 

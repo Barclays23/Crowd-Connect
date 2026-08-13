@@ -197,10 +197,11 @@ export class UserRepository extends BaseRepository<IUserModel> implements IUserR
     }
 
 
-    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | HostUpdateInput): Promise<HostEntity | null> {
+    async updateHostDetails(userId: string, hostInput: UpgradeHostInput | HostUpdateInput): Promise<UserProfileEntity | null> {
         const updatedHostData: IUserModel | null = await this.findByIdAndUpdate(userId, {$set: hostInput});
 
-        const resultEntity: HostEntity | null = updatedHostData ? mapUserModelToHostEntity(updatedHostData) : null;
+        const resultEntity: UserProfileEntity | null = updatedHostData ? mapUserModelToProfileEntity(updatedHostData) : null;
+
         return resultEntity;
     }
 

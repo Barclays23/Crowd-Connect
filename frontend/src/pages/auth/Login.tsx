@@ -5,9 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
-import type { LoginPayload, RouterLocationState } from '@/types/auth.types';
+import type { AuthTokensData, LoginPayload, RouterLocationState } from '@/types/auth.types';
 import { logger } from '@/utils/logger';
 import { isAxiosError } from 'axios';
+import type { ApiResponse } from '@/types/common.types';
 
 
 
@@ -35,13 +36,38 @@ function Login() {
 
       try {
         setIsLoading(true);
-        const response = await login(formData);
-        // console.log('response in handleLogin: ', response);
-        logger.info("response from handleLogin :", response);
 
+        const loggedInEmail = formData.email.toLowerCase().trim();
+        const lastActiveEmail = localStorage.getItem('last_active_user_email');
+        const isDifferentUser = lastActiveEmail && lastActiveEmail !== loggedInEmail;
+        let finalRedirect = fromPath;
+
+        // If a DIFFERENT user logs in after a session expiry, discard the saved "fromPath"
+        if (fromPath !== '/' && isDifferentUser) {
+           finalRedirect = '/';
+          //  toast.info("Logged in as a different user. Redirecting to home.");
+
+           navigate(location.pathname, { 
+              replace: true, 
+              state: { openBooking: openBookingAfterLogin } // 'from' is intentionally omitted
+           });
+
+           await new Promise(resolve => setTimeout(resolve, 0));
+
+        }
+
+        const response: ApiResponse<AuthTokensData> = await login(formData);
+        // logger.info("response from handleLogin :", response);
+
+        // if (!isDifferentUser || fromPath === '/') {
+        //   toast.success(response.message);
+        // }
         toast.success(response.message);
 
-        navigate(fromPath, { 
+        // Set the new active user
+        localStorage.setItem('last_active_user_email', loggedInEmail);
+
+        navigate(finalRedirect, { 
           replace: true,
           state: { 
             openBooking: openBookingAfterLogin 

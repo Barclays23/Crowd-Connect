@@ -135,6 +135,8 @@ export function OTPVerification() {
       setAccessToken(response.data.accessToken);
       setUser(response.data.authUser);
 
+      localStorage.setItem('last_active_user_email', userEmail.toLowerCase().trim());
+
       toast.success(response.message || "Account verified successfully");
 
       // Most common pattern after verification → dashboard/home

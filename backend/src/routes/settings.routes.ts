@@ -10,6 +10,7 @@ import { PlatformSettingsRepository } from "@/repositories/implementations/platf
 import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
 import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
+import { GoogleGenAI } from "@google/genai";
 
 
 
@@ -18,8 +19,15 @@ const settingsRepo          = new PlatformSettingsRepository();
 const faqKnowledgeRepo      = new MongoFaqRepository();  //  which ever the FaqKnowledgeRepository used
 
 
+
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
+
 // PROVIDERS
-const aiChatProvider            = new GeminiAiChatProvider();   // which ever the AI chat provider used
+const aiChatProvider            = new GeminiAiChatProvider(genAI);   // which ever the AI chat provider used
 
 
 // SERVICES

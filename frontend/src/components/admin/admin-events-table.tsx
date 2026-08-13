@@ -56,7 +56,7 @@ import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 
@@ -229,7 +229,7 @@ export function AdminEventsTable() {
    const handleDeleteEvent = async (event: IEventState) => {
       try {
          setDeletingEventId(event.eventId);
-         const response: ApiResponse<void> = await eventServices.deleteEvent(event.eventId);
+         const response: ApiResponse<void> = await eventServices.deleteEventByAdmin(event.eventId);
          toast.success(response.message);
 
          setEvents((prev) => prev.filter((e) => e.eventId !== event.eventId));
@@ -618,7 +618,7 @@ export function AdminEventsTable() {
                confirmText={deletingEventId === deleteEvent?.eventId ? "Deleting..." : "Delete Event"}
                variant="danger"
                loading={deletingEventId === deleteEvent?.eventId}
-               disableConfirm={!isValid}
+               // disableConfirm={!isValid}
             />
          </CardContent>
       </Card>

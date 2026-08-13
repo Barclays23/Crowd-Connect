@@ -2,10 +2,25 @@
 import Review from "@/models/implementations/review.model";
 import { Types } from "mongoose";
 import { BaseRepository } from "@/repositories/base.repository";
-import { GetReviewsAdminFilter, GetReviewsFilter, IReviewModel, IReviewPopulatedAdmin, IReviewPopulatedUser } from "@/types/review.types";
-import { AdminPopulatedReviewEntity, CreateReviewInput, PopulatedReviewEntity, ReviewEntity } from "@/entities/review.entity";
+import { 
+    GetReviewsAdminFilter, 
+    GetReviewsFilter, 
+    IReviewModel, 
+    IReviewPopulatedAdmin, 
+    IReviewPopulatedUserAndEvent 
+} from "@/types/review.types";
+import { 
+    AdminPopulatedReviewEntity, 
+    CreateReviewInput, 
+    PopulatedReviewEntity, 
+    ReviewEntity 
+} from "@/entities/review.entity";
 import { IReviewRepository } from "@/repositories/interfaces/IReviewRepository";
-import { mapAdminPopulatedReviewDocToEntity, mapPopulatedReviewDocToEntity, mapReviewDocToEntity } from "@/mappers/review.mapper";
+import { 
+    mapAdminPopulatedReviewDocToEntity, 
+    mapPopulatedReviewDocToEntity, 
+    mapReviewDocToEntity 
+} from "@/mappers/review.mapper";
 
 
 
@@ -34,21 +49,23 @@ export class ReviewRepository extends BaseRepository<IReviewModel> implements IR
 
 
     async findReviews(filters: GetReviewsFilter): Promise<{ reviews: PopulatedReviewEntity[]; totalCount: number }> {
-        const { page, limit, hostId, eventId } = filters;
+        const { page, limit, hostId, eventId, userId } = filters;
         const query: Record<string, unknown> = {};
 
-        if (hostId) query.hostRef = new Types.ObjectId(hostId);
+        if (hostId) query.hostRef   = new Types.ObjectId(hostId);
         if (eventId) query.eventRef = new Types.ObjectId(eventId);
+        if (userId) query.userRef   = new Types.ObjectId(userId);
 
         const skip = (page - 1) * limit;
 
         const [docs, totalCount] = await Promise.all([
             this.findManyQuery(query)
                 .populate("userRef", "name profilePic")
+                .populate("eventRef", "title category")
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
-                .lean<IReviewPopulatedUser[]>(),
+                .lean<IReviewPopulatedUserAndEvent[]>(),
             this.countDocuments(query),
         ]);
 

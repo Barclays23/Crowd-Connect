@@ -32,7 +32,7 @@ export interface IBookingService {
   // for both admin side bookings-list & event-bookings/event-attendees list
   getBookingsList(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO>;
 
-  getBookingById(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO>;
+  getBookingDetails(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO>;
 
   cancelBookingByUser(bookingId: string, userId: string, cancelReason: string): Promise<void>;
 

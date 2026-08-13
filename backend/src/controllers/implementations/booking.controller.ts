@@ -218,7 +218,7 @@ export class BookingController implements IBookingController{
   }
 
 
-  async getBookingById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getBookingDetails(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user || !req.user.userId || !req.user.role) {
         res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User or Role missing" });
@@ -228,7 +228,7 @@ export class BookingController implements IBookingController{
       const role             = req.user.role as UserRole;
       const bookingId        = req.params.bookingId as string;
 
-      const booking = await this._bookingService.getBookingById(bookingId, requestingUserId, role);
+      const booking: BookingResponseDTO = await this._bookingService.getBookingDetails(bookingId, requestingUserId, role);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

@@ -123,11 +123,17 @@ export const eventServices = {
    },
 
 
-   // delete by admin
-   deleteEvent: async (eventId: string): Promise<ApiResponse<void>> => {
+   deleteEventByHost: async (eventId: string): Promise<ApiResponse<void>> => {
+      const res = await axiosInstance.delete<ApiResponse<void>>(API_ENDPOINTS.EVENT.DELETE(eventId));
+      return res.data;
+   },
+
+
+   deleteEventByAdmin: async (eventId: string): Promise<ApiResponse<void>> => {
       const res = await axiosInstance.delete<ApiResponse<void>>(API_ENDPOINTS.ADMIN.DELETE_EVENT(eventId));
       return res.data;
    },
+
 
    
    // for events listing in admin dashboard

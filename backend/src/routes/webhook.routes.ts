@@ -27,6 +27,7 @@ import { PlatformSettingsRepository } from '@/repositories/implementations/platf
 import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
 import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
 import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
+import { GoogleGenAI } from '@google/genai';
 
 
 
@@ -40,8 +41,18 @@ const faqKnowledgeRepo      = new MongoFaqRepository();
 
 
 
+
+
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
+
+
 // AI PROVIDERS
-const aiChatProvider   = new GeminiAiChatProvider();
+const aiChatProvider   = new GeminiAiChatProvider(genAI);
+
 
 
 // PAYMENT PROVIDER & SERVICE
@@ -67,7 +78,7 @@ const refundStrategies  = new Map<string, IRefundStrategy>();
 const walletService         = new WalletService(userRepo, transactionRepo);
 const webhookService        = new WebhookService(successStrategies, failedStrategies, refundStrategies);
 const paymentService        = new PaymentService(razorpayProvider);
-const ticketService         = new TicketService(bookingRepo, eventRepo);
+const ticketService         = new TicketService();
 const cacheService          = new RedisCacheService();
 const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
 const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);

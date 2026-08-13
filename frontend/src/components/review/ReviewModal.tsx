@@ -1,5 +1,5 @@
 // frontend/src/components/review/ReviewModal.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, Loader2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -8,43 +8,57 @@ import { toast } from "react-toastify";
 import { reviewServices } from "@/services/reviewServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { ApiResponse } from "@/types/common.types";
-import { ReviewSchema } from "@/schemas/review.schema";
+import { ReviewFormSchema, type ReviewFormData } from "@/schemas/review.schema";
 import { FieldError } from "@/components/ui/FieldError";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 
 
 
 interface ReviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  bookingId: string;
-  eventTitle: string;
-  onSuccess: () => void;
+    isOpen: boolean;
+    onClose: () => void;
+    bookingId: string;
+    eventTitle: string;
+    onSuccess: () => void;
 }
 
 
 
 export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess }: ReviewModalProps) {
-    const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
-    const [reviewText, setReviewText] = useState("");
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<{ rating?: string; reviewText?: string }>({});
 
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        reset,
+        formState: { errors }
+    } = useForm<ReviewFormData>({
+        resolver: zodResolver(ReviewFormSchema),
+        defaultValues: {
+            rating: 0,
+            reviewText: "",
+        },
+    });
 
+    const currentRating = watch("rating");
 
-    const handleSubmit = async () => {
-        setErrors({});
-        
-        if (rating === 0) {
-            toast.error("Please select a star rating.");
-            return;
+    // 2. Reset the form whenever the modal opens or closes
+    useEffect(() => {
+        if (!isOpen) {
+            reset();
+            setHoveredRating(0);
         }
+    }, [isOpen, reset]);
 
-        const validation = ReviewSchema.safeParse({ rating, reviewText });
-
+    const onSubmit = async (data: ReviewFormData) => {
         try {
             setLoading(true);
-            const payload = { bookingId, rating, reviewText };
+            const payload = { bookingId, rating: data.rating, reviewText: data.reviewText };
             const response: ApiResponse<void> = await reviewServices.submitReview(payload);
 
             toast.success(response.message);
@@ -62,9 +76,9 @@ export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess 
 
 
 
-        return (
+    return (
         <Modal isOpen={isOpen} onClose={onClose} title="Rate Your Experience" size="md">
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <p className="text-sm text-(--text-secondary) text-center">
                     How was <strong>{eventTitle}</strong>? Your feedback helps the host and other users!
                 </p>
@@ -76,10 +90,7 @@ export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess 
                             <button
                                 key={star}
                                 type="button"
-                                onClick={() => {
-                                    setRating(star);
-                                    if (errors.rating) setErrors(prev => ({ ...prev, rating: undefined }));
-                                }}
+                                onClick={() => setValue("rating", star, { shouldValidate: true })}
                                 onMouseEnter={() => setHoveredRating(star)}
                                 onMouseLeave={() => setHoveredRating(0)}
                                 className="focus:outline-none transition-transform hover:scale-110"
@@ -87,7 +98,7 @@ export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess 
                                 <Star
                                     size={40}
                                     className={
-                                        (hoveredRating || rating) >= star
+                                        (hoveredRating || currentRating) >= star
                                             ? "text-amber-500 fill-amber-500"
                                             : "text-(--border-muted) fill-(--border-muted)"
                                     }
@@ -95,101 +106,36 @@ export function ReviewModal({ isOpen, onClose, bookingId, eventTitle, onSuccess 
                             </button>
                         ))}
                     </div>
-                    <FieldError message={errors.rating} className="text-center" />
+                    <FieldError message={errors.rating?.message} className="text-center" />
                 </div>
 
                 {/* Review Text Area */}
                 <div className="space-y-2">
                     <label className="text-sm font-semibold text-(--text-primary)">
-                        Share your thoughts (Optional)
+                        Share your thoughts <span className="text-red-500">*</span>
                     </label>
                     <TextArea
+                        {...register("reviewText")}
                         placeholder="What did you love? What could be improved?"
-                        value={reviewText}
-                        onChange={(e) => {
-                            setReviewText(e.target.value);
-                            if (errors.reviewText) setErrors(prev => ({ ...prev, reviewText: undefined }));
-                        }}
                         disabled={loading}
-                        className="w-full min-h-24"
-                        maxLength={500}
+                        className={`w-full min-h-24 ${errors.reviewText ? 'border-red-500 focus:ring-red-500' : ''}`}
+                        maxLength={200}
                     />
-                    <FieldError message={errors.reviewText} />
+                    <FieldError message={errors.reviewText?.message} />
                 </div>
 
                 {/* Footer */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-(--border-default)">
-                    <Button variant="ghost" onClick={onClose} disabled={loading}>
+                    <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button variant="default" onClick={handleSubmit} disabled={loading}>
+                    {/* Button type submit triggers handleSubmit */}
+                    <Button type="submit" variant="default" disabled={loading}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Submit Review
                     </Button>
                 </div>
-            </div>
+            </form>
         </Modal>
     );
-
-
-    // return (
-    //     <Modal isOpen={isOpen} onClose={onClose} title="Rate Your Experience" size="md">
-    //         <div className="space-y-6">
-    //             <p className="text-sm text-(--text-secondary)">
-    //                 How was <strong>{eventTitle}</strong>? Your feedback helps the host and other users!
-    //             </p>
-
-    //             {/* Star Selection */}
-    //             <div className="flex justify-center gap-2">
-    //                 {[1, 2, 3, 4, 5].map((star) => (
-    //                     <button
-    //                         key={star}
-    //                         type="button"
-    //                         onClick={() => setRating(star)}
-    //                         onMouseEnter={() => setHoveredRating(star)}
-    //                         onMouseLeave={() => setHoveredRating(0)}
-    //                         className="focus:outline-none transition-transform hover:scale-110"
-    //                     >
-    //                     <Star
-    //                         size={36}
-    //                         className={
-    //                         (hoveredRating || rating) >= star
-    //                             ? "text-amber-500 fill-amber-500"
-    //                             : "text-gray-300"
-    //                         }
-    //                     />
-    //                     </button>
-    //                 ))}
-    //             </div>
-
-    //             {/* Text Area */}
-    //             <div className="space-y-2">
-    //                 <label className="text-sm font-semibold text-(--text-primary)">
-    //                     Share your thoughts (Optional)
-    //                 </label>
-    //                 <TextArea
-    //                     placeholder="What did you love? What could be improved?"
-    //                     value={reviewText}
-    //                     onChange={(e) => setReviewText(e.target.value)}
-    //                     disabled={loading}
-    //                     className="w-full min-h-24"
-    //                     maxLength={500}
-    //                 />
-    //             </div>
-
-    //             {/* Footer */}
-    //             <div className="flex justify-end gap-3 pt-4 border-t border-(--border-default)">
-    //                 <Button variant="ghost" onClick={onClose} disabled={loading}>
-    //                     Cancel
-    //                 </Button>
-    //                 <Button variant="default" onClick={handleSubmit} disabled={loading || rating === 0}>
-    //                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-    //                     Submit Review
-    //                 </Button>
-    //             </div>
-    //         </div>
-    //     </Modal>
-    // );
-
-
 }

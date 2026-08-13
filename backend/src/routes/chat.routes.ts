@@ -6,6 +6,9 @@ import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repo
 import { authenticate } from "@/middlewares/auth.middleware";
 import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 import { CHAT_ROUTES } from "@/constants/routes.constants";
+import { GoogleGenAI } from "@google/genai";
+
+
 
 
 
@@ -15,8 +18,16 @@ const faqRepo = new MongoFaqRepository();
 // const vectorRepo = new MongoVectorRepository();
 
 
-// PROVIDERS    ───────────────────────────────────────────────────
-const aiChatProvider = new GeminiAiChatProvider();
+
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
+
+
+// CHAT PROVIDERS    ──────────────────────────────────────────────
+const aiChatProvider = new GeminiAiChatProvider(genAI);
 
 
 

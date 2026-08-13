@@ -15,6 +15,8 @@ import { IUserProfileService } from '@/services/user-services/interfaces/IUserPr
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
 import { IPasswordService } from '@/services/password-services/interfaces/IPasswordService';
 import { UserRole, UserStatus } from '@/constants/user-system.constants';
+import { mapUserEntityToProfileDto } from '@/mappers/user.mapper';
+import { UserEntity, UserProfileEntity } from '@/entities/user.entity';
 
 
 
@@ -34,7 +36,9 @@ export class UserController implements IUserController {
                 return;
             }
             const userId = req.user.userId;
-            const userProfile: UserProfileResponseDto = await this._userProfileServices.getUserProfile(userId);
+            const userEntity: UserProfileEntity  = await this._userProfileServices.getUserProfile(userId);
+
+            const userProfile: UserProfileResponseDto = mapUserEntityToProfileDto(userEntity);
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
@@ -60,7 +64,7 @@ export class UserController implements IUserController {
             const userId: string = req.user.userId;
             const basicInfoDto: UserBasicInfoUpdateDTO = req.body;
 
-            const updatedUser: UserProfileResponseDto = await this._userProfileServices.editUserBasicInfo(userId, basicInfoDto);
+            const updatedUser: UserEntity = await this._userProfileServices.editUserBasicInfo(userId, basicInfoDto);
 
             const updatedUserBasicInfo = {
                 name: updatedUser.name,
@@ -93,8 +97,6 @@ export class UserController implements IUserController {
             const {currentPassword, newPassword} = req.body;
             const userEmail: string = req.user.email;
 
-            console.log('changeUserPassword body: ', req.body)
-
             await this._passwordService.changeUserPassword(userEmail, {currentPassword, newPassword});
             
             res.status(HTTP_STATUS.OK).json({
@@ -124,7 +126,7 @@ export class UserController implements IUserController {
 
             console.log('updateProfilePicture imageFile: ', req?.file);
 
-            const updatedUser: UserProfileResponseDto = await this._userProfileServices.updateProfilePicture(userId, imageFile);
+            const updatedUser: UserEntity = await this._userProfileServices.updateProfilePicture(userId, imageFile);            
             
             res.status(HTTP_STATUS.OK).json({
                 success: true,
@@ -193,16 +195,18 @@ export class UserController implements IUserController {
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentAdminId: string = req.user.userId;
 
-            const createdUser: UserProfileResponseDto = await this._userManagementServices.createUserByAdmin({
+            const createdUser: UserEntity = await this._userManagementServices.createUserByAdmin({
                 createDto, 
                 imageFile,
                 currentAdminId
             });
 
+            const userData: UserProfileResponseDto = mapUserEntityToProfileDto(createdUser);
+
             res.status(HTTP_STATUS.CREATED).json({
                 success: true,
                 message: USER_MESSAGES.SUCCESS_CREATE_USER,
-                data: createdUser,
+                data: userData,
             });
 
 
@@ -227,19 +231,19 @@ export class UserController implements IUserController {
             const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            const updatedUser: UserProfileResponseDto = await this._userManagementServices.editUserByAdmin({
+            const updatedUser: UserEntity = await this._userManagementServices.editUserByAdmin({
                 targetUserId, 
                 currentAdminId,
                 updateDto, 
                 imageFile
             });
 
-            // console.log('✅ updatedUser in userController.editUserByAdmin:', updatedUser);
+            const userData: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUser);
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: USER_MESSAGES.SUCCESS_UPDATE_USER,
-                data: updatedUser,
+                data: userData,
             });
 
         } catch (err: unknown) {

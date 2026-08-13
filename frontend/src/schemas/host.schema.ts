@@ -1,12 +1,16 @@
 // frontend/src/schemas/host.schema.ts
+import { agreeTermsBase } from "@/schemas/event.schema";
 import { z } from "zod";
 
+
+// move to constants
 export const MAX_FILE_SIZE       = 5 * 1024 * 1024; // 5MB
 export const MAX_DOCUMENT_SIZE   = 5 * 1024 * 1024; // 5MB
 export const MAX_LOGO_SIZE       = 2 * 1024 * 1024; // 2MB
 
 
-const ALLOWED_FILE_TYPES = [
+// move to constants
+export const ALLOWED_DOCUMENT_TYPES = [
   "application/pdf",
   "image/jpeg",
   "image/jpg",
@@ -65,7 +69,7 @@ export const businessAddressBase = z
    .trim()
    .min(1, "Business address is required")
    .min(30, "Include street name, city, etc (at least 30 characters)")
-   .max(100, "Address too long. Address should not exceed 100 characters")
+   .max(150, "Address too long. Address should not exceed 150 characters")
    .refine(
       (val) => !/^\d+$/.test(val),
       "Address cannot contain only numbers (please include street name, city, etc.)"
@@ -95,19 +99,38 @@ export const logoBase = z
 
 
 
-export const hostDocumentBase = z
-.instanceof(File, {
-   message: "Business document/certificate is required",
-})
+
+
+/* ---------- Optional File Bases (For Re-Applying / Updating) ---------- */
+export const logoBaseOptional = z
+   .instanceof(File, { message: "Organization logo is required" })
    .optional()
-   .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
-   )
-   .refine(
-      (file) => !file || ALLOWED_FILE_TYPES.includes(file.type),
-      "Certificate must be a PDF, JPG, or PNG file"
-   );
+   .refine((file) => !file || file.size <= MAX_FILE_SIZE, `Logo must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`)
+   .refine((file) => !file || ["image/jpeg", "image/png", "image/webp"].includes(file.type), "Logo must be a JPG, PNG, or WEBP image");
+
+
+export const hostDocumentBaseOptional = z
+   .instanceof(File, { message: "Business document/certificate is required" })
+   .optional()
+   .refine((file) => !file || file.size <= MAX_FILE_SIZE, `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`)
+   .refine((file) => !file || ALLOWED_DOCUMENT_TYPES.includes(file.type), "Certificate must be a PDF, JPG, or PNG file");
+
+
+
+
+
+   /* ---------- Required File Bases (For Initial Application) ---------- */
+export const logoBaseRequired = z
+   .instanceof(File, { message: "Organization logo is strictly required for new applications" })
+   .refine((file) => file.size <= MAX_FILE_SIZE, `Logo must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`)
+   .refine((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type), "Logo must be a JPG, PNG, or WEBP image");
+
+export const hostDocumentBaseRequired = z
+   .instanceof(File, { message: "Business document/certificate is strictly required for new applications" })
+   .refine((file) => file.size <= MAX_FILE_SIZE, `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`)
+   .refine((file) => ALLOWED_DOCUMENT_TYPES.includes(file.type), "Certificate must be a PDF, JPG, or PNG file");
+
+
 
 
 export const rejectReasonBase = z
@@ -119,7 +142,6 @@ export const rejectReasonBase = z
 
 
 
-
 export const HostRejectSchema = z.object({
    reason: rejectReasonBase
 });
@@ -127,19 +149,37 @@ export const HostRejectSchema = z.object({
 
 
 
-
-export const HostUpgradeSchema = z.object({
+/* ---------- Final Schemas ---------- */
+export const HostApplySchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
    organizationDescription: organizationDescriptionBase,
-   hostDocument: hostDocumentBase,
-   organizationLogo: logoBase,
+   hostDocument: hostDocumentBaseRequired, // Strict
+   organizationLogo: logoBaseRequired, // Strict
+   agreeTerms: agreeTermsBase,
+});
+
+export const HostReapplySchema = z.object({
+   organizationName: organizationNameBase,
+   registrationNumber: registrationNumberBase,
+   businessAddress: businessAddressBase,
+   organizationDescription: organizationDescriptionBase,
+   hostDocument: hostDocumentBaseOptional, // Optional
+   organizationLogo: logoBaseOptional, // Optional
+   agreeTerms: agreeTermsBase,
 });
 
 
 
 
-export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;
-export type HostUpdateFormData = z.infer<typeof HostUpgradeSchema>;
-export type HostRejectFormData = z.infer<typeof HostRejectSchema>;
+
+
+
+
+// We export the ReapplySchema as the main Form Data type. 
+// This is because React Hook Form needs to allow `undefined` for files in its initial defaultValues state,
+// even if the HostApplySchema strictly requires them upon submission.
+export type HostUpgradeFormData  = z.infer<typeof HostReapplySchema>;
+export type HostUpdateFormData   = z.infer<typeof HostReapplySchema>;
+export type HostRejectFormData   = z.infer<typeof HostRejectSchema>;

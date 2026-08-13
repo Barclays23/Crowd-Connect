@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import OrganizerProfile from "@/components/host/OrganizerProfile";
+import PublicOrganizerProfile from "@/components/host/PublicOrganizerProfile";
 import OrganiserEventsSection from "@/components/host/OrganiserEventsSection";
 import ReviewsSection from "@/components/review/ReviewsSection";
 
@@ -25,7 +25,7 @@ export default function OrganiserDetailsPage() {
             </div>
 
             <div className="max-w-6xl mx-auto px-4">
-                <OrganizerProfile hostId={hostId} />
+                <PublicOrganizerProfile hostId={hostId} />
             </div>
 
             <div className="max-w-6xl mx-auto px-4 pb-20">

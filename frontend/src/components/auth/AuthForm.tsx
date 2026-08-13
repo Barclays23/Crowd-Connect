@@ -19,6 +19,7 @@ import type { LoginPayload, RegisterPayload, RouterLocationState } from "@/types
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
 import { TermsModal } from "@/components/common/TermsModal";
+import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
 
 
 
@@ -128,13 +129,24 @@ export function AuthForm(props: AuthFormProps) {
       // save it to sessionStorage so it survives the Google redirect
       sessionStorage.setItem('oauth_return_path', fromPath);
 
+      const lastActiveEmail = localStorage.getItem('last_active_user_email');
+      if (lastActiveEmail) {
+         sessionStorage.setItem('oauth_last_active_email', lastActiveEmail);
+      }
+
       // trigger the redirect
       loginWithGoogle();
    };
 
 
    return (
-      <Card className="w-full max-w-md mx-auto my-10 bg-(--card-bg) shadow-lg">
+      <Card className="relative overflow-hidden w-full max-w-md mx-auto my-10 bg-(--card-bg) shadow-lg">
+         {isLoading && isSubmittingForm && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-(--card-bg)/60 backdrop-blur-sm/30">
+               <LoadingSpinner1 size="md" message="Please wait..." />
+            </div>
+         )}
+
          <CardHeader className="text-center pb-6">
             <CardTitle className="text-2xl font-bold text-foreground">
                {isRegister ? "Create Your Account" : "Welcome Back"}
