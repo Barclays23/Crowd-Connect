@@ -42,7 +42,7 @@ import {
    validateTicketInventoryForBooking, 
    validateVerifyAndConfirmPayment
 } from "@/utils/validations/bookingValidations";
-import { calculateRefundAmount, RefundContext } from "@/utils/refundCalculator";
+import { calculateRefundAmount, RefundContext } from "@/utils/refundCalculator.utils";
 import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";

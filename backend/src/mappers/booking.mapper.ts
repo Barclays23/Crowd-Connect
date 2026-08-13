@@ -14,7 +14,7 @@ import {
 } from "@/types/booking.types";
 import { Types } from "mongoose";
 import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
-import { getRefundPercentage } from "@/utils/refundCalculator";
+import { getRefundPercentage } from "@/utils/refundCalculator.utils";
 import { PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMethod } from "@/constants/payment.constants";
 import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
 

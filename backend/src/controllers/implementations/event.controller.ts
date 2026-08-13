@@ -31,6 +31,7 @@ import { IBookingService } from "@/services/booking-services/interfaces/IBooking
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EventCategory, EventFormat, EventStatus, TicketType } from "@/constants/event.constants";
 import { BookingStatus } from "@/constants/booking.constants";
+import { ApiResponseModel } from "@/utils/apiResponse.utils";
 
 
 
@@ -89,10 +90,6 @@ export class EventController implements IEventController {
             const currentUserId: string = req.user.userId;
             const eventId: string       = req.params.eventId as string;
             const imageFile: Express.Multer.File | undefined = req.file;
-            console.log('body :', body);
-            console.log('imageFile :', imageFile);
-            console.log('currentUserId :', currentUserId);
-            console.log('eventId :', eventId);
 
             const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, currentUserId);
 
@@ -106,7 +103,6 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json({
                 success: true,
                 message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-                // updatedEvent,
                 data: updatedEvent,
             });
             
@@ -129,9 +125,6 @@ export class EventController implements IEventController {
             const eventId: string       = req.params.eventId as string;
             const adminId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
-            console.log('body :', body);
-            console.log('imageFile :', imageFile);
-            console.log('eventId :', eventId);
 
             const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, adminId);
 
@@ -448,6 +441,13 @@ export class EventController implements IEventController {
                 success: true,
                 data: eventDetails
             });
+
+            // const apiResponse = ApiResponseModel.success<EventResponseDTO>(
+            //     "Event details retrieved successfully",
+            //     eventDetails
+            // );
+
+            // res.status(HTTP_STATUS.OK).json(apiResponse);
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';

@@ -1,4 +1,4 @@
-// backend/src/utils/refundCalculator.ts
+// backend/src/utils/refundCalculator.utils.ts
 
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 
