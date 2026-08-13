@@ -1,4 +1,4 @@
-// src/utils/formatZodErrors.ts
+// src/utils/ZodErrors.utils.ts
 import { ZodIssue } from 'zod';
 
 
@@ -6,6 +6,8 @@ export interface ZodFormError {
   field: string;
   message: string;
 }
+
+
 
 // Returns only the error messages (no field names)
 export const formatZodErrorMessages = (issues: ZodIssue[]): ZodFormError[] => {

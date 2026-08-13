@@ -3,7 +3,7 @@ import { ZodType, ZodError } from 'zod';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
 import { HTTP_STATUS } from '@/constants/http-status.constants';
-import { formatZodErrorMessages } from '@/utils/formatZodErrors';
+import { formatZodErrorMessages } from '@/utils/ZodErrors.utils';
 import { AUTH_MESSAGES } from '@/constants/messages.constants';
 
 
