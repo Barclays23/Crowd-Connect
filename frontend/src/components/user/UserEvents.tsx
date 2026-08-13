@@ -49,7 +49,7 @@ import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import { StarRating } from "@/components/common/StarRating";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 
@@ -390,7 +390,7 @@ export default function UserEvents() {
 
                            {/* 3. Audience Ledger */}
                            <TableCell>
-                              <div className="flex flex-col gap-1.5 w-30 text-[12px] py-1 bg-(--bg-secondary) px-3 rounded-lg border border-(--border-default)">
+                              <div className="flex flex-col gap-1.5 w-30 text-[12px] py-1 bg-(--bg-secondary) px-3 rounded-lg border border-(--brand-primary-light)/50">
                                  <div className="flex justify-between items-center">
                                     <span className="text-(--text-tertiary) font-medium">Capacity</span>
                                     <span className="font-semibold text-(--text-primary)">{event.capacity || "—"}</span>

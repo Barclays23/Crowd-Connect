@@ -95,7 +95,7 @@ export class UserManagementService implements IUserManagementService {
         createDto: CreateUserRequestDto, 
         imageFile?: Express.Multer.File
         currentAdminId: string
-    }): Promise<UserProfileResponseDto> {
+    }): Promise<UserEntity> {
         try {
             const currentAdmin: UserEntity | null = await this._userRepository.getUserById(currentAdminId);
             if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
@@ -139,18 +139,15 @@ export class UserManagementService implements IUserManagementService {
             createDto.status = USER_STATUS.PENDING;  // status will be changed to ACTIVE once the user is logged in
             const userInput: CreateUserInput = mapCreateUserRequestDtoToInput({createDto, profilePicUrl, hashedPassword});
 
-            const createdUserResult: UserEntity = await this._userRepository.createUserByAdmin(userInput);
-            if (!createdUserResult) {
+            const createdUser: UserEntity = await this._userRepository.createUserByAdmin(userInput);
+            if (!createdUser) {
                 throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, USER_MESSAGES.FAILED_CREATE_USER);
             }
-
-            const newUser: UserProfileResponseDto = mapUserEntityToProfileDto(createdUserResult);
             
             // send email to user with temp password and instructions to change it
             // (email sending logic not implemented here)
 
-            return newUser;
-
+            return createdUser;
             
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -166,7 +163,7 @@ export class UserManagementService implements IUserManagementService {
         currentAdminId: string;
         updateDto: UpdateUserRequestDto;
         imageFile?: Express.Multer.File
-    }): Promise<UserProfileResponseDto> {
+    }): Promise<UserEntity> {
         try {
             // console.log('✅ userId received in UserManagementService.editUserByAdmin:', targetUserId);
             // console.log('✅ updateDto received in UserManagementService.editUserByAdmin:', updateDto);
@@ -263,13 +260,11 @@ export class UserManagementService implements IUserManagementService {
 
             const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
             
-            const updatedUserResult: UserEntity|null = await this._userRepository.updateUserByAdmin(targetUserId, updateInput);
+            const updatedUser: UserEntity|null = await this._userRepository.updateUserByAdmin(targetUserId, updateInput);
 
-            if (!updatedUserResult) {
-                throw new Error("Failed to update user. User not found.");
+            if (!updatedUser) {
+                throw new Error(USER_MESSAGES.USER_NOT_FOUND);
             }
-
-            const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
 
             return updatedUser;
 

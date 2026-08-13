@@ -1,13 +1,9 @@
 // frontent/src/types/review.types.ts
 
-import type { IPagination } from "@/types/common.types";
-
-
 
 export interface IReviewState {
     reviewId    : string;
     eventId     : string;
-    eventTitle? : string; 
     hostId      : string;
     hostName?   : string;
     user        : {
@@ -16,6 +12,10 @@ export interface IReviewState {
         email?      : string;
         profilePic? : string;
     };
+    event       : {
+        eventId     : string;
+        eventTitle  : string;
+    }
     rating          : number;
     reviewText?     : string;
 

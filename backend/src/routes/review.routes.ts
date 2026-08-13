@@ -10,20 +10,38 @@ import { ReviewRepository } from "@/repositories/implementations/review.reposito
 import { EventRepository } from "@/repositories/implementations/event.repository";
 import { validateRequest } from "@/middlewares/validate.middleware";
 import { EditReviewSchema, SubmitReviewSchema } from "@/schemas/review.schema";
+import { REVIEW_ROUTES } from "@/constants/routes.constants";
+import { BadWordsFilterService } from "@/services/profanity-services/implementations/BadWordsFilterService";
+import { OpenAIProfanityFilterService } from "@/services/profanity-services/implementations/OpenAIProfanityFilterService";
+import { GeminiProfanityFilterService } from "@/services/profanity-services/implementations/GeminiProfanityFilterService";
+import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
+
+
+// AI CONFIGURATIONS
+const genAI     = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// const openAI    = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 
 
 // REPOSITORIES
 const userRepo          = new UserRepository();
-const bookingRepo       = new BookingRepository()
-const eventRepo         = new EventRepository()
-const reviewRepo        = new ReviewRepository()
+const bookingRepo       = new BookingRepository();
+const eventRepo         = new EventRepository();
+const reviewRepo        = new ReviewRepository();
 
 
 
-// SERVICES
-const reviewService = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo)
+// PROFANITY FILTER SERVICES
+const profanityFilter   = new GeminiProfanityFilterService(genAI);
+// const profanityFilter   = new OpenAIProfanityFilterService(openAI);
+// const profanityFilter   = new BadWordsFilterService();
+
+
+
+// REVIEW SERVICE
+const reviewService     = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
 
 
 
@@ -37,31 +55,21 @@ export const reviewRouter = Router();
 
 
 // Protected routes (for managing reviews and rating)
-reviewRouter.post("/", authenticate,
-    authorize(USER_ROLES.USER, USER_ROLES.HOST), 
-    validateRequest({ body: SubmitReviewSchema }),
-    reviewController.submitReview.bind(reviewController)
-);
+reviewRouter.post(REVIEW_ROUTES.SUBMIT_REVIEW, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), validateRequest({ body: SubmitReviewSchema }),reviewController.submitReview.bind(reviewController));
 
-reviewRouter.put(
-    "/:reviewId", 
-    authorize(USER_ROLES.USER, USER_ROLES.HOST), 
-    validateRequest({ body: EditReviewSchema }),
-    reviewController.editReview.bind(reviewController)
-);
+reviewRouter.put(REVIEW_ROUTES.MANAGE_REVIEW, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), validateRequest({ body: EditReviewSchema }),reviewController.editReview.bind(reviewController));
 
-reviewRouter.delete(
-    "/:reviewId", 
-    authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
-    reviewController.deleteReview.bind(reviewController)
-);
+reviewRouter.delete(REVIEW_ROUTES.MANAGE_REVIEW, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), reviewController.deleteReview.bind(reviewController));
+
+reviewRouter.get(REVIEW_ROUTES.MY_REVIEWS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), reviewController.getMyReviews.bind(reviewController));
+
 
 
 // Public route: organiser reviews (for public events for users)
-reviewRouter.get("/host/:hostId", reviewController.getHostReviews.bind(reviewController));
+reviewRouter.get(REVIEW_ROUTES.HOST_REVIEWS, reviewController.getHostReviews.bind(reviewController));
 
 // Public route: specific event reviews (for hosts)
-reviewRouter.get("/events/:eventId", reviewController.getEventReviews.bind(reviewController));
+reviewRouter.get(REVIEW_ROUTES.EVENT_REVIEWS, reviewController.getEventReviews.bind(reviewController));
 
 
 

@@ -1,6 +1,6 @@
 // frontend/src/components/admin/admin-bookings-list.tsx
 import { useState, useEffect, useCallback } from "react";
-import { Search, Download, Eye, Ban, Loader2, Trash2, 
+import { Search, Download, Eye, Ban, Loader2, 
    ArrowUpDown, ArrowUp, ArrowDown, Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ import { canCancelBooking } from "@/utils/booking.utils";
 import { BOOKING_STATUS } from "@/constants/booking.constants";
 import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/ToolTip";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 

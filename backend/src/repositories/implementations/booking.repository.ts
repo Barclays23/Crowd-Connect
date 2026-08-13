@@ -395,7 +395,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
 
 
 
-  async hasUserAttendedEvent(userId: string, eventId: string): Promise<boolean> {
+  async hasUserCheckedInEvent(userId: string, eventId: string): Promise<boolean> {
     const attendedBooking = await this.findOneQuery({
       userRef: new Types.ObjectId(userId),
       eventRef: new Types.ObjectId(eventId),

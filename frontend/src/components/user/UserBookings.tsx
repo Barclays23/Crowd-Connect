@@ -179,7 +179,7 @@ function UserBookings() {
       setIsCancelling(true);
       const response: ApiResponse<void> = await bookingServices.cancelBookingByUser(bookingToCancel, cancelReason);
       toast.success(response.message);
-      fetchMyBookings();
+      await fetchMyBookings();
 
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error);
@@ -355,7 +355,6 @@ function UserBookings() {
                 const isFree    = booking.totalAmount === 0;
                 const canCancel = canCancelBooking(booking);
                 const isEventExpired = new Date(booking.event.endDateTime) < new Date();
-                // const canReview = isEventExpired && booking.bookingStatus === BOOKING_STATUS.ATTENDED;
                 const canReview = isEventExpired && !!booking.checkedInAt;
 
                 return (
@@ -433,10 +432,10 @@ function UserBookings() {
                           <Button
                             variant="outline"
                             size="xs"
-                            className="border-amber-500 text-amber-600 hover:bg-amber-50"
+                            className="bg-(--bg-tertiary) hover:bg-(--bg-accent) border-amber-500 hover:border-(--brand-primary)"
                             onClick={() => openReviewModal(booking)}
                           >
-                            <Star size={14} className="mr-1" />
+                            <Star size={14} className="mr-1 text-amber-500" />
                             Rate Event
                           </Button>
                         )}
@@ -468,6 +467,7 @@ function UserBookings() {
                             variant="destructive"
                             size="xs"
                             onClick={() => requestCancel(booking.bookingId)}
+                            disabled={isCancelling}
                           >
                             Cancel
                           </Button>

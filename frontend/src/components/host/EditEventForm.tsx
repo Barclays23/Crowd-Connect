@@ -5,7 +5,7 @@ import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.sc
 import { platformSettingsService } from "@/services/platformSettingsService";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
-import type { IOperationalSettings, IPlatformSettings } from "@/types/platformSettings.types";
+import type { IOperationalSettings } from "@/types/platformSettings.types";
 import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";

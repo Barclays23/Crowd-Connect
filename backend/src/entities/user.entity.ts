@@ -85,8 +85,8 @@ export interface HostEntity extends UserEntity {
   totalReviews?       : number;
 }
 
-export interface UserProfileEntity extends HostEntity, UserEntity {}
 
+export interface UserProfileEntity extends HostEntity {}
 
 
 

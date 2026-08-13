@@ -15,7 +15,7 @@ import {
 import { mapPayoutEntityToDTO, mapToEligibleEventDTO } from "@/mappers/payout.mapper";
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { EventEntity } from "@/entities/event.entity";
-import { PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
 import { IPayoutRepository } from "@/repositories/interfaces/IPayoutRequestRepository";
 import { 
     EligibleEventDTO, 
@@ -27,6 +27,7 @@ import { uploadToCloudinary } from "@/config/cloudinary";
 import { validatePayoutRequest, validatePayoutReview } from "@/utils/validations/payoutValidations";
 import { PAYOUT_REQUEST_STATUSES, PayoutRequestStatus } from "@/constants/payout.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
+import { OperationalSettingsResponseDTO } from "@/dtos/settings.dto";
 
 
 
@@ -43,11 +44,11 @@ export class PayoutService implements IPayoutService {
 
     // ─── Host: Request for payout ─────────────────────────────────────
     async requestPayout(hostId: string, eventId: string, proofFiles?: Express.Multer.File[]): Promise<PayoutResponseDTO> {
-        const [event, existingPayout, settings]: [EventEntity | null, PayoutEntity | null, PlatformSettingsEntity]
+        const [event, existingPayout, settings]: [EventEntity | null, PayoutEntity | null, OperationalSettingsEntity]
             = await Promise.all([
                 this._eventRepository.getEventById(eventId),
                 this._payoutRepository.findPayoutByEventId(eventId),
-                this._settingsService.getPlatformSettings()
+                this._settingsService.getOperationalSettingsDomain()
             ]);
 
         const minPercentRequired    = settings?.minPayoutAttendancePercent ?? 30;
@@ -76,6 +77,7 @@ export class PayoutService implements IPayoutService {
             payoutProofUrls = await Promise.all(uploadPromises);
         }
 
+        // use a mapper function here
         const createPayoutInput: CreatePayoutInput = {
             eventRef      : eventId,
             hostRef       : hostId,
@@ -228,7 +230,7 @@ export class PayoutService implements IPayoutService {
         ));
 
         // Fetch live platform settings for the frontend UI
-        const settings: PlatformSettingsEntity = await this._settingsService.getPlatformSettings();
+        const settings: OperationalSettingsResponseDTO = await this._settingsService.getOperationalSettings();
 
         // Check which statuses mean the payout is "locked" and shouldn't be applied for again
         const activePayoutStatuses = [

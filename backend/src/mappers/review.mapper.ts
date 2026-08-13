@@ -1,6 +1,6 @@
 // backend/src/mappers/review.mapper.ts
 
-import { ReviewResponseDTO, SubmitReviewRequestDTO } from "@/dtos/review.dto";
+import { ReviewResponseDTO } from "@/dtos/review.dto";
 import { 
     AdminPopulatedReviewEntity, 
     CreateReviewInput, 
@@ -10,7 +10,7 @@ import {
 import { 
     IReviewModel, 
     IReviewPopulatedAdmin, 
-    IReviewPopulatedUser, 
+    IReviewPopulatedUserAndEvent, 
     MapCreateReviewParams 
 } from "@/types/review.types";
 import { Types } from "mongoose";
@@ -57,13 +57,16 @@ export const mapReviewDocToEntity = (doc: IReviewModel): ReviewEntity => {
 
 
 
-export const mapPopulatedReviewDocToEntity = (doc: IReviewPopulatedUser): PopulatedReviewEntity => {
+export const mapPopulatedReviewDocToEntity = (doc: IReviewPopulatedUserAndEvent): PopulatedReviewEntity => {
     return {
         reviewId    : doc._id.toString(),
-        eventRef    : doc.eventRef.toString(),
         hostRef     : doc.hostRef.toString(),
         bookingRef  : doc.bookingRef.toString(),
-        user    : {
+        eventRef    : {
+            eventId     : doc.eventRef._id.toString(),
+            eventTitle  : doc.eventRef.title || "Unknown Event",
+        },
+        userRef    : {
             userId      : doc.userRef._id.toString(),
             name        : doc.userRef.name,
             profilePic  : doc.userRef.profilePic,
@@ -80,16 +83,19 @@ export const mapPopulatedReviewDocToEntity = (doc: IReviewPopulatedUser): Popula
 
 export const mapAdminPopulatedReviewDocToEntity = (doc: IReviewPopulatedAdmin): AdminPopulatedReviewEntity => {
     return {
-        reviewId: doc._id.toString(),
-        eventRef: doc.eventRef?._id?.toString() || doc.eventRef?.toString() || "unknown",
-        eventTitle: doc.eventRef?.title,
-        hostRef: doc.hostRef?._id?.toString() || doc.hostRef?.toString() || "unknown",
-        hostName: doc.hostRef?.organizationName,
-        user: {
-            userId: doc.userRef._id.toString(),
-            name: doc.userRef.name,
-            email: doc.userRef.email,
-            profilePic: doc.userRef.profilePic,
+        reviewId    : doc._id.toString(),
+        hostRef     : doc.hostRef?._id?.toString() || doc.hostRef?.toString() || "unknown",
+        hostName    : doc.hostRef?.organizationName,
+        userRef     : {
+            userId      : doc.userRef._id.toString(),
+            name        : doc.userRef.name,
+            email       : doc.userRef.email,
+            profilePic  : doc.userRef.profilePic,
+        },
+        eventRef    : {
+            eventId     : doc.eventRef._id.toString(),
+            eventTitle  : doc.eventRef.title,
+            // category    : doc.eventRef.category
         },
         rating: doc.rating,
         reviewText: doc.reviewText,
@@ -109,9 +115,9 @@ export const mapPopulatedReviewEntityToResponseDTO = (
 ): ReviewResponseDTO => {
     return {
         reviewId        : entity.reviewId,
-        eventId         : entity.eventRef,
         hostId          : entity.hostRef,
-        user            : entity.user,
+        user            : entity.userRef,
+        event           : entity.eventRef,
         rating          : entity.rating,
         reviewText      : entity.reviewText,
         createdAt       : entity.createdAt.toISOString(),
@@ -123,19 +129,21 @@ export const mapPopulatedReviewEntityToResponseDTO = (
 
 export const mapAdminPopulatedReviewEntityToDTO = (entity: AdminPopulatedReviewEntity): ReviewResponseDTO => {
     return {
-        reviewId: entity.reviewId,
-        eventId: entity.eventRef,
-        eventTitle: entity.eventTitle,
-        hostId: entity.hostRef,
-        hostName: entity.hostName,
-        user: {
-            userId: entity.user.userId,
-            name: entity.user.name,
-            email: entity.user.email,
-            profilePic: entity.user.profilePic,
+        reviewId    : entity.reviewId,
+        hostId      : entity.hostRef,
+        hostName    : entity.hostName,
+        user    : {
+            userId      : entity.userRef.userId,
+            name        : entity.userRef.name,
+            email       : entity.userRef.email,
+            profilePic  : entity.userRef.profilePic,
         },
-        rating: entity.rating,
-        reviewText: entity.reviewText,
-        createdAt: entity.createdAt.toISOString(),
+        event  : {
+            eventId     : entity.eventRef.eventId,
+            eventTitle  : entity.eventRef.eventTitle,
+        },
+        rating      : entity.rating,
+        reviewText  : entity.reviewText,
+        createdAt   : entity.createdAt.toISOString(),
     };
 };

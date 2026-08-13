@@ -47,8 +47,24 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
    const [loading, setLoading] = useState(false);
    const [justSelected, setJustSelected] = useState(false);
 
+
+   const isProgrammaticChangeRef = useRef(!!defaultValue);
    const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
    const requestIdRef = useRef(0);
+
+   // Sync state when parent changes defaultValue (e.g. from Map Pin)
+   useEffect(() => {
+      if (defaultValue && defaultValue !== inputValue) {
+         requestIdRef.current += 1;
+         isProgrammaticChangeRef.current = true;
+         setJustSelected(true); 
+         setInputValue(defaultValue);
+         setSuggestions([]); // Aggressively clear dropdown
+         
+         const timer = setTimeout(() => setJustSelected(false), 800);
+         return () => clearTimeout(timer);
+      }
+   }, [defaultValue]);
 
 
    useEffect(() => {
@@ -113,6 +129,11 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
    useEffect(() => {
       const timer = setTimeout(() => {
+         // If the input was changed by selection or map pin, DO NOT fetch
+         if (isProgrammaticChangeRef.current) {
+            return;
+         }
+
          const trimmed = inputValue.trim();
 
          if (trimmed.length < 3) {
@@ -131,12 +152,13 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
 
 
-   const handleSelect = async (
-      suggestion: google.maps.places.AutocompleteSuggestion
-   ) => {
+   const handleSelect = async (suggestion: google.maps.places.AutocompleteSuggestion) => {
       if (!suggestion?.placePrediction) {
          return;
       }
+
+      requestIdRef.current += 1;
+      setSuggestions([]);
 
       
       try {
@@ -173,6 +195,14 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
          console.log("Selected location:", { name, lat, lng });
 
+         // Mark as programmatic BEFORE updating input
+         isProgrammaticChangeRef.current = true;
+
+         // Update state and immediately clear suggestions
+         setInputValue(name);
+         setSuggestions([]);
+
+         // Trigger parent callback
          onPlaceSelected({
             name,
             lat,
@@ -180,13 +210,14 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
             formattedAddress: place.formattedAddress ?? undefined,
          });
 
-         setInputValue(name);
-         setSuggestions([]);
+         // setInputValue(name);
+         // setSuggestions([]);
          setJustSelected(true);
+         setTimeout(() => setJustSelected(false), 500);
+         // setTimeout(() => setJustSelected(false), 2000);
 
          inputRef.current?.blur();
 
-         setTimeout(() => setJustSelected(false), 500);
 
          if (placesLibrary) {
             sessionTokenRef.current = new placesLibrary.AutocompleteSessionToken();
@@ -196,6 +227,13 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
       } catch (err: unknown) {
          console.error("ERROR during location selection:", err);
       }
+   };
+
+
+   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      // User is actively typing! Allow fetching again.
+      isProgrammaticChangeRef.current = false; 
+      setInputValue(e.target.value);
    };
 
 
@@ -215,7 +253,7 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
             ref={inputRef}
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             onBlur={handleBlur}
             placeholder={placeholder}
             className="w-full pl-9"

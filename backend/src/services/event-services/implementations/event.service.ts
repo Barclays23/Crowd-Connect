@@ -44,7 +44,8 @@ import {
 import { 
     validateEventCancel, 
     validateEventCreate, 
-    validateEventDelete, 
+    validateEventDeleteByAdmin, 
+    validateEventDeleteByHost, 
     validateEventPublish, 
     validateEventSuspend, 
     validateEventUpdateByAdmin, 
@@ -60,6 +61,9 @@ import { IEventQueueService } from "@/services/queue-services/interfaces/IEventQ
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EVENT_FORMATS, EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { convertBase64ToBuffer } from "@/utils/file.utils";
+import { IUserProfileService } from "@/services/user-services/interfaces/IUserProfileService";
+import { validateAdminActiveStatus, validateHostActiveStatus } from "@/utils/validations/userValidations";
+import { UserProfileEntity } from "@/entities/user.entity";
 
 
 
@@ -67,11 +71,12 @@ import { convertBase64ToBuffer } from "@/utils/file.utils";
 
 export class EventManagementServices implements IEventServices {
     constructor(
-        private readonly _eventRepository   : IEventRepository,
-        private readonly _bookingService    : IBookingService,
-        private readonly _cacheService      : ICacheService,
-        private readonly _settingsService   : IPlatformSettingsService,
-        private readonly _eventQueueService : IEventQueueService,
+        private readonly _eventRepository       : IEventRepository,
+        private readonly _bookingService        : IBookingService,
+        private readonly _userProfileServices   : IUserProfileService,
+        private readonly _cacheService          : ICacheService,
+        private readonly _settingsService       : IPlatformSettingsService,
+        private readonly _eventQueueService     : IEventQueueService,
         // private _paymentService:    IPaymentService,
         // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
@@ -79,11 +84,10 @@ export class EventManagementServices implements IEventServices {
     ) {}
 
     
-    async createEvent({ createDto, imageFile }: { 
-        createDto: CreateEventRequestDTO; 
-        imageFile?: Express.Multer.File;
-    }): Promise<EventResponseDTO> {
+    async createEvent({ createDto, imageFile }: { createDto: CreateEventRequestDTO; imageFile?: Express.Multer.File;}): Promise<EventResponseDTO> {
         try {
+            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(createDto.hostRef);
+            validateHostActiveStatus(hostProfile);
 
             validateEventCreate(createDto, imageFile);
 
@@ -149,6 +153,9 @@ export class EventManagementServices implements IEventServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
+            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(currentUserId);
+            validateHostActiveStatus(hostProfile);
+
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventUpdateByHost(existingEvent, updateEventDto, currentUserId, imageFile);
@@ -163,12 +170,16 @@ export class EventManagementServices implements IEventServices {
     }
 
 
-    async updateEventByAdmin({ eventId, updateEventDto, imageFile}: {
+    async updateEventByAdmin({ eventId, adminId, updateEventDto, imageFile}: {
         eventId: string;
+        adminId: string;
         updateEventDto: UpdateEventRequestDTO;
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
+            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            validateAdminActiveStatus(adminProfile);
+
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventUpdateByAdmin(existingEvent, updateEventDto, imageFile);
@@ -331,8 +342,11 @@ export class EventManagementServices implements IEventServices {
 
 
     // cancel /suspend by admin
-    async suspendEvent({ eventId, suspendReason }: { eventId: string; suspendReason: string; }): Promise<EventStatus | null> {
+    async suspendEvent({ eventId, adminId, suspendReason }: { eventId: string; adminId: string; suspendReason: string; }): Promise<EventStatus | null> {
         try {
+            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            validateAdminActiveStatus(adminProfile);
+
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventSuspend(eventEntity);
@@ -384,6 +398,9 @@ export class EventManagementServices implements IEventServices {
     // cancel by host
     async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EventStatus | null> {
         try {
+            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(userId);
+            validateHostActiveStatus(hostProfile);
+
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventCancel(eventEntity, userId);
@@ -434,6 +451,9 @@ export class EventManagementServices implements IEventServices {
 
     async publishEvent(eventId: string, userId: string): Promise<void> {
         try {
+            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(userId);
+            validateHostActiveStatus(hostProfile);
+
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
             validateEventPublish(eventEntity, userId);
@@ -460,30 +480,41 @@ export class EventManagementServices implements IEventServices {
     }
 
 
-    async deleteEvent(eventId: string): Promise<void> {
+    async deleteEventByHost(eventId: string, hostId: string): Promise<void> {
         try {
-            const event = await this._eventRepository.getEventById(eventId);
+            const hostProfile = await this._userProfileServices.getUserProfile(hostId);
+            validateHostActiveStatus(hostProfile);
 
-            validateEventDelete(event);
+            const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
-            if (event.posterUrl && event.posterUrl.trim() !== '') {
-                try {
-                    await deleteFromCloudinary({fileUrl: event.posterUrl, resourceType: 'image'});
-                } catch (cleanupErr) {
-                    console.warn("Failed to delete event poster from Cloudinary:", cleanupErr);
-                }
-            }
+            validateEventDeleteByHost(event, hostId);
 
-            // Remove the event queque schedule for marking the event status as 'COMPLETED' since the event is suspended
-            await this._eventQueueService.removeEventCompletionSchedule(eventId);
-
-            await this._eventRepository.deleteEvent(eventId);
+            await this._executeEventDeletion(event);
             
             return;
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error("Error in EventManagementServices.deleteEvent:", msg);
+            throw error;
+        }
+    }
+
+
+    async deleteEventByAdmin(eventId: string, adminId: string): Promise<void> {
+        try {
+            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            validateAdminActiveStatus(adminProfile);
+
+            const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
+            
+            validateEventDeleteByAdmin(event);
+
+            await this._executeEventDeletion(event);
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.deleteEventByAdmin:", msg);
             throw error;
         }
     }
@@ -716,7 +747,7 @@ export class EventManagementServices implements IEventServices {
 
             if (majorChanges.length > 0 && existingEvent.soldTickets > 0) {
 
-                const settings = await this._settingsService.getPlatformSettings();
+                const settings = await this._settingsService.getOperationalSettingsDomain();
 
                 const gracePeriodEnd = new Date(
                     Math.min(
@@ -738,6 +769,24 @@ export class EventManagementServices implements IEventServices {
         const mappedEvent: EventResponseDTO = mapEventEntityToEventResponseDto(updatedEvent);
         return mappedEvent;
 
+    }
+
+
+
+    private async _executeEventDeletion(event: EventEntity): Promise<void> {
+        if (event.posterUrl && event.posterUrl.trim() !== '') {
+            try {
+                await deleteFromCloudinary({fileUrl: event.posterUrl, resourceType: 'image'});
+            } catch (cleanupErr) {
+                console.warn("Failed to delete event poster from Cloudinary:", cleanupErr);
+            }
+        }
+
+        // Remove this event from BullMQ queque schedule for marking the event status as 'COMPLETED' since the event is deleted
+        await this._eventQueueService.removeEventCompletionSchedule(event.eventId);
+
+        // delete the event from db
+        await this._eventRepository.deleteEvent(event.eventId);
     }
 
 

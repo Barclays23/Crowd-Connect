@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import {
   Building2,
   FileText,
@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 
 import { 
-   HostUpgradeSchema, 
+   HostApplySchema,
+   HostReapplySchema,
    MAX_FILE_SIZE, 
    type HostUpgradeFormData 
 } from "@/schemas/host.schema";
@@ -29,6 +30,9 @@ import { ButtonLoader } from "../common/ButtonLoader";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { UserState } from "@/types/user.types";
+import { TermsModal } from "@/components/common/TermsModal";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 
 interface HostUpgradeFormProps {
@@ -40,6 +44,9 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [submitSuccess, setSubmitSuccess] = useState(false);
    const [submitError, setSubmitError] = useState<string | null>(null);
+   const [showTermsModal, setShowTermsModal] = useState(false);
+
+   const [logoPreview, setLogoPreview] = useState<string>("");
 
    const { setUser, user } = useAuth();
    const navigate = useNavigate();
@@ -52,8 +59,9 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
       watch,
       setValue,
       reset,
+      control,
    } = useForm<HostUpgradeFormData>({
-      resolver: zodResolver(HostUpgradeSchema),
+      resolver: zodResolver(isReapply ? HostReapplySchema : HostApplySchema),
       defaultValues: {
          organizationName: "",
          registrationNumber: "",
@@ -61,6 +69,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          organizationDescription: "",
          hostDocument: undefined,
          organizationLogo: undefined,
+         agreeTerms: false
       },
    });
 
@@ -71,7 +80,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
             organizationName: user.organizationName || "",
             registrationNumber: user.registrationNumber || "",
             businessAddress: user.businessAddress || "",
-            organizationDescription: user.businessAddress || "",
+            organizationDescription: user.organizationDescription || "",
             hostDocument: undefined, // Don't pre-fill file - force re-upload
             organizationLogo: undefined, // Don't pre-fill file - force re-upload
          });
@@ -79,7 +88,21 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
    }, [isReapply, user, reset]);
 
    // Watch host document to show selected file name
-   const hostDocument = watch("hostDocument");
+   const hostDocument = watch("hostDocument") as File | undefined;
+   const organizationLogo = watch("organizationLogo") as File | undefined;
+
+
+   useEffect(() => {
+      if (organizationLogo) {
+         const url = URL.createObjectURL(organizationLogo);
+         setLogoPreview(url);
+
+         return () => URL.revokeObjectURL(url);
+      } else {
+         setLogoPreview("");
+      }
+   }, [organizationLogo]);
+
 
    const onSubmit: SubmitHandler<HostUpgradeFormData> = async (data) => {
       setIsSubmitting(true);
@@ -91,6 +114,7 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          formData.append("organizationName", data.organizationName);
          formData.append("registrationNumber", data.registrationNumber);
          formData.append("businessAddress", data.businessAddress);
+         formData.append("organizationDescription", data.organizationDescription);
          
          if (data.hostDocument instanceof File) {
             formData.append("hostDocument", data.hostDocument);
@@ -104,8 +128,8 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
          const response: ApiResponse<UserState> = await hostServices.applyHostUpgrade(formData);
          console.log("Host upgrade response:", response);
 
-         toast.success(response.message);
          if (response.data) setUser(response.data);
+         toast.success(response.message);
 
          setSubmitSuccess(true);
          reset();
@@ -245,9 +269,10 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                      {/* Logo Upload */}
                      <div>
                         <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                           Organization Logo *
+                           Organization Logo {isReapply ? "(Optional)" : "*"}
                         </label>
-                        <div className={`relative rounded-xl p-4 text-center cursor-pointer transition-all border-2 border-dashed ${errors.organizationLogo ? 'border-destructive bg-destructive/5' : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'}`}>
+                        <div className={`relative rounded-xl p-4 text-center cursor-pointer transition-all border-2 border-dashed 
+                           ${errors.organizationLogo ? 'border-(--brand-primary-light) hover:border-(--brand-primary)' : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'}`}>
                            <input
                               type="file"
                               accept="image/jpeg,image/png,image/webp"
@@ -255,13 +280,25 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                                  const file = e.target.files?.[0];
                                  if (file) setValue('organizationLogo', file, { shouldValidate: true });
                               }}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                            />
-                           <Upload className="w-6 h-6 mx-auto mb-2 text-(--text-tertiary)" />
-                           {watch("organizationLogo") ? (
-                              <p className="font-medium text-sm text-(--brand-primary)">{(watch("organizationLogo") as File).name}</p>
+                           
+                           {/* DYNAMIC LOGO PREVIEW LOGIC */}
+                           {organizationLogo ? (
+                              <div className="flex flex-col items-center">
+                                 <img src={logoPreview} alt="New Logo" className="w-16 h-16 rounded-full object-cover mb-2 border border-(--border-muted) bg-(--bg-primary)" />
+                                 <p className="font-medium text-sm text-(--brand-primary)">{organizationLogo.name}</p>
+                              </div>
+                           ) : (isReapply && user?.organizationLogo) ? (
+                              <div className="flex flex-col items-center">
+                                 <img src={user.organizationLogo} alt="Current Logo" className="w-16 h-16 rounded-full object-cover mb-2 border border-(--border-muted) bg-(--bg-primary)" />
+                                 <p className="text-xs text-(--text-secondary)">Existing Logo - Click to replace</p>
+                              </div>
                            ) : (
-                              <p className="text-sm text-(--text-secondary)">Upload your logo (JPG, PNG, WEBP)</p>
+                              <>
+                                 <Upload className="w-6 h-6 mx-auto mb-2 text-(--text-tertiary)" />
+                                 <p className="text-sm text-(--text-secondary)">Upload your logo (JPG, PNG, WEBP)</p>
+                              </>
                            )}
                         </div>
                         <FieldError message={errors.organizationLogo?.message} />
@@ -270,13 +307,12 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                      {/* Certificate Upload */}
                      <div>
                         <label className="block text-sm font-medium mb-2 text-(--text-primary)">
-                           {/* Business Certificate (Optional but recommended) */}
-                           Certificate / Document *
+                           Certificate / Document {isReapply ? "(Optional)" : "*"}
                         </label>
                         <div
                            className={`relative rounded-xl p-6 text-center cursor-pointer transition-all border-2 border-dashed ${
                               errors.hostDocument
-                              ? 'border-destructive bg-destructive/5'
+                              ? 'border-(--brand-primary-light) hover:border-(--brand-primary)'
                               : 'border-(--border-muted) hover:border-(--brand-primary)/50 bg-(--bg-secondary)'
                            }`}
                         >
@@ -287,27 +323,74 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                               const file = e.target.files?.[0];
                               if (file) setValue('hostDocument', file, { shouldValidate: true });
                               }}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                            />
-                           <Upload className="w-8 h-8 mx-auto mb-3 text-(--text-tertiary)" />
-
+                           
+                           {/* DYNAMIC DOCUMENT PREVIEW LOGIC */}
                            {hostDocument ? (
                               <div className="space-y-1">
-                              <p className="font-medium text-(--text-primary)">{hostDocument.name}</p>
-                              <p className="text-xs text-(--text-tertiary)">
-                                 {(hostDocument.size / 1024 / 1024).toFixed(2)} MB
-                              </p>
+                                 <FileText className="w-8 h-8 mx-auto mb-3 text-(--brand-primary)" />
+                                 <p className="font-medium text-(--text-primary)">{hostDocument.name}</p>
+                                 <p className="text-xs text-(--text-tertiary)">
+                                    {(hostDocument.size / 1024 / 1024).toFixed(2)} MB
+                                 </p>
+                              </div>
+                           ) : (isReapply && user?.certificateUrl) ? (
+                              <div className="flex flex-col items-center space-y-2">
+                                 <FileText className="w-8 h-8 text-(--text-tertiary)" />
+                                 <p className="text-sm font-medium text-(--text-primary)">Existing Document Saved</p>
+                                 {/* Use z-20 and position relative so the link is clickable ABOVE the invisible file input */}
+                                 <a 
+                                    href={user.certificateUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="text-xs text-(--text-brand) hover:underline z-20 relative"
+                                    onClick={(e) => e.stopPropagation()}
+                                 >
+                                    View Current Document
+                                 </a>
+                                 <p className="text-xs text-(--text-tertiary)">Click anywhere to upload a new one to replace</p>
                               </div>
                            ) : (
                               <>
-                              <p className="text-(--text-secondary)">Drop your file here or click to upload</p>
-                              <p className="text-sm mt-1 text-(--text-tertiary)">
-                                 PDF, JPG, PNG up to {MAX_FILE_SIZE / (1024 * 1024)}MB
-                              </p>
+                                 <Upload className="w-8 h-8 mx-auto mb-3 text-(--text-tertiary)" />
+                                 <p className="text-(--text-secondary)">Drop your file here or click to upload</p>
+                                 <p className="text-sm mt-1 text-(--text-tertiary)">
+                                    PDF, JPG, PNG up to {MAX_FILE_SIZE / (1024 * 1024)}MB
+                                 </p>
                               </>
                            )}
                         </div>
                         <FieldError message={errors.hostDocument?.message} />
+                     </div>
+
+                     {/* 6. HOST TERMS & CONDITIONS */}
+                     <div className="space-y-2">
+                        <div className="flex items-start space-x-3 pt-2">
+                           <Controller
+                              name="agreeTerms"
+                              control={control}
+                              render={({ field }) => (
+                                 <Checkbox
+                                    id="hostAgreeTerms"
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    className="mt-1 border-(--border-muted) data-[state=checked]:bg-(--brand-primary) data-[state=checked]:border-(--brand-primary)"
+                                 />
+                              )}
+                           />
+                           <Label htmlFor="hostAgreeTerms" className="text-sm text-(--text-secondary) leading-relaxed cursor-pointer font-normal">
+                              I agree to the platform's
+                              <span
+                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowTermsModal(true); }}
+                                 className="text-(--brand-primary) hover:underline ml-1 font-medium"
+                              >
+                                 Host Guidelines & Terms of Service
+                              </span>
+                              , confirming that the details provided are accurate and I hold all necessary rights for this event.
+                           </Label>
+                        </div>
+                        <FieldError message={errors.agreeTerms?.message} />
                      </div>
 
                      {/* Submit Button */}
@@ -355,8 +438,17 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
                <p className="text-center mt-6 text-sm text-(--text-tertiary)">
                   Applications are typically reviewed within 2-3 business days
                </p>
+
             </div>
          </div>
+
+         {/* TermsModal */}
+         <TermsModal
+            isOpen={showTermsModal}
+            onClose={() => setShowTermsModal(false)}
+            termTypes={["hostTerms", "cancellationTerms", "bookingTerms"]}
+            title="Host Guidelines & Terms of Service"
+         />
       </>
    );
 };

@@ -311,7 +311,29 @@ export function validateEventCoreUpdation(
 };
 
 
-export function validateEventDelete(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
+
+export function validateEventDeleteByHost(eventEntity: EventEntity | null, hostId: string): asserts eventEntity is EventEntity {
+    if (!eventEntity){
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
+    }
+
+    if (eventEntity.organizer.hostId !== hostId) {
+        throw createHttpError(
+            HTTP_STATUS.FORBIDDEN,
+            "Only the event host can delete this event"
+        );
+    }
+
+    const eventStatus: EventStatus = getEventDisplayStatus(eventEntity);
+
+    if (eventStatus !== EVENT_STATUSES.DRAFT) {
+        throw createHttpError(HTTP_STATUS.BAD_REQUEST, `Cannot delete a ${eventStatus.toLowerCase()} event.`);
+    }
+}
+
+
+
+export function validateEventDeleteByAdmin(eventEntity: EventEntity | null): asserts eventEntity is EventEntity {
     if (!eventEntity){
         throw createHttpError(HTTP_STATUS.NOT_FOUND, EVENT_MESSAGES.EVENT_NOT_FOUND);
     }
@@ -335,6 +357,7 @@ export function validateEventPublish(eventEntity: EventEntity | null, userId: st
             "Only the event host can publish this event"
         );
     }
+
 
     if (eventEntity.eventStatus !== EVENT_STATUSES.DRAFT) {
         throw createHttpError(

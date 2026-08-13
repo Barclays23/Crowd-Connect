@@ -2,44 +2,44 @@
 
 import { GetHostsFilter, GetHostsResult } from "@/types/user.types";
 import { 
-    HostManageRequestDto,
+    HostManageApplicationDto,
+    HostManagePermissionDto,
     HostStatusUpdateResponseDto, 
     HostUpdateRequestDto, 
     HostUpgradeRequestDto, 
     OrganiserProfileResponseDTO, 
     UserProfileResponseDto 
 } from "@/dtos/user.dto";
+import { HostEntity, UserProfileEntity } from "@/entities/user.entity";
 
 
 
 
 export interface IHostManagementServices {
-    applyHostUpgrade({ userId, upgradeDto, documentFile, logoFile }: {
+    applyHostRoleUpgrade({ userId, upgradeDto, documentFile, logoFile }: {
         userId: string;
         upgradeDto: HostUpgradeRequestDto;
-        documentFile: Express.Multer.File | undefined;
-        logoFile: Express.Multer.File | undefined;
-    }): Promise<UserProfileResponseDto>;
+        documentFile?: Express.Multer.File;
+        logoFile?: Express.Multer.File;
+    }): Promise<HostEntity>;
+
+    convertToHost({ userId, upgradeDto, documentFile, logoFile }: {
+        userId: string; upgradeDto: HostUpgradeRequestDto; documentFile?: Express.Multer.File; logoFile?: Express.Multer.File;
+    }): Promise<UserProfileEntity>;
+    
+    manageHostApplication({ hostId, action, reason }: HostManageApplicationDto): Promise<HostStatusUpdateResponseDto>;
+    manageHostPermission({ hostId, action, reason }: HostManagePermissionDto): Promise<HostStatusUpdateResponseDto>;
+    
+    
+    updateHostDetailsByHost({hostId, updateDto, documentFile}: {hostId: string; updateDto: HostUpdateRequestDto; documentFile?: Express.Multer.File}): Promise<HostEntity>;
+    
+    updateHostLogoByHost({hostId, logoFile}: {hostId: string, logoFile?: Express.Multer.File}): Promise<UserProfileEntity>;
+    
+    updateHostDetailsByAdmin({hostId, updateDto, documentFile}: {hostId: string; updateDto: HostUpdateRequestDto; documentFile?: Express.Multer.File;}): Promise<HostEntity>;
+    
+    updateHostLogoByAdmin({ hostId, logoFile }: { hostId: string; logoFile?: Express.Multer.File }): Promise<UserProfileEntity>
 
     getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult>;
-    
-    manageHostStatus({ hostId, action, reason }: HostManageRequestDto): Promise<HostStatusUpdateResponseDto>;
-    
-    updateHostByAdmin({hostId, updateDto, documentFile}: {
-        hostId: string;
-        updateDto: HostUpgradeRequestDto;
-        documentFile: Express.Multer.File | undefined;
-    }): Promise<UserProfileResponseDto>;
-
-    updateHostDetailsByHost({hostId, updateDto}: {
-        hostId: string;
-        updateDto: HostUpdateRequestDto;
-    }): Promise<UserProfileResponseDto>;
-
-    updateHostLogoByHost({hostId, logoFile}: {
-        hostId: string;
-        logoFile: Express.Multer.File | undefined;
-    }): Promise<UserProfileResponseDto>;
 
     getOrganiserProfile(hostId: string): Promise<OrganiserProfileResponseDTO>
 

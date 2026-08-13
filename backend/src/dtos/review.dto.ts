@@ -8,13 +8,13 @@ import { IPagination } from "@/types/common.types";
 export interface SubmitReviewRequestDTO {
   bookingId     : string;
   rating        : number;
-  reviewText?   : string;
+  reviewText    : string;
 }
 
 
 export interface EditReviewRequestDTO {
   rating        : number;
-  reviewText?   : string;
+  reviewText    : string;
 }
 
 
@@ -23,17 +23,19 @@ export interface EditReviewRequestDTO {
 // RESPONSE DATA TYPES ------------------------------------------------------
 
 export interface ReviewResponseDTO {
-  reviewId  : string;
-  eventId   : string;
-  eventTitle?: string;
-  hostId    : string;
-  hostName?: string;
+  reviewId    : string;
+  hostId      : string;
+  hostName?   : string;
   user      : {
     userId      : string;
     name        : string;
     email?      : string;
     profilePic? : string;
   };
+  event     : {
+    eventId     : string;
+    eventTitle  : string;
+  }
   rating            : number;
   reviewText?       : string;
   createdAt         : string;

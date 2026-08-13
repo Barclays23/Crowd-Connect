@@ -5,9 +5,11 @@ import {
    UpdateUserRequestDto, 
    HostUpgradeRequestDto, 
    BaseUserResponseDto,
-   HostManageRequestDto,
    HostStatusUpdateResponseDto,
-   OrganiserProfileResponseDTO, 
+   OrganiserProfileResponseDTO,
+   HostUpdateRequestDto,
+   HostManagePermissionDto,
+   HostManageApplicationDto, 
 } from "@/dtos/user.dto";
 
 import { AuthUserResponseDto, SignUpRequestDto } from "@/dtos/auth.dto";
@@ -291,7 +293,7 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl, or
   hostDocumentUrl?: string;
   organizationLogoUrl?: string;
 }): UpgradeHostInput => {
-   const udgradeInput: UpgradeHostInput = {
+   const upgradeInput: UpgradeHostInput = {
       role: USER_ROLES.HOST,
       organizationName: upgradeDto.organizationName,
       registrationNumber: upgradeDto.registrationNumber,
@@ -300,18 +302,16 @@ export const mapHostUpgradeRequestDtoToInput = ({upgradeDto, hostDocumentUrl, or
       hostStatus: HOST_STATUS.PENDING,
       hostAppliedAt: new Date(),
    };
-   if (hostDocumentUrl) udgradeInput.certificateUrl = hostDocumentUrl;
-   if (organizationLogoUrl) udgradeInput.organizationLogo = organizationLogoUrl;
+   if (hostDocumentUrl) upgradeInput.certificateUrl = hostDocumentUrl;
+   if (organizationLogoUrl) upgradeInput.organizationLogo = organizationLogoUrl;
 
-   return udgradeInput;
+   return upgradeInput;
 };
 
 
 
-export const mapToHostManageInput = (
-  {action, reason}: HostManageRequestDto
-): HostManageInput => {
-
+export const mapToHostManageInput = ({action, reason}: HostManageApplicationDto | HostManagePermissionDto): HostManageInput => {
+   
    switch (action) {
       case "approve":
          return {
@@ -326,12 +326,17 @@ export const mapToHostManageInput = (
             hostReviewedAt: new Date(),
          };
 
-      // case "block":
-      //    return {
-      //       hostStatus: HOST_STATUS.BLOCKED,
-      //       hostBlockReason: reason,
-      //       hostReviewedAt: reviewedAt,
-      //    };
+      case "block":
+         return {
+            hostStatus: HOST_STATUS.BLOCKED,
+            hostReviewedAt: new Date(),
+         };
+
+      case "unblock":
+         return {
+            hostStatus: HOST_STATUS.PENDING,  // Mark to PENDING, and admin need to approve later after host request
+            hostReviewedAt: new Date(),
+         };
 
       default:
          throw new Error("Invalid host action");
@@ -343,21 +348,65 @@ export const mapToHostManageInput = (
 
 
 
-// to update host details (eg: change host name, regNo, address, document etc) by user or admin
-export const mapUpdateHostDTOToInput = ({isDoneByAdmin, updateDto, hostDocumentUrl, organizationLogoUrl}:{
-   isDoneByAdmin: boolean,
-   updateDto: HostUpgradeRequestDto,
-   hostDocumentUrl?: string,
-   organizationLogoUrl?: string
-}): HostUpdateInput => {
-   const updateInput: HostUpdateInput = {};
+// // to update host details (eg: change host name, regNo, address, document etc) by user or admin
+// export const mapUpdateHostDTOToInput = ({updateDto, hostDocumentUrl, organizationLogoUrl}:{
+//    updateDto: HostUpgradeRequestDto,
+//    hostDocumentUrl?: string,
+//    organizationLogoUrl?: string
+// }): HostUpdateInput => {
+//    const updateInput: HostUpdateInput = {};
 
-   if (updateDto.organizationName !== undefined) updateInput.organizationName = updateDto.organizationName;
-   if (updateDto.registrationNumber !== undefined) updateInput.registrationNumber = updateDto.registrationNumber;
-   if (updateDto.businessAddress !== undefined) updateInput.businessAddress = updateDto.businessAddress;
-   if (hostDocumentUrl !== undefined) updateInput.certificateUrl = hostDocumentUrl;
-   if (organizationLogoUrl !== undefined) updateInput.organizationLogo = organizationLogoUrl;
-   if (!isDoneByAdmin) updateInput.hostStatus = HOST_STATUS.PENDING;
+//    if (updateDto.organizationName !== undefined) updateInput.organizationName = updateDto.organizationName;
+//    if (updateDto.registrationNumber !== undefined) updateInput.registrationNumber = updateDto.registrationNumber;
+//    if (updateDto.businessAddress !== undefined) updateInput.businessAddress = updateDto.businessAddress;
+//    if (hostDocumentUrl !== undefined) updateInput.certificateUrl = hostDocumentUrl;
+//    if (organizationLogoUrl !== undefined) updateInput.organizationLogo = organizationLogoUrl;
+
+//    return updateInput;
+// };
+
+
+
+
+
+export const mapHostDetailsUpdateToInput = (updateDto: HostUpdateRequestDto, hostDocumentUrl?: string): HostUpdateInput => {
+   const updateInput: HostUpdateInput = { 
+      ...updateDto,
+      hostStatus: HOST_STATUS.PENDING,  // Explicitly inject the PENDING status to force admin re-verification
+   };
+
+   if (hostDocumentUrl !== undefined) {
+      updateInput.certificateUrl = hostDocumentUrl;
+   }
 
    return updateInput;
+};
+
+
+export const mapHostLogoUpdateToInput = (organizationLogoUrl: string): HostUpdateInput => {
+   return {
+      organizationLogo: organizationLogoUrl,
+      hostStatus: HOST_STATUS.PENDING,
+   };
+};
+
+
+
+export const mapAdminHostDetailsUpdateToInput = (updateDto: HostUpdateRequestDto, hostDocumentUrl?: string): HostUpdateInput => {
+   const updateInput: HostUpdateInput = { ...updateDto };
+
+   if (hostDocumentUrl !== undefined) {
+      updateInput.certificateUrl = hostDocumentUrl;
+   }
+   // Does NOT set hostStatus to PENDING, respecting the Admin's trusted state.
+
+   return updateInput;
+};
+
+
+export const mapAdminHostLogoUpdateToInput = (organizationLogoUrl: string): HostUpdateInput => {
+   return {
+      organizationLogo: organizationLogoUrl
+      // Does NOT set hostStatus to PENDING, respecting the Admin's trusted state.
+   };
 };

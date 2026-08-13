@@ -5,16 +5,10 @@ import { GoogleGenAI } from '@google/genai';
 
 
 export class GeminiAiChatProvider implements IAiChatProvider {
-   
-   private readonly _genAI: GoogleGenAI;
 
-   constructor() {
-      if (!process.env.GEMINI_API_KEY) {
-         throw new Error("SYSTEM_ERROR: GEMINI_API_KEY is missing from environment variables.");
-      }
-
-      this._genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-   }
+   constructor(
+      private readonly _genAI: GoogleGenAI
+   ) {}
 
 
    async createEmbedding(userText: string): Promise<number[]> {

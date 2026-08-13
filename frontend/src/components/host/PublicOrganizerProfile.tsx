@@ -16,7 +16,7 @@ interface OrganizerProfileProps {
 
 
 
-export default function OrganizerProfile({ hostId }: OrganizerProfileProps) {
+export default function PublicOrganizerProfile({ hostId }: OrganizerProfileProps) {
     const [host, setHost] = useState<OrganiserProfileData | null>(null);
     const [loading, setLoading] = useState(true);
 

@@ -94,11 +94,18 @@ export interface GetHostsQueryParams {
   hostStatus?: string;
 }
 
-export interface ManageHostPayload {
-  action: "approve" | "reject" | "block";
+
+
+
+export interface ManageHostApplicationPayload {
+  action: "approve" | "reject";
   reason?: string;
 }
 
+export interface ManageHostPermissionsPayload {
+  action: "block" | "unblock";
+  reason?: string;
+}
 
 
 

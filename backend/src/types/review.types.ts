@@ -21,11 +21,15 @@ export interface IReviewModel {
 
 
 
-export interface IReviewPopulatedUser extends Omit<IReviewModel, 'userRef'> {
+export interface IReviewPopulatedUserAndEvent extends Omit<IReviewModel, 'userRef' | 'eventRef'> {
   userRef: {
     _id: Types.ObjectId;
     name: string;
     profilePic?: string;
+  };
+  eventRef: {
+    _id: Types.ObjectId;
+    title: string;
   };
 }
 
@@ -38,7 +42,7 @@ export interface IReviewPopulatedAdmin extends Omit<IReviewModel, 'userRef' | 'e
     email?: string;
     profilePic?: string;
   };
-  eventRef?: {
+  eventRef: {
     _id: Types.ObjectId;
     title: string;
     category: string;
@@ -54,6 +58,7 @@ export interface GetReviewsFilter {
   page: number;
   limit: number;
   hostId?: string;
+  userId?: string;
   eventId?: string;
 }
 

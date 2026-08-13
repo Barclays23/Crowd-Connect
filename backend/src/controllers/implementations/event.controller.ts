@@ -127,16 +127,17 @@ export class EventController implements IEventController {
             
             const body                  = req.body;
             const eventId: string       = req.params.eventId as string;
-            const currentAdminId: string = req.user.userId;
+            const adminId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
             console.log('body :', body);
             console.log('imageFile :', imageFile);
             console.log('eventId :', eventId);
 
-            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, currentAdminId);
+            const updateEventDto: UpdateEventRequestDTO = mapCreateEventRequestToDto(req, adminId);
 
             const updatedEvent: EventResponseDTO = await this._eventServices.updateEventByAdmin({
                 eventId,
+                adminId,
                 updateEventDto,
                 imageFile
             });
@@ -150,6 +151,45 @@ export class EventController implements IEventController {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
             console.error('Error in eventController.updateEventByAdmin:', msg);
+            next(error);
+        };
+    }
+
+
+    async deleteEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const hostId = req.user?.userId as string;
+
+            await this._eventServices.deleteEventByHost(eventId, hostId);
+
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
+            });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.deleteEventByHost:', msg);
+            next(error);
+        };
+    }
+
+    async deleteEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const adminId = req.user?.userId as string;
+
+            await this._eventServices.deleteEventByAdmin(eventId, adminId);
+
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
+            });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.deleteEventByAdmin:', msg);
             next(error);
         };
     }
@@ -235,11 +275,12 @@ export class EventController implements IEventController {
     async suspendEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const eventId = req.params.eventId as string;
+            const adminId = req.user?.userId as string;
             const suspendReason: string = req.body.reason;
             console.log('eventId :', eventId);
             console.log('suspendReason :', suspendReason);
 
-            const updatedStatus: EventStatus | null = await this._eventServices.suspendEvent({eventId, suspendReason});
+            const updatedStatus: EventStatus | null = await this._eventServices.suspendEvent({eventId, adminId, suspendReason});
 
             res.status(HTTP_STATUS.OK).json({
                 success: true,
@@ -280,26 +321,6 @@ export class EventController implements IEventController {
         };
     }
 
-
-
-    async deleteEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const eventId = req.params.eventId as string;
-
-            await this._eventServices.deleteEvent(eventId);
-
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            });
-
-            
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.deleteEvent:', msg);
-            next(error);
-        };
-    }
 
  
     async getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {

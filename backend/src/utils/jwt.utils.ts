@@ -26,7 +26,7 @@ interface RefreshTokenPayload extends jwt.JwtPayload {
 const ACCESS_SECRET         = process.env.JWT_ACCESS_SECRET as string;
 const REFRESH_SECRET        = process.env.JWT_REFRESH_SECRET as string;
 const QRCODE_SECRET         = process.env.JWT_QRCODE_SECRET as string;
-const ACCESS_TOKEN_EXPIRY   = "15m";  // 5 minutes
+const ACCESS_TOKEN_EXPIRY   = "15m";  // 15 minutes
 // const REFRESH_TOKEN_EXPIRY  = "7d";  // 7 days  (also check in refreshCookie.utils.ts)
 const REFRESH_TOKEN_EXPIRY  = "10h";  // 10 hours (also check in refreshCookie.utils.ts)
 

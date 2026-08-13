@@ -24,6 +24,12 @@ import { Router } from "express";
 import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
 import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
+import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
+import { GoogleGenAI } from "@google/genai";
+
+
+
+
 
 
 
@@ -38,21 +44,31 @@ const faqKnowledgeRepo  = new MongoFaqRepository();
 
 
 
+
+
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
+
+
 // PROVIDERS
 const razorPayProvider = new RazorpayProvider();
-const aiChatProvider   = new GeminiAiChatProvider();
+const aiChatProvider   = new GeminiAiChatProvider(genAI);
 
 
 // SERVICES
-const ticketService         = new TicketService(bookingRepo, eventRepo);
+const ticketService         = new TicketService();
 const paymentService        = new PaymentService(razorPayProvider);
 const walletService         = new WalletService(userRepo, transactionRepo);
 const cacheService          = new RedisCacheService();
 const eventQueueService     = new EventQueueService();
 const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
 const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
+const userProfileServices   = new UserProfileService(userRepo);
 const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService          = new EventManagementServices(eventRepo, bookingService, cacheService, settingsService, eventQueueService);
+const eventService          = new EventManagementServices(eventRepo, bookingService, userProfileServices, cacheService, settingsService, eventQueueService);
 
 
 // CONTROLLER
@@ -66,43 +82,25 @@ export const eventRouter = Router();
 
 
 
-eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), 
+eventRouter.post(EVENT_ROUTES.CREATE_EVENT, authenticate, authorize(USER_ROLES.HOST), 
     uploadEventPoster.single('eventPosterImage'), validateRequest({body: CreateEventFormSchema}), 
     eventController.createEvent.bind(eventController)
 )
 
 eventRouter.patch(EVENT_ROUTES.UPDATE_EVENT,
-   authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST),
+   authenticate, authorize(USER_ROLES.HOST),
    uploadEventPoster.single("eventPosterImage"), validateRequest({ body: UpdateEventFormSchema }),
    eventController.updateEventByHost.bind(eventController)
 );
 
-eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(USER_ROLES.HOST), 
-    validateParams(EventIdParamSchema), 
-    eventController.publishEvent.bind(eventController)
-);
+eventRouter.patch(EVENT_ROUTES.PUBLISH_EVENT, authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.publishEvent.bind(eventController));
 
-eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(USER_ROLES.HOST), 
-    validateParams(EventIdParamSchema), 
-    eventController.cancelEvent.bind(eventController)
-);
+eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.cancelEvent.bind(eventController));
+
+eventRouter.delete(EVENT_ROUTES.DELETE_EVENT, authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.deleteEventByHost.bind(eventController));
 
 eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
     eventController.getUserEvents.bind(eventController)
-);
-
-eventRouter.get(EVENT_ROUTES.PUBLIC_EVENTS,
-    eventController.getDiscoveryEvents.bind(eventController)
-);
-
-eventRouter.get(EVENT_ROUTES.TRENDING_EVENTS,
-    eventController.getTrendingEvents.bind(eventController)
-);
-
-
-// for public event details
-eventRouter.get(EVENT_ROUTES.EVENT_DETAILS,
-    eventController.getEventDetails.bind(eventController)
 );
 
 
@@ -111,11 +109,16 @@ eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER
 );
 
 
-// Public route for Organiser Portfolio
-eventRouter.get(
-    EVENT_ROUTES.ORGANISER_EVENTS, 
-    eventController.getOrganiserEvents.bind(eventController)
-);
+// PUBLIC ROUTES ---------------------------
+
+eventRouter.get(EVENT_ROUTES.PUBLIC_EVENTS, eventController.getDiscoveryEvents.bind(eventController));
+
+eventRouter.get(EVENT_ROUTES.TRENDING_EVENTS, eventController.getTrendingEvents.bind(eventController));
+
+eventRouter.get(EVENT_ROUTES.EVENT_DETAILS, eventController.getEventDetails.bind(eventController));
+
+// Public route for Event Organiser Portfolio
+eventRouter.get(EVENT_ROUTES.ORGANISER_EVENTS, eventController.getOrganiserEvents.bind(eventController));
 
 
 

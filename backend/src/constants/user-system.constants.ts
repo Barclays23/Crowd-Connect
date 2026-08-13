@@ -14,6 +14,7 @@ export const USER_STATUS = {
   PENDING: 'pending',
 } as const;
 
+
 export const HOST_STATUS = {
   PENDING: 'pending',
   APPROVED: 'approved',

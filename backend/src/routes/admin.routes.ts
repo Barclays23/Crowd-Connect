@@ -20,7 +20,7 @@ import { HostController } from '@/controllers/implementations/host.controller';
 
 
 import { validateParams, validateRequest } from '@/middlewares/validate.middleware';
-import { HostManageSchema, HostUpgradeSchema } from '@/schemas/host.schema';
+import { HostApplicationSchema, HostPermissionSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { 
     BookingIdParamSchema, 
     EventIdParamSchema, 
@@ -58,6 +58,8 @@ import { ReviewRepository } from '@/repositories/implementations/review.reposito
 import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
 import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
 import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
+import { BadWordsFilterService } from '@/services/profanity-services/implementations/BadWordsFilterService';
+import { GoogleGenAI } from '@google/genai';
 
 
 
@@ -76,14 +78,23 @@ const faqKnowledgeRepo  = new MongoFaqRepository();
 
 
 
+
+
+// AI CONFIGURATIONS ──────────────────────────────────────────────
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+
+
+
+
 // ──  PROVIDERS
 const razorPayProvider = new RazorpayProvider();
-const aiChatProvider   = new GeminiAiChatProvider();
+const aiChatProvider   = new GeminiAiChatProvider(genAI);
 
 
 
 // ──  SERVICES
-const ticketService             = new TicketService(bookingRepo, eventRepo);
+const ticketService             = new TicketService();
 const paymentServices           = new PaymentService(razorPayProvider);
 const userManagementServices    = new UserManagementService(userRepo);
 const userProfileServices       = new UserProfileService(userRepo);
@@ -93,14 +104,16 @@ const cacheService              = new RedisCacheService();
 const eventQueueService         = new EventQueueService();
 const faqIngestionService       = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
 const settingsService           = new PlatformSettingsService(settingsRepo, faqIngestionService);
-
+const profanityFilter           = new BadWordsFilterService();
 
 
 const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
-const eventServices             = new EventManagementServices(eventRepo, bookingServices, cacheService, settingsService, eventQueueService);
+const eventServices             = new EventManagementServices(eventRepo, bookingServices, userProfileServices, cacheService, settingsService, eventQueueService);
 const passwordService           = new PasswordService(userRepo, cacheService);
 const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
-const reviewService             = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo)
+const reviewService             = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
+
+
 
 
 // ──  CONTROLLERS ──
@@ -134,20 +147,17 @@ adminRouter.post(ADMIN_ROUTES.CREATE_USER, uploadImage.single("profileImage"), u
 
 // Host management
 adminRouter.get(ADMIN_ROUTES.GET_HOSTS, hostController.getAllHosts.bind(hostController));
-adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_REQUEST, 
-    validateRequest({body: HostManageSchema, params: HostIdParamSchema}), 
-    hostController.manageHostStatus.bind(hostController)
-);
-adminRouter.put(ADMIN_ROUTES.UPDATE_HOST, 
-    uploadDocument.single('hostDocument'), 
-    validateRequest({body: HostUpgradeSchema, params: HostIdParamSchema}), 
-    hostController.updateHostByAdmin.bind(hostController)
-);
+adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_APPLICATION, validateRequest({body: HostApplicationSchema, params: HostIdParamSchema}), hostController.manageHostApplication.bind(hostController));
+adminRouter.patch(ADMIN_ROUTES.MANAGE_HOST_PERMISSION, validateRequest({body: HostPermissionSchema, params: HostIdParamSchema}), hostController.manageHostPermission.bind(hostController));
+adminRouter.put(ADMIN_ROUTES.UPDATE_HOST_DETAILS, uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema, params: HostIdParamSchema}), hostController.updateHostDetailsByAdmin.bind(hostController));
+adminRouter.patch(ADMIN_ROUTES.UPDATE_HOST_LOGO, uploadImage.single('organizationLogo'), hostController.updateHostLogoByAdmin.bind(hostController));
 
-// adminRouter.post('/users/:userId/convert-host',
-//     // uploadDocument.single('hostDocument'), validateRequest({body: HostUpgradeSchema}), 
-//     // hostController.convertToHost.bind(hostController)
-// );
+adminRouter.post(ADMIN_ROUTES.CONVERT_TO_HOST,
+    uploadDocument.fields([
+        { name: 'hostDocument', maxCount: 1 }, 
+        { name: 'organizationLogo', maxCount: 1 }
+    ]),
+    validateRequest({body: HostUpgradeSchema}), hostController.convertToHost.bind(hostController));
 
 
 
@@ -155,7 +165,7 @@ adminRouter.put(ADMIN_ROUTES.UPDATE_HOST,
 // event management
 adminRouter.get(ADMIN_ROUTES.GET_EVENTS, eventController.getAllEvents.bind(eventController));
 adminRouter.patch(ADMIN_ROUTES.SUSPEND_EVENT, validateRequest({body: suspendEventSchema, params: EventIdParamSchema}), eventController.suspendEvent.bind(eventController));
-adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, validateRequest({params: EventIdParamSchema}), eventController.deleteEvent.bind(eventController));
+adminRouter.delete(ADMIN_ROUTES.DELETE_EVENT, validateRequest({params: EventIdParamSchema}), eventController.deleteEventByAdmin.bind(eventController));
 adminRouter.patch(ADMIN_ROUTES.UPDATE_EVENT, uploadEventPoster.single("eventPosterImage"), validateRequest({ body: UpdateEventFormSchema, params: EventIdParamSchema }), eventController.updateEventByAdmin.bind(eventController)
 );
 

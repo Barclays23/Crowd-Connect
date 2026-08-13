@@ -25,7 +25,6 @@ export class ReviewController implements IReviewController {
             
             res.status(HTTP_STATUS.CREATED).json({
                 success: true,
-                // message: "Review submitted successfully!",
                 message: "Review submitted successfully! Thank you for your feedback.",
             });
 
@@ -68,6 +67,27 @@ export class ReviewController implements IReviewController {
                 message: "Review deleted successfully!",
             });
             
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+    async getMyReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = req.user!.userId as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const result: GetReviewsResponseDTO = await this._reviewService.getReviewsForUser(userId, page, limit);
+            
+            res.status(HTTP_STATUS.OK).json({
+                success: true,
+                message: "User reviews fetched successfully",
+                data: result.reviews,
+                pagination: result.pagination
+            });
+
         } catch (error) {
             next(error);
         }

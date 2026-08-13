@@ -21,6 +21,7 @@ import type {
 import type { ApiResponse } from "@/types/common.types";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { Tooltip } from "@/components/common/Tooltip";
 
 
 
@@ -188,8 +189,8 @@ export function AdminReviewsList() {
 
                         <TableCell>
                         <div className="max-w-50">
-                            <p className="font-medium text-sm text-(--text-primary) truncate" title={review.eventTitle}>
-                            {review.eventTitle || "Unknown Event"}
+                            <p className="font-medium text-sm text-(--text-primary) truncate" title={review.event.eventTitle}>
+                            {review.event.eventTitle || "Unknown Event"}
                             </p>
                             <p className="text-xs text-(--text-tertiary) truncate" title={review.hostName}>
                             Host: {review.hostName || "Unknown Host"}
@@ -221,15 +222,16 @@ export function AdminReviewsList() {
                         </TableCell>
 
                         <TableCell className="text-right">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-md hover:bg-(--badge-error-bg) text-(--status-error)"
-                            onClick={() => setDeleteReview(review)}
-                            title="Delete Review"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                            <Tooltip content="Delete Review" side="top">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => setDeleteReview(review)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </Tooltip>
                         </TableCell>
                     </TableRow>
                     ))

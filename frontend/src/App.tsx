@@ -105,6 +105,7 @@ function App() {
                                  <Route path="/my-events/:eventId" element={<OrgainiserEventDashboard />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
                                  <Route path="/my-favourites" element={<UserAccountTabs />} />
+                                 <Route path="/my-reviews" element={<UserAccountTabs />} />
                                  <Route path="/my-wallet" element={<UserAccountTabs />} />
                                  <Route path="/my-payouts" element={<UserAccountTabs />} />
                               </Route>

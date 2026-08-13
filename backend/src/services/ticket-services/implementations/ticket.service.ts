@@ -2,16 +2,13 @@
 
 import jwt from "jsonwebtoken";
 import { ITicketService } from "../interfaces/ITicketService";;
-import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
-import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
 import { QRTokenPayload } from "@/types/ticket.types";
 
 
 
 export class TicketService implements ITicketService {
     constructor(
-        private readonly _bookingRepository: IBookingRepository,
-        private readonly _eventRepository: IEventRepository
+
     ) {}
 
     generateQrToken(qRTokenPayload: QRTokenPayload): string {

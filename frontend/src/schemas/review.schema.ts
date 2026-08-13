@@ -1,20 +1,11 @@
 // frontend/src/schemas/review.schema.ts
-
-
 import { z } from "zod";
-
-
-export const ReviewSchema = z.object({
-    rating      : z.number().min(1, "Please select a rating").max(5),
-});
-
-
 
 
 
 
 /* ---------- Base Fields ---------- */
-export const ratingBase = z.coerce
+export const ratingBase = z
     .number()
     .int()
     .min(1, "Please select a star rating.")
@@ -25,16 +16,26 @@ export const ratingBase = z.coerce
 export const reviewTextBase = z
     .string()
     .trim()
-    .max(10, "Review must be at least 10 characters")
-    .max(200, "Review cannot exceed 200 characters.")
-    // Optional: Prevent symbol spam just like you did in event descriptions
+    .min(1, "Please provide your review/feedback.")
+    .min(10, "Your review is a bit too short. Please use at least 10 characters.")
+    .max(200, "Please shorten your feedback to a maximum of 200 characters.")
+
+    // 1. Require at least SOME letters (prevents pure numbers like "123456789012")
+    .refine((value) => /[a-zA-Z]/.test(value), { 
+        message: "Your review must contain actual words, not just numbers or symbols." 
+    })
+    // 2. Prevent excessively long unbroken strings (e.g., "asdfghjklqwertyuiopzxcv")
+    .refine((value) => !/\S{20,}/.test(value), {
+        message: "Please use proper spacing between your words."
+    })
+
+    // 3. Prevent symbol spam (max 30% special characters)
     .refine((value) => {
-        if (!value) return true; // It's optional, so empty is fine
+        if (!value) return true; 
         const total = value.length;
         const specialCount = (value.match(/[^A-Za-z0-9\s.,'?!()-]/g) || []).length;
-        return specialCount / total <= 0.3; // max 30% special characters
-    }, { message: "Review contains too many special characters." })
-    .optional();
+        return specialCount / total <= 0.3; 
+    }, { message: "Your review contains too many special characters." });
 
 
 
@@ -42,6 +43,12 @@ export const reviewTextBase = z
 
 
 /* ---------- Request Schemas ---------- */
+export const ReviewFormSchema = z.object({
+    rating: ratingBase,
+    reviewText: reviewTextBase,
+});
+
+
 export const SubmitReviewSchema = z.object({
     bookingId: z.string().min(1, "Booking ID is required."),
     rating: ratingBase,
@@ -55,5 +62,6 @@ export const EditReviewSchema = z.object({
 });
 
 
-export type SubmitReviewFormValues = z.infer<typeof SubmitReviewSchema>;
-export type EditReviewFormValues = z.infer<typeof EditReviewSchema>;
+export type ReviewFormData = z.infer<typeof ReviewFormSchema>;
+export type SubmitReviewFormData = z.infer<typeof SubmitReviewSchema>;
+export type EditReviewFormData = z.infer<typeof EditReviewSchema>;

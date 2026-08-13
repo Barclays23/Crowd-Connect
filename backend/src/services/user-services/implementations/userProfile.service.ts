@@ -1,12 +1,10 @@
 // src/services/user/implementations/UserProfile.service.ts
 import { 
-    UserProfileResponseDto,
     UserBasicInfoUpdateDTO, 
 } from "@/dtos/user.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { 
     mapUpdateUserRequestDtoToInput, 
-    mapUserEntityToProfileDto
 } from "@/mappers/user.mapper";
 import { 
     UpdateUserInput, 
@@ -30,20 +28,18 @@ export class UserProfileService implements IUserProfileService {
     ) {}
 
 
-    async getUserProfile(userId: string): Promise<UserProfileResponseDto> {
+    async getUserProfile(userId: string): Promise<UserProfileEntity> {
         try {
             const userData: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
             if (!userData) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
-
-            const userProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(userData);
 
             // Convert Key to Secured S3 URL
             // if (userProfileDto.profilePic) {
             //     userProfileDto.profilePic = await getS3PresignedUrl(userProfileDto.profilePic);
             // }
 
-            return userProfileDto;
+            return userData;
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -53,7 +49,7 @@ export class UserProfileService implements IUserProfileService {
     }
 
 
-    async editUserBasicInfo(currentUserId: string, updateDto: UserBasicInfoUpdateDTO): Promise<UserProfileResponseDto> {
+    async editUserBasicInfo(currentUserId: string, updateDto: UserBasicInfoUpdateDTO): Promise<UserEntity> {
         try {
             const userData: UserEntity|null = await this._userRepository.getUserById(currentUserId);
             
@@ -76,15 +72,13 @@ export class UserProfileService implements IUserProfileService {
 
             const updateInput: UpdateUserInput = mapUpdateUserRequestDtoToInput({updateDto, profilePicUrl});
             
-            const updatedUserResult: UserEntity | null = await this._userRepository.updateUserProfile(currentUserId, updateInput);
+            const updatedUser: UserEntity | null = await this._userRepository.updateUserProfile(currentUserId, updateInput);
             
-            if (!updatedUserResult) {
+            if (!updatedUser) {
                 throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             }
 
-            const updatedUser: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
-
-            return updatedUser
+            return updatedUser;
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -94,7 +88,7 @@ export class UserProfileService implements IUserProfileService {
     }
 
 
-    async updateProfilePicture(currentUserId: string, imageFile?: Express.Multer.File): Promise<UserProfileResponseDto> {
+    async updateProfilePicture(currentUserId: string, imageFile?: Express.Multer.File): Promise<UserEntity> {
         try {
             // console.log('✅ currentUserId received in UserProfileService.updateProfilePicture:', currentUserId);
             // console.log('✅ imageFile received in UserProfileService.updateProfilePicture:', imageFile);
@@ -132,15 +126,13 @@ export class UserProfileService implements IUserProfileService {
 
             const profilPicInput = {profilePic: profilePicUrl}
 
-            const updatedUserResult: UserEntity | null = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
+            const updatedUser: UserEntity | null = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
 
-            if (!updatedUserResult) {
+            if (!updatedUser) {
                 throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             }
 
-            const updatedProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
-
-            return updatedProfileDto;
+            return updatedUser;
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';

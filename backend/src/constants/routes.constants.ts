@@ -12,11 +12,14 @@ export const ADMIN_ROUTES = {
     EDIT_USER           : '/users/:id',
     DELETE_USER         : '/users/:id',
     TOGGLE_BLOCK_USER   : '/users/:id/toggle-block',
+    CONVERT_TO_HOST     : '/users/:userId/convert',
 
     // Host Management
-    GET_HOSTS           : '/hosts',
-    MANAGE_HOST_REQUEST : '/hosts/:hostId/manage-host-request',
-    UPDATE_HOST         : '/hosts/:hostId/update-host',
+    GET_HOSTS               : '/hosts',
+    MANAGE_HOST_APPLICATION : '/hosts/:hostId/application',
+    MANAGE_HOST_PERMISSION  : '/hosts/:hostId/permission',
+    UPDATE_HOST_DETAILS     : '/hosts/:hostId/details',
+    UPDATE_HOST_LOGO        : '/hosts/:hostId/logo',
     
     
     // Event Mangement
@@ -110,6 +113,7 @@ export const EVENT_ROUTES = {
     UPDATE_EVENT            : '/:eventId/update',
     PUBLISH_EVENT           : '/:eventId/publish',
     CANCEL_EVENT            : '/:eventId/cancel',
+    DELETE_EVENT            : '/:eventId',
     MY_EVENTS               : '/my-events',
     PUBLIC_EVENTS           : '/public-events',
     TRENDING_EVENTS         : '/trending-events',
@@ -152,7 +156,9 @@ export const PUBLIC_ROUTES = {
 export const REVIEW_ROUTES = {
     SUBMIT_REVIEW       : '/',          // bookingId is passed in body
     MANAGE_REVIEW       : '/:reviewId', // for edit/delete (put/delete),
-    GET_HOST_REVIEWS    : '/host/:hostId',
+    HOST_REVIEWS        : '/host/:hostId',
+    EVENT_REVIEWS       : '/host/:hostId',
+    MY_REVIEWS          : '/my-reviews',
 } as const;
 
 

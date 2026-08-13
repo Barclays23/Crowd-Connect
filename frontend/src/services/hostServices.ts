@@ -5,7 +5,8 @@ import type { ApiResponse } from "@/types/common.types";
 import type { 
   GetHostsQueryParams, 
   HostStatusUpdateData, 
-  ManageHostPayload, 
+  ManageHostApplicationPayload, 
+  ManageHostPermissionsPayload, 
   OrganiserProfileData, 
   UserState 
 } from "@/types/user.types";
@@ -31,13 +32,23 @@ export const hostServices = {
 
 
 
-  manageHostRequest: async (hostId: string, payload: ManageHostPayload): Promise<ApiResponse<HostStatusUpdateData>> => {
+  manageHostApplication: async (hostId: string, payload: ManageHostApplicationPayload): Promise<ApiResponse<HostStatusUpdateData>> => {
     const response = await axiosInstance.patch<ApiResponse<HostStatusUpdateData>>(
-      API_ENDPOINTS.ADMIN.MANAGE_HOST_REQUEST(hostId), 
+      API_ENDPOINTS.ADMIN.MANAGE_HOST_APPLICATION(hostId), 
       payload, 
       { withCredentials: true }
     );
 
+    return response.data;
+  },
+
+
+  manageHostPermissions: async (hostId: string, payload: ManageHostPermissionsPayload): Promise<ApiResponse<HostStatusUpdateData>> => {
+    const response = await axiosInstance.patch<ApiResponse<HostStatusUpdateData>>(
+      API_ENDPOINTS.ADMIN.MANAGE_HOST_PERMISSION(hostId), 
+      payload, 
+      { withCredentials: true }
+    );
     return response.data;
   },
 
@@ -66,7 +77,75 @@ export const hostServices = {
   },
 
 
-  // convert to host by admin
+
+  getOrganiserProfile: async (hostId: string): Promise<ApiResponse<OrganiserProfileData>> => {
+    const response = await axiosInstance.get<ApiResponse<OrganiserProfileData>>(
+      API_ENDPOINTS.HOST.ORGANISER_PROFILE(hostId)
+    );
+    return response.data;
+  },
+
+
+
+  // update organizer details by host user
+  updateHostDetailsByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.patch<ApiResponse<UserState>>(
+      API_ENDPOINTS.HOST.ORGANIZER_DETAILS,
+      formData,
+      { 
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" }
+      },
+    );
+    return response.data;
+  },
+
+
+  // update organizer details by host user
+  updateHostLogoByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.patch<ApiResponse<UserState>>(
+      API_ENDPOINTS.HOST.ORGANIZER_LOGO,
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
+    return response.data;
+  },
+
+
+  // update organizer details by admin
+  updateHostDetailsByAdmin: async (hostId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.put<ApiResponse<UserState>>(
+      API_ENDPOINTS.ADMIN.UPDATE_HOST_DETAILS(hostId),
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
+
+    return response.data;
+  },
+
+
+  // update organizer logo by admin
+  updateHostLogoByAdmin: async (hostId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
+    const response = await axiosInstance.patch<ApiResponse<UserState>>(
+      API_ENDPOINTS.ADMIN.UPDATE_HOST_LOGO(hostId),
+      formData,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "multipart/form-data"},
+      }
+    );
+    return response.data;
+  },
+
+
+
+  // convert user to host by admin
   convertToHost: async (userId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
     const response = await axiosInstance.post<ApiResponse<UserState>>(
       API_ENDPOINTS.ADMIN.CONVERT_TO_HOST(userId),
@@ -81,55 +160,6 @@ export const hostServices = {
   },
 
 
-
-  // update host details by admin
-  updateHostDetailsByAdmin: async (userId: string, formData: FormData): Promise<ApiResponse<UserState>> => {
-    const response = await axiosInstance.put<ApiResponse<UserState>>(
-      API_ENDPOINTS.ADMIN.UPDATE_HOST(userId),
-      formData,
-      {
-        withCredentials: true,
-        headers: {"Content-Type": "multipart/form-data"},
-      }
-    );
-
-    return response.data;
-  },
-
-
-
-  // update host details by host user
-  updateHostDetailsByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
-    const response = await axiosInstance.patch<ApiResponse<UserState>>(
-      API_ENDPOINTS.HOST.ORGANIZER_DETAILS,
-      formData,
-      { withCredentials: true },
-    );
-    return response.data;
-  },
-
-
-  // update host details by host user
-  updateHostLogoByHost: async (formData: FormData): Promise<ApiResponse<UserState>> => {
-    const response = await axiosInstance.patch<ApiResponse<UserState>>(
-      API_ENDPOINTS.HOST.ORGANIZER_LOGO,
-      formData,
-      {
-        withCredentials: true,
-        headers: {"Content-Type": "multipart/form-data"},
-      }
-    );
-    return response.data;
-  },
-
-  
-
-  getOrganiserProfile: async (hostId: string): Promise<ApiResponse<OrganiserProfileData>> => {
-    const response = await axiosInstance.get<ApiResponse<OrganiserProfileData>>(
-      API_ENDPOINTS.HOST.ORGANISER_PROFILE(hostId)
-    );
-    return response.data;
-  }
 
 
 

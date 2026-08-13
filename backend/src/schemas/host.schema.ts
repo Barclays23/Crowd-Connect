@@ -66,11 +66,22 @@ export const businessAddressBase = z
    .trim()
    .min(1, "Business address is required")
    .min(30, "Include street name, city, etc (at least 30 characters)")
-   .max(100, "Address too long. Address should not exceed 100 characters")
+   .max(150, "Address too long. Address should not exceed 150 characters")
    .refine(
       (val) => !/^\d+$/.test(val),
       "Address cannot contain only numbers (please include street name, city, etc.)"
    );
+
+
+
+
+export const organizationDescriptionBase = z
+   .string()
+   .trim()
+   .min(1, "Organization description is required")
+   .min(50, "Description must be at least 50 characters to give attendees a good idea of who you are")
+   .max(500, "Description cannot exceed 500 characters");
+
 
 
 
@@ -99,28 +110,36 @@ export const rejectReasonBase = z
 
 
 
-export const HostManageSchema = z
-  .object({
-    action: z.enum(["approve", "reject"]),
-    reason: rejectReasonBase.optional().nullable(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.action === "reject" && !data.reason) {
-      ctx.addIssue({
-        path: ["reason"],
-        message: "Rejection reason is required when rejecting a host",
-        code: z.ZodIssueCode.custom,
-      });
-    }
+export const HostApplicationSchema = z
+   .object({
+      action: z.enum(["approve", "reject"]),
+      reason: rejectReasonBase.optional().nullable(),
+   })
+   .superRefine((data, ctx) => {
+      if (data.action === "reject" && !data.reason) {
+         ctx.addIssue({
+         path: ["reason"],
+         message: "Rejection reason is required when rejecting a host application",
+         code: z.ZodIssueCode.custom,
+         });
+      }
 
-    if (data.action === "approve" && data.reason != null) {
-      ctx.addIssue({
-        path: ["reason"],
-        message: "Reason is not allowed when approving a host",
-        code: z.ZodIssueCode.custom,
-      });
-    }
-  });
+      if (data.action === "approve" && data.reason != null) {
+         ctx.addIssue({
+         path: ["reason"],
+         message: "Reason is not allowed when approving a host",
+         code: z.ZodIssueCode.custom,
+         });
+      }
+   });
+
+
+export const HostPermissionSchema = z.object({
+   action: z.enum(["block", "unblock"]),
+   reason: z.string().optional().nullable(),
+});
+
+
 
 
 
@@ -129,7 +148,9 @@ export const HostUpgradeSchema = z.object({
    organizationName: organizationNameBase,
    registrationNumber: registrationNumberBase,
    businessAddress: businessAddressBase,
-   // hostDocument: hostDocumentBase,  // only need it in frontend (let the multer handle in backend)
+   organizationDescription: organizationDescriptionBase,
+   // hostDocument: hostDocumentBase,  // only need it in frontend (handled by multer in backend)
+   // organizationLogo: logoBase,      // only need it in frontend (handled by multer in backend)
 });
 
 
@@ -141,3 +162,5 @@ export const HostUpgradeSchema = z.object({
 
 // export type HostUpgradeFormData = z.infer<typeof HostUpgradeSchema>;  // for role upgrading & converting role
 // export type HostManageFormData = z.infer<typeof HostManageSchema>; // for approving or rejecting host
+// export type HostApplicationFormData = z.infer<typeof HostApplicationSchema>;
+// export type HostPermissionFormData = z.infer<typeof HostPermissionSchema>;

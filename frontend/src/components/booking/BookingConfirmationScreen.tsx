@@ -1,24 +1,15 @@
 import { Button } from "@/components/ui/button";
 import type { IBookingState } from "@/types/booking.types";
-import { Check, CheckCircle, Copy } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useNavigate } from "react-router-dom";
-
 
 export function BookingConfirmationScreen({ booking, userEmail, onClose}: {
    booking:   IBookingState;
    userEmail: string;
    onClose:   () => void;
 }) {
-   const [copied, setCopied] = useState(false);
    const navigate = useNavigate();
-
-   const copyToken = async () => {
-      await navigator.clipboard.writeText(booking.qrToken);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-   };
 
    const handleViewBookings = () => {
       onClose(); 
@@ -41,8 +32,7 @@ export function BookingConfirmationScreen({ booking, userEmail, onClose}: {
             </div>
          </div>
 
-
-         {/* 2. Ticket QR Code */}
+         {/* Ticket QR Code */}
          <div className="mx-auto w-fit p-4 rounded-2xl bg-(--bg-primary) border border-(--card-border)">
             {/* The white background is crucial for scanners to read it properly */}
             <div className="bg-white p-3 rounded-xl flex items-center justify-center">
@@ -55,19 +45,12 @@ export function BookingConfirmationScreen({ booking, userEmail, onClose}: {
             <p className="text-xs text-(--text-tertiary) mt-4 text-center">Sent to {userEmail}</p>
          </div>
 
-         {/* Copy token */}
-         <Button
-            onClick={copyToken}
-            variant="ghost"
-            size="xs"
-            className="flex mx-auto text-xs text-(--text-secondary) hover:text-(--text-primary)"
-         >
-            {copied ? <Check size={13} className="text-(--status-success)" /> : <Copy size={13} />}
-            {copied ? "Copied!" : "Copy QR token"}
-         </Button>
-
          {/* Booking summary */}
          <div className="text-left rounded-2xl bg-(--bg-tertiary) border border-(--card-border) divide-y divide-(--border-muted) text-sm">
+            <div className="flex justify-between px-4 py-3">
+               <span className="text-(--text-secondary)">Ticket Number</span>
+               <span className="font-mono font-bold text-(--text-primary)">{booking.ticketNo}</span>
+            </div>
             <div className="flex justify-between px-4 py-3">
                <span className="text-(--text-secondary)">Booking ID</span>
                <span className="font-mono text-(--text-primary) text-xs">{booking.bookingId.slice(-10).toUpperCase()}</span>

@@ -9,6 +9,7 @@ import {
   Heart,
   Wallet,
   IndianRupee,
+  Star,
 } from 'lucide-react';
 
 import UserProfile from '@/components/user/UserProfile';
@@ -20,6 +21,7 @@ import UserPayouts from '@/components/user/UserPayouts';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import UserFavourites from '@/components/user/UserFavourites';
+import UserReviews from '@/components/user/UserReviews';
 
 
 
@@ -30,7 +32,8 @@ const ALL_TABS = [
   { id: 'bookings',   label: 'Bookings',        icon: BookOpen,         path: '/my-bookings' },
   { id: 'favourites', label: 'Favourites',      icon: Heart,            path: '/my-favourites' },
   { id: 'wallet',     label: 'Wallet',          icon: Wallet,           path: '/my-wallet' },
-  { id: 'payouts',    label: "Payouts",         icon: IndianRupee,      path: "/my-payouts" }
+  { id: 'payouts',    label: "Payouts",         icon: IndianRupee,      path: "/my-payouts" },
+  { id: 'reviews',    label: 'My Reviews',      icon: Star,             path: '/my-reviews' },
 ] as const;
 
 
@@ -45,7 +48,8 @@ const pathToTab: Record<string, TabId> = {
   '/my-bookings'    : 'bookings',
   '/my-favourites'  : 'favourites',
   '/my-wallet'      : 'wallet',
-  "/my-payouts"     : 'payouts'
+  "/my-payouts"     : 'payouts',
+  "/my-reviews"     : 'reviews'
 };
 
 
@@ -99,6 +103,8 @@ const UserAccountTabs = () => {
         return <UserBookings />;
       case 'favourites':
         return <UserFavourites />;
+      case 'reviews':
+        return <UserReviews />;
       case 'wallet':
         return <UserWallet />;
       case 'payouts':

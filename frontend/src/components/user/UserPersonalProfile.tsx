@@ -21,18 +21,13 @@ import { Input } from '@/components/ui/input';
 import ChangePassword from '@/components/auth/ChangePassword';
 import type { AuthEmailRequestData } from '@/types/auth.types';
 import type { ApiResponse } from '@/types/common.types';
-import { Tooltip } from '@/components/common/ToolTip';
-
-
+import { Tooltip } from '@/components/common/Tooltip';
 
 interface Props {
    profile: UserState;
    setProfile: React.Dispatch<React.SetStateAction<UserState | null>>;
    setUser: React.Dispatch<React.SetStateAction<UserState | null>>;
 }
-
-
-
 
 const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
    const [isUpdatingProfilePic, setIsUpdatingProfilePic] = useState(false);
@@ -51,16 +46,13 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       mobile?: string;
    }>({});
 
-
    const [editFormData, setEditFormData] = useState({
       name: profile.name || '',
       mobile: profile.mobile || '',
       email: profile.email || '',
    });
 
-
    const isHost = profile.role === 'host';
-
 
    const handleProfilePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -70,7 +62,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          profileImage: file,
       });
 
-      
       if (!validation.success) {
          toast.error(validation.error.issues[0].message);
          return;
@@ -97,7 +88,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          e.target.value = '';
       }
    };
-
 
    const handleUpdateBasicInfo = async () => {
       const validation = updateBasicInfoSchema.safeParse({
@@ -146,8 +136,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       }
    };
 
-
-
    const handleUpdateEmail = async () => {
       const validation = emailBase.safeParse(editFormData.email);
 
@@ -177,7 +165,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
       }
    };
 
-
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
       setEditFormData((prev) => ({ ...prev, [name]: value }));
@@ -190,7 +177,6 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          setEmailError(undefined);
       }
    };
-
 
    return (
       <>
@@ -300,7 +286,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm">
                            {/* Role */}
                            <div>
-                              <span className="text-(--text-secondary)">Role:</span>{' '}
+                              <span className="font-medium text-(--brand-primary-light)">Role:</span>{' '}
                               <span className="font-medium text-(--text-primary)">
                                  {capitalize(profile.role)}
                               </span>
@@ -308,7 +294,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                            {/* Account Status */}
                            <div>
-                              <span className="text-(--text-secondary)">Status:</span>{' '}
+                              <span className="font-medium text-(--brand-primary-light)">Status:</span>{' '}
                               <span
                                  className={`font-medium ${
                                  profile.status === 'active'
@@ -322,7 +308,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                            {/* Joined On */}
                            <div>
-                              <span className="text-(--text-secondary)">Joined:</span>{' '}
+                              <span className="font-medium text-(--brand-primary-light)">Joined:</span>{' '}
                               <span className="font-medium text-(--text-primary)">
                                  {formatDate1(profile.createdAt)}
                               </span>
@@ -331,7 +317,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                            {/* Host Status (only if host) */}
                            {isHost && (
                               <div>
-                                 <span className="text-(--text-secondary)">Host status:</span>{' '}
+                                 <span className="font-medium text-(--brand-primary-light)">Host status:</span>{' '}
                                  <span
                                  className={`font-medium ${
                                     profile.hostStatus === 'approved'
@@ -355,7 +341,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
          <div className="max-w-4xl mx-auto px-5 md:px-0 space-y-8">
             <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-(--heading-primary)">
+                  <h2 className="text-xl font-semibold">
                      Personal Details
                   </h2>
                </div>
@@ -365,7 +351,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                   <div className="space-y-2">
                      {/* Header */}
                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-(--text-secondary)">
+                        <h3 className="text-sm font-medium">
                            Basic Information
                         </h3>
 
@@ -383,7 +369,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                      {/* Name */}
                      <div className="space-y-1">
-                        <label className="text-sm text-(--text-secondary)">Name</label>
+                        <label className="text-sm font-medium text-(--brand-primary-light)">Name</label>
                         {isEditingBasicInfo ? (
                            <Input
                               type="text"
@@ -402,7 +388,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                      {/* Mobile */}
                      <div className="space-y-1">
-                        <label className="text-sm text-(--text-secondary)">Mobile</label>
+                        <label className="text-sm font-medium text-(--brand-primary-light)">Mobile</label>
                         {isEditingBasicInfo ? (
                            <Input
                               type="tel"
@@ -456,7 +442,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                   {/* Email */}
                   <div className="space-y-2">
                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-(--text-secondary)">
+                        <label className="text-sm font-medium text-(--brand-primary-light)">
                            Email
                         </label>
 
@@ -506,7 +492,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         </div>
                      ) : (
                         <div className="flex items-center gap-2">
-                           <span className="font-medium">{profile.email}</span>
+                           <span className="font-medium text-(--text-primary)">{profile.email}</span>
                            {profile.isEmailVerified && (
                            <CheckCircle size={14} className="text-(--status-success)" />
                            )}
@@ -530,7 +516,7 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                         <KeyRound size={18} />
                      </div>
                      <div>
-                        <p className="font-medium text-(--text-primary)">Password</p>
+                        <p className="font-medium text-(--brand-primary-light)">Password</p>
                         <p className="text-sm text-(--text-secondary)">
                            Update your account password
                         </p>
