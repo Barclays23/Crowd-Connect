@@ -7,6 +7,8 @@ import {
     CreateEventRequestDTO, 
     EventResponseDTO, 
     GetDiscoveryEventsResult, 
+    GetOrganiserEventsResult, 
+    OrganiserEventResponseDTO, 
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
@@ -26,12 +28,12 @@ import {
     BookingSortField, 
     GetBookingsFilter 
 } from "@/types/booking.types";
-import { GetBookingsResponseDTO } from "@/dtos/booking.dto";
+import { BookingResponseDTO, GetBookingsResponseDTO } from "@/dtos/booking.dto";
 import { IBookingService } from "@/services/booking-services/interfaces/IBookingService";
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EventCategory, EventFormat, EventStatus, TicketType } from "@/constants/event.constants";
 import { BookingStatus } from "@/constants/booking.constants";
-import { ApiResponseModel } from "@/utils/apiResponse.utils";
+import { ApiResponse } from "@/utils/apiResponse.utils";
 
 
 
@@ -64,12 +66,18 @@ export class EventController implements IEventController {
                 imageFile,
             });
 
-            res.status(HTTP_STATUS.CREATED).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_CREATE_EVENT,
-                // eventData: createdEvent,
-                data: createdEvent,
-            });
+            res.status(HTTP_STATUS.CREATED).json(
+                ApiResponse.success<EventResponseDTO>(
+                    EVENT_MESSAGES.SUCCESS_CREATE_EVENT, 
+                    createdEvent
+                )
+            );
+
+            // res.status(HTTP_STATUS.CREATED).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_CREATE_EVENT,
+            //     data: createdEvent,
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -100,11 +108,18 @@ export class EventController implements IEventController {
                 imageFile
             });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-                data: updatedEvent,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO>(
+                    EVENT_MESSAGES.SUCCESS_UPDATE_EVENT, 
+                    updatedEvent
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
+            //     data: updatedEvent,
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -135,11 +150,18 @@ export class EventController implements IEventController {
                 imageFile
             });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-                data: updatedEvent,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO>(
+                    EVENT_MESSAGES.SUCCESS_UPDATE_EVENT, 
+                    updatedEvent
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
+            //     data: updatedEvent,
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -156,10 +178,14 @@ export class EventController implements IEventController {
 
             await this._eventServices.deleteEventByHost(eventId, hostId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -175,10 +201,14 @@ export class EventController implements IEventController {
 
             await this._eventServices.deleteEventByAdmin(eventId, adminId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -219,12 +249,19 @@ export class EventController implements IEventController {
 
             const result: GetAllEventsResult = await this._eventServices.getAllEvents(filters);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                // eventsData: result.events,
-                data: result.events,
-                pagination: result.pagination
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO[] | null>(
+                    "Events retrieved successfully.", 
+                    result.events, 
+                    result.pagination
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: result.events,
+            //     pagination: result.pagination
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -251,11 +288,15 @@ export class EventController implements IEventController {
                 cancelReason
             });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Event cancelled successfully.",
-                data: { status: updatedStatus }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_CANCEL_EVENT, { status: updatedStatus })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Event cancelled successfully.",
+            //     data: { status: updatedStatus }
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -275,12 +316,16 @@ export class EventController implements IEventController {
 
             const updatedStatus: EventStatus | null = await this._eventServices.suspendEvent({eventId, adminId, suspendReason});
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT,
-                // updatedStatus
-                data: { eventStatus: updatedStatus }
-            });
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT, { eventStatus: updatedStatus })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT,
+            //     data: { eventStatus: updatedStatus }
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -301,11 +346,15 @@ export class EventController implements IEventController {
             const userId = req.user.userId;
     
             await this._eventServices.publishEvent(eventId, userId);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT)
+            );
     
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -353,11 +402,19 @@ export class EventController implements IEventController {
 
             const result: GetAllEventsResult = await this._eventServices.getUserEvents({userId, filters});
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                data: result.events,
-                pagination: result.pagination
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO[] | null>(
+                    "User events retrieved.", 
+                    result.events, 
+                    result.pagination
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: result.events,
+            //     pagination: result.pagination
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -375,12 +432,20 @@ export class EventController implements IEventController {
             console.log('filters for PUBLIC EVENTS:', req.query)
             
             const {eventsData, pagination}: GetDiscoveryEventsResult = await this._eventServices.getEventsForDiscovery(filters);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO[]>(
+                    "Discovery events retrieved.", 
+                    eventsData, 
+                    pagination
+                )
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                data: eventsData,
-                pagination: pagination
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: eventsData,
+            //     pagination: pagination
+            // });
             
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -394,12 +459,16 @@ export class EventController implements IEventController {
         try {
             const limit = parseInt(req.query.limit as string) || 6;
 
-            const trendingEvents = await this._eventServices.getTrendingEvents(limit);
+            const trendingEvents: EventResponseDTO[] = await this._eventServices.getTrendingEvents(limit);
 
-            res.status(HTTP_STATUS.OK).json({ 
-                success: true, 
-                data: trendingEvents 
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO[]>("Trending events retrieved.", trendingEvents)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({ 
+            //     success: true, 
+            //     data: trendingEvents 
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -416,13 +485,21 @@ export class EventController implements IEventController {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
-            const result = await this._eventServices.getOrganiserEvents({ hostId, page, limit });
+            const result: GetOrganiserEventsResult = await this._eventServices.getOrganiserEvents({ hostId, page, limit });
 
-            res.status(200).json({
-                success: true,
-                message: "Organiser events fetched successfully",
-                data: result
-            });
+            const apiResponse: ApiResponse<OrganiserEventResponseDTO[]> = ApiResponse.success<OrganiserEventResponseDTO[]>(
+                "Organiser events fetched successfully", 
+                result.eventsData,
+                result.pagination
+            );
+
+            res.status(HTTP_STATUS.OK).json(apiResponse);
+
+            // res.status(200).json({
+            //     success: true,
+            //     message: "Organiser events fetched successfully",
+            //     data: result
+            // });
 
         } catch (error) {
             next(error);
@@ -437,17 +514,18 @@ export class EventController implements IEventController {
 
             const eventDetails: EventResponseDTO = await this._eventServices.getEventDetails(eventId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                data: eventDetails
-            });
+            const apiResponse = ApiResponse.success<EventResponseDTO>(
+                "Event details retrieved successfully",
+                eventDetails
+            );
 
-            // const apiResponse = ApiResponseModel.success<EventResponseDTO>(
-            //     "Event details retrieved successfully",
-            //     eventDetails
-            // );
+            res.status(HTTP_STATUS.OK).json(apiResponse);
 
-            // res.status(HTTP_STATUS.OK).json(apiResponse);
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: eventDetails
+            // });
+
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
@@ -488,15 +566,21 @@ export class EventController implements IEventController {
 
             console.log("✅ Parsed filters for getAllBookingsOfEvent:", filters);
 
-            // const result: GetBookingsResponseDTO = await this._bookingServices.getAllBookingsOfEvent(filters);
             const result: GetBookingsResponseDTO = await this._bookingServices.getBookingsList(filters);
 
-            res.status(HTTP_STATUS.OK).json({
-                // bookingsData:   result.bookings,
-                success: true,
-                data: result.bookings,
-                pagination: result.pagination,
-            });
+            const apiResponse: ApiResponse<BookingResponseDTO[]> = ApiResponse.success<BookingResponseDTO[]>(
+                "Event bookings retrieved.", 
+                result.bookings, 
+                result.pagination
+            )
+
+            res.status(HTTP_STATUS.OK).json(apiResponse);
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: result.bookings,
+            //     pagination: result.pagination,
+            // });
 
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";

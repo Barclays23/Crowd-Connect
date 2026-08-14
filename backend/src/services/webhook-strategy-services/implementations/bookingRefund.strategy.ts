@@ -37,9 +37,14 @@ export class BookingRefundStrategy implements IRefundStrategy {
         const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingByPaymentId(paymentId);
 
         if (!booking) {
-            console.error(`[Webhook Error] No booking found for paymentId: ${paymentId}`);
-            return;
+            // ✅ Throw to force a retry
+            throw new Error(`[Webhook Error] No booking found for paymentId: ${paymentId}. Forcing retry.`);
         }
+
+        // if (!booking) {
+        //     console.error(`[Webhook Error] No booking found for paymentId: ${paymentId}`);
+        //     return;
+        // }
 
         
         if (booking.payment?.status === PAYMENT_STATUSES.REFUNDED) {

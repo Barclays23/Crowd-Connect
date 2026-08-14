@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpError } from '@/utils/httpError.utils';
 import winstonLogger from '@/config/winston-logger.config';
+import { ApiResponse } from '@/utils/apiResponse.utils';
 
 
 function hasErrorCode(err: unknown): err is { code: number } {
@@ -43,10 +44,10 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    // console.error('❌❌❌ errorHandler error --------------------------:', err);
 
    winstonLogger.error('❌❌❌ Unhandled Exception Caught in Error Middleware: ', {
-      error: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : undefined,
-      path: req.originalUrl, //  Log WHICH route failed!
-      method: req.method,    //  Log IF it was GET, POST, etc.
+      error    : err instanceof Error ? err.message : String(err),
+      stack    : err instanceof Error ? err.stack : undefined,
+      path     : req.originalUrl, //  Log WHICH route failed!
+      method   : req.method,    //  Log IF it was GET, POST, etc.
    });
 
    // Very important safety
@@ -85,10 +86,24 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
    console.log('🔥 Final errorHandler error message to send frontend: ', message);
    // winstonLogger.debug('🔥 Final error message sent to frontend', { message, status });
 
-   res.status(status).json({
-      success: false,
-      message,
-      code,
-      ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack }),
-   });
+   // ✅ Group the extra error context (code, stack trace)
+   const errorData = {
+      ...(code && { code }),
+      ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack })
+   };
+
+   // ✅ Use the Common Response Model to shape the final output
+   // If errorData is empty, we just pass undefined so the `data` field is omitted from the JSON.
+   const hasErrorData = Object.keys(errorData).length > 0;
+
+   res.status(status).json(
+      ApiResponse.error(message, hasErrorData ? errorData : undefined)
+   );
+
+   // res.status(status).json({
+   //    success: false,
+   //    message,
+   //    code,
+   //    ...(process.env.NODE_ENV === 'development' && err instanceof Error && { stack: err.stack }),
+   // });
 };

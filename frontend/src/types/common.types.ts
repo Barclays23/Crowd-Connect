@@ -12,7 +12,7 @@ export interface IPagination {
 
 
 // Standardized Generic Wrapper for all API interactions
-export interface ApiResponse<T> {
+export interface ApiResponse<T = unknown> {
   success     : boolean;
   message     : string;
   data        : T;

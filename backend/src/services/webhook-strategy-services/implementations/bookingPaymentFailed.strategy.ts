@@ -3,6 +3,7 @@ import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository
 import { IPaymentFailedStrategy } from "../interfaces/IPaymentFailedStrategy";
 import { StandardWebhookEvent } from "@/types/webhook.types";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
+import { BookingEntity } from "@/entities/booking.entity";
 
 
 
@@ -17,7 +18,12 @@ export class BookingPaymentFailedStrategy implements IPaymentFailedStrategy {
     async executeFailed(webhookEvent: StandardWebhookEvent): Promise<void> {
         const { orderId } = webhookEvent;
 
-        const booking = await this._bookingRepository.getBookingByOrderId(orderId);
+        const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(orderId);
+
+        if (!booking) {
+            // ✅ Throw to force a retry
+            throw new Error(`[Webhook Error] Failed to find booking for failed payment orderId: ${orderId}`);
+        }
 
         if (!booking || booking.bookingStatus !== BOOKING_STATUSES.PENDING) {
             return; // Ignore if booking doesn't exist or is already resolved

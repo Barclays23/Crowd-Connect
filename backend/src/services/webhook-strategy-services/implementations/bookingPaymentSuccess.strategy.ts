@@ -23,8 +23,8 @@ export class BookingPaymentSuccessStrategy implements IPaymentSuccessStrategy {
         const booking = await this._bookingRepository.getBookingByOrderId(orderId);
 
         if (!booking) {
-            console.error(`[Webhook Error] No booking found for orderId: ${orderId}`);
-            return;
+            // ✅ Throw error to trigger controller's catch block -> 500 status -> Webhook Retry
+            throw new Error(`[Webhook Error] No booking found for orderId: ${orderId}. Forcing retry.`);
         }
 
         // IDEMPOTENCY: If user already verified via frontend, do nothing.

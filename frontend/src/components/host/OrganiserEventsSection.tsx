@@ -23,12 +23,13 @@ export default function OrganiserEventsSection({ hostId }: OrganiserEventsSectio
     const [events, setEvents] = useState<OrganiserEventsData[]>([]);
     const [loading, setLoading] = useState(true);
 
+    
     useEffect(() => {
         const fetchEvents = async () => {
             try {
                 setLoading(true);
-                const response: ApiResponse<GetOrganiserEventsResult> = await eventServices.getOrganiserEvents({ hostId });
-                setEvents(response.data.eventsData);
+                const response: ApiResponse<OrganiserEventsData[]> = await eventServices.getOrganiserEvents({ hostId });
+                setEvents(response.data);
 
             } catch (error: unknown) {
                 const errorMessage = getApiErrorMessage(error);

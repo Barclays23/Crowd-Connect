@@ -5,7 +5,7 @@ import { IPagination } from "@/types/common.types";
 
 
 
-export class ApiResponseModel<T> implements IApiResponse<T> {
+export class ApiResponse<T> implements IApiResponse<T> {
     private constructor(
         public readonly success     : boolean,
         public readonly message     : string,
@@ -15,13 +15,13 @@ export class ApiResponseModel<T> implements IApiResponse<T> {
 
 
 
-    public static success<T>(message: string, data?: T, pagination?: IPagination): ApiResponseModel<T> {
-        return new ApiResponseModel<T>(true, message, data, pagination);
+    public static success<T>(message: string, data?: T, pagination?: IPagination): ApiResponse<T> {
+        return new ApiResponse<T>(true, message, data, pagination);
     }
 
 
-    public static error<T>(message: string, data?: T): ApiResponseModel<T> {
-        return new ApiResponseModel<T>(false, message, data);
+    public static error<T>(message: string, data?: T): ApiResponse<T> {
+        return new ApiResponse<T>(false, message, data);
     }
 
 }

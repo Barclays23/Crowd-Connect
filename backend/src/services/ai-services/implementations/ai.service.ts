@@ -32,11 +32,12 @@ export class AiService implements IAiService {
 
     private buildPrompt(data: GeneratePosterDTO): string {
         return `Create a high-quality, professional, and modern promotional background poster for an event. 
-        Category: ${data.category}. 
-        Title/Theme: ${data.title}. 
-        Details: ${data.description}. 
-        Vibe/Location: ${data.locationName}. 
-        Strict requirement: The image must be a clean, aesthetic background illustration or photograph suitable for an event banner. Do NOT include any typography, text, letters, or words in the image.`;
+            Category: ${data.category}. 
+            Title/Theme: ${data.title}. 
+            Details: ${data.description}. 
+            Vibe/Location: ${data.locationName}. 
+            Strict requirement: The image must be a clean, aesthetic background illustration or photograph suitable for an event banner. Do NOT include any typography, text, letters, or words in the image.
+        `;
     }
 
 
