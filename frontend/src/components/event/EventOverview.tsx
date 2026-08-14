@@ -10,7 +10,7 @@ import {
 import type { IEventState } from "@/types/event.types";
 import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
-import { EventMap } from "@/components/common/EventMap";
+import { EventMap } from "@/components/event/EventMap";
 
 
 

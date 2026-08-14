@@ -1,4 +1,4 @@
-// src/components/common/GooglePlacesAutoComplete.tsx
+// src/components/shared/GooglePlacesAutoComplete.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import { CheckCircle2 } from 'lucide-react';

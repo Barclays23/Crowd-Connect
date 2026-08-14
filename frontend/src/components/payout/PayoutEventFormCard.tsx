@@ -1,6 +1,6 @@
 // frontend/src/components/payout/PayoutEventFormCard.tsx
 import { Button } from "@/components/ui/button";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { PayoutRequestSchema, type PayoutRequestFormValues } from "@/schemas/payout.schema";
 import { payoutServices } from "@/services/payoutServices";
 import type { ApiResponse } from "@/types/common.types";

@@ -32,7 +32,7 @@ import { AdminPagination } from "./admin-pagination";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { Modal } from "../ui/modal";
 import { ConfirmationModal } from "./confirmation-modal";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { 
    type EventSortDirection, 
@@ -48,7 +48,7 @@ import {
    type EventFormValues, 
    type SuspendEventFormValues 
 } from "@/schemas/event.schema";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { TextArea } from "@/components/ui/text-area";
 import EditEventForm from "@/components/host/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
@@ -56,7 +56,7 @@ import { capitalize } from "@/utils/namingConventions";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

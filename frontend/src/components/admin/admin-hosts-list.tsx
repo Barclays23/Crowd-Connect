@@ -42,8 +42,8 @@ import { RejectHostModal } from "./reject-host-modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { USER_ROLES, type HostStatus } from "@/constants/user-system.constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
-import { StarRating } from "@/components/common/StarRating";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { StarRating } from "@/components/shared/StarRating";
 
 
 

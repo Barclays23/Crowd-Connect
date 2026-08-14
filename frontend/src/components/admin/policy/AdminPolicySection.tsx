@@ -3,10 +3,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit2 } from "lucide-react";
-import { FormatMarkdown } from "@/components/common/FormatMarkdown";
+import { FormatMarkdown } from "@/components/shared/FormatMarkdown";
 import { type ITermsAndConditions } from "@/types/platformSettings.types";
 import { TextArea } from "@/components/ui/text-area";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

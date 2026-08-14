@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-sidebar.tsx
+// frontend/src/components/layout/admin-sidebar.tsx
 import { NavLink, useLocation } from "react-router-dom"
 import {
   Home,

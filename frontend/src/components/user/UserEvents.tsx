@@ -30,7 +30,7 @@ import { toast } from "react-toastify";
 import { UserPagination } from "@/components/user/UserPagination";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { Modal } from "@/components/ui/modal";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
    type EventSortDirection,
@@ -48,8 +48,8 @@ import { EventCheckIn } from "@/pages/event/EventCheckIn";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
-import { StarRating } from "@/components/common/StarRating";
-import { Tooltip } from "@/components/common/Tooltip";
+import { StarRating } from "@/components/shared/StarRating";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

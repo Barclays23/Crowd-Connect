@@ -8,7 +8,7 @@ import type { VariantProps } from "class-variance-authority";
 import { Button } from "../ui/button";
 import { AlertCircle, CheckCircle, Star, Mail, Phone, Building2, FileText } from "lucide-react";
 import type { HostStatus, UserStatus } from "@/constants/user-system.constants";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 
 interface ViewHostModalProps {
   host: UserState

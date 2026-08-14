@@ -19,22 +19,22 @@ import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { TextArea } from "@/components/ui/text-area";
-import { ButtonLoader } from "@/components/common/ButtonLoader";
+import { ButtonLoader } from "@/components/shared/ButtonLoader";
 import { type EventFormValues } from "@/schemas/event.schema";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { useGoogleMaps2 } from "@/contexts/GoogleMapsProvider2";
-import { FieldError } from "../ui/FieldError";
+import { FieldError } from "../shared/FieldError";
 import { setupGooglePlaceAutocompleteWidget } from "@/utils/google-map-utils/google-place-autocomplete-widget";
-import { GooglePlacesAutoComplete } from "@/components/common/GooglePlacesAutoComplete";
-import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlacesWidgetAutoComplete";
-import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
+import { GooglePlacesAutoComplete } from "@/components/shared/GooglePlacesAutoComplete";
+import { GooglePlacesWidgetAutoComplete } from "@/components/shared/GooglePlacesWidgetAutoComplete";
+import { EventDurationBadge } from "@/components/event/EventDurationBadge";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { generatePosterSchema } from "@/schemas/ai.schema";
 import type { GeneratePosterPayload, GeneratePosterResponse } from "@/types/ai.types";
 import { aiServices } from "@/services/aiServices";
 import type { ApiResponse } from "@/types/common.types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TermsModal } from "@/components/common/TermsModal";
+import { TermsModal } from "@/components/shared/TermsModal";
 
 
 const mapContainerStyle = { width: "100%", height: "200px" };

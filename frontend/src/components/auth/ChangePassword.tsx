@@ -5,7 +5,7 @@ import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from 'lucide-react';
 import { changePasswordSchema, type ChangePasswordData } from '@/schemas/user.schema';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import { userServices } from '@/services/userServices';
-import { FieldError } from '@/components/ui/FieldError';
+import { FieldError } from '@/components/shared/FieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';

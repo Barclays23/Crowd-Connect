@@ -13,12 +13,12 @@ import { formatDate3 } from "@/utils/dateAndTimeFormats";
 import { BookingSteps } from "@/components/booking/BookingSteps";
 import { BookingConfirmationScreen } from "@/components/booking/BookingConfirmationScreen";
 import { getMaxBookingQuantity } from "@/utils/booking.utils";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { Button } from "@/components/ui/button";
 import { BOOKING_CONSTRAINTS } from "@/constants/booking.constants";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/constants/payment.constants";
 import { EVENT_FORMATS, TICKET_TYPES, type EventFormat } from "@/constants/event.constants";
-import { TermsModal } from "@/components/common/TermsModal";
+import { TermsModal } from "@/components/shared/TermsModal";
 
 
 type EmbeddedEventSnapshot = IBookingState["event"];

@@ -1,4 +1,4 @@
-// src/components/common/EventMap.tsx
+// src/components/event/EventMap.tsx
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvent } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "leaflet";

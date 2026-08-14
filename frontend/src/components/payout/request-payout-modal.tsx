@@ -1,5 +1,5 @@
 // frontend/src/components/payout/request-payout-modal.tsx
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { PayoutEventFormCard } from "@/components/payout/PayoutEventFormCard";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";

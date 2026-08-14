@@ -1,4 +1,4 @@
-// frontend/src/components/common/Tooltip.tsx
+// frontend/src/components/shared/Tooltip.tsx
 import { type ReactNode } from "react";
 import {
     RadixTooltip,

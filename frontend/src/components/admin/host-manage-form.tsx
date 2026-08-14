@@ -17,8 +17,8 @@ import { X, Upload, FileText, CheckCircle, AlertCircle, Phone,
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
 import { getInitials } from "@/utils/namingConventions";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
-import { ButtonLoader } from "../common/ButtonLoader";
+import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
+import { ButtonLoader } from "../shared/ButtonLoader";
 import { 
    ALLOWED_DOCUMENT_TYPES, 
    HostApplySchema, 
@@ -35,8 +35,8 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
-import { StarRating } from "@/components/common/StarRating";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { StarRating } from "@/components/shared/StarRating";
 import { pdfjs } from 'react-pdf';
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button }  from "@/components/ui/button";
 import { Badge }   from "@/components/ui/badge";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast }   from "react-toastify";
 import { checkinServices } from "@/services/checkinServices";
 import { formatDate3 }     from "@/utils/dateAndTimeFormats";

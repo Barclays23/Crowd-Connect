@@ -1,4 +1,4 @@
-// frontend/src/components/common/PublicRoute.tsx
+// frontend/src/guards/PublicRoute.tsx
 
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';

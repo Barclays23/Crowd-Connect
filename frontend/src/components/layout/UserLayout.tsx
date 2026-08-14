@@ -1,6 +1,7 @@
+// frontend/src/components/layout/UserLayout.tsx
 import { Outlet } from "react-router-dom";
-import { Navbar } from "@/components/common/Navbar";
-import { Footer } from "@/components/common/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { FAQChatbot } from "@/components/chat/FAQChatbot";
 
 

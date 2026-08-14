@@ -11,9 +11,9 @@ import { OtpSchema } from "@/schemas/otp.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
 import { maskEmail } from "@/utils/namingConventions";
-import { FieldError } from "../ui/FieldError";
+import { FieldError } from "../shared/FieldError";
 import type { ApiResponse } from "@/types/common.types";
 import type { AuthEmailRequestData, EmailResponseData } from "@/types/auth.types";
 

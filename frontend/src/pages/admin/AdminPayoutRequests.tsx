@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/AdminPayoutRequests.tsx
 
-import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import AdminBanner from "@/components/admin/admin-banner";
 import { PayoutRequestsList } from "@/components/admin/payout-requests-list";
 

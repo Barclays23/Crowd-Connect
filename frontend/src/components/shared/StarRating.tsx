@@ -1,4 +1,4 @@
-// frontend/src/components/common/StarRating.tsx
+// frontend/src/components/shared/StarRating.tsx
 import { Star } from "lucide-react";
 
 interface StarRatingProps {

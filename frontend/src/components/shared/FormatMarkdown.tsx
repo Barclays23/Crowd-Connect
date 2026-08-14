@@ -1,4 +1,4 @@
-// frontend/src/components/common/FormatMarkdown.tsx
+// frontend/src/components/shared/FormatMarkdown.tsx
 
 import React from "react";
 

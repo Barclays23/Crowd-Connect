@@ -33,7 +33,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { toast } from "react-toastify";
 import { eventServices } from "@/services/eventServices";
 import { UserPagination } from "@/components/user/UserPagination";
-import { GooglePlacesAutoComplete, type SelectedLocation } from "@/components/common/GooglePlacesAutoComplete";
+import { GooglePlacesAutoComplete, type SelectedLocation } from "@/components/shared/GooglePlacesAutoComplete";
 import { PillToggle } from "@/components/ui/PillToggle";
 
 import heroBg_Day from "@/assets/images/hero-images/event-hero-bg1-day.png"

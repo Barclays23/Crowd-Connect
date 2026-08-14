@@ -1,5 +1,5 @@
 // frontend/src/components/event/EventCard1.tsx
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 import { type IEventState } from "@/types/event.types";
 import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp, Star } from "lucide-react";

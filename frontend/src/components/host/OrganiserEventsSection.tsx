@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { eventServices } from "@/services/eventServices";
 import OrganiserEventCard from "@/components/event/OrganiserEventCard";
 import { toast } from "react-toastify";

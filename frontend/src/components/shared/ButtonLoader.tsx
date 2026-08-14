@@ -1,3 +1,4 @@
+// frontend/src/components/shared/ButtonLoader.tsx
 import { Loader2 } from "lucide-react";
 
 interface ButtonLoaderProps {

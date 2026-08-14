@@ -1,3 +1,4 @@
+// frontend/src/components/shared/UserAvatar.tsx
 import { User } from "lucide-react";
 
 
@@ -12,7 +13,7 @@ const UserAvatar = ({ name }: { name?: string }) => {
       : null;
 
    return (
-      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-[var(--brand-primary)] text-white text-sm font-semibold">
+      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-(--brand-primary) text-white text-sm font-semibold">
          {fallback ? (
             fallback
          ) : (

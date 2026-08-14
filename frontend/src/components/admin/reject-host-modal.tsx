@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/text-area";
 import { HostRejectSchema } from "@/schemas/host.schema";
 import type { HostRejectFormData } from "@/schemas/host.schema";
-import { FieldError } from "../ui/FieldError";
+import { FieldError } from "../shared/FieldError";
 
 
 interface RejectHostModalProps {

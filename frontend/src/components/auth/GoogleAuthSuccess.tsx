@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 
 
 

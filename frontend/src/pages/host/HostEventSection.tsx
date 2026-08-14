@@ -7,7 +7,7 @@ import HostPendingState from '@/components/host/HostPendingState';
 import HostRejectedState from '@/components/host/HostRejectedState';
 import HostBlockedState from '@/components/host/HostBlockedState';
 import AdminMessage from '@/components/host/AdminHostingMessage';
-import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
 import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';

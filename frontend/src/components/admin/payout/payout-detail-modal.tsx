@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate1 } from "@/utils/dateAndTimeFormats";
 import { formatNumberToINR } from "@/utils/UI.utils";
 import type { IPayoutState } from "@/types/payout.types";
-import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
+import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/payout/payout-constants";
 
 
 function DetailRow({ label, value, className = "", mono = false }: {

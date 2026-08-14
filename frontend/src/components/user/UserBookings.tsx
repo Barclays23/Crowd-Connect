@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Modal }            from "@/components/ui/modal";
 import { UserPagination }   from "@/components/user/UserPagination";
-import { LoadingSpinner1 }  from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 }  from "@/components/shared/LoadingSpinner1";
 
 import { bookingServices }     from "@/services/bookingServices";
 import { getApiErrorMessage }  from "@/utils/errorMessages.utils";
@@ -39,7 +39,7 @@ import {
 import BookingDetails              from "@/components/booking/BookingDetails";
 import { getBookingStatusVariant, getPaymentStatusVariant } from "@/utils/UI.utils";
 import { TextArea } from "@/components/ui/text-area";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { cancelReasonBase } from "@/schemas/booking.schema";
 import { canCancelBooking } from "@/utils/booking.utils";
 import { useAuth } from "@/contexts/AuthContext";

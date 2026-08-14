@@ -8,7 +8,7 @@ import type { IPayoutState } from "@/types/payout.types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RejectPayoutSchema, type RejectPayoutFormValues } from "@/schemas/payout.schema";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 
 interface PayoutRejectModalProps {
    isOpen      : boolean;

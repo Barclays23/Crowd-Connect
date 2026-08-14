@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { userServices } from '@/services/userServices';
 import { toast } from 'react-toastify';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
-import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 import type { UserState } from '@/types/user.types';
 
 import UserPersonalProfile from './UserPersonalProfile';

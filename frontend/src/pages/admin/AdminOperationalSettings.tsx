@@ -1,13 +1,13 @@
 // frontend/src/pages/admin/AdminOperationalSettings.tsx
 import { useState, useEffect } from "react";
-import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { toast } from "react-toastify";
 import type { IOperationalSettings } from "@/types/platformSettings.types";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ButtonLoader } from "@/components/common/ButtonLoader";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { ButtonLoader } from "@/components/shared/ButtonLoader";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 
 import { platformSettingsService } from "@/services/platformSettingsService";
 import { Pencil, X, Check } from "lucide-react";
