@@ -7,7 +7,7 @@ import { Badge }   from "@/components/ui/badge";
 import { Button }  from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserPagination }  from "@/components/user/UserPagination";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 
 import { walletServices }     from "@/services/walletServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";

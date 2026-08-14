@@ -1,4 +1,4 @@
-// src/components/ui/SuccessIcon.tsx
+// src/components/shared/SuccessCheckIcon.tsx
 import { cn } from "@/lib/utils"
 
 interface SuccessIconProps {
@@ -32,7 +32,7 @@ export function SuccessCheckIcon({
     <div
         className={cn(
             "mx-auto rounded-full flex items-center justify-center",
-            "bg-[var(--badge-success-bg)]", // light green background (theme-aware)
+            "bg-(--badge-success-bg)", // light green background (theme-aware)
             sizeClasses[size],
             className
         )}
@@ -41,7 +41,7 @@ export function SuccessCheckIcon({
 
         <svg
             className={cn(
-                "text-[var(--status-success)]",
+                "text-(--status-success)",
                 iconSizeClasses[size],
                 iconClassName,
                 "animate-drawCheck"

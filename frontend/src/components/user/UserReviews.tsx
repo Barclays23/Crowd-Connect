@@ -4,7 +4,7 @@ import { Loader2, Star, Edit, Trash2, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPagination } from "@/components/user/UserPagination";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { EditReviewModal } from "@/components/review/EditReviewModal";
 import { reviewServices } from "@/services/reviewServices";
@@ -12,7 +12,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { toast } from "react-toastify";
 import type { IReviewState } from "@/types/review.types";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 import type { ApiResponse } from "@/types/common.types";
 
 

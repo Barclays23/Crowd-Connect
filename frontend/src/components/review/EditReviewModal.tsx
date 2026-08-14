@@ -9,7 +9,7 @@ import { reviewServices } from "@/services/reviewServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { ApiResponse } from "@/types/common.types";
 import { EditReviewSchema, type EditReviewFormData } from "@/schemas/review.schema";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { IReviewState } from "@/types/review.types";

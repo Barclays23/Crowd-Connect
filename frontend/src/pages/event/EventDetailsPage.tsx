@@ -17,14 +17,14 @@ import { capitalize } from "@/utils/namingConventions";
 import type { UserState } from "@/types/user.types";
 import { getSeatsInfo, getEventStatusBadgeVariant, getEventCategoryBadgeVariant } from "@/utils/UI.utils";
 import { formatDate4 } from "@/utils/dateAndTimeFormats";
-import { EventMap } from "@/components/common/EventMap";
+import { EventMap } from "@/components/event/EventMap";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
 import type { ApiResponse } from "@/types/common.types";
 import ReviewsSection from "@/components/review/ReviewsSection";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 
 
 

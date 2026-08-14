@@ -1,12 +1,12 @@
-// frontend/src/components/common/TermsModal.tsx
+// frontend/src/components/shared/TermsModal.tsx
 
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { platformSettingsService } from "@/services/platformSettingsService";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { FormatMarkdown } from "@/components/common/FormatMarkdown";
+import { FormatMarkdown } from "@/components/shared/FormatMarkdown";
 import type { ITermsAndConditions } from "@/types/platformSettings.types";
 
 

@@ -1,4 +1,4 @@
-// frontend/src/components/ui-constants/payout-constants.tsx
+// frontend/src/components/payout/payout-constants.tsx
 
 import React from "react";
 import { Clock, BadgeCheck, Wallet, Ban } from "lucide-react";

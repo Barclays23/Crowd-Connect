@@ -1,4 +1,4 @@
-// frontend/src/components/common/Footer.tsx
+// frontend/src/components/layout/Footer.tsx
 import {
   Calendar,
   Facebook,

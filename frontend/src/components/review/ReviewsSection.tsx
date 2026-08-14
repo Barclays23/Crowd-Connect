@@ -2,14 +2,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Star, User, MessageSquareOff, Filter, ArrowUpDown } from "lucide-react";
 import { reviewServices } from "@/services/reviewServices";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { UserPagination } from "@/components/user/UserPagination";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { IReviewState } from "@/types/review.types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 
 
 

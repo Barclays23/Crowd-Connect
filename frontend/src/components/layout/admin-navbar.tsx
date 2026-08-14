@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-navbar.tsx
+// frontend/src/components/layout/admin-navbar.tsx
 
 import { Search, Bell, User, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -1,10 +1,10 @@
 // frontend/src/pages/admin/AdminPolicies.tsx
 
 import { useState, useEffect } from "react";
-import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { platformSettingsService } from "@/services/platformSettingsService";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { Save, Loader2 } from "lucide-react";

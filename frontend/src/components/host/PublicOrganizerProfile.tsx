@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Star, MapPin, Mail, Building, Phone, CheckCircle2 } from "lucide-react";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { hostServices } from "@/services/hostServices"; 
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { OrganiserProfileData } from "@/types/user.types";
 import type { ApiResponse } from "@/types/common.types";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 
 
 

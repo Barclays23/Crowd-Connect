@@ -1,7 +1,7 @@
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
-import { ButtonLoader } from "@/components/common/ButtonLoader";
+import { ButtonLoader } from "@/components/shared/ButtonLoader";
 
 interface ConfirmationModalProps {
   isOpen: boolean;

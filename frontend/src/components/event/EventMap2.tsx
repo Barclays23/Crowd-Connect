@@ -1,4 +1,4 @@
-// src/components/common/EventMap2.tsx
+// src/components/event/EventMap2.tsx
 import { MapPin } from "lucide-react";
 
 interface EventMap2Props {
@@ -23,7 +23,7 @@ function EventMap2({ locationName, className = "" }: EventMap2Props) {
         </h3>
       </div>
 
-      <div className="w-full h-[300px] md:h-[400px] bg-(--bg-secondary)">
+      <div className="w-full h-75 md:h-100 bg-(--bg-secondary)">
         <iframe
           title="Event Location"
           width="100%"
@@ -32,7 +32,7 @@ function EventMap2({ locationName, className = "" }: EventMap2Props) {
           loading="lazy"
           allowFullScreen
           src={mapEmbedUrl}
-          className="grayscale-[20%] contrast-125 dark:invert dark:hue-rotate-180 dark:opacity-80 transition-all"
+          className="grayscale-20 contrast-125 dark:invert dark:hue-rotate-180 dark:opacity-80 transition-all"
         />
       </div>
 

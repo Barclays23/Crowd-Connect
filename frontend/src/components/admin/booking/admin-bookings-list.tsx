@@ -29,7 +29,7 @@ import { AdminPagination } from "../admin-pagination";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { Modal } from "../../ui/modal";
 import { ConfirmationModal } from "../confirmation-modal";
-import { LoadingSpinner1 } from "../../common/LoadingSpinner1";
+import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
   type IBookingState,
@@ -41,12 +41,12 @@ import { capitalize } from "@/utils/namingConventions";
 import BookingDetails from "@/components/booking/BookingDetails";
 import { cancelReasonBase } from "@/schemas/booking.schema";
 import { TextArea } from "@/components/ui/text-area";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { canCancelBooking } from "@/utils/booking.utils";
 import { BOOKING_STATUS } from "@/constants/booking.constants";
 import { EVENT_FORMATS, type EventFormat } from "@/constants/event.constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

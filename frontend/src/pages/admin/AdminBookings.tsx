@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/AdminBookings.tsx
-import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import AdminBanner from "@/components/admin/admin-banner";
 import { AdminBookingsList } from "@/components/admin/booking/admin-bookings-list";
 

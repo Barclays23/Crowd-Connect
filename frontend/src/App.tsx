@@ -7,8 +7,8 @@ import { ToastContainer, Bounce } from 'react-toastify';
 
 
 // Import route guards
-import { PublicRoute } from "@/components/common/PublicRoute";
-import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { PublicRoute } from "@/guards/PublicRoute";
+import { ProtectedRoute } from "@/guards/ProtectedRoute";
 
 
 
@@ -20,7 +20,7 @@ import { GoogleMapsProvider2 } from "@/contexts/GoogleMapsProvider2";
 
 
 // Layouts
-import UserLayout from "@/components/layouts/UserLayout";
+import UserLayout from "@/components/layout/UserLayout";
 
 
 // Auth Pages

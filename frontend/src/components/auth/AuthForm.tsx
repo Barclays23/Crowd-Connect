@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FieldError } from "@/components/ui/FieldError";
+import { FieldError } from "@/components/shared/FieldError";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { LoginSchema, RegisterSchema } from "@/schemas/auth.schema";
@@ -18,8 +18,8 @@ import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import type { LoginPayload, RegisterPayload, RouterLocationState } from "@/types/auth.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
-import { TermsModal } from "@/components/common/TermsModal";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { TermsModal } from "@/components/shared/TermsModal";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 
 
 

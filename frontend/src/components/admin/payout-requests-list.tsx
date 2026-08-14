@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -46,9 +46,9 @@ import { formatNumberToINR, formatNumberToINRWithDecimal } from "@/utils/UI.util
 import { PayoutStatCard } from "./payout/payout-stat-card";
 import { PayoutDetailModal } from "./payout/payout-detail-modal";
 import { PayoutRejectModal } from "./payout/payout-reject-modal";
-import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
+import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/payout/payout-constants";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 export function PayoutRequestsList() {

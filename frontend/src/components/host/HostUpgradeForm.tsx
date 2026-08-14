@@ -19,18 +19,18 @@ import {
 } from "@/schemas/host.schema";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { FieldError } from "../ui/FieldError";
+import { FieldError } from "../shared/FieldError";
 import { TextArea } from "../ui/text-area";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { hostServices } from "@/services/hostServices";
 import { useAuth } from "@/contexts/AuthContext";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
-import { ButtonLoader } from "../common/ButtonLoader";
+import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
+import { ButtonLoader } from "../shared/ButtonLoader";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { UserState } from "@/types/user.types";
-import { TermsModal } from "@/components/common/TermsModal";
+import { TermsModal } from "@/components/shared/TermsModal";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 

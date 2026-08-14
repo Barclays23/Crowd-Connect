@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { formatDate2 } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { getInitials } from "@/utils/namingConventions";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 import type { 
     AdminReviewQueryParams, 
     IReviewState 
@@ -21,7 +21,7 @@ import type {
 import type { ApiResponse } from "@/types/common.types";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

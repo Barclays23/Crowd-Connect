@@ -1,4 +1,4 @@
-// frontend/src/components/common/Navbar.tsx
+// frontend/src/components/layout/Navbar.tsx
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Calendar, Menu, X, LogOut } from "lucide-react";
@@ -6,10 +6,10 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'react-toastify';
-import UserAvatar from "../ui/userAvatar";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import logo from "@/assets/crowdconnect-logo-1.png";
 import type { ApiResponse } from "@/types/common.types";
+import UserAvatar from "@/components/shared/UserAvatar";
 
 
 

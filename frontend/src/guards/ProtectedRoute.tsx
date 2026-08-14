@@ -1,4 +1,4 @@
-// frontend/src/components/common/ProtectedRoute.tsx
+// frontend/src/guards/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, type FC } from 'react';

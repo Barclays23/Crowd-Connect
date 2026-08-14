@@ -2,7 +2,7 @@
 import type { UserState } from '@/types/user.types';
 import { capitalize } from '@/utils/namingConventions';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
-import { StarRating } from '@/components/common/StarRating';
+import { StarRating } from '@/components/shared/StarRating';
 import { FileText } from 'lucide-react';
 
 interface HostDetailsViewProps {

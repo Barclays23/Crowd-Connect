@@ -1,4 +1,4 @@
-// src/components/ui/FieldError.tsx
+// src/components/shared/FieldError.tsx
 import { cn } from "@/lib/utils";   // optional – if you use a cn helper
 
 type FieldErrorProps = {

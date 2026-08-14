@@ -4,7 +4,7 @@ import HostHeroSection from '@/pages/host/HostHeroSection';
 import HostEventSection from '@/pages/host/HostEventSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { userServices } from '@/services/userServices';
-import { LoadingSpinner1 } from '@/components/common/LoadingSpinner1';
+import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import { toast } from 'react-toastify';
 import type { ApiResponse } from '@/types/common.types';

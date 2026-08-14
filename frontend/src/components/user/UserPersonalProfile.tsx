@@ -8,20 +8,20 @@ import type { ProfilePicUpdateData, UserBasicInfoPayload, UserState } from '@/ty
 import { capitalize } from '@/utils/namingConventions';
 import { authService } from '@/services/authServices';
 import { formatDate1 } from '@/utils/dateAndTimeFormats';
-import { LoadingSpinner1 } from '../common/LoadingSpinner1';
+import { LoadingSpinner1 } from '../shared/LoadingSpinner1';
 import { cn } from '@/lib/utils';
 import { 
    emailBase, 
    profilePicUploadSchema, 
    updateBasicInfoSchema 
 } from '@/schemas/user.schema';
-import { FieldError } from '@/components/ui/FieldError';
+import { FieldError } from '@/components/shared/FieldError';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import ChangePassword from '@/components/auth/ChangePassword';
 import type { AuthEmailRequestData } from '@/types/auth.types';
 import type { ApiResponse } from '@/types/common.types';
-import { Tooltip } from '@/components/common/Tooltip';
+import { Tooltip } from '@/components/shared/Tooltip';
 
 interface Props {
    profile: UserState;

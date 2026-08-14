@@ -1,8 +1,10 @@
-// frontend/src/components/ui/EventDurationBadge.tsx
+// frontend/src/components/event/EventDurationBadge.tsx
 import { useMemo } from "react";
 import { Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateEventDuration } from "@/utils/dateAndTimeFormats";
+
+
 
 interface EventDurationBadgeProps {
    startDateTime: string | Date | null | undefined;
@@ -10,11 +12,10 @@ interface EventDurationBadgeProps {
    className?: string;
 }
 
-export const EventDurationBadge = ({ 
-   startDateTime, 
-   endDateTime, 
-   className 
-}: EventDurationBadgeProps) => {
+
+
+
+export const EventDurationBadge = ({ startDateTime, endDateTime, className }: EventDurationBadgeProps) => {
   
    const durationInfo = useMemo(() => {
       if (!startDateTime || !endDateTime) return null;

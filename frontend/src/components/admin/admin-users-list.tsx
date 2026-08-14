@@ -35,7 +35,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { ConfirmationModal } from "./confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { LoadingSpinner1 } from "../common/LoadingSpinner1";
+import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
 import type { ApiResponse } from "@/types/common.types";
 import type { UserRole, UserStatus } from "@/constants/user-system.constants";
 

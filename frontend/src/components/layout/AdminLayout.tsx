@@ -1,6 +1,6 @@
-// frontend/src/components/layouts/AdminLayout.tsx
+// frontend/src/components/layout/AdminLayout.tsx
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AdminLayoutContent from "@/components/layouts/AdminLayoutContent";
+import AdminLayoutContent from "@/components/layout/AdminLayoutContent";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

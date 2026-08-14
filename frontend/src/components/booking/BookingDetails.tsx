@@ -5,7 +5,7 @@ import { Badge }        from "@/components/ui/badge";
 import { formatDate5 }  from "@/utils/dateAndTimeFormats";
 import type { IBookingState }           from "@/types/booking.types";
 import { getPaymentStatusVariant } from "@/utils/UI.utils";
-import EventMap2 from "@/components/common/EventMap2";
+import EventMap2 from "@/components/event/EventMap2";
 import BookingTicket from "@/components/booking/BookingTicket";
 import { EVENT_FORMATS } from "@/constants/event.constants";
 import { BOOKING_STATUS } from "@/constants/booking.constants";

@@ -27,7 +27,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { UserPagination } from "@/components/user/UserPagination";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
 import { formatDate2, formatDate5 } from "@/utils/dateAndTimeFormats";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -41,10 +41,10 @@ import {
 } from "@/types/payout.types";
 import { formatNumberToINR, formatNumberToINRWithDecimal } from "@/utils/UI.utils";
 import { RequestPayoutModal } from "@/components/payout/request-payout-modal";
-import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/ui-constants/payout-constants";
+import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/payout/payout-constants";
 import { PayoutStatCard } from "@/components/admin/payout/payout-stat-card";
 import type { ApiResponse } from "@/types/common.types";
-import { Tooltip } from "@/components/common/Tooltip";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 

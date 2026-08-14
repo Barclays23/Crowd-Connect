@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { LayoutList, Users, ScanLine, ArrowLeft, Star, ImageOff, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner1 } from "@/components/common/LoadingSpinner1";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { eventServices } from "@/services/eventServices";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
@@ -17,7 +17,7 @@ import { EventBookingsList } from "@/components/admin/event-bookings-list";
 import { EventCheckIn } from "@/pages/event/EventCheckIn";
 import ReviewsSection from "@/components/review/ReviewsSection";
 import type { ApiResponse } from "@/types/common.types";
-import { StarRating } from "@/components/common/StarRating";
+import { StarRating } from "@/components/shared/StarRating";
 
 type Tab = "overview" | "bookings" | "checkin" | "reviews";
 
