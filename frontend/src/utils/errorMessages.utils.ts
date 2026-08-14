@@ -1,6 +1,7 @@
-// src/utils/errorMessages.utils.ts
+// frontend/src/utils/errorMessages.utils.ts
+import type { ApiResponse } from '@/types/common.types';
 import { AxiosError } from 'axios';
-const isDevMode = import.meta.env.DEV;
+const isDevMode: boolean = import.meta.env.DEV;
 
 
 export function getApiErrorMessage(error: unknown): string {
@@ -24,7 +25,8 @@ export function getApiErrorMessage(error: unknown): string {
    let userMessage = defaultMessage;
 
    if (error instanceof AxiosError) {
-      const status = error.response?.status;
+      const status: number | undefined = error.response?.status;
+      const responseBody: ApiResponse<ApiErrorData<string>> = error.response?.data as ApiResponse<ApiErrorData>;
 
       // 1️⃣ Network error (backend down)
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
@@ -40,15 +42,14 @@ export function getApiErrorMessage(error: unknown): string {
             : "Cannot reach the server right now.";
       }
 
-      // 3️⃣ Backend JSON error (need an updation in this block)
-      else if (error.response?.data?.message) {
-         // userMessage = error.response.data.message;
+      // 3️⃣ Backend JSON error (Mapped to new ApiResponse model)
+      else if (responseBody?.message) {
          if (status && status >= 500) {
             userMessage = isDevMode 
-               ? `Internal Server Error (dev mode): ${error.response.data.message}` 
+               ? `Internal Server Error (dev mode): ${responseBody.message}` 
                : defaultMessage;
          } else {
-            userMessage = error.response.data.message;
+            userMessage = responseBody.message;
          }
       }
       else if (error.response?.data?.error) {
@@ -93,7 +94,10 @@ export function getApiErrorMessage(error: unknown): string {
 export function shouldSkipToast(error: unknown): boolean {
    if (!(error instanceof AxiosError)) return false;
 
-   const code = (error.response?.data as { code?: string })?.code;
+   const responseBody: ApiResponse<ApiErrorData<string>> = error.response?.data as ApiResponse<ApiErrorData>;
+
+   // const code: string | undefined = (error.response?.data as { code?: string })?.code;
+   const code: string | undefined = responseBody?.data?.code;
 
    return [
       "SESSION_EXPIRED",
@@ -103,20 +107,26 @@ export function shouldSkipToast(error: unknown): boolean {
 
 
 
-// types/apiError.types.ts
+// frontend/src/types/apiError.types.ts
 export type ServerZodError<TFields extends string = string> = {
-   field: TFields;
-   message: string;
-};
-
-export type ApiErrorResponse<TFields extends string = string> = {
-   details?: ServerZodError<TFields>[];
+   field    : TFields;
+   message  : string;
 };
 
 
-export type ApiError = {
+// Represents the shape of response.data.data when an error occurs
+export interface ApiErrorData<TFields extends string = string> {
+   code?    : string;
+   stack?   : string;
+   details? : ServerZodError<TFields>[];
+}
+
+
+
+// Exactly how Axios wraps the Common Response Model
+export type ApiAxiosError<TFields extends string = string> = {
    response?: {
-      data?: ApiErrorResponse;
+      data?: ApiResponse<ApiErrorData<TFields>>;
    };
 };
 
@@ -124,7 +134,7 @@ export type ApiError = {
 
 
 
-// utils/applyServerZodErrors.ts
+// frontend/src/utils/applyServerZodErrors.ts
 import { type UseFormSetError, type FieldValues, type Path } from "react-hook-form";
 
 
@@ -132,8 +142,9 @@ export const setServerZodErrors = <T extends FieldValues>(
    error: unknown,
    setError: UseFormSetError<T>
 ) => {
-   const apiError = error as ApiError;
-   const errors = apiError.response?.data?.details;
+
+   const apiError = error as ApiAxiosError;
+   const errors = apiError.response?.data?.data?.details;
 
    if (!errors?.length) return;
 

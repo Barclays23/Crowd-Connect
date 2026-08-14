@@ -130,6 +130,7 @@ export enum HTTP_RESPONSE {
 // ─── AUTHENTICATION & SECURITY ──────────────────────────────────────────────
 export const AUTH_MESSAGES = {
     EMAIL_EXIST : "An account with this email already exists",
+    EMAIL_MISSING : "User email is missing",
     MOBILE_EXIST : "An account with this mobile number already exists",
     GOOGLE_LOGIN_SUCCESS : "Logged in with Google successfully",
     INVALID_CREDENTIALS : "Invalid credentials",
@@ -252,6 +253,7 @@ export const EVENT_MESSAGES = {
     SUCCESS_DELETE_EVENT : "Event has been deleted",
     SUCCESS_SUSPEND_EVENT : "Event has been suspended.",
     SUCCESS_PUBLISH_EVENT : "Event has been published.",
+    SUCCESS_CANCEL_EVENT : "Event has been cancelled.",
     FAILED_CREATE_EVENT : "Oops! We couldn’t create your event.",
     FAILED_UPDATE_EVENT : "Oops! We couldn’t update your event.",
 

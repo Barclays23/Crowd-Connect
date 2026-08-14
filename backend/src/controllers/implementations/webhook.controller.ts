@@ -69,7 +69,8 @@ export class WebhookController implements IWebhookController {
 
         } catch (error) {
             console.error(`Error processing webhook:`, error);
-            res.status(200).json({ status: "error", message: "Webhook received but failed to process" });
+            // res.status(200).json({ status: "error", message: "Webhook received but failed to process" });
+            res.status(500).json({ status: "error", message: "Internal server error during webhook processing" });
         }
     }
 

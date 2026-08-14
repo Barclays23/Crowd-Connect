@@ -1,7 +1,7 @@
 import axiosInstance from "@/config/axios";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
 import type { ApiResponse } from "@/types/common.types";
-import type { GetOrganiserEventsResult, GetPublicEventsParams, IEventState, UpdateEventStatusPayload } from "@/types/event.types";
+import type { GetOrganiserEventsResult, GetPublicEventsParams, IEventState, OrganiserEventsData, UpdateEventStatusPayload } from "@/types/event.types";
 
 
 
@@ -199,7 +199,7 @@ export const eventServices = {
 
 
 
-   getOrganiserEvents: async (params: { hostId: string; page?: number; limit?: number }): Promise<ApiResponse<GetOrganiserEventsResult>> => {
+   getOrganiserEvents: async (params: { hostId: string; page?: number; limit?: number }): Promise<ApiResponse<OrganiserEventsData[]>> => {
       const searchParams = new URLSearchParams({
          page: String(params.page ?? 1),
          limit: String(params.limit ?? 10)
@@ -208,7 +208,7 @@ export const eventServices = {
       const queryString: string  = searchParams.toString();
       const endpoint: string     = `${API_ENDPOINTS.EVENT.ORGANISER_EVENTS(params.hostId)}?${queryString}`;
       
-      const response = await axiosInstance.get<ApiResponse<GetOrganiserEventsResult>>(endpoint);
+      const response = await axiosInstance.get<ApiResponse<OrganiserEventsData[]>>(endpoint);
 
       return response.data;
    },

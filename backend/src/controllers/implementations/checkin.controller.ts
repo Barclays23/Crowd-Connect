@@ -10,6 +10,7 @@ import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckin
 import { ICheckinController } from "@/controllers/interfaces/ICheckinController";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
+import { ApiResponse } from "@/utils/apiResponse.utils";
 
 
 
@@ -40,13 +41,19 @@ export class CheckinController implements ICheckinController {
 
             const checkinResult: CheckInResultDTO = await this._checkinService.scanQRCode(scanQRInput, eventId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: checkinResult.isFullyUsed
-                    ? `Entry complete — all ${checkinResult.quantity} ticket(s) used.`
-                    : `${checkinResult.entriesThisScan} admitted. ${checkinResult.remainingEntries} ticket(s) remaining.`,
-                data: checkinResult,
-            });
+            const errorMessage: string = checkinResult.isFullyUsed
+                ? `Entry complete — all ${checkinResult.quantity} ticket(s) used.`
+                : `${checkinResult.entriesThisScan} admitted. ${checkinResult.remainingEntries} ticket(s) remaining.`
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<CheckInResultDTO>(errorMessage, checkinResult)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: errorMessage,
+            //     data: checkinResult,
+            // });
 
         } catch (error) {
             next(error);
@@ -63,11 +70,15 @@ export class CheckinController implements ICheckinController {
 
             const attendanceResult: GetAttendanceResult = await this._checkinService.getEventAttendance(eventId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success : true,
-                message : "Attendance retrieved successfully",
-                data    : attendanceResult,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<GetAttendanceResult>("Attendance retrieved successfully", attendanceResult)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success : true,
+            //     message : "Attendance retrieved successfully",
+            //     data    : attendanceResult,
+            // });
 
         } catch (error) {
             next(error);

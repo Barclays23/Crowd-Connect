@@ -5,8 +5,9 @@ import { IWalletService } from "@/services/wallet-services/interfaces/IWalletSer
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { TransactionsFilterQuery } from "@/types/wallet.types";
 import { IWalletController } from "@/controllers/interfaces/IWalletController";
-import { GetTransactionsResponse, WalletOverviewResponse } from "@/dtos/wallet.dto";
+import { GetTransactionsResponse, TransactionResponseDTO, WalletOverviewResponse } from "@/dtos/wallet.dto";
 import { mapTransactionQueryToFilter } from "@/mappers/wallet.mapper";
+import { ApiResponse } from "@/utils/apiResponse.utils";
 
 
 
@@ -21,11 +22,15 @@ export class WalletController implements IWalletController {
          const userId = req.user!.userId;
          const transactionData: WalletOverviewResponse = await this._walletService.getWalletOverview(userId);
 
-         res.status(HTTP_STATUS.OK).json({ 
-            success: true, 
-            message: "Wallet overview retrieved successfully",
-            data: transactionData 
-         });
+         res.status(HTTP_STATUS.OK).json(
+             ApiResponse.success<WalletOverviewResponse>("Wallet overview retrieved successfully", transactionData)
+         );
+
+         // res.status(HTTP_STATUS.OK).json({ 
+         //    success: true, 
+         //    message: "Wallet overview retrieved successfully",
+         //    data: transactionData 
+         // });
 
       } catch (error) {
          next(error);
@@ -40,12 +45,20 @@ export class WalletController implements IWalletController {
 
          const transactionData: GetTransactionsResponse = await this._walletService.getTransactions(filters);
 
-         res.status(HTTP_STATUS.OK).json({ 
-            success: true, 
-            message: "Transactions retrieved successfully",
-            data: transactionData.transactions,
-            pagination: transactionData.pagination
-         });
+         res.status(HTTP_STATUS.OK).json(
+            ApiResponse.success<TransactionResponseDTO[]>(
+               "Transactions retrieved successfully", 
+               transactionData.transactions, 
+               transactionData.pagination
+            )
+         );
+
+         // res.status(HTTP_STATUS.OK).json({ 
+         //    success: true, 
+         //    message: "Transactions retrieved successfully",
+         //    data: transactionData.transactions,
+         //    pagination: transactionData.pagination
+         // });
 
       } catch (error: unknown) {
          next(error);

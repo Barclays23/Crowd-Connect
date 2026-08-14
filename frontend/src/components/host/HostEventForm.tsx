@@ -30,7 +30,7 @@ import { GooglePlacesWidgetAutoComplete } from "@/components/common/GooglePlaces
 import { EventDurationBadge } from "@/components/ui/EventDurationBadge";
 import { EVENT_CATEGORIES } from "@/constants/event.constants";
 import { generatePosterSchema } from "@/schemas/ai.schema";
-import type { GeneratePosterData, GeneratePosterPayload } from "@/types/ai.types";
+import type { GeneratePosterPayload, GeneratePosterResponse } from "@/types/ai.types";
 import { aiServices } from "@/services/aiServices";
 import type { ApiResponse } from "@/types/common.types";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -173,7 +173,7 @@ export const HostEventForm = ({
                setMapCenter(selectedPosition);
                setShowMapModal(false);
                trigger(["locationName", "locationCoordinates"]);
-               toast.success("Location pinned!");
+               toast.success("Pinned Location: " + place.name);
             } else {
                // Fallback if Place details fail
                fallbackReverseGeocode(selectedPosition); 
@@ -203,7 +203,7 @@ export const HostEventForm = ({
             setMapCenter(pos);
             setShowMapModal(false);
             trigger(["locationName", "locationCoordinates"]);
-            toast.success("Location pinned!");
+            toast.success("Location pinned: " + placeName);
          });
       } else {
          // Ultimate failsafe if Google Maps fails to load
@@ -212,7 +212,8 @@ export const HostEventForm = ({
          setMapCenter(pos);
          setShowMapModal(false);
          trigger(["locationName", "locationCoordinates"]);
-         toast.success("Location pinned!");
+         // toast.success("Location pinned!");
+         toast.success(`Pinned Location (${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)})`);
       }
    };
 
@@ -257,10 +258,10 @@ export const HostEventForm = ({
             locationName: currentValues.locationName || (currentValues.format === "online" ? "Virtual Event" : ""),
          };
 
-         const response: ApiResponse<GeneratePosterData> = await aiServices.generateEventPoster(payload);
+         const response: ApiResponse<GeneratePosterResponse> = await aiServices.generateEventPoster(payload);
 
-         if (response.data.aiPosterData) {
-            setValue("aiGeneratedImage", response.data.aiPosterData, { shouldValidate: true, shouldDirty: true });
+         if (response.data.base64Data) {
+            setValue("aiGeneratedImage", response.data.base64Data, { shouldValidate: true, shouldDirty: true });
             setValue("uploadedImage", null);
             toast.success(response.message);
          }

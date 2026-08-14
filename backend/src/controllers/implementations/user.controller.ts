@@ -14,9 +14,11 @@ import {
 import { IUserProfileService } from '@/services/user-services/interfaces/IUserProfileService';
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
 import { IPasswordService } from '@/services/password-services/interfaces/IPasswordService';
-import { UserRole, UserStatus } from '@/constants/user-system.constants';
+import { USER_STATUS, UserRole, UserStatus } from '@/constants/user-system.constants';
 import { mapUserEntityToProfileDto } from '@/mappers/user.mapper';
 import { UserEntity, UserProfileEntity } from '@/entities/user.entity';
+import { createHttpError } from '@/utils/httpError.utils';
+import { ApiResponse } from '@/utils/apiResponse.utils';
 
 
 
@@ -32,23 +34,24 @@ export class UserController implements IUserController {
     async getUserProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
             const userId = req.user.userId;
             const userEntity: UserProfileEntity  = await this._userProfileServices.getUserProfile(userId);
 
             const userProfile: UserProfileResponseDto = mapUserEntityToProfileDto(userEntity);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: USER_MESSAGES.SUCCESS_GET_USER_PROFILE,
-                data: userProfile,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_GET_USER_PROFILE, userProfile)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: USER_MESSAGES.SUCCESS_GET_USER_PROFILE,
+            //     data: userProfile,
+            // });
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.getUserProfile:', msg);
             next(err);
         };
     }
@@ -57,8 +60,7 @@ export class UserController implements IUserController {
     async editUserBasicInfo(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
 
             const userId: string = req.user.userId;
@@ -70,6 +72,10 @@ export class UserController implements IUserController {
                 name: updatedUser.name,
                 mobile: updatedUser.mobile
             }
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(USER_MESSAGES.SUCCESS_UPDATE_PROFILE, updatedUserBasicInfo)
+            );
             
             res.status(HTTP_STATUS.OK).json({
                 success: true,
@@ -79,8 +85,6 @@ export class UserController implements IUserController {
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in UserController.editUserBasicInfo:', msg);
             next(err);
         };
     }
@@ -90,24 +94,25 @@ export class UserController implements IUserController {
     async changeUserPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.email) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User email missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.EMAIL_MISSING);
             }
 
             const {currentPassword, newPassword} = req.body;
             const userEmail: string = req.user.email;
 
             await this._passwordService.changeUserPassword(userEmail, {currentPassword, newPassword});
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS)
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS
+            // });
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in UserController.changeUserPassword:', msg);
             next(err);
         };
     }
@@ -127,18 +132,20 @@ export class UserController implements IUserController {
             console.log('updateProfilePicture imageFile: ', req?.file);
 
             const updatedUser: UserEntity = await this._userProfileServices.updateProfilePicture(userId, imageFile);            
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(USER_MESSAGES.PROFILE_PICTURE_CHANGED, { profilePic: updatedUser.profilePic })
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: USER_MESSAGES.PROFILE_PICTURE_CHANGED,
-                data: { 
-                    profilePic: updatedUser.profilePic,
-                },
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: USER_MESSAGES.PROFILE_PICTURE_CHANGED,
+            //     data: { 
+            //         profilePic: updatedUser.profilePic,
+            //     },
+            // });
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in UserController.updateProfilePicture:', msg);
             next(err);
         };
     }
@@ -147,7 +154,6 @@ export class UserController implements IUserController {
 
     async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            // Properly extract and parse query params
             const page = parseInt(req.query.page as string, 10) || 1;
             const limit = parseInt(req.query.limit as string, 10) || 10;
             const search = (req.query.search as string)?.trim() || '';
@@ -165,19 +171,24 @@ export class UserController implements IUserController {
             console.log('✅ Parsed filters for admin getAllUsers:', filters);
 
             const result: GetUsersResult = await this._userManagementServices.getAllUsers(filters);
-            // console.log('✅ Result in userController.getAllUsers:', result);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: USER_MESSAGES.SUCCESS_GET_USERS,
-                data: result.users,
-                pagination: result.pagination,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<UserProfileResponseDto[] | null>(
+                    USER_MESSAGES.SUCCESS_GET_USERS, 
+                    result.users, 
+                    result.pagination
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: USER_MESSAGES.SUCCESS_GET_USERS,
+            //     data: result.users,
+            //     pagination: result.pagination,
+            // });
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.getAllUsers:', msg);
             next(err);
         };
     
@@ -188,8 +199,7 @@ export class UserController implements IUserController {
     async createUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
             const createDto: CreateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -203,16 +213,18 @@ export class UserController implements IUserController {
 
             const userData: UserProfileResponseDto = mapUserEntityToProfileDto(createdUser);
 
-            res.status(HTTP_STATUS.CREATED).json({
-                success: true,
-                message: USER_MESSAGES.SUCCESS_CREATE_USER,
-                data: userData,
-            });
+            res.status(HTTP_STATUS.CREATED).json(
+                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_CREATE_USER, userData)
+            );
+
+            // res.status(HTTP_STATUS.CREATED).json({
+            //     success: true,
+            //     message: USER_MESSAGES.SUCCESS_CREATE_USER,
+            //     data: userData,
+            // });
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.createUserByAdmin:', msg);
             next(err);
         };
     }
@@ -222,8 +234,7 @@ export class UserController implements IUserController {
     async editUserByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
 
             const targetUserId = req.params.id as string;
@@ -240,15 +251,17 @@ export class UserController implements IUserController {
 
             const userData: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUser);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: USER_MESSAGES.SUCCESS_UPDATE_USER,
-                data: userData,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_UPDATE_USER, userData)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: USER_MESSAGES.SUCCESS_UPDATE_USER,
+            //     data: userData,
+            // });
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.editUserByAdmin:', msg);
             next(err);
         };
     }
@@ -258,8 +271,7 @@ export class UserController implements IUserController {
     async toggleUserBlock(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
 
             const targetUserId = req.params.id as string;
@@ -267,22 +279,24 @@ export class UserController implements IUserController {
 
             const updatedStatus: UserStatus = await this._userManagementServices.toggleUserBlock({ targetUserId, currentAdminId });
 
-            const responseMessage = updatedStatus === 'blocked'
+            const responseMessage = updatedStatus === USER_STATUS.BLOCKED
                 ? USER_MESSAGES.SUCCESS_BLOCK_USER
                 : USER_MESSAGES.SUCCESS_UNBLOCK_USER;
 
             console.log('✅ updatedStatus:', updatedStatus, ', responseMessage:', responseMessage);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: responseMessage,
-                data: { status: updatedStatus },
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(responseMessage, { status: updatedStatus })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: responseMessage,
+            //     data: { status: updatedStatus },
+            // });
 
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.toggleUserBlock:', msg);
             next(err);
         };
     }
@@ -291,8 +305,7 @@ export class UserController implements IUserController {
     async deleteUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: Admin information missing" });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
             
             const targetUserId = req.params.id as string;
@@ -300,14 +313,16 @@ export class UserController implements IUserController {
 
             await this._userManagementServices.deleteUser({ targetUserId, currentAdminId });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: USER_MESSAGES.SUCCESS_DELETE_USER,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(USER_MESSAGES.SUCCESS_DELETE_USER)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: USER_MESSAGES.SUCCESS_DELETE_USER,
+            // });
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.deleteUser:', msg);
             next(err);
         };
     }
@@ -316,5 +331,3 @@ export class UserController implements IUserController {
 
 
 }
-
-

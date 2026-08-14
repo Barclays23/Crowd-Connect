@@ -18,6 +18,7 @@ import { IPasswordService } from "@/services/password-services/interfaces/IPassw
 import { AuthResult } from "@/types/auth.types";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { AUTH_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
+import { ApiResponse } from "@/utils/apiResponse.utils";
 
 
 
@@ -50,11 +51,15 @@ export class AuthController implements IAuthController {
                 accessToken: accessToken,
             };
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.LOGIN_SUCCESS,
-                data: authData
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<AuthTokensData>(AUTH_MESSAGES.LOGIN_SUCCESS, authData)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.LOGIN_SUCCESS,
+            //     data: authData
+            // });
 
 
         } catch (err: unknown) {
@@ -65,13 +70,20 @@ export class AuthController implements IAuthController {
 
     async signUp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userEmail = await this._registrationService.signUp(req.body);
+            const userEmail: string = await this._registrationService.signUp(req.body);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: `${AUTH_MESSAGES.OTP_SENT} ${AUTH_MESSAGES.VERIFY_ACCOUNT}`,
-                data: { email: userEmail }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(
+                    `${AUTH_MESSAGES.OTP_SENT} ${AUTH_MESSAGES.VERIFY_ACCOUNT}`,
+                    { email: userEmail }
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: `${AUTH_MESSAGES.OTP_SENT} ${AUTH_MESSAGES.VERIFY_ACCOUNT}`,
+            //     data: { email: userEmail }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -111,12 +123,17 @@ export class AuthController implements IAuthController {
             const email: string = req.body.email;
             const userEmail: string = await this._recoveryService.requestPasswordReset(email);
 
-            res.status(HTTP_STATUS.OK).json({
-                // even if the email is not registered, respond with success to avoid email enumeration
-                success: true,
-                message: AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
-                data: { email: userEmail }
-            });
+            // Even if the email is not registered, respond with success to avoid email enumeration
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT, { email: userEmail })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     // even if the email is not registered, respond with success to avoid email enumeration
+            //     success: true,
+            //     message: AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
+            //     data: { email: userEmail }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -130,11 +147,15 @@ export class AuthController implements IAuthController {
 
             const isValid: boolean = await this._recoveryService.validateResetLink(token);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Token validated successfully",
-                data: { isValid }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success("Token validated successfully", { isValid })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Token validated successfully",
+            //     data: { isValid }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -148,10 +169,14 @@ export class AuthController implements IAuthController {
             
             await this._passwordService.resetPassword({ token, newPassword });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.PASSWORD_RESET_SUCCESS,
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.PASSWORD_RESET_SUCCESS)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.PASSWORD_RESET_SUCCESS,
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -170,14 +195,23 @@ export class AuthController implements IAuthController {
 
             const userEmail: string = await this._recoveryService.requestAuthenticateEmail({currentUserEmail, requestedEmail});
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.EMAIL_VERIFICATION_SENT,
-                data: {
-                    requiresVerification: true,
-                    email: userEmail
-                }
-            });
+            const responseData = {
+                requiresVerification: true,
+                email: userEmail
+            }
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.EMAIL_VERIFICATION_SENT, responseData)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.EMAIL_VERIFICATION_SENT,
+            //     data: {
+            //         requiresVerification: true,
+            //         email: userEmail
+            //     }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -202,11 +236,15 @@ export class AuthController implements IAuthController {
                 otpCode
             });
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.EMAIL_VERIFIED,
-                data: { email: userEmail }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.EMAIL_VERIFIED, { email: userEmail })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.EMAIL_VERIFIED,
+            //     data: { email: userEmail }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -219,26 +257,30 @@ export class AuthController implements IAuthController {
             const { email, otpCode } = req.body;
 
             if (!email || !otpCode) {
-                res.status(HTTP_STATUS.BAD_REQUEST).json({
-                    message: 'Email and OTP are required'
-                });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, 'Email and OTP are required');
             }
 
             const { safeUser, accessToken, refreshToken } = await this._registrationService.verifyAccount(email, otpCode);
 
             setRefreshTokenCookie(res, refreshToken);
 
-            const authData: AuthTokensData = {
+            const authResponseData: AuthTokensData = {
                 authUser: safeUser,
                 accessToken: accessToken
             }
 
-            res.status(HTTP_STATUS.CREATED).json({
-                success: true,
-                message: `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`,
-                data: authData    
-            });
+            res.status(HTTP_STATUS.CREATED).json(
+                ApiResponse.success<AuthTokensData>(
+                    `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`, 
+                    authResponseData
+                )
+            );
+
+            // res.status(HTTP_STATUS.CREATED).json({
+            //     success: true,
+            //     message: `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`,
+            //     data: authResponseData    
+            // });
         
 
         } catch (err: unknown) {
@@ -249,13 +291,17 @@ export class AuthController implements IAuthController {
 
     async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userEmail = await this._registrationService.resendOtp(req.body.email);
+            const userEmail: string = await this._registrationService.resendOtp(req.body.email);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.OTP_RESENT,
-                data: { email: userEmail }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.OTP_RESENT, { email: userEmail })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.OTP_RESENT,
+            //     data: { email: userEmail }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -277,13 +323,17 @@ export class AuthController implements IAuthController {
                 return;
             }
 
-            const newAccessToken = await this._sessionService.refreshAccessToken(refreshToken);
+            const newAccessToken: string = await this._sessionService.refreshAccessToken(refreshToken);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED,
-                data: { newAccessToken: newAccessToken }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED, { newAccessToken: newAccessToken })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED,
+            //     data: { newAccessToken: newAccessToken }
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -302,10 +352,14 @@ export class AuthController implements IAuthController {
 
             clearRefreshTokenCookie(res);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true, 
-                message: AUTH_MESSAGES.LOGOUT_SUCCESS
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(AUTH_MESSAGES.LOGOUT_SUCCESS)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true, 
+            //     message: AUTH_MESSAGES.LOGOUT_SUCCESS
+            // });
 
         } catch (err: unknown) {
             next(err);
@@ -319,19 +373,21 @@ export class AuthController implements IAuthController {
             const userId = req.user?.userId;
 
             if (!userId) {
-                console.log('Missing userId in authController.getAuthUser');
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({message: USER_MESSAGES.INVALID_USER_ID });
-                // res.status(HTTP_STATUS.UNAUTHORIZED).json({message: HttpResponse.TOKEN_MISSING });
-                return;
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.INVALID_USER_ID);
+                // throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.TOKEN_MISSING);
             }
 
             const userData: AuthUserResponseDto = await this._sessionService.getAuthUser(userId);
 
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "User fetched successfully",
-                data: { authUser: userData }
-            });
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success("User fetched successfully", { authUser: userData })
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "User fetched successfully",
+            //     data: { authUser: userData }
+            // });
             
 
         } catch (err: unknown) {

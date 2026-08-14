@@ -4,8 +4,11 @@ import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { IReviewController } from "@/controllers/interfaces/IReviewController";
 import { IReviewService } from "@/services/review-services/interfaces/IReviewService";
 import { UserRole } from "@/constants/user-system.constants";
-import { GetReviewsResponseDTO } from "@/dtos/review.dto";
+import { GetReviewsResponseDTO, ReviewResponseDTO } from "@/dtos/review.dto";
 import { GetReviewsAdminFilter } from "@/types/review.types";
+import { createHttpError } from "@/utils/httpError.utils";
+import { ApiResponse } from "@/utils/apiResponse.utils";
+import { USER_MESSAGES } from "@/constants/messages.constants";
 
 
 
@@ -21,12 +24,20 @@ export class ReviewController implements IReviewController {
         try {
             const userId = req.user!.userId;
 
+            if (!req.user || !req.user.userId) {
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
+            }
+
             await this._reviewService.submitReview(userId, req.body);
+
+            res.status(HTTP_STATUS.CREATED).json(
+                ApiResponse.success("Review submitted successfully! Thank you for your feedback.")
+            );
             
-            res.status(HTTP_STATUS.CREATED).json({
-                success: true,
-                message: "Review submitted successfully! Thank you for your feedback.",
-            });
+            // res.status(HTTP_STATUS.CREATED).json({
+            //     success: true,
+            //     message: "Review submitted successfully! Thank you for your feedback.",
+            // });
 
         } catch (error) {
             next(error);
@@ -37,15 +48,23 @@ export class ReviewController implements IReviewController {
 
     async editReview(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
+            }
+
             const userId = req.user!.userId as string;
             const reviewId = req.params.reviewId as string;
             
             await this._reviewService.editReview(userId, reviewId, req.body);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success("Review updated successfully!")
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Review updated successfully!",
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Review updated successfully!",
+            // });
 
         } catch (error) {
             next(error);
@@ -56,16 +75,24 @@ export class ReviewController implements IReviewController {
 
     async deleteReview(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const userId    = req.user!.userId as string;
+            if (!req.user || !req.user.userId) {
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
+            }
+
+            const userId    = req.user.userId as string;
             const role      = req.user!.role as UserRole;
             const reviewId  = req.params.reviewId as string;
             
             await this._reviewService.deleteReview(userId, role, reviewId);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success("Review deleted successfully!")
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Review deleted successfully!",
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Review deleted successfully!",
+            // });
             
         } catch (error) {
             next(error);
@@ -75,18 +102,29 @@ export class ReviewController implements IReviewController {
 
     async getMyReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
+            if (!req.user || !req.user.userId) {
+                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
+            }
             const userId = req.user!.userId as string;
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
             const result: GetReviewsResponseDTO = await this._reviewService.getReviewsForUser(userId, page, limit);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<ReviewResponseDTO[]>(
+                    "User reviews fetched successfully", 
+                    result.reviews, 
+                    result.pagination
+                )
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "User reviews fetched successfully",
-                data: result.reviews,
-                pagination: result.pagination
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "User reviews fetched successfully",
+            //     data: result.reviews,
+            //     pagination: result.pagination
+            // });
 
         } catch (error) {
             next(error);
@@ -101,14 +139,22 @@ export class ReviewController implements IReviewController {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
-            const result = await this._reviewService.getReviewsForHost(hostId, page, limit);
+            const result: GetReviewsResponseDTO = await this._reviewService.getReviewsForHost(hostId, page, limit);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<ReviewResponseDTO[]>(
+                    "Reviews fetched successfully", 
+                    result.reviews, 
+                    result.pagination
+                )
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Reviews fetched successfully",
-                data: result.reviews,
-                pagination: result.pagination
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Reviews fetched successfully",
+            //     data: result.reviews,
+            //     pagination: result.pagination
+            // });
 
         } catch (error) {
             next(error);
@@ -122,14 +168,22 @@ export class ReviewController implements IReviewController {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
 
-            const result = await this._reviewService.getReviewsForEvent(eventId, page, limit);
+            const result: GetReviewsResponseDTO = await this._reviewService.getReviewsForEvent(eventId, page, limit);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<ReviewResponseDTO[]>(
+                    "Event reviews fetched successfully", 
+                    result.reviews, 
+                    result.pagination
+                )
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "Event reviews fetched successfully",
-                data: result.reviews,
-                pagination: result.pagination
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "Event reviews fetched successfully",
+            //     data: result.reviews,
+            //     pagination: result.pagination
+            // });
 
         } catch (error) {
             next(error);
@@ -147,13 +201,21 @@ export class ReviewController implements IReviewController {
             };
 
             const result: GetReviewsResponseDTO = await this._reviewService.getAllReviewsForAdmin(filters);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<ReviewResponseDTO[]>(
+                    "All reviews fetched successfully", 
+                    result.reviews, 
+                    result.pagination
+                )
+            );
             
-            res.status(HTTP_STATUS.OK).json({
-                success: true,
-                message: "All reviews fetched successfully",
-                data: result.reviews,
-                pagination: result.pagination
-            });
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: "All reviews fetched successfully",
+            //     data: result.reviews,
+            //     pagination: result.pagination
+            // });
 
         } catch (error) {
             next(error);
