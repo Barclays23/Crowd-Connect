@@ -29,7 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { eventServices } from "@/services/eventServices";
 import { toast } from "react-toastify";
 import { AdminPagination } from "./admin-pagination";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { Modal } from "../ui/modal";
 import { ConfirmationModal } from "./confirmation-modal";
 import { LoadingSpinner1 } from "../shared/LoadingSpinner1";

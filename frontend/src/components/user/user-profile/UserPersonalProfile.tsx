@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserPersonalProfile.tsx
+// frontend/src/components/user/user-profile/UserPersonalProfile.tsx
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { Camera, CheckCircle, Edit, KeyRound, Loader2 } from 'lucide-react';
@@ -7,8 +7,8 @@ import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import type { ProfilePicUpdateData, UserBasicInfoPayload, UserState } from '@/types/user.types';
 import { capitalize } from '@/utils/namingConventions';
 import { authService } from '@/services/authServices';
-import { formatDate1 } from '@/utils/dateAndTimeFormats';
-import { LoadingSpinner1 } from '../shared/LoadingSpinner1';
+import { formatDate1 } from '@/utils/dateAndTime.utils';
+import { LoadingSpinner1 } from '../../shared/LoadingSpinner1';
 import { cn } from '@/lib/utils';
 import { 
    emailBase, 
@@ -180,178 +180,179 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
    return (
       <>
-         {/* Profile Header / Hero */}
-         <div className="relative mb-10">
-            <div className="h-48 md:h-64 bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-3xl border-2 border-(--border-focus)" />
-               <div className="absolute inset-x-0 bottom-0 px-5 pb-8 md:px-12 md:pb-10">
-                  <div className="flex flex-col sm:flex-row sm:items-end gap-5">
+         {/* ── Profile Header / Hero ──────────────────────────────────────── */}
+         <div className="mb-8 md:mb-12">
+            {/* Banner Container: Restored original height proportion while keeping flexbox safety */}
+            <div className="flex flex-col justify-end min-h-56 md:min-h-64 bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl md:rounded-3xl border-2 border-(--border-focus) w-full px-5 pb-6 pt-12 md:px-10 md:pb-10">
+               
+               <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 md:gap-6 w-full">
 
-                     {/* Avatar with Upload */}
-                     <div className="relative">
-                        <div
-                           className={cn(
-                              "relative group",
-                              isUpdatingProfilePic && "pointer-events-none"
-                           )}
-                        >
-                           {/* Avatar */}
-                           {profile.profilePic ? (
-                              <img
-                                 src={profile.profilePic}
-                                 alt={profile.name || "User"}
-                                 referrerPolicy="no-referrer"
-                                 className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
-                                    object-cover border-4 border-(--bg-primary)
-                                    shadow-xl"
-                              />
-                           ) : (
-                              <div
-                                 className="w-28 h-28 md:w-36 md:h-36 rounded-2xl
-                                    bg-(--bg-neutral)
-                                    flex items-center justify-center
-                                    text-(--brand-primary) text-5xl font-bold
-                                    border-4 border-(--bg-primary)
-                                    shadow-xl"
-                                 >
-                                 {profile.name?.charAt(0)?.toUpperCase() || "?"}
-                              </div>
-                           )}
-
-                           {/* Avatar Loading Overlay */}
-                           {isUpdatingProfilePic && (
-                              <div
-                                 className="absolute inset-0 z-10 rounded-2xl
-                                    bg-(--bg-overlay2)
-                                    flex items-center justify-center"
-                                 >
-                                 <LoadingSpinner1 size="md" />
-                              </div>
-                           )}
-
-                           {/* Hover Overlay */}
+                  {/* Avatar with Upload */}
+                  <div className="relative shrink-0 self-start sm:self-auto">
+                     <div
+                        className={cn(
+                           "relative group",
+                           isUpdatingProfilePic && "pointer-events-none"
+                        )}
+                     >
+                        {/* Avatar */}
+                        {profile.profilePic ? (
+                           <img
+                              src={profile.profilePic}
+                              alt={profile.name || "User"}
+                              referrerPolicy="no-referrer"
+                              className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-2xl
+                                 object-cover border-4 border-(--bg-primary)
+                                 shadow-xl bg-(--bg-primary)"
+                           />
+                        ) : (
                            <div
-                              className="absolute inset-0 rounded-2xl
-                                 bg-(--bg-overlay)/80
-                                 opacity-0 group-hover:opacity-100
-                                 transition-opacity
+                              className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-2xl
+                                 bg-(--bg-neutral)
+                                 flex items-center justify-center
+                                 text-(--brand-primary) text-3xl md:text-5xl font-bold
+                                 border-4 border-(--bg-primary)
+                                 shadow-xl"
+                           >
+                              {profile.name?.charAt(0)?.toUpperCase() || "?"}
+                           </div>
+                        )}
+
+                        {/* Avatar Loading Overlay */}
+                        {isUpdatingProfilePic && (
+                           <div
+                              className="absolute inset-0 z-10 rounded-2xl
+                                 bg-(--bg-overlay2)
                                  flex items-center justify-center"
                            >
-                              {/* Camera Upload Button */}
-                              <label className="absolute -bottom-2 -right-2 cursor-pointer">
-                                 <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleProfilePicUpload}
-                                    disabled={isUpdatingProfilePic}
-                                 />
-
-                                 <div
-                                    className="w-10 h-10 rounded-full flex items-center justify-center
-                                       bg-(--brand-primary)
-                                       text-(--text-inverse)
-                                       hover:bg-(--brand-primary)/90
-                                       shadow-lg border-2 border-(--bg-primary)
-                                       transition"
-                                 >
-                                    {isUpdatingProfilePic ? (
-                                       <Loader2
-                                       className="h-4 w-4 animate-spin text-(--text-inverse)"
-                                       />
-                                    ) : (
-                                       <Tooltip content="Choose File" side="top">
-                                          <Camera size={18} />
-                                       </Tooltip>
-                                    )}
-                                 </div>
-                              </label>
+                              <LoadingSpinner1 size="md" />
                            </div>
-                        </div>
-                     </div>
+                        )}
 
-                     {/* Hero Profile Information */}
-                     <div className="flex-1">
-                        <h1 className="text-3xl md:text-4xl font-bold text-(--heading-primary)">
-                           {profile.name || 'User'}
-                        </h1>
-                        <div className="flex items-center gap-2 mt-1.5">
-                           <p className="text-(--text-secondary) text-lg">{profile.email}</p>
-                           {profile.isEmailVerified && (
-                              <span title="Email verified">
-                                 <CheckCircle className="text-(--status-success)" size={20}/>
-                              </span>
-                           )}
-                        </div>
+                        {/* Hover Overlay */}
+                        <div
+                           className="absolute inset-0 rounded-2xl
+                              bg-(--bg-overlay)/80
+                              opacity-0 group-hover:opacity-100
+                              transition-opacity
+                              flex items-center justify-center"
+                        >
+                           {/* Camera Upload Button */}
+                           <label className="absolute -bottom-2 -right-2 cursor-pointer">
+                              <input
+                                 type="file"
+                                 accept="image/*"
+                                 className="hidden"
+                                 onChange={handleProfilePicUpload}
+                                 disabled={isUpdatingProfilePic}
+                              />
 
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm">
-                           {/* Role */}
-                           <div>
-                              <span className="font-medium text-(--brand-primary-light)">Role:</span>{' '}
-                              <span className="font-medium text-(--text-primary)">
-                                 {capitalize(profile.role)}
-                              </span>
-                           </div>
-
-                           {/* Account Status */}
-                           <div>
-                              <span className="font-medium text-(--brand-primary-light)">Status:</span>{' '}
-                              <span
-                                 className={`font-medium ${
-                                 profile.status === 'active'
-                                    ? 'text-(--status-success)'
-                                    : 'text-(--status-error)'
-                                 }`}
+                              <div
+                                 className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center
+                                    bg-(--brand-primary)
+                                    text-(--text-inverse)
+                                    hover:bg-(--brand-primary)/90
+                                    shadow-lg border-2 border-(--bg-primary)
+                                    transition"
                               >
-                                 {capitalize(profile.status)}
-                              </span>
-                           </div>
-
-                           {/* Joined On */}
-                           <div>
-                              <span className="font-medium text-(--brand-primary-light)">Joined:</span>{' '}
-                              <span className="font-medium text-(--text-primary)">
-                                 {formatDate1(profile.createdAt)}
-                              </span>
-                           </div>
-
-                           {/* Host Status (only if host) */}
-                           {isHost && (
-                              <div>
-                                 <span className="font-medium text-(--brand-primary-light)">Host status:</span>{' '}
-                                 <span
-                                 className={`font-medium ${
-                                    profile.hostStatus === 'approved'
-                                       ? 'text-(--status-success)'
-                                       : profile.hostStatus === 'rejected' || profile.hostStatus === 'blocked'
-                                       ? 'text-(--status-error)'
-                                       : 'text-(--badge-warning-text)'
-                                 }`}
-                                 >
-                                 {capitalize(profile.hostStatus || '—')}
-                                 </span>
+                                 {isUpdatingProfilePic ? (
+                                    <Loader2 className="h-3 w-3 md:h-4 md:w-4 animate-spin text-(--text-inverse)" />
+                                 ) : (
+                                    <Tooltip content="Choose File" side="top">
+                                       <Camera className="w-4 h-4 md:w-4.5 md:h-4.5" />
+                                    </Tooltip>
+                                 )}
                               </div>
-                           )}
+                           </label>
                         </div>
                      </div>
                   </div>
+
+                  {/* Hero Profile Information */}
+                  <div className="flex-1 pb-1 md:pb-2">
+                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-(--heading-primary) truncate">
+                        {profile.name || 'User'}
+                     </h1>
+                     <div className="flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1.5">
+                        <p className="text-(--text-secondary) text-sm sm:text-base md:text-lg truncate">
+                           {profile.email}
+                        </p>
+                        {profile.isEmailVerified && (
+                           <span title="Email verified" className="shrink-0">
+                              <CheckCircle className="text-(--status-success) w-4 h-4 md:w-5 md:h-5" />
+                           </span>
+                        )}
+                     </div>
+
+                     <div className="flex flex-wrap gap-x-4 md:gap-x-6 gap-y-1 md:gap-y-2 mt-2 md:mt-4 text-xs md:text-sm">
+                        {/* Role */}
+                        <div>
+                           <span className="font-medium text-(--brand-primary-light)">Role:</span>{' '}
+                           <span className="font-medium text-(--text-primary)">
+                              {capitalize(profile.role)}
+                           </span>
+                        </div>
+
+                        {/* Account Status */}
+                        <div>
+                           <span className="font-medium text-(--brand-primary-light)">Status:</span>{' '}
+                           <span
+                              className={`font-medium ${
+                              profile.status === 'active'
+                                 ? 'text-(--status-success)'
+                                 : 'text-(--status-error)'
+                              }`}
+                           >
+                              {capitalize(profile.status)}
+                           </span>
+                        </div>
+
+                        {/* Joined On */}
+                        <div>
+                           <span className="font-medium text-(--brand-primary-light)">Joined:</span>{' '}
+                           <span className="font-medium text-(--text-primary)">
+                              {formatDate1(profile.createdAt)}
+                           </span>
+                        </div>
+
+                        {/* Host Status (only if host) */}
+                        {isHost && (
+                           <div>
+                              <span className="font-medium text-(--brand-primary-light)">Host status:</span>{' '}
+                              <span
+                              className={`font-medium ${
+                                 profile.hostStatus === 'approved'
+                                    ? 'text-(--status-success)'
+                                    : profile.hostStatus === 'rejected' || profile.hostStatus === 'blocked'
+                                    ? 'text-(--status-error)'
+                                    : 'text-(--badge-warning-text)'
+                              }`}
+                              >
+                              {capitalize(profile.hostStatus || '—')}
+                              </span>
+                           </div>
+                        )}
+                     </div>
+                  </div>
                </div>
+            </div>
          </div>
 
-         {/* Personal Details Card */}
-         <div className="max-w-4xl mx-auto px-5 md:px-0 space-y-8">
-            <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
-               <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold">
+         {/* ── Personal Details Card ──────────────────────────────────────── */}
+         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+            <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-5 md:p-7 shadow-sm">
+               <div className="flex justify-between items-center mb-5 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-semibold text-(--heading-primary)">
                      Personal Details
                   </h2>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                   {/* Basic Info Section - Name & Mobile */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                      {/* Header */}
                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium">
+                        <h3 className="text-xs md:text-sm font-medium text-(--heading-secondary) uppercase tracking-wide">
                            Basic Information
                         </h3>
 
@@ -359,27 +360,29 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                            <Tooltip content="Edit Basic Info" side="top">
                               <Button
                                  variant="ghost"
+                                 size="sm"
+                                 className="h-8 w-8 md:h-9 md:w-9 p-0"
                                  onClick={() => setIsEditingBasicInfo(true)}
                               >
-                                 <Edit size={18} />
+                                 <Edit className="w-4 h-4 md:w-4.5 md:h-4.5" />
                               </Button>
                            </Tooltip>
                         )}
                      </div>
 
                      {/* Name */}
-                     <div className="space-y-1">
-                        <label className="text-sm font-medium text-(--brand-primary-light)">Name</label>
+                     <div className="space-y-1 md:space-y-1.5">
+                        <label className="text-xs md:text-sm font-medium text-(--brand-primary-light)">Name</label>
                         {isEditingBasicInfo ? (
                            <Input
                               type="text"
                               name="name"
                               value={editFormData.name}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
+                              className="w-full px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
                            />
                         ) : (
-                           <p className="font-medium text-(--text-primary)">
+                           <p className="text-sm md:text-base font-medium text-(--text-primary)">
                               {profile.name || 'Not provided'}
                            </p>
                         )}
@@ -387,24 +390,23 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                      </div>
 
                      {/* Mobile */}
-                     <div className="space-y-1">
-                        <label className="text-sm font-medium text-(--brand-primary-light)">Mobile</label>
+                     <div className="space-y-1 md:space-y-1.5">
+                        <label className="text-xs md:text-sm font-medium text-(--brand-primary-light)">Mobile</label>
                         {isEditingBasicInfo ? (
                            <Input
                               type="tel"
                               name="mobile"
                               value={editFormData.mobile}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-(--form-input-border)
-                                 rounded-lg bg-(--form-input-bg)"
+                              className="w-full px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
                            />
                         ) : (
                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-(--text-primary)">
+                              <p className="text-sm md:text-base font-medium text-(--text-primary)">
                                  {profile.mobile || 'Not provided'}
                               </p>
                               {profile.isMobileVerified && (
-                                 <CheckCircle className="text-(--status-success)" size={14} />
+                                 <CheckCircle className="text-(--status-success) w-3.5 h-3.5 md:w-4 md:h-4" />
                               )}
                            </div>
                         )}
@@ -413,16 +415,20 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
                      {/* Basic Info Action Buttons */}
                      {isEditingBasicInfo && (
-                        <div className="flex gap-3 pt-3">
+                        <div className="flex gap-2.5 pt-2">
                            <Button
+                              size="sm"
                               onClick={handleUpdateBasicInfo}
                               disabled={isUpdatingBasicInfo}
+                              className="text-xs md:text-sm"
                            >
                               {isUpdatingBasicInfo ? 'Saving...' : 'Save'}
                            </Button>
 
                            <Button
                               variant="outline"
+                              size="sm"
+                              className="text-xs md:text-sm"
                               onClick={() => {
                                  setIsEditingBasicInfo(false);
                                  setBasicInfoErrors({});
@@ -440,19 +446,21 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                   </div>
 
                   {/* Email */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-(--brand-primary-light)">
-                           Email
+                        <label className="text-xs md:text-sm font-medium text-(--brand-primary-light) uppercase tracking-wide">
+                           Email Identity
                         </label>
 
                         {!profile.isEmailVerified && !isEditingEmail && (
                            <Tooltip content="Edit Email" side="top">
                               <Button
-                                 variant='ghost'
+                                 variant="ghost"
+                                 size="sm"
+                                 className="h-8 w-8 md:h-9 md:w-9 p-0"
                                  onClick={() => setIsEditingEmail(true)}
                               >
-                                 <Edit size={18} />
+                                 <Edit className="w-4 h-4 md:w-4.5 md:h-4.5" />
                               </Button>
                            </Tooltip>
                         )}
@@ -465,36 +473,41 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
                               name="email"
                               value={editFormData.email}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
+                              className="w-full px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base border border-(--form-input-border) rounded-lg bg-(--form-input-bg)"
                            />
                            <FieldError message={emailError} />
 
-                           <div className="flex gap-2">
+                           <div className="flex gap-2.5 pt-1">
                            <Button
+                              size="sm"
                               onClick={handleUpdateEmail}
                               disabled={isUpdatingEmail}
+                              className="text-xs md:text-sm"
                            >
                               {isUpdatingEmail ? 'Saving...' : 'Save'}
                            </Button>
 
                            <Button
                               variant="outline"
+                              size="sm"
+                              className="text-xs md:text-sm"
                               onClick={() => {
                                  setIsEditingEmail(false);
                                  setEmailError(undefined);
                                  setEditFormData((p) => ({ ...p, email: profile.email }));
                               }}
-                              className="px-4 py-2 border rounded-lg"
                            >
                               Cancel
                            </Button>
                            </div>
                         </div>
                      ) : (
-                        <div className="flex items-center gap-2">
-                           <span className="font-medium text-(--text-primary)">{profile.email}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                           <span className="text-sm md:text-base font-medium text-(--text-primary) break-all">
+                              {profile.email}
+                           </span>
                            {profile.isEmailVerified && (
-                           <CheckCircle size={14} className="text-(--status-success)" />
+                              <CheckCircle className="text-(--status-success) w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
                            )}
                         </div>
                      )}
@@ -504,20 +517,20 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
 
             {/* ── Change Password ──────────────────────────────────────── */}
             {!showChangePassword ? (
-               <div className="flex items-center justify-between
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4
                   bg-(--bg-tertiary) rounded-2xl
                   border-2 border-(--border-focus)
-                  px-7 py-5 shadow-sm"
+                  px-5 md:px-7 py-4 md:py-5 shadow-sm"
                >
                   <div className="flex items-center gap-3">
-                     <div className="w-9 h-9 rounded-xl flex items-center justify-center
+                     <div className="w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-xl flex items-center justify-center
                         bg-(--brand-primary)/10 text-(--brand-primary)"
                      >
-                        <KeyRound size={18} />
+                        <KeyRound className="w-4 h-4 md:w-5 md:h-5" />
                      </div>
                      <div>
-                        <p className="font-medium text-(--brand-primary-light)">Password</p>
-                        <p className="text-sm text-(--text-secondary)">
+                        <p className="text-sm md:text-base font-medium text-(--brand-primary-light)">Password</p>
+                        <p className="text-xs md:text-sm text-(--text-secondary)">
                            Update your account password
                         </p>
                      </div>
@@ -525,6 +538,8 @@ const UserPersonalProfile = ({ profile, setProfile, setUser }: Props) => {
  
                   <Button
                      variant="outline"
+                     size="sm"
+                     className="w-full sm:w-auto text-xs md:text-sm md:px-4 md:py-2"
                      onClick={() => setShowChangePassword(true)}
                   >
                      Change Password

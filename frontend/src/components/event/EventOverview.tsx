@@ -1,7 +1,7 @@
 // frontend/src/components/event/EventOverview.tsx
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { formatDate3, formatDate1 } from "@/utils/dateAndTimeFormats";
+import { formatDate3, formatDate1 } from "@/utils/dateAndTime.utils";
 import {
    Calendar, MapPin, Video, IndianRupee,
    Ticket, AlertTriangle, Clock, TrendingUp,

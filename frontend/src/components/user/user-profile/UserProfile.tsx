@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserProfile.tsx
+// frontend/src/components/user/user-profile/UserProfile.tsx
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { userServices } from '@/services/userServices';
@@ -69,7 +69,7 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen pb-16">
-      <div className="max-w-4xl mx-auto px-5 md:px-0 space-y-8">
+      <div className="max-w-4xl mx-auto px-0 md:px-0 space-y-8">
         <UserPersonalProfile 
           profile={profile} 
           setProfile={setProfile}

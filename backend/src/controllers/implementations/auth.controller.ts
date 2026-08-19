@@ -371,6 +371,7 @@ export class AuthController implements IAuthController {
     async getAuthUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?.userId;
+            console.log('first', userId);
 
             if (!userId) {
                 throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.INVALID_USER_ID);

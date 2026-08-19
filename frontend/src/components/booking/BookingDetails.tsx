@@ -2,7 +2,7 @@
 
 import { CreditCard, Info, AlertOctagon, Plane, Globe } from "lucide-react";
 import { Badge }        from "@/components/ui/badge";
-import { formatDate5 }  from "@/utils/dateAndTimeFormats";
+import { formatDate5 }  from "@/utils/dateAndTime.utils";
 import type { IBookingState }           from "@/types/booking.types";
 import { getPaymentStatusVariant } from "@/utils/UI.utils";
 import EventMap2 from "@/components/event/EventMap2";

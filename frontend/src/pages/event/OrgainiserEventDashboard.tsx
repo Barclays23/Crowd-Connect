@@ -14,7 +14,7 @@ import { capitalize } from "@/utils/namingConventions";
 
 import EventOverview from "@/components/event/EventOverview";
 import { EventBookingsList } from "@/components/admin/event-bookings-list";
-import { EventCheckIn } from "@/pages/event/EventCheckIn";
+import { EventCheckIn } from "@/components/checkin/EventCheckIn";
 import ReviewsSection from "@/components/review/ReviewsSection";
 import type { ApiResponse } from "@/types/common.types";
 import { StarRating } from "@/components/shared/StarRating";
@@ -191,11 +191,11 @@ export default function OrgainiserEventDashboard() {
             {activeTab === "bookings" && <EventBookingsList eventId={event.eventId} />}
             {activeTab === "checkin" && <EventCheckIn event={event} />}
             {activeTab === "reviews" && (
-                <ReviewsSection 
-                    eventId={event.eventId} 
-                    averageRating={event.ratingAverage} 
-                    totalReviews={event.totalReviews} 
-                />
+               <ReviewsSection 
+                  eventId={event.eventId} 
+                  averageRating={event.ratingAverage} 
+                  totalReviews={event.totalReviews} 
+               />
             )}
          </div>
       </div>

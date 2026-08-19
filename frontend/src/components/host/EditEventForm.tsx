@@ -6,7 +6,7 @@ import { platformSettingsService } from "@/services/platformSettingsService";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
 import type { IOperationalSettings } from "@/types/platformSettings.types";
-import { toLocalInputDateTime } from "@/utils/dateAndTimeFormats";
+import { toLocalInputDateTime } from "@/utils/dateAndTime.utils";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";

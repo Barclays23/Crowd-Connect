@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserWallet.tsx
+// frontend/src/components/user/user-wallet/UserWallet.tsx
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown, Wallet, TrendingUp, TrendingDown, ArrowDownToLine } from "lucide-react";
@@ -6,12 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge }   from "@/components/ui/badge";
 import { Button }  from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPagination }  from "@/components/user/UserPagination";
+import { UserPagination }  from "@/components/shared/UserPagination";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 
 import { walletServices }     from "@/services/walletServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { formatDate2 }        from "@/utils/dateAndTimeFormats";
+import { formatDate2 }        from "@/utils/dateAndTime.utils";
 import { toast }              from "react-toastify";
 
 import {

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { UserState } from "@/types/user.types";
 import { getUserStatusBadgeVariant } from "@/utils/UI.utils";
-import { formatDate1 } from "@/utils/dateAndTimeFormats";
+import { formatDate1 } from "@/utils/dateAndTime.utils";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import { AlertCircle, CheckCircle } from "lucide-react";
 

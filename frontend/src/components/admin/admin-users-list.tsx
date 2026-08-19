@@ -23,7 +23,7 @@ import { capitalize, getInitials } from "@/utils/namingConventions";
 import { Modal } from "../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import type { 
   GetUsersQueryParams, 
   UserState, 

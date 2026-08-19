@@ -2,7 +2,7 @@
 
 import { EVENT_FORMATS } from "@/constants/event.constants";
 import type { EventFormValues } from "@/schemas/event.schema";
-import { combineDateAndTime } from "@/utils/dateAndTimeFormats";
+import { combineDateAndTime } from "@/utils/dateAndTime.utils";
 
 // FOR CREATING AND UPDATING EVENTS (BY HOST AND ADMIN DASHBOARDS)
 export const buildEventFormData = (data: EventFormValues) => {

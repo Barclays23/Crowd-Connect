@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserFavourites.tsx
+// frontend/src/components/user/user-favourites/UserFavourites.tsx
 
 const UserFavourites = () => {
   return (

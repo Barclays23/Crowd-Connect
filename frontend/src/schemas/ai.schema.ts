@@ -8,7 +8,7 @@ import {
     dateBase, 
     timeBase 
 } from "./event.schema";
-import { parseISODateTime } from "@/utils/dateAndTimeFormats";
+import { parseISODateTime } from "@/utils/dateAndTime.utils";
 
 
 

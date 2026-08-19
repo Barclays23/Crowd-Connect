@@ -32,7 +32,7 @@ import { toast } from "react-toastify";
 import { AdminPagination } from "./admin-pagination";
 import { capitalize, getInitials } from "@/utils/namingConventions";
 import { Modal } from "../ui/modal";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
 import { ViewHostModal } from "./view-host-modal";

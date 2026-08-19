@@ -7,6 +7,7 @@ import {
     ENTERABLE_STATUSES, 
     SCANNABLE_EVENT_STATUSES 
 } from "@/types/checkin.types";
+import { formatTimeRemaining, MS_PER_MINUTE } from "@/utils/dateAndTime.utils";
 import { createHttpError }        from "@/utils/httpError.utils";
 
 
@@ -85,22 +86,28 @@ export function validateEventForCheckIn(
         );
     }
 
-    const now          = new Date();
-    const scanOpenTime = new Date(eventRef.startDateTime.getTime() - EARLY_CHECKIN_BUFFER_MS);
+    const nowMs             = Date.now();
+    const startMs           = eventRef.startDateTime.getTime();
+    const endMs             = eventRef.endDateTime.getTime();
+    const scanOpenTimeMs    = startMs - EARLY_CHECKIN_BUFFER_MS;
 
-    if (now < scanOpenTime) {
-        const minutesUntilOpen = Math.ceil((eventRef.startDateTime.getTime() - now.getTime()) / 60_000);
+    // 3. Check if scanner opens in the future
+    if (nowMs < scanOpenTimeMs) {
+        const timeDiffMs = scanOpenTimeMs - nowMs;
+        const formattedRemainingTime = formatTimeRemaining(timeDiffMs);
+        const bufferMinutes = Math.floor(EARLY_CHECKIN_BUFFER_MS / MS_PER_MINUTE);
         
         throw createHttpError(
             HTTP_STATUS.BAD_REQUEST,
-            `Check-in opens ${EARLY_CHECKIN_BUFFER_MS/60/1000} minutes before the event starts (opens in ${minutesUntilOpen} min).`
+            `Check-in opens ${bufferMinutes} minutes before the event starts (opens in ${formattedRemainingTime}).`
         );
     }
 
-    if (now > eventRef.endDateTime) {
+    if (nowMs > endMs) {
         throw createHttpError(
             HTTP_STATUS.BAD_REQUEST,
             "This event has already ended. QR code is expired."
         );
     }
+
 }

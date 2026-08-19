@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { type IBookingState } from "@/types/booking.types";
 import type { UserState } from "@/types/user.types";
 import { type IEventState } from "@/types/event.types";
-import { formatDate3 } from "@/utils/dateAndTimeFormats";
+import { formatDate3 } from "@/utils/dateAndTime.utils";
 import { BookingSteps } from "@/components/booking/BookingSteps";
 import { BookingConfirmationScreen } from "@/components/booking/BookingConfirmationScreen";
 import { getMaxBookingQuantity } from "@/utils/booking.utils";

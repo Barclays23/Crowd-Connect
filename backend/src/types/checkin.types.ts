@@ -8,6 +8,10 @@ import { Types } from "mongoose";
 // Allow scanning up to 30 minutes before the event starts
 export const EARLY_CHECKIN_BUFFER_MS = 30 * 60 * 1000;
 
+
+
+
+
 // Booking statuses that are permit for entry
 export const ENTERABLE_STATUSES: BookingStatus[] = [
   BOOKING_STATUSES.CONFIRMED,

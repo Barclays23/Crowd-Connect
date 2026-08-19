@@ -8,7 +8,7 @@ import {
   Plane,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatDate6 } from "@/utils/dateAndTimeFormats";
+import { formatDate6 } from "@/utils/dateAndTime.utils";
 import { type IBookingState } from "@/types/booking.types";
 import { getBookingStatusVariant } from "@/utils/UI.utils";
 import { EVENT_FORMATS } from "@/constants/event.constants";

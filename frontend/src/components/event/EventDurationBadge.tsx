@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { calculateEventDuration } from "@/utils/dateAndTimeFormats";
+import { calculateEventDuration } from "@/utils/dateAndTime.utils";
 
 
 

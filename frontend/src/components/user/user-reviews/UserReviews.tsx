@@ -1,15 +1,15 @@
-// frontend/src/components/user/UserReviews.tsx
+// frontend/src/components/user/user-reviews/UserReviews.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Star, Edit, Trash2, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UserPagination } from "@/components/user/UserPagination";
+import { UserPagination } from "@/components/shared/UserPagination";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { EditReviewModal } from "@/components/review/EditReviewModal";
 import { reviewServices } from "@/services/reviewServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { toast } from "react-toastify";
 import type { IReviewState } from "@/types/review.types";
 import { StarRating } from "@/components/shared/StarRating";

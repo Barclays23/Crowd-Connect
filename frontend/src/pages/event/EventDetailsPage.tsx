@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { capitalize } from "@/utils/namingConventions";
 import type { UserState } from "@/types/user.types";
 import { getSeatsInfo, getEventStatusBadgeVariant, getEventCategoryBadgeVariant } from "@/utils/UI.utils";
-import { formatDate4 } from "@/utils/dateAndTimeFormats";
+import { formatDate4 } from "@/utils/dateAndTime.utils";
 import { EventMap } from "@/components/event/EventMap";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

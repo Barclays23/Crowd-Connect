@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { formatDate3, formatDate1 } from "@/utils/dateAndTimeFormats";
+import { formatDate3, formatDate1 } from "@/utils/dateAndTime.utils";
 import {
     Calendar, MapPin, Video, IndianRupee,
     Ticket, AlertTriangle, Clock, TrendingUp,
@@ -14,7 +14,7 @@ import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/util
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/event/EventMap";
 import { EventBookingsList } from "./event-bookings-list";
-import { EventCheckIn } from "@/pages/event/EventCheckIn";
+import { EventCheckIn } from "@/components/checkin/EventCheckIn";
 
 
 

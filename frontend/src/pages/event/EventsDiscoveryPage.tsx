@@ -32,7 +32,7 @@ import EventCardList from "@/components/event/EventCardList";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { toast } from "react-toastify";
 import { eventServices } from "@/services/eventServices";
-import { UserPagination } from "@/components/user/UserPagination";
+import { UserPagination } from "@/components/shared/UserPagination";
 import { GooglePlacesAutoComplete, type SelectedLocation } from "@/components/shared/GooglePlacesAutoComplete";
 import { PillToggle } from "@/components/ui/PillToggle";
 

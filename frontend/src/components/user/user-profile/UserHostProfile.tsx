@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserHostProfile.tsx
+// frontend/src/components/user/user-profile/UserHostProfile.tsx
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { AlertTriangle, Camera, Edit, Loader2 } from 'lucide-react';
@@ -12,7 +12,7 @@ import { profilePicUploadSchema } from '@/schemas/user.schema';
 import { Tooltip } from '@/components/shared/Tooltip';
 import { HostDetailsView } from '@/components/host/HostDetailsView';
 import { HostDetailsEdit } from '@/components/host/HostDetailsEdit';
-import { HOST_STATUS } from '@/constants/user-system.constants';
+
 
 
 
@@ -69,14 +69,16 @@ const UserHostProfile = ({ profile, setProfile }: Props) => {
 
 
    return (
-      <div className="bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) rounded-2xl border-2 border-(--border-focus) p-7 shadow-sm">
+      <div className="p-3 md:p-6 lg:p-8
+         bg-linear-to-tl from-(--brand-primary)/20 to-(--bg-secondary) 
+         rounded-2xl border-2 border-(--border-focus) shadow-sm">
 
          {/* 3. PERMANENT WARNING BANNER */}
          <div className="mb-8 p-4 text-(--text-tertiary) bg-(--bg-primary) border-l-4 border-amber-500 rounded-r-lg flex items-start gap-3 shadow-sm">
-            <AlertTriangle className="w-6 h-6 mt-0.5 shrink-0 text-amber-500" />
             <div className="text-sm">
+               <AlertTriangle className="w-6 h-6 mt-0.5 shrink-0 text-amber-500" />
                <p className="font-bold text-amber-500 mb-1">Important Account Notice</p>
-               <p>
+               <p className='text-xs md:text-md'>
                   Updating your organization details, documents, or logo will temporarily suspend your hosting privileges. 
                   Your hosting permission will change to <strong>PENDING</strong> for admin review. 
                   During this time, you will be <strong>unable to manage, edit, or cancel your live events</strong>. 

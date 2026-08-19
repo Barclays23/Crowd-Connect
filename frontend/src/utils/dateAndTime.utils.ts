@@ -1,4 +1,5 @@
-// frontend/src/utils/dateAndTimeFormats.ts
+// frontend/src/utils/dateAndTime.utils.ts
+
 
 
 // combine date and time

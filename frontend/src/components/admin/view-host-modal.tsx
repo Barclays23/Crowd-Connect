@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { UserState } from "@/types/user.types";
-import { formatDate1, formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate1, formatDate2 } from "@/utils/dateAndTime.utils";
 import { getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
 import { Button } from "../ui/button";

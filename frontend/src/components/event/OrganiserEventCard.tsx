@@ -1,6 +1,6 @@
 // frontend/src/components/event/OrganiserEventCard.tsx
 import { CalendarDays, Star, Tag } from "lucide-react";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import type { OrganiserEventsData } from "@/types/event.types";
 import { EVENT_STATUSES } from "@/constants/event.constants";
 import { Badge } from "@/components/ui/badge";

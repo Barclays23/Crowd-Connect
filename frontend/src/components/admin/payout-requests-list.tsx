@@ -31,7 +31,7 @@ import { Modal } from "@/components/ui/modal";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { payoutServices } from "@/services/payoutServices";
 import type {

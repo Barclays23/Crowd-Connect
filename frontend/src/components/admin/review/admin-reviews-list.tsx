@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { reviewServices } from "@/services/reviewServices";
 import { toast } from "react-toastify";
-import { formatDate2 } from "@/utils/dateAndTimeFormats";
+import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { getInitials } from "@/utils/namingConventions";
 import { StarRating } from "@/components/shared/StarRating";

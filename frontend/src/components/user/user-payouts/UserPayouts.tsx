@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserPayouts.tsx
+// frontend/src/components/user/user-payouts/UserPayouts.tsx
 import { useState, useEffect, useCallback, Fragment } from "react";
 import {
     Loader2,
@@ -26,10 +26,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { UserPagination } from "@/components/user/UserPagination";
+import { UserPagination } from "@/components/shared/UserPagination";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
-import { formatDate2, formatDate5 } from "@/utils/dateAndTimeFormats";
+import { formatDate2, formatDate5 } from "@/utils/dateAndTime.utils";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { payoutServices } from "@/services/payoutServices";
 import {

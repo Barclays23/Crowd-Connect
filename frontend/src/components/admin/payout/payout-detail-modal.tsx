@@ -3,7 +3,7 @@
 import { Eye, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatDate1 } from "@/utils/dateAndTimeFormats";
+import { formatDate1 } from "@/utils/dateAndTime.utils";
 import { formatNumberToINR } from "@/utils/UI.utils";
 import type { IPayoutState } from "@/types/payout.types";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/payout/payout-constants";

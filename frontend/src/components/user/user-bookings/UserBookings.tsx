@@ -1,4 +1,4 @@
-// frontend/src/components/user/UserBookings.tsx
+// frontend/src/components/user/user-bookings/UserBookings.tsx
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -21,12 +21,12 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Modal }            from "@/components/ui/modal";
-import { UserPagination }   from "@/components/user/UserPagination";
+import { UserPagination }   from "@/components/shared/UserPagination";
 import { LoadingSpinner1 }  from "@/components/shared/LoadingSpinner1";
 
 import { bookingServices }     from "@/services/bookingServices";
 import { getApiErrorMessage }  from "@/utils/errorMessages.utils";
-import { formatDate2 }         from "@/utils/dateAndTimeFormats";
+import { formatDate2 }         from "@/utils/dateAndTime.utils";
 import { capitalize }          from "@/utils/namingConventions";
 import { toast }               from "react-toastify";
 import { ConfirmationModal }   from "@/components/admin/confirmation-modal";

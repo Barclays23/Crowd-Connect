@@ -1,7 +1,7 @@
 // frontend/src/schemas/event.schema.ts
 import { EVENT_CATEGORIES, type EventStatus } from "@/constants/event.constants";
 import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES } from "@/types/event.types";
-import { parseISODateTime } from "@/utils/dateAndTimeFormats";
+import { parseISODateTime } from "@/utils/dateAndTime.utils";
 import { z } from "zod";
 
 
