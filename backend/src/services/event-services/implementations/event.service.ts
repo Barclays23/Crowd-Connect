@@ -77,8 +77,6 @@ export class EventManagementServices implements IEventServices {
         private readonly _cacheService          : ICacheService,
         private readonly _settingsService       : IPlatformSettingsService,
         private readonly _eventQueueService     : IEventQueueService,
-        // private _paymentService:    IPaymentService,
-        // private _bookingRepository: IBookingRepository,
         // private _notificationServices: INotificationService,
         // private _storageService: IFileStorageService,
     ) {}
@@ -134,13 +132,10 @@ export class EventManagementServices implements IEventServices {
             }
 
             const newEvent: EventResponseDTO = mapEventEntityToEventResponseDto(createdEvent);
-            // console.log('✅✅ created event : ', newEvent);
             
             return newEvent;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in EventManagementServices.createEvent:", msg);
             throw error;
         }
     }
@@ -163,8 +158,6 @@ export class EventManagementServices implements IEventServices {
             return this._executeEventUpdate(existingEvent, updateEventDto, imageFile);
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : "Unknown error";
-            console.error("Error in EventManagementServices.updateEventByHost:", msg);
             throw error;
         }
     }
