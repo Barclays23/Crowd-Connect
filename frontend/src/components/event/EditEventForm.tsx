@@ -1,5 +1,5 @@
-// src/components/host/EditEventForm.tsx
-import { HostEventForm } from "@/components/host/HostEventForm";
+// src/components/event/EditEventForm.tsx
+import { HostEventForm } from "@/components/event/HostEventForm";
 import type { EventStatus } from "@/constants/event.constants";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import { platformSettingsService } from "@/services/platformSettingsService";
@@ -32,11 +32,10 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
       try {
         setLoading(true);
         const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
-        console.log('fetched settings:', response);
+
         setCommissionPercent(response?.data?.commissionPercent ?? commissionPercent);
 
       } catch (error: unknown) {
-        console.warn("Could not load platform settings, using default commission :", error);
         const errorMessage = getApiErrorMessage(error);
         toast.error(errorMessage);
 

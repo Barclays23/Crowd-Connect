@@ -15,7 +15,7 @@ import { BookingService } from "@/services/booking-services/implementations/book
 import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
 import { EventManagementServices } from "@/services/event-services/implementations/event.service";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
-import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
+import { RazorpayProvider } from "@/providers/payment-providers/razorpay.provider";
 import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
 import { EventQueueService } from "@/services/queue-services/implementaions/eventQueue.service";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";

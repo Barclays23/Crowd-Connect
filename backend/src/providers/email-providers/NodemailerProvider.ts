@@ -1,6 +1,6 @@
-// src/services/mail-services/providers/NodemailerProvider.ts
+// src/providers/email-providers/NodemailerProvider.ts
 import nodemailer from "nodemailer";
-import { IMailProvider } from "../interfaces/IMailProvider";
+import { IMailProvider } from "./IMailProvider";
 import { SendEmailOptions } from "@/types/email.types";
 
 

@@ -1,4 +1,4 @@
-// // backend/src/services/payment-services/providers/stripe.provider.ts
+// // backend/src/providers/payment-providers/stripe.provider.ts
 
 // import Stripe from "stripe";
 // import { IPaymentProvider, CreateOrderResult, RefundResult } from "@/services/payment-services/interfaces/IPaymentProvider";

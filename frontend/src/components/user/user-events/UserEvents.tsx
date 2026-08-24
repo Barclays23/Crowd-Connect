@@ -6,7 +6,7 @@ import { UserPagination } from "@/components/shared/UserPagination";
 import { Modal } from "@/components/ui/modal";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { ConfirmationModal } from "@/components/admin/confirmation-modal";
-import EditEventForm from "@/components/host/EditEventForm";
+import EditEventForm from "@/components/event/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/components/checkin/EventCheckIn";
 import type { ApiResponse } from "@/types/common.types";

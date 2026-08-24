@@ -1,8 +1,8 @@
-// backend/src/services/payment-services/providers/razorpay.provider.ts
+// backend/src/providers/payment-providers/razorpay.provider.ts
 
 import Razorpay from "razorpay";
 import crypto   from "crypto";
-import { IPaymentProvider } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { IPaymentProvider } from "@/providers/payment-providers/IPaymentProvider";
 import { createHttpError } from "@/utils/httpError.utils";
 import { 
     STANDARD_WEBHOOK_EVENT_TYPES,

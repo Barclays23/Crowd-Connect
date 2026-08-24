@@ -1,4 +1,4 @@
-// src/components/host/HostYourEvent.tsx
+// src/components/event/HostYourEvent.tsx
 
 // <reference path="../../types/google.maps.d.ts" />
 import { FormProvider, useForm, type Resolver } from "react-hook-form";
@@ -9,7 +9,7 @@ import {Sparkles} from "lucide-react";
 
 // Schema & Services
 import { createEventFormSchema, type EventFormValues } from "@/schemas/event.schema";
-import { HostEventForm } from "@/components/host/HostEventForm";
+import { HostEventForm } from "@/components/event/HostEventForm";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { eventServices } from "@/services/eventServices";
 import { useEffect, useState } from "react";

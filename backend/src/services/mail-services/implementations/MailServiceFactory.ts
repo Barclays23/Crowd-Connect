@@ -2,8 +2,8 @@
 
 import { MailDeliveryService } from "@/services/mail-services/implementations/mail.services";
 import { IMailService } from "@/services/mail-services/interfaces/IMailService";
-import { NodemailerProvider } from "@/services/mail-services/providers/NodemailerProvider";
-import { ResendProvider } from "@/services/mail-services/providers/ResendProvider";
+import { NodemailerProvider } from "@/providers/email-providers/NodemailerProvider";
+import { ResendProvider } from "@/providers/email-providers/ResendProvider";
 
 
 export class MailServiceFactory {

@@ -1,4 +1,4 @@
-// src/services/mail-services/interfaces/IMailProvider.ts
+// src/providers/email-providers/interfaces/IMailProvider.ts
 
 import { SendEmailOptions } from "@/types/email.types";
 

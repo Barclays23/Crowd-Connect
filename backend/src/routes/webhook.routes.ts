@@ -11,7 +11,7 @@ import { TransactionRepository } from '@/repositories/implementations/transactio
 import { BookingRefundStrategy } from '@/services/webhook-strategy-services/implementations/bookingRefund.strategy';
 import { PAYMENT_PURPOSES } from '@/constants/payment.constants';
 import { WEBHOOK_ROUTES } from '@/constants/routes.constants';
-import { RazorpayProvider } from '@/services/payment-services/providers/razorpay.provider';
+import { RazorpayProvider } from '@/providers/payment-providers/razorpay.provider';
 import { IPaymentService } from '@/services/payment-services/interfaces/IPaymentService';
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { BookingPaymentSuccessStrategy } from '@/services/webhook-strategy-services/implementations/bookingPaymentSuccess.strategy';

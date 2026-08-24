@@ -16,7 +16,7 @@ import { BookingIdParamSchema, EventIdParamSchema } from "@/schemas/mongo.schema
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
 import { PaymentService } from "@/services/payment-services/implementations/payment.service";
-import { RazorpayProvider } from "@/services/payment-services/providers/razorpay.provider";
+import { RazorpayProvider } from "@/providers/payment-providers/razorpay.provider";
 import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
 import { WalletService } from "@/services/wallet-services/implementations/wallet.service";

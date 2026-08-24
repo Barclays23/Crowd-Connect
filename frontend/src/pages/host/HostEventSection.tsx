@@ -11,7 +11,7 @@ import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
 import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
-import HostYourEvent from '@/components/host/HostYourEvent';
+import HostYourEvent from '@/components/event/HostYourEvent';
 
 
 

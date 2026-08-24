@@ -1,7 +1,7 @@
 // src/services/payment-services/implementations/payment.service.ts
 
 import { PAYMENT_PURPOSES, PaymentPurpose } from "@/constants/payment.constants";
-import { IPaymentProvider } from "@/services/payment-services/interfaces/IPaymentProvider";
+import { IPaymentProvider } from "@/providers/payment-providers/IPaymentProvider";
 import { 
     InitiateRefundInput, 
     IPaymentService 

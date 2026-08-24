@@ -1,4 +1,4 @@
-// src/services/payment-services/interfaces/IPaymentProvider.ts
+// src/providers/payment-providers/interfaces/IPaymentProvider.ts
 
 import { CreateOrderResult, RefundResult } from "@/types/payment.types";
 import { StandardWebhookEvent } from "@/types/webhook.types";

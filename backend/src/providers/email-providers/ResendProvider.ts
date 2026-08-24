@@ -1,6 +1,6 @@
-// src/services/mail-services/providers/ResendProvider.ts
+// src/providers/email-providers/ResendProvider.ts
 import { Resend } from "resend";
-import { IMailProvider } from "../interfaces/IMailProvider";
+import { IMailProvider } from "./IMailProvider";
 import { SendEmailOptions } from "@/types/email.types";
 
 

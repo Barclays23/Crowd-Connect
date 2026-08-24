@@ -1,6 +1,6 @@
 // src/services/mail-services/implementations/mail.services.ts
 
-import { IMailProvider } from "@/services/mail-services/interfaces/IMailProvider";
+import { IMailProvider } from "@/providers/email-providers/IMailProvider";
 import { IMailService } from "@/services/mail-services/interfaces/IMailService";
 import { SendEmailOptions } from "@/types/email.types";
 

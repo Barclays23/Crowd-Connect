@@ -36,7 +36,7 @@ import { BookingController } from '@/controllers/implementations/booking.control
 import { BookingService } from '@/services/booking-services/implementations/booking.service';
 import { BookingRepository } from '@/repositories/implementations/booking.repository';
 import { cancelBookingSchema } from '@/schemas/booking.schema';
-import { RazorpayProvider } from '@/services/payment-services/providers/razorpay.provider';
+import { RazorpayProvider } from '@/providers/payment-providers/razorpay.provider';
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
