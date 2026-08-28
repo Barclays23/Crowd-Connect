@@ -1,5 +1,6 @@
 import { 
    DEFAULT_RADIUS_KM, 
+   EVENT_FORMATS, 
    EVENT_STATUSES, 
    EventCategory, 
    EventFormat, 
@@ -276,8 +277,8 @@ export const mapCreateEventRequestDtoToInput = ({
       posterUrl: eventPosterUrl,
       
       format: createDto.format,
-      locationName: createDto.locationName,
-      location: createDto.location ?? undefined,
+      locationName: createDto.format === EVENT_FORMATS.ONLINE ? undefined : createDto.locationName,
+      location: createDto.format === EVENT_FORMATS.ONLINE ? undefined : createDto.location,
       onlineLink: createDto.onlineLink,
       
       startDateTime: new Date(createDto.startDateTime),

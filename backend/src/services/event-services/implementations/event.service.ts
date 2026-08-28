@@ -64,6 +64,16 @@ import { convertBase64ToBuffer } from "@/utils/file.utils";
 import { IUserProfileService } from "@/services/user-services/interfaces/IUserProfileService";
 import { validateAdminActiveStatus, validateHostActiveStatus } from "@/utils/validations/userValidations";
 import { UserProfileEntity } from "@/entities/user.entity";
+import { IStreamingService } from "@/services/streaming-services/interfaces/IStreamingService";
+import { BOOKING_STATUSES } from "@/constants/booking.constants";
+import { BookingCheckinUpdate } from "@/types/booking.types";
+import { ICheckinRepository } from "@/repositories/interfaces/ICheckinRepository";
+import { JoinOnlineEventInputDTO, JoinOnlineEventResponseDTO } from "@/dtos/streaming.dto";
+import { mapToJoinOnlineEventResponseDTO } from "@/mappers/streaming.mapper";
+import { JoinOnlineEventResult } from "@/types/streaming.types";
+import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
+import { validateOnlineBookingForJoin, validateOnlineEventForJoin } from "@/utils/validations/streamingValidations";
+import { BookingEntity } from "@/entities/booking.entity";
 
 
 
@@ -72,11 +82,15 @@ import { UserProfileEntity } from "@/entities/user.entity";
 export class EventManagementServices implements IEventServices {
     constructor(
         private readonly _eventRepository       : IEventRepository,
+        private readonly _bookingRepository     : IBookingRepository,
+        private readonly _checkinRepository     : ICheckinRepository,
+
         private readonly _bookingService        : IBookingService,
         private readonly _userProfileServices   : IUserProfileService,
         private readonly _cacheService          : ICacheService,
         private readonly _settingsService       : IPlatformSettingsService,
         private readonly _eventQueueService     : IEventQueueService,
+        private readonly _streamingService      : IStreamingService,
         // private _notificationServices: INotificationService,
         // private _storageService: IFileStorageService,
     ) {}
@@ -182,153 +196,6 @@ export class EventManagementServices implements IEventServices {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : "Unknown error";
             console.error("Error in EventManagementServices.updateEventByAdmin:", msg);
-            throw error;
-        }
-    }
-
-
-    async getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult> {
-        try {
-            const { 
-                page, 
-                limit, 
-                search, 
-                status, 
-                category, 
-                format,
-                ticketType,
-                sortBy, 
-                sortOrder
-            } = filters;
-
-            const queryConditions: EventFilterQuery[] = [];
-
-            if (search) {
-                queryConditions.push({
-                    $or: [
-                        { title: { $regex: search, $options: 'i' } },
-                        { locationName: { $regex: search, $options: 'i' } },
-                    ]
-                });
-            }
-
-            const statusCondition = getEventStatusCondition(status);
-            if (statusCondition) {
-                queryConditions.push(statusCondition);
-            }
-
-            if (category) queryConditions.push({ category });
-            if (format) queryConditions.push({ format });
-            if (ticketType) queryConditions.push({ ticketType });
-
-            const finalQuery: EventFilterQuery = queryConditions.length > 0 
-                ? { $and: queryConditions } 
-                : {};
-
-            const skip = (page - 1) * limit;
-            const sort: Record<string, 1 | -1> = {};
-            if (sortBy) {
-                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
-            }
-
-            console.log('Final query in EventManagementServices.getAllEvents:', finalQuery);
-            console.log("Sort applied:", sort);
-
-            const publicProjection = '-onlineLink';  // dont send onlineLink to public users
-
-            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
-                this._eventRepository.findEvents(finalQuery, skip, limit, sort, publicProjection),
-                this._eventRepository.countEvents(finalQuery)
-            ]);
-
-            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
-
-            return {
-                events: mappedEvents,
-                pagination: {
-                    totalCount: totalCount,
-                    limit: limit,
-                    currentPage: page,
-                    totalPages: Math.ceil(totalCount / limit)
-                }
-            };
-
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in EventManagementServices.getAllEvents:", msg);
-            throw error;
-        }
-    }
-
-
-    async getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult> {
-        try {
-            const { 
-                page, 
-                limit, 
-                search, 
-                status, 
-                category, 
-                format,
-                ticketType,
-                sortBy, 
-                sortOrder
-            }: GetEventsFilter = filters;
-
-            const queryConditions: EventFilterQuery[] = [];
-
-            queryConditions.push({ hostRef: new Types.ObjectId(userId) });
-
-            if (search) {
-                queryConditions.push({
-                    $or: [
-                        { title: { $regex: search, $options: 'i' } },
-                        { locationName: { $regex: search, $options: 'i' } },
-                    ]
-                });
-            }
-
-            const statusCondition = getEventStatusCondition(status);
-            if (statusCondition) {
-                queryConditions.push(statusCondition);
-            }
-
-
-            if (category) queryConditions.push({ category });
-            if (format) queryConditions.push({ format });
-            if (ticketType) queryConditions.push({ ticketType });
-
-            const finalQuery: EventFilterQuery = { $and: queryConditions };
-
-            const skip = (page - 1) * limit;
-            const sort: Record<string, 1 | -1> = {};
-            if (sortBy) {
-                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
-            }
-
-            console.log('finalQuery in EventManagementServices.getUserEvents:', finalQuery);
-            console.log("Sort applied:", sort);
-
-            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
-                this._eventRepository.findEvents(finalQuery, skip, limit, sort),
-                this._eventRepository.countEvents(finalQuery)
-            ]);
-            
-            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
-
-            return {
-                events: mappedEvents,
-                pagination: {
-                    totalCount: totalCount,
-                    limit: limit,
-                    currentPage: page,
-                    totalPages: Math.ceil(totalCount / limit)
-                }
-            };
-
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in EventManagementServices.getUserEvents:", msg);
             throw error;
         }
     }
@@ -508,6 +375,203 @@ export class EventManagementServices implements IEventServices {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown error';
             console.error("Error in EventManagementServices.deleteEventByAdmin:", msg);
+            throw error;
+        }
+    }
+
+
+    async processOnlineEventJoin(input: JoinOnlineEventInputDTO): Promise<JoinOnlineEventResponseDTO> {
+        const { eventId, userId, userName } = input;
+
+        const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
+
+        validateOnlineEventForJoin(event);
+
+        const isEventHost: boolean = String(event.organizer.hostId) === String(userId);
+
+        // Only check bookings if the user is an Attendee (not for Organizer/Host)
+        if (!isEventHost) {
+            const booking: BookingEntity | null = await this._bookingRepository.getUserBookingForOnlineEvent(userId, eventId);
+            
+            validateOnlineBookingForJoin(booking);
+
+            // if it's their first time joining
+            if (booking.bookingStatus === BOOKING_STATUSES.CONFIRMED) {
+                const checkinUpdateInput: BookingCheckinUpdate = {
+                    bookingId: booking.bookingId,
+                    entryCount: 1,   // Online events are always 1 entry per user
+                    newStatus: BOOKING_STATUSES.ATTENDED,
+                    checkedInAt: new Date(), 
+                };
+                
+                // This properly updates remainingEntries to 0, attendance, checkedIn count & time etc.
+                await this._checkinRepository.applyCheckInUpdate(checkinUpdateInput);
+                await this._eventRepository.incrementEventCheckedInCount(eventId, 1);
+            }
+        }
+
+        // Generate Token & displayName (for both Hosts and Attendees)
+        const roomName: string = `room_event_${eventId}`;
+        const displayName: string = isEventHost ? event.organizer.organizationName : userName;
+
+        // Delegate token generation to the specialized streaming service
+        const streamingData: JoinOnlineEventResult = await this._streamingService.generateJoinToken({
+            roomName,
+            participantName: displayName,
+            participantIdentity: userId.toString(),
+            isEventHost,
+        });
+
+        return mapToJoinOnlineEventResponseDTO(
+            streamingData.streamingToken, 
+            roomName, 
+            streamingData.serverUrl
+        );
+    }
+    
+
+    async getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult> {
+        try {
+            const { 
+                page, 
+                limit, 
+                search, 
+                status, 
+                category, 
+                format,
+                ticketType,
+                sortBy, 
+                sortOrder
+            } = filters;
+
+            const queryConditions: EventFilterQuery[] = [];
+
+            if (search) {
+                queryConditions.push({
+                    $or: [
+                        { title: { $regex: search, $options: 'i' } },
+                        { locationName: { $regex: search, $options: 'i' } },
+                    ]
+                });
+            }
+
+            const statusCondition = getEventStatusCondition(status);
+            if (statusCondition) {
+                queryConditions.push(statusCondition);
+            }
+
+            if (category) queryConditions.push({ category });
+            if (format) queryConditions.push({ format });
+            if (ticketType) queryConditions.push({ ticketType });
+
+            const finalQuery: EventFilterQuery = queryConditions.length > 0 
+                ? { $and: queryConditions } 
+                : {};
+
+            const skip = (page - 1) * limit;
+            const sort: Record<string, 1 | -1> = {};
+            if (sortBy) {
+                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+            }
+
+            console.log('Final query in EventManagementServices.getAllEvents:', finalQuery);
+            console.log("Sort applied:", sort);
+
+            const publicProjection = '-onlineLink';  // dont send onlineLink to public users
+
+            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
+                this._eventRepository.findEvents(finalQuery, skip, limit, sort, publicProjection),
+                this._eventRepository.countEvents(finalQuery)
+            ]);
+
+            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
+
+            return {
+                events: mappedEvents,
+                pagination: {
+                    totalCount: totalCount,
+                    limit: limit,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCount / limit)
+                }
+            };
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.getAllEvents:", msg);
+            throw error;
+        }
+    }
+
+
+    async getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult> {
+        try {
+            const { 
+                page, 
+                limit, 
+                search, 
+                status, 
+                category, 
+                format,
+                ticketType,
+                sortBy, 
+                sortOrder
+            }: GetEventsFilter = filters;
+
+            const queryConditions: EventFilterQuery[] = [];
+
+            queryConditions.push({ hostRef: new Types.ObjectId(userId) });
+
+            if (search) {
+                queryConditions.push({
+                    $or: [
+                        { title: { $regex: search, $options: 'i' } },
+                        { locationName: { $regex: search, $options: 'i' } },
+                    ]
+                });
+            }
+
+            const statusCondition = getEventStatusCondition(status);
+            if (statusCondition) {
+                queryConditions.push(statusCondition);
+            }
+
+
+            if (category) queryConditions.push({ category });
+            if (format) queryConditions.push({ format });
+            if (ticketType) queryConditions.push({ ticketType });
+
+            const finalQuery: EventFilterQuery = { $and: queryConditions };
+
+            const skip = (page - 1) * limit;
+            const sort: Record<string, 1 | -1> = {};
+            if (sortBy) {
+                sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+            }
+
+            console.log('finalQuery in EventManagementServices.getUserEvents:', finalQuery);
+            console.log("Sort applied:", sort);
+
+            const [events, totalCount]: [EventEntity[] | null, number] = await Promise.all([
+                this._eventRepository.findEvents(finalQuery, skip, limit, sort),
+                this._eventRepository.countEvents(finalQuery)
+            ]);
+            
+            const mappedEvents: EventResponseDTO[] = events ? events.map(mapEventEntityToEventResponseDto) : [];
+
+            return {
+                events: mappedEvents,
+                pagination: {
+                    totalCount: totalCount,
+                    limit: limit,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalCount / limit)
+                }
+            };
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown error';
+            console.error("Error in EventManagementServices.getUserEvents:", msg);
             throw error;
         }
     }

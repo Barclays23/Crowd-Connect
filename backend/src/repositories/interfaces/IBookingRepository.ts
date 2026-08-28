@@ -27,6 +27,7 @@ export interface IBookingRepository {
   getBookingByOrderId(orderId: string): Promise<BookingEntity | null>;
   getBookingByPaymentId(paymentId: string): Promise<BookingEntityPopulated | null>;
   getBookingByQrToken(token: string): Promise<BookingEntity | null>;
+  getUserBookingForOnlineEvent(userId: string, eventId: string): Promise<BookingEntity | null>;
   
   // for online retry payment
   updateBookingPaymentOrderId(bookingId: string, newOrderId: string): Promise<void>

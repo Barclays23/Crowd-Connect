@@ -7,12 +7,14 @@ import {
     GetOrganiserEventsResult, 
     UpdateEventRequestDTO 
 } from "@/dtos/event.dto";
+import { JoinOnlineEventInputDTO, JoinOnlineEventResponseDTO } from "@/dtos/streaming.dto";
 import { 
     GetEventsFilter, 
     GetAllEventsResult, 
     GetPublicEventsFilter, 
     GetOrganiserEventsFilter
 } from "@/types/event.types";
+
 
 
 export interface IEventServices {
@@ -44,6 +46,8 @@ export interface IEventServices {
     
     deleteEventByHost(eventId: string, hostId: string): Promise<void>
     deleteEventByAdmin(eventId: string, adminId: string): Promise<void>
+
+    processOnlineEventJoin(input: JoinOnlineEventInputDTO): Promise<JoinOnlineEventResponseDTO>
 
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     

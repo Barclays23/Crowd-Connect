@@ -1,6 +1,6 @@
 // frontend/src/components/user/BookingDetails.tsx
 
-import { CreditCard, Info, AlertOctagon, Plane, Globe } from "lucide-react";
+import { CreditCard, Info, AlertOctagon, Plane, Globe, Video } from "lucide-react";
 import { Badge }        from "@/components/ui/badge";
 import { formatDate5 }  from "@/utils/dateAndTime.utils";
 import type { IBookingState }           from "@/types/booking.types";
@@ -10,6 +10,9 @@ import BookingTicket from "@/components/booking/BookingTicket";
 import { EVENT_FORMATS } from "@/constants/event.constants";
 import { BOOKING_STATUS } from "@/constants/booking.constants";
 import { PAYMENT_STATUSES } from "@/constants/payment.constants";
+import { useNavigate } from "react-router-dom";
+import { isLiveStreamingRoomOpen } from "@/utils/event.utils";
+import { Button } from "@/components/ui/button";
 
 
 // Horizontal layout for lists in the lower cards
@@ -29,10 +32,17 @@ interface BookingDetailsProps {
   booking: IBookingState;
 }
 
+
+
+
 function BookingDetails({ booking }: BookingDetailsProps) {
   const isOnline    = booking.event.format === EVENT_FORMATS.ONLINE;
   const isFree      = booking.totalAmount === 0;
   const isCancelled = booking.bookingStatus === BOOKING_STATUS.CANCELLED;
+
+  const navigate = useNavigate();
+
+  const isLiveWindowOpen = isLiveStreamingRoomOpen(booking.event.startDateTime, booking.event.endDateTime);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
@@ -71,15 +81,15 @@ function BookingDetails({ booking }: BookingDetailsProps) {
             <div className="p-6 flex-1 space-y-6">
                {/* Prominent Total */}
                <div className="flex items-baseline justify-between pb-4 border-b border-(--border-muted)">
-               <span className="text-lg font-semibold text-(--text-primary)">Total Amount</span>
-               <span
-                  className={`
-                     text-2xl md:text-3xl font-black tracking-tight
-                     ${isFree ? 'text-(--status-success)' : 'text-(--brand-primary)'}
-                  `}
-               >
-                  {isFree ? "FREE" : `₹${booking.totalAmount.toLocaleString("en-IN")}`}
-               </span>
+                  <span className="text-lg font-semibold text-(--text-primary)">Total Amount</span>
+                  <span
+                     className={`
+                        text-2xl md:text-3xl font-black tracking-tight
+                        ${isFree ? 'text-(--status-success)' : 'text-(--brand-primary)'}
+                     `}
+                  >
+                     {isFree ? "FREE" : `₹${booking.totalAmount.toLocaleString("en-IN")}`}
+                  </span>
                </div>
 
                {/* Timeline / Key Dates */}
@@ -187,70 +197,87 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                `}
             >
                {isCancelled ? (
-               <AlertOctagon className="w-5 h-5 text-(--status-error)" />
+                  <AlertOctagon className="w-5 h-5 text-(--status-error)" />
                ) : (
-               <Info className="w-5 h-5 text-(--text-secondary)" />
+                  <Info className="w-5 h-5 text-(--text-secondary)" />
                )}
                <h3
-               className={`
-                  text-sm font-bold uppercase tracking-wider
-                  ${isCancelled ? 'text-(--status-error)' : 'text-(--text-primary)'}
-               `}
+                  className={`
+                     text-sm font-bold uppercase tracking-wider
+                     ${isCancelled ? 'text-(--status-error)' : 'text-(--text-primary)'}
+                  `}
                >
-               {isCancelled ? "Cancellation Details" : "Booking Status"}
+                  {isCancelled ? "Cancellation Details" : "Booking Status"}
                </h3>
             </div>
 
             <div className="p-6 flex-1 space-y-6">
                {/* Core timeline */}
                <div className="space-y-4">
-               <DetailRow
-                  label="Booked On"
-                  value={formatDate5(booking.createdAt) || "—"}
-               />
-
-               {booking.checkedInAt && (
                   <DetailRow
-                     label="Checked In On"
-                     value={formatDate5(booking.checkedInAt)}
+                     label="Booked On"
+                     value={formatDate5(booking.createdAt) || "—"}
                   />
-               )}
 
-               {isCancelled && booking.cancellation && (
-                  <>
+                  {booking.checkedInAt && (
                      <DetailRow
-                        label="Cancelled On"
-                        value={formatDate5(booking.cancellation.cancelledAt)}
+                        label="Checked In On"
+                        value={formatDate5(booking.checkedInAt)}
                      />
+                  )}
 
-                     <div className="pt-3 border-t border-(--badge-error-border)">
-                        <div className="bg-(--badge-error-bg)/60 p-4 rounded-lg border border-(--badge-error-border)/40">
-                           <p className="text-xs font-bold text-(--status-error) uppercase tracking-widest mb-1.5">
-                              Cancellation Reason
-                           </p>
-                           <p className="text-sm text-(--text-primary) leading-relaxed">
-                              {booking.cancellation.reason || "No reason provided"}
-                           </p>
+                  {isCancelled && booking.cancellation && (
+                     <>
+                        <DetailRow
+                           label="Cancelled On"
+                           value={formatDate5(booking.cancellation.cancelledAt)}
+                        />
+
+                        <div className="pt-3 border-t border-(--badge-error-border)">
+                           <div className="bg-(--badge-error-bg)/60 p-4 rounded-lg border border-(--badge-error-border)/40">
+                              <p className="text-xs font-bold text-(--status-error) uppercase tracking-widest mb-1.5">
+                                 Cancellation Reason
+                              </p>
+                              <p className="text-sm text-(--text-primary) leading-relaxed">
+                                 {booking.cancellation.reason || "No reason provided"}
+                              </p>
+                           </div>
                         </div>
-                     </div>
-                  </>
-               )}
+                     </>
+                  )}
                </div>
 
                {/* Placeholder / instruction when nothing dramatic happened */}
-               {!isCancelled && !booking.checkedInAt && (
-                  <div className="flex flex-col items-center justify-center py-12 text-(--text-tertiary) opacity-70 mt-4">
+               {!isCancelled && (
+                  <div className="flex flex-col items-center justify-center py-10 mt-4">
                      {isOnline ? (
-                        <Globe className="w-12 h-12 mb-4 opacity-40" />
+                        <div className="flex flex-col items-center text-center">
+                           <Globe className="w-12 h-12 mb-4 text-(--brand-primary) opacity-80" />
+                           <h4 className="text-lg font-bold text-(--heading-primary) mb-2">Live Virtual Stage</h4>
+                           <p className="text-sm text-(--text-secondary) max-w-sm mb-6">
+                              The live streaming room opens 15 minutes before the event begins.
+                           </p>
+                           
+                           <Button 
+                              onClick={() => navigate(`/events/${booking.event.eventId}/live`)}
+                              disabled={!isLiveWindowOpen}
+                              size="lg"
+                              className="w-full sm:w-auto gap-2"
+                           >
+                              <Video size={18} />
+                              {isLiveWindowOpen ? "Join Live Event Now" : "Room Not Open Yet"}
+                           </Button>
+                        </div>
                      ) : (
-                        <Plane className="w-12 h-12 mb-4 opacity-40" />
+                        !booking.checkedInAt && (
+                           <div className="flex flex-col items-center text-center opacity-70">
+                              <Plane className="w-12 h-12 mb-4 opacity-40" />
+                              <p className="text-sm max-w-70">
+                                    Booking confirmed • Show your Entry Pass QR code at the venue
+                              </p>
+                           </div>
+                        )
                      )}
-                     <p className="text-center text-sm max-w-70">
-                        {isOnline 
-                           ? "Booking confirmed • Access the event via the online link" 
-                           : "Booking confirmed • Show your Entry Pass QR code at the venue"
-                        }
-                     </p>
                   </div>
                )}
             </div>

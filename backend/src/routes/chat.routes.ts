@@ -3,7 +3,6 @@ import { Router } from "express";
 import { ChatController } from "@/controllers/implementations/chat.controller";
 import { ChatService } from "@/services/chat-services/implementations/chat.service";
 import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
-import { authenticate } from "@/middlewares/auth.middleware";
 import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
 import { CHAT_ROUTES } from "@/constants/routes.constants";
 import { GoogleGenAI } from "@google/genai";

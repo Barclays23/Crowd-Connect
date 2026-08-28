@@ -56,6 +56,7 @@ import AdminPayoutRequests from "@/pages/admin/AdminPayoutRequests";
 import AdminReviews from "@/pages/admin/AdminReviews";
 import AdminOperationalSettings from "@/pages/admin/AdminOperationalSettings";
 import AdminPolicies from "@/pages/admin/AdminPolicies";
+import LiveEventRoom from "@/pages/event/LiveEventRoom";
 
 
 
@@ -103,6 +104,7 @@ function App() {
                                  <Route path="/dashboard" element={<UserAccountTabs />} />
                                  <Route path="/my-events" element={<UserAccountTabs />} />
                                  <Route path="/my-events/:eventId" element={<OrgainiserEventDashboard />} />
+                                 <Route path="/events/:eventId/live" element={<LiveEventRoom />} />
                                  <Route path="/my-bookings" element={<UserAccountTabs />} />
                                  <Route path="/my-favourites" element={<UserAccountTabs />} />
                                  <Route path="/my-reviews" element={<UserAccountTabs />} />

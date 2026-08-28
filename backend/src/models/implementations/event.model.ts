@@ -53,17 +53,19 @@ const eventSchema = new Schema<IEventModel>(
          type: {
             type: String,
             enum: ["Point"],
-            default: "Point",
+            // default: "Point",
+            required: false
          },
          coordinates: {
             type: [Number], // [Longitude, Latitude]
+            required: false
          },
       },
       onlineLink: {      // Only valid if format is online
          type: String,
          trim: true,
-         // required: function() { return this.format === EVENT_FORMAT.ONLINE },
-         required: [function() { return this.format === 'online'; }, 'Online events require a link'],
+         required: false,
+         // required: [function() { return this.format === EVENT_FORMATS.ONLINE; }, 'Online events require a link'],
       },
 
       // --- Date & Time ---

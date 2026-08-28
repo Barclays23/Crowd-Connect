@@ -75,8 +75,7 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
                 Attendee
               </div>
               <div className="text-2xl md:text-3xl font-extrabold text-(--text-primary) tracking-tight">
-                {'Mohamed Sajeer M MK'}
-                {/* ↑ Ideally: booking.user?.name || "Attendee Name" */}
+                {booking.user?.name || "Attendee Name"}
               </div>
             </div>
 

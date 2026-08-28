@@ -43,7 +43,7 @@ export class CheckinRepository extends BaseRepository<IBookingModel> implements 
 
 
     async getEventAttendance(eventId: string): Promise<AttendanceRecord[]> {
-        const bookings = await this.findManyQuery({
+        const bookings: AttendanceLean[] = await this.findManyQuery({
             eventRef:    new Types.ObjectId(eventId),
             checkedInAt: { $exists: true, $ne: null },
         })

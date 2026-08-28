@@ -16,6 +16,7 @@ declare global {
       interface Request {
          user?: {
             userId   : string;
+            name     : string;
             email    : string;
             role     : UserRole;
             status   : UserStatus;
@@ -68,10 +69,11 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
    }
 
    req.user = {
-      userId: user.userId,
-      email: user.email,
-      role: user.role,
-      status: user.status
+      userId   : user.userId,
+      name     : user.name,
+      email    : user.email,
+      role     : user.role,
+      status   : user.status
    };
 
    next();

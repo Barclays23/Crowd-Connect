@@ -2,6 +2,7 @@ import axiosInstance from "@/config/axios";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
 import type { ApiResponse } from "@/types/common.types";
 import type { GetOrganiserEventsResult, GetPublicEventsParams, IEventState, OrganiserEventsData, UpdateEventStatusPayload } from "@/types/event.types";
+import type { JoinOnlineEventResponse } from "@/types/streaming.types";
 
 
 
@@ -131,6 +132,17 @@ export const eventServices = {
 
    deleteEventByAdmin: async (eventId: string): Promise<ApiResponse<void>> => {
       const res = await axiosInstance.delete<ApiResponse<void>>(API_ENDPOINTS.ADMIN.DELETE_EVENT(eventId));
+      return res.data;
+   },
+
+
+
+   async joinOnlineEvent(eventId: string): Promise<ApiResponse<JoinOnlineEventResponse>> {
+      const res = await axiosInstance.post<ApiResponse<JoinOnlineEventResponse>>(
+         API_ENDPOINTS.EVENT.JOIN_ONLINE(eventId),
+         {},
+         { withCredentials: true }
+      );
       return res.data;
    },
 
