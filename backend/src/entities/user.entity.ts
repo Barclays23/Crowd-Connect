@@ -86,8 +86,8 @@ export interface HostEntity extends UserEntity {
 }
 
 
-export interface UserProfileEntity extends HostEntity {}
-
+// export interface UserProfileEntity extends HostEntity {}
+export type UserProfileEntity = HostEntity;
 
 
 

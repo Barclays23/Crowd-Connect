@@ -5,11 +5,6 @@ import { Types } from "mongoose";
 
 
 
-// Allow scanning up to 30 minutes before the event starts
-export const EARLY_CHECKIN_BUFFER_MS = 30 * 60 * 1000;
-
-
-
 
 
 // Booking statuses that are permit for entry
@@ -19,7 +14,7 @@ export const ENTERABLE_STATUSES: BookingStatus[] = [
 ];
 
 
-// Event statuses that permit scanning
+// Event statuses that permit scanning (or allowed for joining online event)
 // PUBLISHED is included because your DB stores PUBLISHED; display layer computes upcoming/ongoing
 export const SCANNABLE_EVENT_STATUSES: EventStatus[] = [
   EVENT_STATUSES.PUBLISHED,

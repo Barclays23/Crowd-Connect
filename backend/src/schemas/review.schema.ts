@@ -1,5 +1,5 @@
 // backend/src/schemas/review.schema.ts
-import { BookingIdParamSchema, MongoIdBase } from "@/schemas/mongo.schema";
+import { MongoIdBase } from "@/schemas/mongo.schema";
 import { z } from "zod";
 
 

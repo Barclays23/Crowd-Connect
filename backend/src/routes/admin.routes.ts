@@ -19,7 +19,7 @@ import { UserController } from '@/controllers/implementations/user.controller';
 import { HostController } from '@/controllers/implementations/host.controller';
 
 
-import { validateParams, validateRequest } from '@/middlewares/validate.middleware';
+import { validateRequest } from '@/middlewares/validate.middleware';
 import { HostApplicationSchema, HostPermissionSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { 
     BookingIdParamSchema, 
@@ -36,7 +36,6 @@ import { BookingController } from '@/controllers/implementations/booking.control
 import { BookingService } from '@/services/booking-services/implementations/booking.service';
 import { BookingRepository } from '@/repositories/implementations/booking.repository';
 import { cancelBookingSchema } from '@/schemas/booking.schema';
-import { RazorpayProvider } from '@/providers/payment-providers/razorpay.provider';
 import { PaymentService } from '@/services/payment-services/implementations/payment.service';
 import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
 import { PasswordService } from '@/services/password-services/implementations/password.service';
@@ -58,8 +57,12 @@ import { ReviewRepository } from '@/repositories/implementations/review.reposito
 import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
 import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
 import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
+import { RazorpayProvider } from '@/providers/payment-providers/razorpay.provider';
 import { BadWordsFilterService } from '@/services/profanity-services/implementations/BadWordsFilterService';
 import { GoogleGenAI } from '@google/genai';
+import { CheckinRepository } from '@/repositories/implementations/checkin.repository';
+import { LiveKitStreamingService } from '@/services/streaming-services/implementations/LiveKitStreamingService';
+import { liveKitConfig, liveKitRoomServiceClient } from '@/routes/event.routes';
 
 
 
@@ -72,8 +75,9 @@ const eventRepo         = new EventRepository();
 const bookingRepo       = new BookingRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
-const payoutRepo        = new PayoutRepository()
-const reviewRepo        = new ReviewRepository()
+const payoutRepo        = new PayoutRepository();
+const reviewRepo        = new ReviewRepository();
+const checkinRepo       = new CheckinRepository();
 const faqKnowledgeRepo  = new MongoFaqRepository();
 
 
@@ -107,8 +111,9 @@ const settingsService           = new PlatformSettingsService(settingsRepo, faqI
 const profanityFilter           = new BadWordsFilterService();
 
 
+const streamingService          = new LiveKitStreamingService(liveKitConfig, liveKitRoomServiceClient);
 const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
-const eventServices             = new EventManagementServices(eventRepo, bookingServices, userProfileServices, cacheService, settingsService, eventQueueService);
+const eventServices             = new EventManagementServices(eventRepo, bookingRepo, checkinRepo, bookingServices, userProfileServices, cacheService, settingsService, eventQueueService, streamingService);
 const passwordService           = new PasswordService(userRepo, cacheService);
 const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
 const reviewService             = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);

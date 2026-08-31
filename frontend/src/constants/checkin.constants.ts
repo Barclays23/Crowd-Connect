@@ -4,3 +4,4 @@
 export const SCANNER_DIV_ID = "cc-qr-scanner";
 export const AUTO_RESET_DELAY_MS = 4000;
 export const EARLY_CHECKIN_BUFFER_MS = 30 * 60 * 1000; // 30 minutes in milliseconds
+export const ONLINE_EARLY_JOIN_BUFFER_MS = 15 * 60 * 1000; // 15 minutes in milliseconds

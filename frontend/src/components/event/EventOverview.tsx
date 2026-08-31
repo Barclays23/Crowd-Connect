@@ -6,11 +6,16 @@ import {
    Calendar, MapPin, Video, IndianRupee,
    Ticket, AlertTriangle, Clock, TrendingUp,
    ImageOff, UserCircle,
+   Globe,
 } from "lucide-react";
 import type { IEventState } from "@/types/event.types";
 import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/event/EventMap";
+import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
+import { useNavigate } from "react-router-dom";
+import { isLiveStreamingRoomOpen } from "@/utils/event.utils";
+import { Button } from "@/components/ui/button";
 
 
 
@@ -20,13 +25,17 @@ interface EventOverviewProps {
 
 
 export default function EventOverview({ event }: EventOverviewProps) {
-   const isOnline = event.format?.toLowerCase() === "online";
-   const isFree = event.ticketType?.toLowerCase() === "free";
-   const isCancelled = event.eventStatus === "cancelled" || event.eventStatus === "suspended";
+   const isOnline = event.format?.toLowerCase() === EVENT_FORMATS.ONLINE;
+   const isFree = event.ticketType?.toLowerCase() === TICKET_TYPES.FREE;
+   const isCancelled = event.eventStatus === EVENT_STATUSES.CANCELLED || event.eventStatus === EVENT_STATUSES.SUSPENDED;
    const sold = event.soldTickets ?? 0;
    const capacity = event.capacity ?? 0;
    const remaining = capacity - sold;
    const fillPct = capacity > 0 ? Math.min(100, Math.round((sold / capacity) * 100)) : 0;
+
+   const navigate = useNavigate();
+
+   const isLiveWindowOpen = isLiveStreamingRoomOpen(event.startDateTime, event.endDateTime);
 
    const fillBarColor =
       fillPct >= 100 ? "bg-(--status-error)" :
@@ -79,17 +88,27 @@ export default function EventOverview({ event }: EventOverviewProps) {
                   </div>
                )}
 
-               <Section title={isOnline ? "Meeting Link" : "Venue & Location"}>
+               {/* <Section title={isOnline ? "Meeting Link" : "Venue & Location"}> */}
+               <Section title={isOnline ? "Virtual Stage" : "Venue & Location"}>
                   {isOnline ? (
-                     <div className="flex items-start gap-3 rounded-xl p-5 bg-(--bg-primary) border border-(--card-border)">
-                        <Video size={20} className="shrink-0 mt-0.5 text-(--brand-primary)" />
-                        {event.onlineLink ? (
-                           <a href={event.onlineLink} target="_blank" rel="noopener noreferrer" className="text-base font-medium break-all text-(--brand-primary) hover:underline">
-                              {event.onlineLink}
-                           </a>
-                        ) : (
-                           <span className="text-base text-(--text-tertiary)">Not provided</span>
-                        )}
+                     <div className="flex flex-col items-center justify-center py-10 bg-(--bg-primary) border border-(--card-border) rounded-xl">
+                         <div className="flex flex-col items-center text-center">
+                             <Globe className="w-12 h-12 mb-4 text-(--brand-primary) opacity-80" />
+                             <h4 className="text-lg font-bold text-(--heading-primary) mb-2">Host Virtual Stage</h4>
+                             <p className="text-sm text-(--text-secondary) max-w-sm mb-6">
+                                 The live streaming room opens 15 minutes before the event begins. As the host, you have full broadcasting controls.
+                             </p>
+                             
+                             <Button 
+                                 onClick={() => navigate(`/events/${event.eventId}/live`)}
+                                 disabled={!isLiveWindowOpen}
+                                 size="lg"
+                                 className="w-full sm:w-auto gap-2"
+                             >
+                                 <Video size={18} />
+                                 {isLiveWindowOpen ? "Enter Live Stage" : "Room Not Open Yet"}
+                             </Button>
+                         </div>
                      </div>
                   ) : (
                      <div className="space-y-4">

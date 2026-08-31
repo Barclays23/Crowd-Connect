@@ -1,11 +1,11 @@
 // backend/src/config/passport.config.ts
 import passport from 'passport';
-import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
+import { Strategy as GoogleStrategy, Profile, VerifyCallback } from 'passport-google-oauth20';
 import { AuthSessionService } from '@/services/auth-services/implementations/authSession.service';
 import { UserRepository } from '@/repositories/implementations/user.repository';
 import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
 import { AuthResult } from '@/types/auth.types';
-import { AUTH_ROUTES } from '@/constants/routes.constants';
+
 
 
 // Initialize dependencies for the strategy
@@ -30,7 +30,7 @@ export const configurePassport = () => {
         callbackURL : callbackURL
     },
 
-    async (accessToken: string, refreshToken: string, googleProfile: Profile, done: any) => {
+    async (_accessToken: string, _refreshToken: string, googleProfile: Profile, done: VerifyCallback) => {
         try {
             const authResult: AuthResult = await sessionService.handleGoogleAuth(googleProfile);
             return done(null, authResult);

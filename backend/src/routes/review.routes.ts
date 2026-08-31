@@ -11,11 +11,14 @@ import { EventRepository } from "@/repositories/implementations/event.repository
 import { validateRequest } from "@/middlewares/validate.middleware";
 import { EditReviewSchema, SubmitReviewSchema } from "@/schemas/review.schema";
 import { REVIEW_ROUTES } from "@/constants/routes.constants";
-import { BadWordsFilterService } from "@/services/profanity-services/implementations/BadWordsFilterService";
-import { OpenAIProfanityFilterService } from "@/services/profanity-services/implementations/OpenAIProfanityFilterService";
+// import { BadWordsFilterService } from "@/services/profanity-services/implementations/BadWordsFilterService";
+// import { OpenAIProfanityFilterService } from "@/services/profanity-services/implementations/OpenAIProfanityFilterService";
 import { GeminiProfanityFilterService } from "@/services/profanity-services/implementations/GeminiProfanityFilterService";
 import { GoogleGenAI } from "@google/genai";
-import OpenAI from "openai";
+// import OpenAI from "openai";
+
+
+
 
 
 

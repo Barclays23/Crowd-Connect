@@ -17,7 +17,7 @@ import {
     mapEntityToOperationalDTO, 
     mapEntityToPublicTermsDTO 
 } from '@/mappers/platformSettings.mapper';
-import { SEED_TERMS_DATA } from '@/constants/termAndConditions.constants';
+// import { SEED_TERMS_DATA } from '@/constants/termAndConditions.constants';
 
 
 

@@ -3,7 +3,11 @@
 import { Worker, Job } from "bullmq";
 import { queueConnection } from "@/config/redis-queue.config";
 import Event from "@/models/implementations/event.model";
-import { EVENT_STATUSES } from "@/constants/event.constants";
+import { EVENT_FORMATS, EVENT_STATUSES } from "@/constants/event.constants";
+import { streamingService } from "@/routes/event.routes";
+
+
+
 
 
 
@@ -31,6 +35,13 @@ export const startEventWorker = () => {
                 if (event.endDateTime <= new Date()) {
                     event.eventStatus = EVENT_STATUSES.COMPLETED;
                     await event.save();
+
+                    // ── WEB RTC CLEANUP (for ONLINE EVENTS)──
+                    if (event.format === EVENT_FORMATS.ONLINE) {
+                        const roomName = `room_event_${eventId}`;
+                        await streamingService.closeRoom(roomName);
+                        console.log(`[Worker] Destroyed LiveKit room: ${roomName}`);
+                    }
                     
                     console.log(`[Worker] Successfully marked event ${eventId} as COMPLETED.`);
                     

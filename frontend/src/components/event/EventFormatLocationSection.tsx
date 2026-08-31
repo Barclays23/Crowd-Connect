@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { FieldError } from "../shared/FieldError";
 import { GooglePlacesAutoComplete } from "@/components/shared/GooglePlacesAutoComplete";
 import { type EventFormValues } from "@/schemas/event.schema";
+import { EVENT_FORMATS } from "@/constants/event.constants";
 
 
 
@@ -42,10 +43,10 @@ export const EventFormatLocationSection = ({
          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Venue Card */}
             <div
-               onClick={() => setValue("format", "offline", { shouldValidate: true })}
+               onClick={() => setValue("format", EVENT_FORMATS.OFFLINE, { shouldValidate: true })}
                className={cn(
                   "cursor-pointer rounded-xl border p-4 flex items-center gap-4 transition-all duration-200",
-                  currentFormat === "offline"
+                  currentFormat === EVENT_FORMATS.OFFLINE
                      ? "border-(--brand-primary) bg-(--badge-primary-bg) text-(--brand-primary)"
                      : "border-(--border-muted) bg-(--card-bg) text-(--text-secondary) hover:border-(--brand-primary-light) hover:bg-(--bg-tertiary)"
                )}
@@ -53,7 +54,7 @@ export const EventFormatLocationSection = ({
                <div
                   className={cn(
                      "p-3 rounded-full flex items-center justify-center transition-colors",
-                     currentFormat === "offline"
+                     currentFormat === EVENT_FORMATS.OFFLINE
                         ? "bg-(--brand-primary) text-(--text-inverse)"
                         : "bg-(--bg-tertiary) text-(--text-tertiary)"
                   )}
@@ -61,12 +62,12 @@ export const EventFormatLocationSection = ({
                   <Building2 className="w-5 h-5" />
                </div>
                <div>
-                  <p className={cn("font-semibold text-sm", currentFormat === "offline" ? "text-(--brand-primary)" : "text-(--text-primary)")}>
+                  <p className={cn("font-semibold text-sm", currentFormat === EVENT_FORMATS.OFFLINE ? "text-(--brand-primary)" : "text-(--text-primary)")}>
                      Venue
                   </p>
                   <p className="text-xs opacity-80 mt-0.5">Attendees meet at a physical location</p>
                </div>
-               {currentFormat === "offline" && (
+               {currentFormat === EVENT_FORMATS.OFFLINE && (
                   <div className="ml-auto">
                      <CheckCircle2 className="w-5 h-5 text-(--brand-primary)" />
                   </div>
@@ -76,13 +77,13 @@ export const EventFormatLocationSection = ({
             {/* Online Card */}
             <div
                onClick={() => {
-                  setValue("format", "online", { shouldValidate: true });
+                  setValue("format", EVENT_FORMATS.ONLINE, { shouldValidate: true });
                   setValue("locationName", "");
                   setValue("locationCoordinates", undefined);
                }}
                className={cn(
                   "cursor-pointer rounded-xl border p-4 flex items-center gap-4 transition-all duration-200",
-                  currentFormat === "online"
+                  currentFormat === EVENT_FORMATS.ONLINE
                      ? "border-(--brand-primary) bg-(--badge-primary-bg) text-(--brand-primary)"
                      : "border-(--border-muted) bg-(--card-bg) text-(--text-secondary) hover:border-(--brand-primary-light) hover:bg-(--bg-tertiary)"
                )}
@@ -90,7 +91,7 @@ export const EventFormatLocationSection = ({
                <div
                   className={cn(
                      "p-3 rounded-full flex items-center justify-center transition-colors",
-                     currentFormat === "online"
+                     currentFormat === EVENT_FORMATS.ONLINE
                         ? "bg-(--brand-primary) text-(--text-inverse)"
                         : "bg-(--bg-tertiary) text-(--text-tertiary)"
                   )}
@@ -98,12 +99,13 @@ export const EventFormatLocationSection = ({
                   <Globe className="w-5 h-5" />
                </div>
                <div>
-                  <p className={cn("font-semibold text-sm", currentFormat === "online" ? "text-(--brand-primary)" : "text-(--text-primary)")}>
+                  <p className={cn("font-semibold text-sm", currentFormat === EVENT_FORMATS.ONLINE ? "text-(--brand-primary)" : "text-(--text-primary)")}>
                      Online
                   </p>
                   <p className="text-xs opacity-80 mt-0.5">Livestream, Webinar, or Virtual</p>
+                  <p className="text-xs opacity-80 mt-0.5">Hosted natively on your built-in Live Stage</p>
                </div>
-               {currentFormat === "online" && (
+               {currentFormat === EVENT_FORMATS.ONLINE && (
                   <div className="ml-auto">
                      <CheckCircle2 className="w-5 h-5 text-(--brand-primary)" />
                   </div>
@@ -111,7 +113,7 @@ export const EventFormatLocationSection = ({
             </div>
          </div>
 
-         {currentFormat === "offline" && (
+         {currentFormat === EVENT_FORMATS.OFFLINE && (
             <div className="relative z-20">
                <Label className="block mb-2 text-(--text-primary)">Venue / City *</Label>
 

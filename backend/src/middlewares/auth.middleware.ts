@@ -16,6 +16,7 @@ declare global {
       interface Request {
          user?: {
             userId   : string;
+            name     : string;
             email    : string;
             role     : UserRole;
             status   : UserStatus;
@@ -24,9 +25,22 @@ declare global {
    }
 }
 
-
-
 interface AuthenticatedRequest extends Request {}
+
+
+// export interface AuthUserPayload {
+//    userId : string;
+//    name   : string;
+//    email  : string;
+//    role   : UserRole;
+//    status : UserStatus;
+// }
+
+
+
+// export interface AuthenticatedRequest extends Request {
+//    user?: AuthUserPayload;
+// }
 
 
 
@@ -68,10 +82,11 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
    }
 
    req.user = {
-      userId: user.userId,
-      email: user.email,
-      role: user.role,
-      status: user.status
+      userId   : user.userId,
+      name     : user.name,
+      email    : user.email,
+      role     : user.role,
+      status   : user.status
    };
 
    next();

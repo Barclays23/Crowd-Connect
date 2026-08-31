@@ -2,7 +2,7 @@
 
 import { BookingEntityPopulated } from "@/entities/booking.entity";
 
-import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity } from "@/entities/platformSettings.entity";
 
 
 

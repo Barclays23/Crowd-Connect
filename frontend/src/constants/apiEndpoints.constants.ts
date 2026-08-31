@@ -112,6 +112,8 @@ export const API_ENDPOINTS = {
         DELETE              : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}`,
         BOOKINGS_OF_EVENT   : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/bookings`,
         ORGANISER_EVENTS    : (hostId: string) => `${API_PREFIX.EVENT}/organiser/${hostId}/events`,
+
+        JOIN_ONLINE         : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/join-online`,
     },
 
     HOST: {

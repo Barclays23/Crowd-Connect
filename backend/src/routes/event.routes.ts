@@ -26,6 +26,10 @@ import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementati
 import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
 import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
 import { GoogleGenAI } from "@google/genai";
+import { CheckinRepository } from "@/repositories/implementations/checkin.repository";
+import { LiveKitStreamingService } from "@/services/streaming-services/implementations/LiveKitStreamingService";
+import { LiveKitConfig } from "@/types/streaming.types";
+import { RoomServiceClient } from "livekit-server-sdk";
 
 
 
@@ -41,6 +45,7 @@ const userRepo          = new UserRepository();
 const transactionRepo   = new TransactionRepository();
 const settingsRepo      = new PlatformSettingsRepository();
 const faqKnowledgeRepo  = new MongoFaqRepository();
+const checkinRepo       = new CheckinRepository();
 
 
 
@@ -51,6 +56,21 @@ const faqKnowledgeRepo  = new MongoFaqRepository();
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 
+// STREAMING CONFIGURATIONS ──────────────────────────────────────────────
+export const liveKitConfig: LiveKitConfig = {
+    livekitApiUrl: process.env.LIVEKIT_URL || '',
+    apiKey: process.env.LIVEKIT_API_KEY || '',
+    apiSecret: process.env.LIVEKIT_API_SECRET || ''
+};
+
+export const liveKitRoomServiceClient: RoomServiceClient = new RoomServiceClient(
+    liveKitConfig.livekitApiUrl, 
+    liveKitConfig.apiKey, 
+    liveKitConfig.apiSecret
+);
+
+
+
 
 
 // PROVIDERS
@@ -59,6 +79,7 @@ const aiChatProvider   = new GeminiAiChatProvider(genAI);
 
 
 // SERVICES
+export const streamingService = new LiveKitStreamingService(liveKitConfig, liveKitRoomServiceClient);
 const ticketService         = new TicketService();
 const paymentService        = new PaymentService(razorPayProvider);
 const walletService         = new WalletService(userRepo, transactionRepo);
@@ -68,7 +89,7 @@ const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatPr
 const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
 const userProfileServices   = new UserProfileService(userRepo);
 const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService          = new EventManagementServices(eventRepo, bookingService, userProfileServices, cacheService, settingsService, eventQueueService);
+const eventService          = new EventManagementServices(eventRepo, bookingRepo, checkinRepo, bookingService, userProfileServices, cacheService, settingsService, eventQueueService, streamingService);
 
 
 // CONTROLLER
@@ -99,14 +120,15 @@ eventRouter.patch(EVENT_ROUTES.CANCEL_EVENT, authenticate, authorize(USER_ROLES.
 
 eventRouter.delete(EVENT_ROUTES.DELETE_EVENT, authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.deleteEventByHost.bind(eventController));
 
-eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), 
-    eventController.getUserEvents.bind(eventController)
-);
+// Attendee Joining Online Event
+eventRouter.post('/:eventId/join-online', authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.joinOnlineEvent.bind(eventController));
 
 
-eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER_ROLES.HOST, USER_ROLES.ADMIN),
-    eventController.getAllBookingsOfEvent.bind(eventController)
-);
+
+eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), eventController.getUserEvents.bind(eventController));
+
+eventRouter.get(EVENT_ROUTES.GET_BOOKINGS_OF_EVENT, authenticate, authorize(USER_ROLES.HOST, USER_ROLES.ADMIN), eventController.getAllBookingsOfEvent.bind(eventController));
+
 
 
 // PUBLIC ROUTES ---------------------------

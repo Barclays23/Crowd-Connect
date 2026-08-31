@@ -12,7 +12,7 @@ import { PlatformSettingsRepository } from "@/repositories/implementations/platf
 import { UserRepository } from "@/repositories/implementations/user.repository";
 import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
 import { PAYOUT_ROUTES } from "@/constants/routes.constants";
-import { uploadImage, uploadPayoutProof } from "@/middlewares/file-upload.middleware";
+import { uploadPayoutProof } from "@/middlewares/file-upload.middleware";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { validateParams } from "@/middlewares/validate.middleware";
 import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";

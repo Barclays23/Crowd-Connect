@@ -93,6 +93,17 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   }
 
 
+  async getUserBookingForOnlineEvent(userId: string, eventId: string): Promise<BookingEntity | null> {
+    const booking: IBookingModel | null = await this.findOneQuery({
+      userRef: new Types.ObjectId(userId),
+      eventRef: new Types.ObjectId(eventId),
+      bookingStatus: { $in: [BOOKING_STATUSES.CONFIRMED, BOOKING_STATUSES.ATTENDED] }
+    }).lean<IBookingModel>();
+
+    return booking ? mapBookingModelToEntity(booking) : null;
+  }
+
+
   async confirmOnlineBooking(
     bookingId: string, 
     input: ConfirmOnlineBookingInput, 

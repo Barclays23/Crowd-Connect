@@ -1,7 +1,4 @@
 // backend/src/services/auth-services/interfaces/IAuthRecovery.ts
-import { ResetPasswordDto } from "@/dtos/auth.dto";
-
-
 
 
 export interface IAuthRecoveryService {

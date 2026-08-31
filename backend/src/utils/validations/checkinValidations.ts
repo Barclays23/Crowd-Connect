@@ -1,9 +1,9 @@
 // backend/src/utils/validations/checkinValidations.ts
 
+import { EARLY_CHECKIN_BUFFER_MS } from "@/constants/event.constants";
 import { HTTP_STATUS }             from "@/constants/http-status.constants";
 import { 
     CheckInBookingPopulated, 
-    EARLY_CHECKIN_BUFFER_MS, 
     ENTERABLE_STATUSES, 
     SCANNABLE_EVENT_STATUSES 
 } from "@/types/checkin.types";

@@ -4,7 +4,6 @@ import { GetUsersFilter, GetUsersResult } from "@/types/user.types";
 import { 
     CreateUserRequestDto,
     UpdateUserRequestDto,
-    UserProfileResponseDto, 
 } from "@/dtos/user.dto";
 import { UserStatus } from "@/constants/user-system.constants";
 import { UserEntity } from "@/entities/user.entity";

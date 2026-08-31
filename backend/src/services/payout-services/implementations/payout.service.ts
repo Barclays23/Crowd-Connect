@@ -15,7 +15,7 @@ import {
 import { mapPayoutEntityToDTO, mapToEligibleEventDTO } from "@/mappers/payout.mapper";
 import { executeWithTransactionRetry } from "@/utils/transaction.utils";
 import { EventEntity } from "@/entities/event.entity";
-import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity } from "@/entities/platformSettings.entity";
 import { IPayoutRepository } from "@/repositories/interfaces/IPayoutRequestRepository";
 import { 
     EligibleEventDTO, 

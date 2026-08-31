@@ -34,6 +34,7 @@ import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EventCategory, EventFormat, EventStatus, TicketType } from "@/constants/event.constants";
 import { BookingStatus } from "@/constants/booking.constants";
 import { ApiResponse } from "@/utils/apiResponse.utils";
+import { JoinOnlineEventInputDTO, JoinOnlineEventResponseDTO } from "@/dtos/streaming.dto";
 
 
 
@@ -86,7 +87,36 @@ export class EventController implements IEventController {
         };
     }
 
+
+    async publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>{
+        try {     
+            if (!req.user || !req.user.userId) {
+                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
+                return;
+            }
+
+            const eventId = req.params.eventId as string;
+            const userId = req.user.userId;
     
+            await this._eventServices.publishEvent(eventId, userId);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT)
+            );
+    
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
+            // });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.publishEvent:', msg);
+            next(error);
+        };
+    }
+
+
     async updateEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             if (!req.user || !req.user.userId) {
@@ -94,7 +124,7 @@ export class EventController implements IEventController {
                 return;
             }
 
-            const body                  = req.body;
+            // const body                  = req.body;
             const currentUserId: string = req.user.userId;
             const eventId: string       = req.params.eventId as string;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -136,7 +166,7 @@ export class EventController implements IEventController {
                 return;
             }
             
-            const body                  = req.body;
+            // const body                  = req.body;
             const eventId: string       = req.params.eventId as string;
             const adminId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -166,106 +196,6 @@ export class EventController implements IEventController {
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
             console.error('Error in eventController.updateEventByAdmin:', msg);
-            next(error);
-        };
-    }
-
-
-    async deleteEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const eventId = req.params.eventId as string;
-            const hostId = req.user?.userId as string;
-
-            await this._eventServices.deleteEventByHost(eventId, hostId);
-
-            res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
-            );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            // });
-            
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.deleteEventByHost:', msg);
-            next(error);
-        };
-    }
-
-    async deleteEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const eventId = req.params.eventId as string;
-            const adminId = req.user?.userId as string;
-
-            await this._eventServices.deleteEventByAdmin(eventId, adminId);
-
-            res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
-            );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            // });
-            
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.deleteEventByAdmin:', msg);
-            next(error);
-        };
-    }
-
-
-    async getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
-            const category = (req.query.category as string)?.trim() || "";
-            const format = (req.query.format as string)?.trim() || "";
-            const status = (req.query.status as string)?.trim() || "";
-            const ticketType = (req.query.ticketType as string)?.trim() || "";
-            const search = (req.query.search as string)?.trim() || "";
-
-            const sortBy = allowedEventSortFields.includes(req.query.sortBy as string)
-                ? (req.query.sortBy as string)
-                : "createdAt";
-
-            const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
-
-            const filters: GetEventsFilter = { 
-                page, 
-                limit, 
-                category: category ? category as EventCategory : undefined,
-                format: format ? format as EventFormat : undefined,
-                status: status ? status as EventStatus : undefined,
-                ticketType: ticketType ? ticketType as TicketType : undefined,
-                search,
-                sortBy,
-                sortOrder
-            };
-            console.log('✅ Parsed filters for admin getAllEvents:', filters);
-
-            const result: GetAllEventsResult = await this._eventServices.getAllEvents(filters);
-
-            res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success<EventResponseDTO[] | null>(
-                    "Events retrieved successfully.", 
-                    result.events, 
-                    result.pagination
-                )
-            );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: result.events,
-            //     pagination: result.pagination
-            // });
-
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getAllEvents:', msg);
             next(error);
         };
     }
@@ -335,34 +265,133 @@ export class EventController implements IEventController {
     }
 
 
-    async publishEvent(req: Request, res: Response, next: NextFunction): Promise<void>{
-        try {     
-            if (!req.user || !req.user.userId) {
-                res.status(HTTP_STATUS.UNAUTHORIZED).json({ success: false, message: "Unauthorized: User information missing" });
-                return;
-            }
-
+    async deleteEventByHost(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
             const eventId = req.params.eventId as string;
-            const userId = req.user.userId;
-    
-            await this._eventServices.publishEvent(eventId, userId);
+            const hostId = req.user?.userId as string;
+
+            await this._eventServices.deleteEventByHost(eventId, hostId);
 
             res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success(EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT)
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
             );
-    
+
             // res.status(HTTP_STATUS.OK).json({
             //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
+            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
             // });
-
+            
         } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.publishEvent:', msg);
+            console.error('Error in eventController.deleteEventByHost:', msg);
             next(error);
         };
     }
 
+    async deleteEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const adminId = req.user?.userId as string;
+
+            await this._eventServices.deleteEventByAdmin(eventId, adminId);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
+            // });
+            
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.deleteEventByAdmin:', msg);
+            next(error);
+        };
+    }
+
+
+    async joinOnlineEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+
+            if (!req.user || !req.user.userId) {
+                res.status(HTTP_STATUS.UNAUTHORIZED).json(
+                    ApiResponse.error("Unauthorized: User information missing")
+                );
+                return;
+            }
+
+            const joinOnlineEventInput: JoinOnlineEventInputDTO = {
+                eventId: eventId,
+                userId: req.user.userId,
+                userName: req.user.name,
+            };
+
+            const result: JoinOnlineEventResponseDTO = await this._eventServices.processOnlineEventJoin(joinOnlineEventInput)
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<JoinOnlineEventResponseDTO>("Successfully joined online event.", result)
+            );
+
+        } catch (error: unknown) {
+            next(error);
+        }
+    };
+
+
+    async getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const category = (req.query.category as string)?.trim() || "";
+            const format = (req.query.format as string)?.trim() || "";
+            const status = (req.query.status as string)?.trim() || "";
+            const ticketType = (req.query.ticketType as string)?.trim() || "";
+            const search = (req.query.search as string)?.trim() || "";
+
+            const sortBy = allowedEventSortFields.includes(req.query.sortBy as string)
+                ? (req.query.sortBy as string)
+                : "createdAt";
+
+            const sortOrder = (req.query.sortOrder as string) === "asc" ? "asc" : "desc";
+
+            const filters: GetEventsFilter = { 
+                page, 
+                limit, 
+                category: category ? category as EventCategory : undefined,
+                format: format ? format as EventFormat : undefined,
+                status: status ? status as EventStatus : undefined,
+                ticketType: ticketType ? ticketType as TicketType : undefined,
+                search,
+                sortBy,
+                sortOrder
+            };
+            console.log('✅ Parsed filters for admin getAllEvents:', filters);
+
+            const result: GetAllEventsResult = await this._eventServices.getAllEvents(filters);
+
+            res.status(HTTP_STATUS.OK).json(
+                ApiResponse.success<EventResponseDTO[] | null>(
+                    "Events retrieved successfully.", 
+                    result.events, 
+                    result.pagination
+                )
+            );
+
+            // res.status(HTTP_STATUS.OK).json({
+            //     success: true,
+            //     data: result.events,
+            //     pagination: result.pagination
+            // });
+
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Unknown Error';
+            console.error('Error in eventController.getAllEvents:', msg);
+            next(error);
+        };
+    }
 
  
     async getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -422,7 +451,6 @@ export class EventController implements IEventController {
             next(error);
         };
     }
-
 
 
     // for public events

@@ -1,7 +1,7 @@
 // src/services/notification-services/implementations/notification.service.ts
 
-import { IMailService } from "@/services/mail-services/interfaces/IMailService";
-import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+// import { IMailService } from "@/services/mail-services/interfaces/IMailService";
+// import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
 // import { ISmsService } from "@/services/sms-services/interfaces/ISmsService";
 // import { IPushService } from "@/services/push-services/interfaces/IPushService";
 

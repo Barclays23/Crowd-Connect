@@ -6,7 +6,7 @@ import { IAuthSessionService } from "../interfaces/IAuthSession";
 import { AuthResult } from "@/types/auth.types";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
-import { USER_STATUS, UserStatus } from "@/constants/user-system.constants";
+import { USER_STATUS } from "@/constants/user-system.constants";
 import { comparePassword } from "@/utils/bcrypt.utils";
 import { mapUserEntityToAuthUserDto } from "@/mappers/user.mapper";
 import { 
@@ -33,7 +33,7 @@ export class AuthSessionService implements IAuthSessionService {
     async signIn(signInDto: SignInRequestDto): Promise<AuthResult> {
         try {
             const userData: SensitiveUserEntity | null = await this._userRepository.findAuthUser({email: signInDto.email});
-            // console.log('✅ User data retrieved in AuthSessionService.signIn:', userData);
+            
             if (!userData) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
             if (userData.status === USER_STATUS.BLOCKED) {
@@ -54,11 +54,10 @@ export class AuthSessionService implements IAuthSessionService {
             
             // change user.status to 'active' if it was 'inactive' or 'pending'
             if (userData.status === USER_STATUS.PENDING) {
-                const updatedStatus: UserStatus | null = await this._userRepository.updateUserStatus(userData.userId, USER_STATUS.ACTIVE);
-                // console.log(`✅ User status updated to '${updatedStatus}' upon sign-in.`);
+                await this._userRepository.updateUserStatus(userData.userId, USER_STATUS.ACTIVE);
             }
 
-            const tokenPayload  = { userId: userData.userId.toString() }; // keep payload minimal
+            const tokenPayload  = { userId: userData.userId.toString() };
             const accessToken   = createAccessToken(tokenPayload);
             const refreshToken  = createRefreshToken(tokenPayload);
 

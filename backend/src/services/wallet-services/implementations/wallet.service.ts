@@ -34,7 +34,6 @@ export class WalletService implements IWalletService {
    constructor(
       private _userRepository            : IUserRepository,
       private _transactionRepository     : ITransactionRepository,
-      // private _withdrawalRequestRepository : IWithdrawalRequestRepository,
    ) {}
 
 
@@ -56,16 +55,10 @@ export class WalletService implements IWalletService {
          newBalance
       );
 
-      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
+      await this._transactionRepository.createTransaction(transactionInput, { session });
       
-      // return newBalance or transactionData.balanceAfter ?? which is correct?
       return newBalance;
 
-      //  ## One architectural note on timing
-         // You're crediting the wallet **immediately when the Razorpay refund is initiated**, not when it's confirmed. This is the pragmatic approach — Razorpay refunds almost never fail after initiation, and it gives the user instant feedback. But you should be aware of the tradeoff:
-
-         // Razorpay refund initiated → wallet credited immediately  ← what you're doing (fine)
-         // Razorpay refund confirmed via webhook → then credit wallet  ← more "correct" but delays UX
    }
 
 
@@ -84,9 +77,8 @@ export class WalletService implements IWalletService {
          newBalance
       );
 
-      const transactionData: TransactionEntity = await this._transactionRepository.createTransaction(transactionInput, { session });
+      await this._transactionRepository.createTransaction(transactionInput, { session });
 
-      // return newBalance or transactionData.balanceAfter ?? which is correct?
       return newBalance;
    }
 

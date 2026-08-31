@@ -7,14 +7,14 @@ import { AiController } from '@/controllers/implementations/ai.controller';
 import { GeneratePosterSchema } from '@/schemas/ai.schema';
 import { USER_ROLES } from '@/constants/user-system.constants';
 import { AI_ROUTES } from '@/constants/routes.constants';
-import { OpenAiImageProvider } from '@/providers/ai-image-providers/implementations/OpenAiImageProvider';
-import { GeminiImageProvider } from '@/providers/ai-image-providers/implementations/GeminiImageProvider';
+// import OpenAI from 'openai';
+// import { GoogleGenAI } from '@google/genai';
+// import { OpenAiImageProvider } from '@/providers/ai-image-providers/implementations/OpenAiImageProvider';
+// import { GeminiImageProvider } from '@/providers/ai-image-providers/implementations/GeminiImageProvider';
 // import { GoogleGenerativeAI } from "@google/generative-ai";  // this legacy SDK will depricate soon
-import OpenAI from 'openai';
-import { GoogleGenAI } from '@google/genai';
+// import { FalImageProvider } from '@/providers/ai-image-providers/implementations/FalImageProvider';
+// import { HuggingFaceImageProvider } from '@/providers/ai-image-providers/implementations/HuggingFaceImageProvider';
 import { PollinationsImageProvider } from '@/providers/ai-image-providers/implementations/PollinationsImageProvider';
-import { FalImageProvider } from '@/providers/ai-image-providers/implementations/FalImageProvider';
-import { HuggingFaceImageProvider } from '@/providers/ai-image-providers/implementations/HuggingFaceImageProvider';
 
 
 
