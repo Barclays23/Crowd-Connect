@@ -2,7 +2,7 @@
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { HOST_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
 import { HOST_STATUS, USER_ROLES, USER_STATUS } from "@/constants/user-system.constants";
-import { HostEntity, UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { UserEntity, UserProfileEntity } from "@/entities/user.entity";
 import { isHost } from "@/utils/general.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 

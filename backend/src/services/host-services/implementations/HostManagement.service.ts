@@ -20,7 +20,6 @@ import {
     UserProfileEntity 
 } from "@/entities/user.entity";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
-import { isHost } from "@/utils/general.utils";
 import { 
     mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
@@ -151,8 +150,6 @@ export class HostManagementServices implements IHostManagementServices {
             return updatedStatusResponse;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in HostManagementServices.manageHostApplication:', msg);
             throw error;
         }
     }
@@ -201,8 +198,6 @@ export class HostManagementServices implements IHostManagementServices {
             return updatedStatusResponse;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in HostManagementServices.manageHostPermissions:', msg);
             throw error;
         }
     }

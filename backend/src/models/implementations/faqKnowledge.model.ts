@@ -1,5 +1,5 @@
 // backend/src/models/implementations/faqKnowledge.model.ts
-import mongoose, { model, Model, Schema } from "mongoose";
+import { model, Model, Schema } from "mongoose";
 import { IFaqKnowledgeModel } from "@/types/faqKnowledge.types";
 
 

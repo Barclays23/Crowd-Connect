@@ -1,5 +1,5 @@
 // backend/src/services/profanity-services/implementations/OpenAIProfanityFilterService.ts
-import axios from "axios";
+
 import { IProfanityFilterService } from "../interfaces/IProfanityFilterService";
 import OpenAI from "openai";
 

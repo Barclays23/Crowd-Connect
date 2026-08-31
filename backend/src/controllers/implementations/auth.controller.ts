@@ -92,7 +92,7 @@ export class AuthController implements IAuthController {
     }
 
 
-    async googleAuthCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async googleAuthCallback(req: Request, res: Response): Promise<void> {
         try {
             const authResult: AuthResult = req.user as unknown as AuthResult;
             

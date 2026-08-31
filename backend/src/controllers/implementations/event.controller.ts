@@ -124,7 +124,7 @@ export class EventController implements IEventController {
                 return;
             }
 
-            const body                  = req.body;
+            // const body                  = req.body;
             const currentUserId: string = req.user.userId;
             const eventId: string       = req.params.eventId as string;
             const imageFile: Express.Multer.File | undefined = req.file;
@@ -166,7 +166,7 @@ export class EventController implements IEventController {
                 return;
             }
             
-            const body                  = req.body;
+            // const body                  = req.body;
             const eventId: string       = req.params.eventId as string;
             const adminId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;

@@ -107,9 +107,9 @@ export interface ConfirmOnlineBookingInput {
 }
 
 
-export interface UpdateBookingInput {  // or UpdateBookingRefundInput
+// export interface UpdateBookingInput {  // or UpdateBookingRefundInput
 
-}
+// }
 
 
 export interface CancelBookingInput {

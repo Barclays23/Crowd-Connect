@@ -1,6 +1,6 @@
 // backend/src/controllers/implementations/webhook.controller.ts
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { IWebhookController } from '@/controllers/interfaces/IWebhookController';
 import { IWebhookService } from '@/services/webhook-services/interfaces/IWebhookService';
 import { IPaymentService } from '@/services/payment-services/interfaces/IPaymentService';
@@ -17,7 +17,7 @@ export class WebhookController implements IWebhookController {
     ) {}
 
 
-    async handleWebhookEvent(req: Request, res: Response, next: NextFunction): Promise<void> {
+    async handleWebhookEvent(req: Request, res: Response): Promise<void> {
         try {
             // 1. Extract provider from the URL (e.g., /api/webhooks/razorpay)
             const providerName: string = req.params.provider as string;
@@ -71,6 +71,7 @@ export class WebhookController implements IWebhookController {
             console.error(`Error processing webhook:`, error);
             // res.status(200).json({ status: "error", message: "Webhook received but failed to process" });
             res.status(500).json({ status: "error", message: "Internal server error during webhook processing" });
+            // next(error);
         }
     }
 

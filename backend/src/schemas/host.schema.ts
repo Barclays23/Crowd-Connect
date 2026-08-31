@@ -1,10 +1,11 @@
 // backend/src/schemas/host.schema.ts
 import { z } from "zod";
 
+
+// move to constants
 export const MAX_FILE_SIZE       = 5 * 1024 * 1024; // 5MB
 export const MAX_DOCUMENT_SIZE   = 5 * 1024 * 1024; // 5MB
 export const MAX_LOGO_SIZE       = 2 * 1024 * 1024; // 2MB
-
 
 const ALLOWED_FILE_TYPES = [
   "application/pdf",

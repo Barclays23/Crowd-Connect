@@ -8,7 +8,6 @@ import {
     HostUpdateRequestDto, 
     HostUpgradeRequestDto, 
     OrganiserProfileResponseDTO, 
-    UserProfileResponseDto 
 } from "@/dtos/user.dto";
 import { HostEntity, UserProfileEntity } from "@/entities/user.entity";
 

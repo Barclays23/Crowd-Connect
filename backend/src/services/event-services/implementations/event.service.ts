@@ -51,7 +51,7 @@ import {
     validateEventUpdateByAdmin, 
     validateEventUpdateByHost 
 } from "@/utils/validations/eventValidations";
-import { applyEventStatusFilter, getEventStatusCondition } from "@/utils/eventStatus.utils";
+import { getEventStatusCondition } from "@/utils/eventStatus.utils";
 import { createHttpError } from "@/utils/httpError.utils";
 import { Types } from "mongoose";
 import { getPublicEventSortQuery, SortConfig } from "@/utils/event.utils";

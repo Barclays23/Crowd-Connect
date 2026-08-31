@@ -5,7 +5,6 @@ import { IEventRepository }   from "@/repositories/interfaces/IEventRepository";
 
 import {
    BookingOrderRequestDTO,
-   BookingOrderResponseDTO,
    BookingResponseDTO,
    GetBookingsResponseDTO,
    InitiateBookingResponseDTO,

@@ -19,7 +19,7 @@ import { UserController } from '@/controllers/implementations/user.controller';
 import { HostController } from '@/controllers/implementations/host.controller';
 
 
-import { validateParams, validateRequest } from '@/middlewares/validate.middleware';
+import { validateRequest } from '@/middlewares/validate.middleware';
 import { HostApplicationSchema, HostPermissionSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { 
     BookingIdParamSchema, 

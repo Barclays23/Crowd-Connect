@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 
 
 
 
 export interface IWebhookController {
-    handleWebhookEvent(req: Request, res: Response, next: NextFunction): Promise<void>
+    handleWebhookEvent(req: Request, res: Response): Promise<void>
     
     // handleRazorpayWebhook(req: Request, res: Response, next: NextFunction): Promise<void>
 

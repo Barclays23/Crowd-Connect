@@ -25,9 +25,22 @@ declare global {
    }
 }
 
-
-
 interface AuthenticatedRequest extends Request {}
+
+
+// export interface AuthUserPayload {
+//    userId : string;
+//    name   : string;
+//    email  : string;
+//    role   : UserRole;
+//    status : UserStatus;
+// }
+
+
+
+// export interface AuthenticatedRequest extends Request {
+//    user?: AuthUserPayload;
+// }
 
 
 

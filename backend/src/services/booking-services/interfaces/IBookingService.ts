@@ -8,7 +8,6 @@ import {
   GetBookingsResponseDTO,
   InitiateBookingResponseDTO,
   VerifyPaymentRequestDTO,
-  BookingOrderResponseDTO,
 } from "@/dtos/booking.dto";
 import { GetBookingsFilter } from "@/types/booking.types";
 import { DetectedChange } from "@/utils/event-change-detector";

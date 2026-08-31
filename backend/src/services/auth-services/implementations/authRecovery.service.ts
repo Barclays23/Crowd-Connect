@@ -37,7 +37,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 // For security reasons, don't reveal whether the email exists
                 // throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
             } else {
-                const { cryptoToken, expiryDate, expiryMinutes } = generateCryptoToken();
+                const { cryptoToken, expiryMinutes } = generateCryptoToken();
                 
                 const baseUrl   = process.env.FRONTEND_URL;
                 const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
@@ -136,7 +136,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                 createdAt       : Date.now(),
             };
 
-            const response = await this._cacheService.setKeyValue(
+            await this._cacheService.setKeyValue(
                 redisKey, 
                 JSON.stringify(redisData), 
                 expiryMinutes * 60

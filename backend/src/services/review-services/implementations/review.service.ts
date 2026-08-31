@@ -74,7 +74,7 @@ export class ReviewService implements IReviewService {
             reviewDto   : reviewDto,
         });
 
-        const newReview: ReviewEntity = await this._reviewRepository.createReview(createInput);
+        await this._reviewRepository.createReview(createInput);
 
         await this._updateEventAndHostRatingAggregates(booking.event.eventId, hostId);
 

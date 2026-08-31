@@ -153,7 +153,7 @@ export class RazorpayProvider implements IPaymentProvider {
         let paymentPurpose: PaymentPurpose;
         let amount          = 0;
         let paymentId       = paymentEntity?.id; // payment ID is usually always available
-        let orderId         = paymentEntity?.order_id || "";
+        const orderId         = paymentEntity?.order_id || "";
         let refundId        = undefined;
         let timestamp       = Date.now();
 

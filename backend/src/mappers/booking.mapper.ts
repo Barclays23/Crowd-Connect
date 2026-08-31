@@ -13,9 +13,9 @@ import {
   MapBookingParams, 
 } from "@/types/booking.types";
 import { Types } from "mongoose";
-import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity } from "@/entities/platformSettings.entity";
 import { getRefundPercentage } from "@/utils/refundCalculator.utils";
-import { PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMethod } from "@/constants/payment.constants";
+import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/constants/payment.constants";
 import { BOOKING_STATUSES, BookingStatus } from "@/constants/booking.constants";
 
 
@@ -133,7 +133,10 @@ export function mapPopulatedBookingModelToEntity(
     eventRef: model.eventRef._id,
   });
 
-  const { eventRef, userRef, ...rest } = base;
+  // const { eventRef: _eventRef, userRef: _userRef, ...rest } = base;
+  const rest = { ...base };
+  delete (rest as Partial<typeof base>).eventRef;
+  delete (rest as Partial<typeof base>).userRef;
 
   return {
     ...rest,

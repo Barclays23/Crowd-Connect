@@ -1,6 +1,6 @@
 // backend/src/utils/validations/streamingValidations.ts
 import { HTTP_STATUS } from "@/constants/http-status.constants";
-import { EVENT_FORMATS, EVENT_STATUSES, ONLINE_EARLY_JOIN_BUFFER_MS } from "@/constants/event.constants";
+import { EVENT_FORMATS, ONLINE_EARLY_JOIN_BUFFER_MS } from "@/constants/event.constants";
 import { EventEntity } from "@/entities/event.entity";
 import { createHttpError } from "@/utils/httpError.utils";
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
