@@ -1,4 +1,4 @@
-// backend/src/services/chat-services/implementations/chat.service.ts
+// backend/src/services/ai-chat-services/implementations/chat.service.ts
 import { IFaqKnowledgeRepository } from "@/repositories/interfaces/IFaqKnowledgeRepository";
 import { TermsSettingsEntity } from "@/entities/platformSettings.entity";
 import { createHttpError } from "@/utils/httpError.utils";

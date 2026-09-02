@@ -52,6 +52,10 @@ export const TICKET_TYPES = {
 
 
 
+export const MAX_ADVANCE_YEARS = 2;
+export const MAX_DURATION_DAYS = 60;
+
+
 
 export type EventFormat  = typeof EVENT_FORMATS[keyof typeof EVENT_FORMATS];
 export type TicketType   = typeof TICKET_TYPES[keyof typeof TICKET_TYPES];

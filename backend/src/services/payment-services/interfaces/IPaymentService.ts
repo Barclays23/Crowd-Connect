@@ -19,11 +19,12 @@ export interface IPaymentService {
     // Verifies webhook signature after payment capture. Called in verifyPayment flow.
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
 
-    // Verifies webhook signature for incoming webhooks events.
-    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean;
-
-    normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null;
-
     // Initiates a refund via Razorpay or Stripe.
     initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult>;
+
+    // Verifies webhook signature for incoming webhooks events.
+    // verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean;
+
+    // normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null;
+
 }

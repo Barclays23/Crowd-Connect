@@ -1,99 +1,12 @@
 import { USER_ROLES } from "@/constants/user-system.constants";
 import { EVENT_ROUTES } from "@/constants/routes.constants";
-import { EventController } from "@/controllers/implementations/event.controller";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { uploadEventPoster } from "@/middlewares/file-upload.middleware";
 import { validateParams, validateRequest } from "@/middlewares/validate.middleware";
-import { BookingRepository } from "@/repositories/implementations/booking.repository";
-import { EventRepository } from "@/repositories/implementations/event.repository";
-import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
-import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
-import { UserRepository } from "@/repositories/implementations/user.repository";
 import { CreateEventFormSchema, UpdateEventFormSchema } from "@/schemas/event.schema";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
-import { BookingService } from "@/services/booking-services/implementations/booking.service";
-import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
-import { EventManagementServices } from "@/services/event-services/implementations/event.service";
-import { PaymentService } from "@/services/payment-services/implementations/payment.service";
-import { RazorpayProvider } from "@/providers/payment-providers/razorpay.provider";
-import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
-import { EventQueueService } from "@/services/queue-services/implementaions/eventQueue.service";
-import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
-import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
 import { Router } from "express";
-import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
-import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
-import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
-import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
-import { GoogleGenAI } from "@google/genai";
-import { CheckinRepository } from "@/repositories/implementations/checkin.repository";
-import { LiveKitStreamingService } from "@/services/streaming-services/implementations/LiveKitStreamingService";
-import { LiveKitConfig } from "@/types/streaming.types";
-import { RoomServiceClient } from "livekit-server-sdk";
-
-
-
-
-
-
-
-
-// REPOS
-const eventRepo         = new EventRepository();
-const bookingRepo       = new BookingRepository();
-const userRepo          = new UserRepository();
-const transactionRepo   = new TransactionRepository();
-const settingsRepo      = new PlatformSettingsRepository();
-const faqKnowledgeRepo  = new MongoFaqRepository();
-const checkinRepo       = new CheckinRepository();
-
-
-
-
-
-
-// AI CONFIGURATIONS ──────────────────────────────────────────────
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-
-// STREAMING CONFIGURATIONS ──────────────────────────────────────────────
-export const liveKitConfig: LiveKitConfig = {
-    livekitApiUrl: process.env.LIVEKIT_URL || '',
-    apiKey: process.env.LIVEKIT_API_KEY || '',
-    apiSecret: process.env.LIVEKIT_API_SECRET || ''
-};
-
-export const liveKitRoomServiceClient: RoomServiceClient = new RoomServiceClient(
-    liveKitConfig.livekitApiUrl, 
-    liveKitConfig.apiKey, 
-    liveKitConfig.apiSecret
-);
-
-
-
-
-
-// PROVIDERS
-const razorPayProvider = new RazorpayProvider();
-const aiChatProvider   = new GeminiAiChatProvider(genAI);
-
-
-// SERVICES
-export const streamingService = new LiveKitStreamingService(liveKitConfig, liveKitRoomServiceClient);
-const ticketService         = new TicketService();
-const paymentService        = new PaymentService(razorPayProvider);
-const walletService         = new WalletService(userRepo, transactionRepo);
-const cacheService          = new RedisCacheService();
-const eventQueueService     = new EventQueueService();
-const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
-const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
-const userProfileServices   = new UserProfileService(userRepo);
-const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService          = new EventManagementServices(eventRepo, bookingRepo, checkinRepo, bookingService, userProfileServices, cacheService, settingsService, eventQueueService, streamingService);
-
-
-// CONTROLLER
-const eventController   = new EventController(eventService, bookingService);
+import { eventController } from "@/container/dependencies";
 
 
 

@@ -39,7 +39,7 @@ import { validateAllowedToApplyRoleUpgrade, validateAllowedToUpdateHost } from "
 
 
 
-export class HostManagementServices implements IHostManagementServices {
+export class HostManagementService implements IHostManagementServices {
     constructor(
         private _userRepository: IUserRepository,
     ) {}

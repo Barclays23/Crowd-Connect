@@ -9,16 +9,6 @@ import {
     uploadImage 
 } from '@/middlewares/file-upload.middleware';
 
-import { UserRepository } from '@/repositories/implementations/user.repository';
-
-import { UserManagementService } from '@/services/user-services/implementations/userManagement.service';
-import { UserProfileService } from '@/services/user-services/implementations/userProfile.service';
-import { HostManagementServices } from '@/services/host-services/implementations/HostManagement.service';
-
-import { UserController } from '@/controllers/implementations/user.controller';
-import { HostController } from '@/controllers/implementations/host.controller';
-
-
 import { validateRequest } from '@/middlewares/validate.middleware';
 import { HostApplicationSchema, HostPermissionSchema, HostUpgradeSchema } from '@/schemas/host.schema';
 import { 
@@ -28,106 +18,24 @@ import {
     PayoutIdParamSchema 
 } from '@/schemas/mongo.schema';
 import { ADMIN_ROUTES } from '@/constants/routes.constants';
-import { EventManagementServices } from '@/services/event-services/implementations/event.service';
-import { EventRepository } from '@/repositories/implementations/event.repository';
-import { EventController } from '@/controllers/implementations/event.controller';
 import { suspendEventSchema, UpdateEventFormSchema } from '@/schemas/event.schema';
-import { BookingController } from '@/controllers/implementations/booking.controller';
-import { BookingService } from '@/services/booking-services/implementations/booking.service';
-import { BookingRepository } from '@/repositories/implementations/booking.repository';
 import { cancelBookingSchema } from '@/schemas/booking.schema';
-import { PaymentService } from '@/services/payment-services/implementations/payment.service';
-import { TicketService } from '@/services/ticket-services/implementations/ticket.service';
-import { PasswordService } from '@/services/password-services/implementations/password.service';
-import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
-import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
-import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
-import { PlatformSettingsService } from '@/services/platform-settings-services/implementations/platformSettings.service';
-import { PlatformSettingsRepository } from '@/repositories/implementations/platformSettings.repository';
-import { PayoutService } from '@/services/payout-services/implementations/payout.service';
-import { PayoutRepository } from '@/repositories/implementations/payout.repository';
-import { PayoutController } from '@/controllers/implementations/payout.controller';
 import { ReviewPayoutBodySchema } from '@/schemas/payout.schema';
-import { EventQueueService } from '@/services/queue-services/implementaions/eventQueue.service';
 import { USER_ROLES } from '@/constants/user-system.constants';
 import { AdminReviewQuerySchema } from '@/schemas/review.schema';
-import { ReviewController } from '@/controllers/implementations/review.controller';
-import { ReviewService } from '@/services/review-services/implementations/review.service';
-import { ReviewRepository } from '@/repositories/implementations/review.repository';
-import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
-import { MongoFaqRepository } from '@/repositories/implementations/mongoFaq.repository';
-import { GeminiAiChatProvider } from '@/providers/ai-chat-providers/implementations/GeminiChatProvider';
-import { RazorpayProvider } from '@/providers/payment-providers/razorpay.provider';
-import { BadWordsFilterService } from '@/services/profanity-services/implementations/BadWordsFilterService';
-import { GoogleGenAI } from '@google/genai';
-import { CheckinRepository } from '@/repositories/implementations/checkin.repository';
-import { LiveKitStreamingService } from '@/services/streaming-services/implementations/LiveKitStreamingService';
-import { liveKitConfig, liveKitRoomServiceClient } from '@/routes/event.routes';
+
+import { 
+    bookingController, 
+    eventController, 
+    hostController, 
+    payoutController, 
+    reviewController, 
+    userController 
+} from '@/container/dependencies';
 
 
 
 
-
-
-// ──  REPOSITORIES
-const userRepo          = new UserRepository();
-const eventRepo         = new EventRepository();
-const bookingRepo       = new BookingRepository();
-const transactionRepo   = new TransactionRepository();
-const settingsRepo      = new PlatformSettingsRepository();
-const payoutRepo        = new PayoutRepository();
-const reviewRepo        = new ReviewRepository();
-const checkinRepo       = new CheckinRepository();
-const faqKnowledgeRepo  = new MongoFaqRepository();
-
-
-
-
-
-// AI CONFIGURATIONS ──────────────────────────────────────────────
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-
-
-
-
-// ──  PROVIDERS
-const razorPayProvider = new RazorpayProvider();
-const aiChatProvider   = new GeminiAiChatProvider(genAI);
-
-
-
-// ──  SERVICES
-const ticketService             = new TicketService();
-const paymentServices           = new PaymentService(razorPayProvider);
-const userManagementServices    = new UserManagementService(userRepo);
-const userProfileServices       = new UserProfileService(userRepo);
-const hostManagementServices    = new HostManagementServices(userRepo);
-const walletService             = new WalletService(userRepo, transactionRepo);
-const cacheService              = new RedisCacheService();
-const eventQueueService         = new EventQueueService();
-const faqIngestionService       = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
-const settingsService           = new PlatformSettingsService(settingsRepo, faqIngestionService);
-const profanityFilter           = new BadWordsFilterService();
-
-
-const streamingService          = new LiveKitStreamingService(liveKitConfig, liveKitRoomServiceClient);
-const bookingServices           = new BookingService(bookingRepo, eventRepo, userRepo, paymentServices, ticketService, walletService, cacheService, settingsService);
-const eventServices             = new EventManagementServices(eventRepo, bookingRepo, checkinRepo, bookingServices, userProfileServices, cacheService, settingsService, eventQueueService, streamingService);
-const passwordService           = new PasswordService(userRepo, cacheService);
-const payoutService             = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
-const reviewService             = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
-
-
-
-
-// ──  CONTROLLERS ──
-const userController        = new UserController(userProfileServices, userManagementServices, passwordService);
-const hostController        = new HostController(hostManagementServices);
-const eventController       = new EventController(eventServices, bookingServices);
-const bookingController     = new BookingController(bookingServices);
-const payoutController      = new PayoutController(payoutService);
-const reviewController      = new ReviewController(reviewService)
 
 
 

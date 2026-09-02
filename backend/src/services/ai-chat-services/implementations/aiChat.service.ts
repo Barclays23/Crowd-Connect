@@ -1,15 +1,15 @@
-// backend/src/services/chat-services/implementations/chat.service.ts
-import { IChatService } from "@/services/chat-services/interfaces/IChatService";
+// backend/src/services/ai-chat-services/implementations/chat.service.ts
 import { ChatResponseDTO } from "@/dtos/chat.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { IAiChatProvider } from "@/providers/ai-chat-providers/interfaces/IAiChatProvider";
 import { IFaqKnowledgeRepository } from "@/repositories/interfaces/IFaqKnowledgeRepository";
+import { IAiChatService } from "@/services/ai-chat-services/interfaces/IAiChatService";
 
 
 
 
-export class ChatService implements IChatService {
+export class AiChatService implements IAiChatService {
    constructor(
       private readonly _faqRepository: IFaqKnowledgeRepository,
       private readonly _chatProvider: IAiChatProvider // e.g., Gemini or Grok provider

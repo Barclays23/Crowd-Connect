@@ -18,6 +18,7 @@ import type { IOperationalSettings, IPlatformSettings } from "@/types/platformSe
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
+import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 
 
 
@@ -47,13 +48,14 @@ const HostYourEvent = () => {
   }, []);
 
   const methods = useForm<EventFormValues>({
+    mode: "all",
     resolver: zodResolver(createEventFormSchema) as Resolver<EventFormValues>,
     defaultValues: {
       title: "",
       description: "",
       category: undefined as unknown as EventFormValues["category"],
-      format: "offline" as const,
-      ticketType: "free" as const,
+      format: EVENT_FORMATS.OFFLINE,
+      ticketType: TICKET_TYPES.FREE,
       ticketPrice: 0,
       capacity: 0,
       startDate: "",
@@ -86,7 +88,7 @@ const HostYourEvent = () => {
     formData.append("ticketPrice", String(data.ticketPrice));
     formData.append("capacity", String(data.capacity));
 
-    if (data.format === "offline") {
+    if (data.format === EVENT_FORMATS.OFFLINE) {
       formData.append("locationName", data.locationName || "");
       if (data.locationCoordinates) {
         formData.append("location", JSON.stringify({

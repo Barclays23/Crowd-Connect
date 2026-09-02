@@ -1,5 +1,5 @@
 // src/components/event/EventDateTimeSection.tsx
-import React, { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { Calendar, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,40 @@ export const EventDateTimeSection = () => {
    const { ref: endDateHookRef, ...endDateRest } = register("endDate");
    const { ref: endTimeHookRef, ...endTimeRest } = register("endTime");
 
+
+   // Calculate HTML Min/Max limits
+   const dateLimits = useMemo(() => {
+      // Helper to safely get local YYYY-MM-DD without UTC shifts
+      const toLocalISODate = (date: Date) => {
+         const year = date.getFullYear();
+         const month = String(date.getMonth() + 1).padStart(2, "0");
+         const day = String(date.getDate()).padStart(2, "0");
+         return `${year}-${month}-${day}`;
+      };
+
+      const today = new Date();
+      
+      const maxDate = new Date();
+      maxDate.setFullYear(today.getFullYear() + 2); // 2 years max future
+      
+      const maxEndDurationDate = watchedStartDate ? new Date(watchedStartDate) : maxDate;
+      if (watchedStartDate) {
+         // new Date("YYYY-MM-DD") evaluates to UTC midnight, so getUTCDate() is safe here, 
+         // but since we are just adding days, standard getDate() works identically.
+         maxEndDurationDate.setDate(maxEndDurationDate.getDate() + 60); // 60 days max duration
+      }
+
+      return {
+         todayStr: toLocalISODate(today),
+         maxStartStr: toLocalISODate(maxDate),
+         maxEndStr: toLocalISODate(maxEndDurationDate)
+      };
+   }, [watchedStartDate]);
+
+
+
+
+   
    return (
       <div className="space-y-4">
          <h3 className="text-lg font-semibold text-(--text-primary) flex items-center gap-2">
@@ -45,6 +79,7 @@ export const EventDateTimeSection = () => {
                <div className="relative">
                   <Input
                      type="date"
+                     max={dateLimits.maxStartStr}
                      {...startDateRest}
                      ref={(e) => {
                         startDateHookRef(e);
@@ -81,6 +116,8 @@ export const EventDateTimeSection = () => {
                <div className="relative">
                   <Input
                      type="date"
+                     min={watchedStartDate || dateLimits.todayStr}
+                     max={dateLimits.maxEndStr}
                      {...endDateRest}
                      ref={(e) => {
                         endDateHookRef(e);

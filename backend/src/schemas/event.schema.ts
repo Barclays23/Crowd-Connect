@@ -3,8 +3,14 @@ import { z } from "zod";
 import { 
    ALL_EVENT_CATEGORIES, 
    EVENT_FORMATS, 
+   MAX_ADVANCE_YEARS, 
+   MAX_DURATION_DAYS, 
    TICKET_TYPES 
 } from "@/constants/event.constants";
+import { 
+   MS_PER_DAY, 
+   MS_PER_MINUTE 
+} from "@/constants/dateAndTime.constants";
 
 
 
@@ -71,14 +77,6 @@ export const descriptionBase = z
 
 
 
-export const categoryBase = z
-   .enum(ALL_EVENT_CATEGORIES, "Please choose an event category from the list"
-);
-
-
-
-
-
 export const dateBase = (label: "Start" | "End") => z
    .string()
    .min(1, `${label} date is required`)
@@ -105,13 +103,36 @@ const isoDateTime = z
   .datetime({ offset: true, message: "Invalid ISO datetime format" });
 
 
-export const formatBase = z
-   .enum(EVENT_FORMATS, "Invalid event format");
 
 
 
-export const ticketTypeBase = z
-   .enum(TICKET_TYPES, "Invalid ticket type");
+  
+// export const categoryBase = z
+//    .enum(ALL_EVENT_CATEGORIES, "Please choose an event category from the list"
+// );
+
+
+// export const formatBase = z
+//    .enum(EVENT_FORMATS, "Invalid event format");
+
+
+// export const ticketTypeBase = z
+//    .enum(TICKET_TYPES, "Invalid ticket type");
+
+
+
+export const categoryBase = z.enum(ALL_EVENT_CATEGORIES, {
+   message: "Please choose an event category from the list",
+});
+
+export const formatBase = z.enum([EVENT_FORMATS.ONLINE, EVENT_FORMATS.OFFLINE] as const, {
+   message: "Invalid event format",
+});
+
+export const ticketTypeBase = z.enum([TICKET_TYPES.FREE, TICKET_TYPES.PAID] as const, {
+   message: "Invalid ticket type",
+});
+   
 
 
 
@@ -284,19 +305,11 @@ const eventFormSchemaFactory = (isEditMode = false) =>
       const end = Date.parse(data.endDateTime);
 
       if (Number.isNaN(start)) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["startDateTime"],
-            message: "Invalid start date or time",
-         });
+         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["startDateTime"], message: "Invalid start date or time" });
       }
 
       if (Number.isNaN(end)) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["endDateTime"],
-            message: "Invalid end date or time",
-         });
+         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["endDateTime"], message: "Invalid end date or time" });
       }
 
       if (Number.isNaN(start) || Number.isNaN(end)) {
@@ -305,32 +318,45 @@ const eventFormSchemaFactory = (isEditMode = false) =>
 
       // ✅ Only block past dates when creating — not editing
       if (!isEditMode) {
-         const BUFFER_MS = 60 * 1000;
+         const BUFFER_MS = MS_PER_MINUTE;
          if (start < now - BUFFER_MS) {
-            ctx.addIssue({
-               code: z.ZodIssueCode.custom,
-               path: ["startDateTime"],
-               message: "Start date & time cannot be in the past",
-            });
+            ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["startDateTime"], message: "Start date & time cannot be in the past" });
          }
       }
 
-
       if (end <= start) {
-            ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "End date & time must be after start date & time",
-            path: ["endDateTime"], 
-         });
+         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["endDateTime"], message: "End date & time must be after start date & time" });
       }
 
       if (end < now) {
+         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["endDateTime"], message: "End date & time cannot be in the past" });
+      }
+
+
+      // 2-Year Advance Limit
+      const maxFutureDate = new Date();
+      maxFutureDate.setFullYear(new Date().getFullYear() + MAX_ADVANCE_YEARS);
+
+      if (start > maxFutureDate.getTime()) {
          ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "End date & time cannot be in the past",
+            message: `Event cannot be scheduled more than ${MAX_ADVANCE_YEARS} years in advance`,
+            path: ["startDateTime"],
+         });
+      }
+
+
+      // 60-Day Duration Limit
+      const durationInDays = (end - start) / MS_PER_DAY;
+
+      if (durationInDays > MAX_DURATION_DAYS) {
+         ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Event duration cannot exceed ${MAX_DURATION_DAYS} days`,
             path: ["endDateTime"],
          });
       }
+
 
       // if (data.startDate === data.endDate && end <= start) {
       //    ctx.addIssue({
@@ -346,7 +372,7 @@ const eventFormSchemaFactory = (isEditMode = false) =>
             ctx.addIssue({
                code: z.ZodIssueCode.custom,
                path: ["locationName"],
-               message: "Venue location is required for offline events",
+               message: `Venue location is required for ${EVENT_FORMATS.OFFLINE} events`,
             });
          }
          // Ensure coordinates were actually selected (not just typed text)
@@ -354,7 +380,7 @@ const eventFormSchemaFactory = (isEditMode = false) =>
             ctx.addIssue({
                code: z.ZodIssueCode.custom,
                path: ["locationCoordinates"],
-               message: "You must choose a valid location for offline events.",
+               message: `You must choose a valid location for ${EVENT_FORMATS.OFFLINE} events.`,
             });
          }
       }
@@ -364,7 +390,7 @@ const eventFormSchemaFactory = (isEditMode = false) =>
             ctx.addIssue({
             code: z.ZodIssueCode.custom,
             // message: "Paid events must have a valid ticket price.",
-            message: "Ticket price should be at least ₹1 for paid events",
+            message: `Ticket price should be at least ₹1 for ${TICKET_TYPES.PAID} events`,
             path: ["ticketPrice"],
          });
       }

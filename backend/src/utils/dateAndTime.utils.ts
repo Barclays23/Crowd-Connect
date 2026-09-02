@@ -1,11 +1,12 @@
 // backend/src/utils/dateAndTime.utils.ts
 
+import { 
+    MS_PER_DAY, 
+    MS_PER_HOUR, 
+    MS_PER_MINUTE, 
+    MS_PER_SECOND 
+} from "@/constants/dateAndTime.constants";
 
-// --- Constants ---
-export const MS_PER_SECOND = 1000;
-export const MS_PER_MINUTE = 60 * MS_PER_SECOND;
-export const MS_PER_HOUR   = 60 * MS_PER_MINUTE;
-export const MS_PER_DAY    = 24 * MS_PER_HOUR;
 
 /**
  * Formats a millisecond duration into a human-readable string: 

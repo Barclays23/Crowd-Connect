@@ -1,57 +1,14 @@
 // backend/src/routes/payout.routes.ts  (Host routes)
 import { Router } from "express";
 import { USER_ROLES } from "@/constants/user-system.constants";
-import { PayoutController } from "@/controllers/implementations/payout.controller";
-import { PayoutService } from "@/services/payout-services/implementations/payout.service";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
-import { EventRepository } from "@/repositories/implementations/event.repository";
-import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
-import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
-import { PayoutRepository } from "@/repositories/implementations/payout.repository";
-import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
-import { UserRepository } from "@/repositories/implementations/user.repository";
-import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
 import { PAYOUT_ROUTES } from "@/constants/routes.constants";
 import { uploadPayoutProof } from "@/middlewares/file-upload.middleware";
 import { EventIdParamSchema } from "@/schemas/mongo.schema";
 import { validateParams } from "@/middlewares/validate.middleware";
-import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
-import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
-import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
-import { GoogleGenAI } from "@google/genai";
+import { payoutController } from "@/container/dependencies";
 
 
-
-// repository layers
-const payoutRepo        = new PayoutRepository()
-const eventRepo         = new EventRepository()
-const settingsRepo      = new PlatformSettingsRepository()
-const userRepo          = new UserRepository()
-const transactionRepo   = new TransactionRepository()
-const faqKnowledgeRepo  = new MongoFaqRepository();
-
-
-
-
-// AI CONFIGURATIONS ──────────────────────────────────────────────
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-
-// PROVIDERS
-const aiChatProvider   = new GeminiAiChatProvider(genAI);
-
-
-
-//service layers
-const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
-const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
-const walletService         = new WalletService(userRepo, transactionRepo)
-const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
-
-
-
-// controller layer
-const payoutController  = new PayoutController(payoutService)
 
 
 const payoutRouter = Router();

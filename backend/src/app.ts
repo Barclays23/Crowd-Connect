@@ -46,11 +46,13 @@ app.use(cors({
   credentials: true
 }));
 
+app.use(morganMiddleware);
+
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(morganMiddleware);
+// app.use(morganMiddleware);
 // app.use(helmet());
 // app.use(morgan('dev'));
 

@@ -1,13 +1,15 @@
 // backend/src/utils/validations/checkinValidations.ts
 
+import { MS_PER_MINUTE } from "@/constants/dateAndTime.constants";
 import { EARLY_CHECKIN_BUFFER_MS } from "@/constants/event.constants";
 import { HTTP_STATUS }             from "@/constants/http-status.constants";
+import { BOOKING_MESSAGES } from "@/constants/messages.constants";
 import { 
     CheckInBookingPopulated, 
     ENTERABLE_STATUSES, 
     SCANNABLE_EVENT_STATUSES 
 } from "@/types/checkin.types";
-import { formatTimeRemaining, MS_PER_MINUTE } from "@/utils/dateAndTime.utils";
+import { formatTimeRemaining } from "@/utils/dateAndTime.utils";
 import { createHttpError }        from "@/utils/httpError.utils";
 
 
@@ -44,9 +46,13 @@ export function validateQrEventMatch(tokenEventId: string, hostEventId: string):
 
 // Validates booking status and entry capacity for event checkin.
 export function validateBookingForCheckIn(
-    booking:    CheckInBookingPopulated,
+    booking:    CheckInBookingPopulated | null,
     entryCount: number,
-): void {
+): asserts booking is CheckInBookingPopulated {
+    if (!booking) {
+        throw createHttpError(HTTP_STATUS.NOT_FOUND, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
+    }
+
     // ── 4. Booking status check ───────────────────────────────────────────────
     if (!ENTERABLE_STATUSES.includes(booking.bookingStatus)) {
         throw createHttpError(

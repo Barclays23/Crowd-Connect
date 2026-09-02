@@ -1,10 +1,10 @@
-// backend/src/services/chat-services/interfaces/IChatService.ts
+// backend/src/services/ai-chat-services/interfaces/IAiChatService.ts
 
 import { ChatResponseDTO } from "@/dtos/chat.dto";
 
 
 
 
-export interface IChatService {
+export interface IAiChatService {
     generateAnswer(question: string): Promise<ChatResponseDTO>
 }

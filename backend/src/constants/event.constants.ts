@@ -69,9 +69,6 @@ export type EventChangeType = typeof EVENT_CHANGE_TYPES[keyof typeof EVENT_CHANG
 
 
 
-
-
-// move to ticket constants??
 export const TICKET_TYPES = {
   FREE : 'free',
   PAID : 'paid',
@@ -86,3 +83,7 @@ export const DEFAULT_RADIUS_KM = 25
 export const EARLY_CHECKIN_BUFFER_MS = 30 * 60 * 1000;
 
 export const ONLINE_EARLY_JOIN_BUFFER_MS = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+
+export const MAX_ADVANCE_YEARS = 2;
+export const MAX_DURATION_DAYS = 60;

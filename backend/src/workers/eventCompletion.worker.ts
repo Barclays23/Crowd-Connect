@@ -4,7 +4,7 @@ import { Worker, Job } from "bullmq";
 import { queueConnection } from "@/config/redis-queue.config";
 import Event from "@/models/implementations/event.model";
 import { EVENT_FORMATS, EVENT_STATUSES } from "@/constants/event.constants";
-import { streamingService } from "@/routes/event.routes";
+import { streamingService } from "@/container/dependencies";
 
 
 
