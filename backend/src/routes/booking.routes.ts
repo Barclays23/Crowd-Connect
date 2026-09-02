@@ -1,10 +1,6 @@
 // backend/src/routes/booking.routes.ts
 
 import { Router }            from "express";
-import { BookingController } from "@/controllers/implementations/booking.controller";
-import { BookingService }    from "@/services/booking-services/implementations/booking.service";
-import { BookingRepository } from "@/repositories/implementations/booking.repository";
-import { EventRepository }   from "@/repositories/implementations/event.repository";
 import { authenticate }      from "@/middlewares/auth.middleware";
 import { authorize }         from "@/middlewares/auth.middleware";
 import { validateRequest }      from "@/middlewares/validate.middleware";
@@ -13,63 +9,14 @@ import {
   initiateBookingSchema,
 } from "@/schemas/booking.schema";
 import { BookingIdParamSchema, EventIdParamSchema } from "@/schemas/mongo.schema";
-import { UserRepository } from "@/repositories/implementations/user.repository";
 import { BOOKING_ROUTES } from "@/constants/routes.constants";
-import { PaymentService } from "@/services/payment-services/implementations/payment.service";
-import { RazorpayProvider } from "@/providers/payment-providers/razorpay.provider";
-import { TicketService } from "@/services/ticket-services/implementations/ticket.service";
 import { verifyRazorPayPaymentSchema } from "@/schemas/payment.schema";
-import { WalletService } from "@/services/wallet-services/implementations/wallet.service";
-import { TransactionRepository } from "@/repositories/implementations/transaction.repository";
-import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
-import { PlatformSettingsService } from "@/services/platform-settings-services/implementations/platformSettings.service";
-import { PlatformSettingsRepository } from "@/repositories/implementations/platformSettings.repository";
 import { USER_ROLES } from "@/constants/user-system.constants";
-import { FaqIngestionService } from "@/services/chat-services/implementations/faqIngestion.service";
-import { MongoFaqRepository } from "@/repositories/implementations/mongoFaq.repository";
-import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementations/GeminiChatProvider";
-import { GoogleGenAI } from "@google/genai";
-
-
-
-// ─── Dependency wiring ────────────────────────────────────────────────────────
-
-const bookingRepo       = new BookingRepository();
-const eventRepo         = new EventRepository();
-const userRepo          = new UserRepository();
-const transactionRepo   = new TransactionRepository();
-// const payoutRequestRepo   = new PayoutRequestRepository();
-const settingsRepo      = new PlatformSettingsRepository();
-const faqKnowledgeRepo  = new MongoFaqRepository();
+import { bookingController } from "@/container/dependencies";
 
 
 
 
-// AI CONFIGURATIONS ──────────────────────────────────────────────
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-
-
-
-const razorpayProvider = new RazorpayProvider();
-const aiChatProvider   = new GeminiAiChatProvider(genAI);
-
-
-
-const paymentService        = new PaymentService(razorpayProvider);
-const ticketService         = new TicketService();
-const walletService         = new WalletService(userRepo, transactionRepo);
-const cacheService          = new RedisCacheService();
-const faqIngestionService   = new FaqIngestionService(faqKnowledgeRepo, aiChatProvider);
-const settingsService       = new PlatformSettingsService(settingsRepo, faqIngestionService);
-const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-
-
-const bookingController = new BookingController(bookingService);
-
-
-
-// ─── Router ───────────────────────────────────────────────────────────────────
 
 const bookingRouter = Router();
 

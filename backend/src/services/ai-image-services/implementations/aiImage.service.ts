@@ -1,14 +1,15 @@
-// backend/src/services/ai-services/implementations/ai.service.ts
+// backend/src/services/ai-image-services/implementations/aiImage.service.ts
 import { GeneratePosterDTO, GeneratePosterResponseDTO } from '@/dtos/ai.dto';
 import createHttpError from 'http-errors';
 import { HTTP_STATUS } from '@/constants/http-status.constants';
-import { IAiService } from '@/services/ai-services/interfaces/IAiService';
 import { IAiImageProvider } from '@/providers/ai-image-providers/interfaces/IAiImageProvider';
+import { IAiImageService } from '@/services/ai-image-services/interfaces/IAiImageService';
 
 
 
 
-export class AiService implements IAiService {
+
+export class AiImageService implements IAiImageService {
     constructor(
         private readonly _imageProvider: IAiImageProvider
     ) {}

@@ -12,44 +12,14 @@ import {
 } from '@/schemas/auth.schema';
 import { OtpSchema } from '@/schemas/otp.schema';
 
-import { UserRepository } from '@/repositories/implementations/user.repository';
-
-import { AuthRegistrationService } from '@/services/auth-services/implementations/authRegistration.service';
-import { AuthSessionService } from '@/services/auth-services/implementations/authSession.service';
-import { AuthRecoveryService } from '@/services/auth-services/implementations/authRecovery.service';
-
-import { AuthController } from '@/controllers/implementations/auth.controller';
 
 import { AUTH_ROUTES } from '@/constants/routes.constants';
-import { PasswordService } from '@/services/password-services/implementations/password.service';
-import { RedisCacheService } from '@/services/cache-services/implementations/redisCache.service';
-import { mailDispatcher } from '@/services/mail-services/implementations/MailServiceFactory';
 import passport from 'passport';
 import { AuthProvider } from '@/types/user.types';
+import { authController } from '@/container/dependencies';
 
 
 
-
-// REPOS
-const userRepository = new UserRepository()
-
-
-// SERVICES
-const cacheService          = new RedisCacheService();
-const registrationService   = new AuthRegistrationService(userRepository, cacheService, mailDispatcher);
-const sessionService        = new AuthSessionService(userRepository, cacheService);
-const recoveryService       = new AuthRecoveryService(userRepository, cacheService, mailDispatcher);
-const passwordService       = new PasswordService(userRepository, cacheService)
-
-
-
-// CONTROLLER
-const authController = new AuthController(
-    registrationService, 
-    sessionService, 
-    recoveryService,
-    passwordService
-);
 
 
 

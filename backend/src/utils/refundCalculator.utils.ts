@@ -62,7 +62,7 @@ export function calculateRefundAmount(
     // NOTE ON ADMIN COMMISSION:
     // Commission (settings.commissionPercent) is NOT deducted here.
     // The user always gets back the full percentage of what they paid.
-    // Commission is deducted when calculating HOST PAYOUTS, not refunds.
+    // Commission is deducted when calculating HOST PAYOUTS, not for cancellation refunds.
     // Example: User paid ₹1000. 50% refund = user gets ₹500 back.
     // The admin wallet absorbs this. Commission accounting happens at payout time.
 }

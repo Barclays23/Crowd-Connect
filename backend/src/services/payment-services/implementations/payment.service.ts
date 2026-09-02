@@ -33,14 +33,14 @@ export class PaymentService implements IPaymentService {
     }
 
 
-    verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean {
-        return this._provider.verifyWebhookSignature(rawBody, headers);
-    }
+    // verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean {
+    //     return this._provider.verifyWebhookSignature(rawBody, headers);
+    // }
 
 
-    normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null {
-        return this._provider.normalizeWebhookPayload(rawPayload);
-    }
+    // normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null {
+    //     return this._provider.normalizeWebhookPayload(rawPayload);
+    // }
 
 
     async initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult> {

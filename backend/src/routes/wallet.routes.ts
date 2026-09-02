@@ -1,30 +1,11 @@
 // backend/src/routes/wallet.routes.ts
 import { Router } from 'express';
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
-
-import { UserRepository } from '@/repositories/implementations/user.repository';
-
 import { WALLET_ROUTES } from '@/constants/routes.constants';
 import { USER_ROLES } from '@/constants/user-system.constants';
-import { WalletController } from '@/controllers/implementations/wallet.controller';
-import { WalletService } from '@/services/wallet-services/implementations/wallet.service';
-import { TransactionRepository } from '@/repositories/implementations/transaction.repository';
+import { walletController } from '@/container/dependencies';
 
 
-
-
-// REPOS
-const userRepo          = new UserRepository();
-const transactionRepo     = new TransactionRepository();
-// const payoutRequestRepo   = new PayoutRequestRepository();
-// const withdrawalRequestRepo = new WithdrawalRequestRepository,
-
-
-// SERVICES
-const walletService = new WalletService(userRepo, transactionRepo);
-
-// CONTROLLER
-const walletController = new WalletController(walletService);
 
 
 

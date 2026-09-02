@@ -274,6 +274,8 @@ export class BookingService implements IBookingService {
 
          validateBookingCancelByUser(booking, userId);
 
+         console.log('cancelReason :', cancelReason);
+
          await this._processRefundAndCancelBooking(booking!, cancelReason, context);
 
       } catch (error: unknown) {

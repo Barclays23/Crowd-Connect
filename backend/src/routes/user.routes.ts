@@ -1,37 +1,13 @@
 import { Router } from "express";
-import { UserController } from "@/controllers/implementations/user.controller";
-import { UserRepository } from "@/repositories/implementations/user.repository";
 import { authenticate, authorize } from "@/middlewares/auth.middleware";
 import { uploadImage } from "@/middlewares/file-upload.middleware";
-import { UserProfileService } from "@/services/user-services/implementations/userProfile.service";
-import { UserManagementService } from "@/services/user-services/implementations/userManagement.service";
 import { USER_ROUTES } from "@/constants/routes.constants";
 import { USER_ROLES } from "@/constants/user-system.constants";
-import { PasswordService } from "@/services/password-services/implementations/password.service";
 import { validateBody } from "@/middlewares/validate.middleware";
 import { changePasswordSchema } from "@/schemas/user.schema";
-import { RedisCacheService } from "@/services/cache-services/implementations/redisCache.service";
+import { userController } from "@/container/dependencies";
 
 
-
-
-// REPOS
-const userRepo = new UserRepository();
-
-
-// SERVICES
-const userProfileServices       = new UserProfileService(userRepo);
-const userManagementServices    = new UserManagementService(userRepo);
-const cacheService              = new RedisCacheService();
-const passwordService           = new PasswordService(userRepo, cacheService);
-
-
-// CONTROLLER
-const userController = new UserController(
-    userProfileServices,
-    userManagementServices,
-    passwordService
-);
 
 
 

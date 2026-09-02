@@ -1,4 +1,4 @@
-// backend/src/services/chat-services/interfaces/IFaqIngestionService.ts
+// backend/src/services/ai-chat-services/interfaces/IFaqIngestionService.ts
 
 import { TermsSettingsEntity } from "@/entities/platformSettings.entity";
 

@@ -4,15 +4,15 @@ import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { GeneratePosterDTO, GeneratePosterResponseDTO } from "@/dtos/ai.dto";
 import { IAiController } from "@/controllers/interfaces/IAiContoller";
 import { USER_MESSAGES } from "@/constants/messages.constants";
-import { IAiService } from "@/services/ai-services/interfaces/IAiService";
 import { ApiResponse } from "@/utils/apiResponse.utils";
+import { IAiImageService } from "@/services/ai-services/interfaces/IAiImageService";
 
 
 
 
 export class AiController implements IAiController {
     constructor(
-        private readonly _aiService: IAiService
+        private readonly _aiService: IAiImageService
     ) {}
 
     async generateEventPoster(req: Request, res: Response, next: NextFunction): Promise<void> {

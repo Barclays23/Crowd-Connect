@@ -79,7 +79,7 @@ import { BookingEntity } from "@/entities/booking.entity";
 
 
 
-export class EventManagementServices implements IEventServices {
+export class EventManagementService implements IEventServices {
     constructor(
         private readonly _eventRepository       : IEventRepository,
         private readonly _bookingRepository     : IBookingRepository,

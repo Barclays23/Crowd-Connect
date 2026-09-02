@@ -46,11 +46,6 @@ export class CheckinService implements ICheckinService {
 
         const booking: CheckInBookingPopulated | null = await this._checkinRepo.findBookingByQrToken(qrToken);
 
-        // move this validation also to the validateBookingForCheckIn
-        if (!booking) {
-            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Booking not found.");
-        }
-
         validateBookingForCheckIn(booking, entryCount);
 
         validateEventForCheckIn(booking.eventRef);

@@ -5,6 +5,7 @@ import { IWebhookController } from '@/controllers/interfaces/IWebhookController'
 import { IWebhookService } from '@/services/webhook-services/interfaces/IWebhookService';
 import { IPaymentService } from '@/services/payment-services/interfaces/IPaymentService';
 import { StandardWebhookEvent } from '@/types/webhook.types';
+import { IPaymentProvider } from '@/providers/payment-providers/IPaymentProvider';
 
 
 
@@ -12,21 +13,22 @@ export class WebhookController implements IWebhookController {
 
     constructor(
         private readonly _webhookService: IWebhookService,
-        // private readonly _paymentService: IPaymentService,
-        private readonly _paymentServices: Map<string, IPaymentService>  // check webhook router
+        private readonly _paymentProviders: Map<string, IPaymentProvider>  // check webhook router
     ) {}
 
 
     async handleWebhookEvent(req: Request, res: Response): Promise<void> {
-        try {
+        try {            
             // 1. Extract provider from the URL (e.g., /api/webhooks/razorpay)
             const providerName: string = req.params.provider as string;
-            const paymentService: IPaymentService | undefined = this._paymentServices.get(providerName);
+            const paymentProvider: IPaymentProvider | undefined = this._paymentProviders.get(providerName);
+
 
             console.log('handleWebhookEvent providerName :', providerName)
-            console.log('handleWebhookEvent paymentService :', paymentService)
+            console.log('handleWebhookEvent paymentProvider :', paymentProvider)
 
-            if (!paymentService) {
+
+            if (!paymentProvider) {
                 console.error(`🚨 Webhook hit for unsupported provider: ${providerName}`);
                 res.status(400).json({ status: "error", message: "Unsupported provider" });
                 return;
@@ -35,7 +37,7 @@ export class WebhookController implements IWebhookController {
             console.log('verifying webhook payment signature...')
 
             // 2. Verify Signature (Provider handles its own header extraction!)
-            const isValid = paymentService.verifyWebhookSignature(req.body, req.headers);
+            const isValid = paymentProvider.verifyWebhookSignature(req.body, req.headers);
 
             console.log('handleWebhookEvent isValid :', isValid)
 
@@ -55,7 +57,7 @@ export class WebhookController implements IWebhookController {
             console.log(`✅ Webhook received and verified: ${rawPayload.event || 'Unknown Event'}`);
             
             // 3. Normalize to our StandardEvent
-            const standardEvent: StandardWebhookEvent | null = paymentService.normalizeWebhookPayload(rawPayload);
+            const standardEvent: StandardWebhookEvent | null = paymentProvider.normalizeWebhookPayload(rawPayload);
 
             if (!standardEvent) {
                 res.status(200).json({ status: "ignored" });

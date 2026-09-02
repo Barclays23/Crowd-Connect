@@ -1,10 +1,10 @@
-// backend/src/services/ai-services/interfaces/IAiService.ts
+// backend/src/services/ai-image-services/interfaces/IAiService.ts
 import { 
     GeneratePosterDTO, 
     GeneratePosterResponseDTO 
 } from "@/dtos/ai.dto";
 
 
-export interface IAiService {
+export interface IAiImageService {
     generateEventPoster(data: GeneratePosterDTO): Promise<GeneratePosterResponseDTO>;
 }

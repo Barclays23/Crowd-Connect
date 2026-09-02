@@ -1,8 +1,24 @@
 // frontend/src/schemas/event.schema.ts
-import { EVENT_CATEGORIES, type EventStatus } from "@/constants/event.constants";
-import { POSTER_MAX_FILE_SIZE, POSTER_IMAGE_TYPES } from "@/types/event.types";
+import { MS_PER_DAY } from "@/constants/dateAndTime.constants";
+import { 
+   EVENT_CATEGORIES, 
+   EVENT_FORMATS, 
+   EVENT_STATUSES, 
+   MAX_ADVANCE_YEARS, 
+   MAX_DURATION_DAYS, 
+   TICKET_TYPES, 
+   type EventStatus 
+} from "@/constants/event.constants";
+import { 
+   POSTER_MAX_FILE_SIZE, 
+   POSTER_IMAGE_TYPES 
+} from "@/types/event.types";
 import { parseISODateTime } from "@/utils/dateAndTime.utils";
 import { z } from "zod";
+
+
+
+
 
 
 /* ---------- Base Fields ---------- */
@@ -67,9 +83,17 @@ export const descriptionBase = z
 
 
 
+// export const categoryBase = z
+//    .enum(EVENT_CATEGORIES, "Please choose an event category from the list"
+// );
+
 export const categoryBase = z
-   .enum(EVENT_CATEGORIES, "Please choose an event category from the list"
-);
+   // Accept any initial state (like undefined from RHF) so Zod doesn't abort object parsing early
+   .any()
+   .refine(
+      (val) => EVENT_CATEGORIES.includes(val), 
+      "Please choose an event category from the list"
+   ) as unknown as z.ZodType<typeof EVENT_CATEGORIES[number]>; // Preserves your strict TS typings
 
 
 
@@ -98,12 +122,12 @@ export const timeBase = (label: "Start" | "End") => z
 
 
 export const formatBase = z
-   .enum(["offline", "online"], "Invalid event format");
+   .enum([EVENT_FORMATS.OFFLINE, EVENT_FORMATS.ONLINE], "Invalid event format");
 
 
 
 export const ticketTypeBase = z
-   .enum(["free", "paid"], "Invalid ticket type");
+   .enum([TICKET_TYPES.FREE, TICKET_TYPES.PAID], "Invalid ticket type");
 
 
 
@@ -242,71 +266,68 @@ export const eventFormSchemaFactory = (
       const start = parseISODateTime(data.startDate, data.startTime);
       const end = parseISODateTime(data.endDate, data.endTime);
 
-      if (isNaN(start.getTime())) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Invalid start date or time",
-            path: ["startDate"],
-         });
+      const isValidStart = !isNaN(start.getTime());
+      const isValidEnd = !isNaN(end.getTime());
+
+      if (!isValidStart) {
+         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid start date or time", path: ["startDate"] });
       }
 
-      if (isNaN(end.getTime())) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Invalid end date or time",
-            path: ["endDate"],
-         });
+      if (!isValidEnd) {
+         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid end date or time", path: ["endDate"] });
       }
 
-      // ✅ Only block past start date when creating, not when editing
-      if (!isEditMode && start < today) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Start date & time cannot be in the past",
-            path: ["startDate"],
-         });
+
+      // Validations that depend on a valid Start Date
+      if (isValidStart) {
+         // ✅ Only block past start date when creating, not when editing
+         if (!isEditMode && start < today) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Start date & time cannot be in the past", path: ["startDate"] });
+         }
+
+         if (isEditMode && eventStatus === EVENT_STATUSES.DRAFT && start < today) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "The start date/time has passed. Please choose a future date & time.", path: ["startDate"] });
+         }
+
+         const maxFutureDate = new Date();
+         maxFutureDate.setFullYear(today.getFullYear() + MAX_ADVANCE_YEARS);
+
+         if (start > maxFutureDate) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Event cannot be scheduled more than ${MAX_ADVANCE_YEARS} years in advance`, path: ["startDate"] });
+         }
       }
 
-      if (end < today) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "End date & time cannot be in the past",
-            path: ["endDate"],
-         });
+      // Validations that depend on a valid End Date
+      if (isValidEnd) {
+         if (end < today) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "End date & time cannot be in the past", path: ["endDate"] });
+         }
       }
 
-      // 3. Draft Edit Rule: Drafts must ALWAYS be pushed to the future
-      if (isEditMode && eventStatus === "draft" && start < today) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            // path: ["startDateTime"],
-            path: ["startDate"],
-            message: "The start date/time has passed. Please choose a future date & time."
-         });
+      // Cross-Field Validations (Requires both to be valid)
+      if (isValidStart && isValidEnd) {
+         if (end <= start) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "End date must be after start date", path: ["endDate"] });
+         }
+
+         if (data.startDate === data.endDate && end <= start) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "End time must be after start time", path: ["endTime"] });
+         }
+
+         const durationInDays = (end.getTime() - start.getTime()) / MS_PER_DAY;
+         if (durationInDays > MAX_DURATION_DAYS) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Event duration cannot exceed ${MAX_DURATION_DAYS} days`, path: ["endDate"] });
+         }
       }
 
-      if (end <= start) {
-            ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "End date must be after start date",
-            path: ["endDate"], 
-         });
-      }
 
-      if (data.startDate === data.endDate && end <= start) {
-         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "End time must be after start time",
-            path: ["endTime"],
-         });
-      }
 
       // 2. Location Validation: Required if IN-PERSON
-      if (data.format === "offline") {
+      if (data.format === EVENT_FORMATS.OFFLINE) {
          if (!data.locationName || data.locationName.trim().length < 3) {
             ctx.addIssue({
                code: z.ZodIssueCode.custom,
-               message: "Venue location is required for offline events",
+               message: `Venue location is required for ${EVENT_FORMATS.OFFLINE} events`,
                path: ["locationName"],
             });
          }
@@ -321,10 +342,10 @@ export const eventFormSchemaFactory = (
       }
 
       // 3. Price Validation: Required if PAID
-      if (data.ticketType === "paid" && data.ticketPrice < 1) {
+      if (data.ticketType === TICKET_TYPES.PAID && data.ticketPrice < 1) {
             ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Ticket price should be at least ₹1 for paid events",
+            message: `Ticket price should be at least ₹1 for ${TICKET_TYPES.PAID} events`,
             path: ["ticketPrice"],
          });
       }
