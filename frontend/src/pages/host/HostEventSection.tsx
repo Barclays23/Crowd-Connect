@@ -12,6 +12,7 @@ import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
 import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
 import HostYourEvent from '@/components/event/HostYourEvent';
+import { HOST_STATUS, USER_ROLES, USER_STATUS } from '@/constants/user-system.constants';
 
 
 
@@ -29,28 +30,28 @@ const HostEventSection = () => {
    if (!isAuthenticated || !user) return <AuthRequiredMessage />;
    
    if (!user.isEmailVerified) return <EmailVerification />;
-   if (user.status === 'blocked') return <BlockedAccountMessage />;
-   if (user.role === 'admin') return <AdminMessage />;
-   if (user.role === 'user') return <HostUpgradeForm isReapply={false} />
-   if (user.role === 'host' &&
-      user.hostStatus === 'rejected' && isReapplyMode) {
+   if (user.status === USER_STATUS.BLOCKED) return <BlockedAccountMessage />;
+   if (user.role === USER_ROLES.ADMIN) return <AdminMessage />;
+   if (user.role === USER_ROLES.USER) return <HostUpgradeForm isReapply={false} />
+   if (user.role === USER_ROLES.HOST &&
+      user.hostStatus === HOST_STATUS.REJECTED && isReapplyMode) {
       return <HostUpgradeForm isReapply={true} />
    }
 
 
-   if (user.role === 'host') {
+   if (user.role === USER_ROLES.HOST) {
       switch (user.hostStatus) {
-         case 'pending':
+         case HOST_STATUS.PENDING:
             return <HostPendingState />;
-         case 'rejected':
+         case HOST_STATUS.REJECTED:
             return (
                <HostRejectedState
                   rejectionReason={user.hostRejectionReason}
                />
             );
-         case 'blocked':
+         case HOST_STATUS.BLOCKED:
             return <HostBlockedState />;
-         case 'approved':
+         case HOST_STATUS.APPROVED:
             return (
                // <GoogleMapsProvider2>
                <HostYourEvent />

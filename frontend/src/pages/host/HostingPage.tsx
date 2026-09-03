@@ -9,25 +9,29 @@ import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import { toast } from 'react-toastify';
 import type { ApiResponse } from '@/types/common.types';
 import type { UserState } from '@/types/user.types';
+import { USER_ROLES } from '@/constants/user-system.constants';
 
 
 
 
 const HostingPage = () => {
    const hostEventRef = useRef<HTMLDivElement | null>(null);
-   const [isLoading, setIsLoading] = useState(false);
-   const { isAuthenticated, setUser } = useAuth();
+   // const [isLoading, setIsLoading] = useState(false);
+   const { user, isAuthenticated, isLoading: isAuthLoading, setUser } = useAuth();
 
    const hasFetchedRef = useRef(false);
 
    useEffect(() => {
-      if (!isAuthenticated || hasFetchedRef.current) return;
-      hasFetchedRef.current = true;
+      if (isAuthLoading || !isAuthenticated) return;
+
+      if (user?.role === USER_ROLES.HOST && user?.hostStatus) return;
+
+      if (hasFetchedRef.current) return;
 
       const fetchUserProfile = async () => {
+         hasFetchedRef.current = true;
 
          try {
-            setIsLoading(true);
             const response: ApiResponse<UserState> = await userServices.getUserProfile();
             setUser(response.data);
 
@@ -37,13 +41,13 @@ const HostingPage = () => {
             if (errorMessage) toast.error(errorMessage);
 
          } finally {
-            setIsLoading(false);
          }
       };
 
       fetchUserProfile();
 
-   }, [isAuthenticated, setUser]);
+   // }, [isAuthenticated, setUser]);
+   }, [isAuthLoading, isAuthenticated, user?.role, user?.hostStatus, setUser]);
 
 
 
@@ -56,7 +60,7 @@ const HostingPage = () => {
 
 
 
-   if (isLoading) {
+   if (isAuthLoading) {
       return <LoadingSpinner1 
          className="min-h-screen"
          message="Loading your host profile"

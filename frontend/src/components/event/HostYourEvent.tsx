@@ -117,7 +117,6 @@ const HostYourEvent = () => {
   };
 
 
-
   return (
     <div className="min-h-screen bg-(--bg-primary) px-4 py-12 transition-colors duration-300">
       <div className="max-w-3xl mx-auto">
