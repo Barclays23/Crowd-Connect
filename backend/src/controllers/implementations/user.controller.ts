@@ -15,8 +15,7 @@ import { IUserProfileService } from '@/services/user-services/interfaces/IUserPr
 import { IUserManagementService } from '@/services/user-services/interfaces/IUserManagementService';
 import { IPasswordService } from '@/services/password-services/interfaces/IPasswordService';
 import { USER_STATUS, UserRole, UserStatus } from '@/constants/user-system.constants';
-import { mapUserEntityToProfileDto } from '@/mappers/user.mapper';
-import { UserEntity, UserProfileEntity } from '@/entities/user.entity';
+import { UserEntity } from '@/entities/user.entity';
 import { createHttpError } from '@/utils/httpError.utils';
 import { ApiResponse } from '@/utils/apiResponse.utils';
 
@@ -37,19 +36,12 @@ export class UserController implements IUserController {
                 throw createHttpError(HTTP_STATUS.UNAUTHORIZED, USER_MESSAGES.USER_INFORMATION_MISSING);
             }
             const userId = req.user.userId;
-            const userEntity: UserProfileEntity  = await this._userProfileServices.getUserProfile(userId);
 
-            const userProfile: UserProfileResponseDto = mapUserEntityToProfileDto(userEntity);
+            const userProfile: UserProfileResponseDto  = await this._userProfileServices.getUserProfile(userId);
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_GET_USER_PROFILE, userProfile)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: USER_MESSAGES.SUCCESS_GET_USER_PROFILE,
-            //     data: userProfile,
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -105,12 +97,6 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS)
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.PASSWORD_CHANGE_SUCCESS
-            // });
-
 
         } catch (err: unknown) {
             next(err);
@@ -136,14 +122,6 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(USER_MESSAGES.PROFILE_PICTURE_CHANGED, { profilePic: updatedUser.profilePic })
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: USER_MESSAGES.PROFILE_PICTURE_CHANGED,
-            //     data: { 
-            //         profilePic: updatedUser.profilePic,
-            //     },
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -180,14 +158,6 @@ export class UserController implements IUserController {
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: USER_MESSAGES.SUCCESS_GET_USERS,
-            //     data: result.users,
-            //     pagination: result.pagination,
-            // });
-
-
         } catch (err: unknown) {
             next(err);
         };
@@ -205,24 +175,15 @@ export class UserController implements IUserController {
             const imageFile: Express.Multer.File | undefined = req.file;
             const currentAdminId: string = req.user.userId;
 
-            const createdUser: UserEntity = await this._userManagementServices.createUserByAdmin({
+            const createdUser: UserProfileResponseDto = await this._userManagementServices.createUserByAdmin({
                 createDto, 
                 imageFile,
                 currentAdminId
             });
 
-            const userData: UserProfileResponseDto = mapUserEntityToProfileDto(createdUser);
-
             res.status(HTTP_STATUS.CREATED).json(
-                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_CREATE_USER, userData)
+                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_CREATE_USER, createdUser)
             );
-
-            // res.status(HTTP_STATUS.CREATED).json({
-            //     success: true,
-            //     message: USER_MESSAGES.SUCCESS_CREATE_USER,
-            //     data: userData,
-            // });
-
 
         } catch (err: unknown) {
             next(err);
@@ -242,24 +203,16 @@ export class UserController implements IUserController {
             const updateDto: UpdateUserRequestDto = req.body;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            const updatedUser: UserEntity = await this._userManagementServices.editUserByAdmin({
+            const updatedUser: UserProfileResponseDto = await this._userManagementServices.editUserByAdmin({
                 targetUserId, 
                 currentAdminId,
                 updateDto, 
                 imageFile
             });
 
-            const userData: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUser);
-
             res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_UPDATE_USER, userData)
+                ApiResponse.success<UserProfileResponseDto>(USER_MESSAGES.SUCCESS_UPDATE_USER, updatedUser)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: USER_MESSAGES.SUCCESS_UPDATE_USER,
-            //     data: userData,
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -289,13 +242,6 @@ export class UserController implements IUserController {
                 ApiResponse.success(responseMessage, { status: updatedStatus })
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: responseMessage,
-            //     data: { status: updatedStatus },
-            // });
-
-
         } catch (err: unknown) {
             next(err);
         };
@@ -316,11 +262,6 @@ export class UserController implements IUserController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(USER_MESSAGES.SUCCESS_DELETE_USER)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: USER_MESSAGES.SUCCESS_DELETE_USER,
-            // });
 
         } catch (err: unknown) {
             next(err);

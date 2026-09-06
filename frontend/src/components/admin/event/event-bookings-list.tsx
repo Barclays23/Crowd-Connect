@@ -1,4 +1,4 @@
-// frontend/src/components/admin/event-bookings-list.tsx
+// frontend/src/components/admin/event/event-bookings-list.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
     Search, Eye, Ban, Loader2, Hash,
@@ -17,11 +17,11 @@ import {
 } from "@/components/ui/table";
 import { bookingServices } from "@/services/bookingServices";
 import { toast } from "react-toastify";
-import { AdminPagination } from "./admin-pagination";
+import { AdminPagination } from "../../layout/admin-pagination";
 import { formatDate2 } from "@/utils/dateAndTime.utils";
-import { Modal } from "../ui/modal";
-import { ConfirmationModal } from "./confirmation-modal";
-import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
+import { Modal } from "../../ui/modal";
+import { ConfirmationModal } from "../../shared/confirmation-modal";
+import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import {
     type IBookingState,

@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/AdminDashboard.tsx
 import { AdminLayout } from "@/components/layout/AdminLayout"
-import AdminBanner from "@/components/admin/admin-banner"
+import AdminBanner from "@/components/layout/admin-banner"
 
 
 const AdminDashboard = () => {

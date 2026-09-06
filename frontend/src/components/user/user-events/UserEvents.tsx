@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { UserPagination } from "@/components/shared/UserPagination";
 import { Modal } from "@/components/ui/modal";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { ConfirmationModal } from "@/components/shared/confirmation-modal";
 import EditEventForm from "@/components/event/EditEventForm";
 import { buildEventFormData } from "@/utils/payload-utils/eventPayload.utils";
 import { EventCheckIn } from "@/components/checkin/EventCheckIn";

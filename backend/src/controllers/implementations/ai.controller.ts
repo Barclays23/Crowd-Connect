@@ -5,7 +5,7 @@ import { GeneratePosterDTO, GeneratePosterResponseDTO } from "@/dtos/ai.dto";
 import { IAiController } from "@/controllers/interfaces/IAiContoller";
 import { USER_MESSAGES } from "@/constants/messages.constants";
 import { ApiResponse } from "@/utils/apiResponse.utils";
-import { IAiImageService } from "@/services/ai-services/interfaces/IAiImageService";
+import { IAiImageService } from "@/services/ai-image-services/interfaces/IAiImageService";
 
 
 
@@ -44,15 +44,7 @@ export class AiController implements IAiController {
                 posterResult  // Return the base64 string for live preview
             ));
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "AI Poster generated successfully! You can regenerate or keep this one.",
-            //     aiPosterData: posterResult.base64Data // Return the base64 string for live preview
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in AiController.generateEventPoster:', msg);
             next(error);
         }
     }

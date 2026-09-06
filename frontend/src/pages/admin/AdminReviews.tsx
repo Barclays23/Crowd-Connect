@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/AdminReviews.tsx
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import AdminBanner from "@/components/admin/admin-banner";
+import AdminBanner from "@/components/layout/admin-banner";
 import { AdminReviewsList } from "@/components/admin/review/admin-reviews-list";
 
 

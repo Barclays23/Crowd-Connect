@@ -39,6 +39,7 @@ export class AuthController implements IAuthController {
             const signInDto: SignInRequestDto = req.body;
 
             const { safeUser, accessToken, refreshToken } = await this._sessionService.signIn(signInDto);
+
             winstonLogger.info("User signed in successfully", {
                 userId: safeUser.userId,
                 role: safeUser.role,
@@ -54,13 +55,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<AuthTokensData>(AUTH_MESSAGES.LOGIN_SUCCESS, authData)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.LOGIN_SUCCESS,
-            //     data: authData
-            // });
-
 
         } catch (err: unknown) {
             next(err);
@@ -78,12 +72,6 @@ export class AuthController implements IAuthController {
                     { email: userEmail }
                 )
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: `${AUTH_MESSAGES.OTP_SENT} ${AUTH_MESSAGES.VERIFY_ACCOUNT}`,
-            //     data: { email: userEmail }
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -128,13 +116,6 @@ export class AuthController implements IAuthController {
                 ApiResponse.success(AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT, { email: userEmail })
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     // even if the email is not registered, respond with success to avoid email enumeration
-            //     success: true,
-            //     message: AUTH_MESSAGES.PASSWORD_RESET_EMAIL_SENT,
-            //     data: { email: userEmail }
-            // });
-
         } catch (err: unknown) {
             next(err);
         };
@@ -151,12 +132,6 @@ export class AuthController implements IAuthController {
                 ApiResponse.success("Token validated successfully", { isValid })
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Token validated successfully",
-            //     data: { isValid }
-            // });
-
         } catch (err: unknown) {
             next(err);
         };
@@ -172,11 +147,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(AUTH_MESSAGES.PASSWORD_RESET_SUCCESS)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.PASSWORD_RESET_SUCCESS,
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -204,15 +174,6 @@ export class AuthController implements IAuthController {
                 ApiResponse.success(AUTH_MESSAGES.EMAIL_VERIFICATION_SENT, responseData)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.EMAIL_VERIFICATION_SENT,
-            //     data: {
-            //         requiresVerification: true,
-            //         email: userEmail
-            //     }
-            // });
-
         } catch (err: unknown) {
             next(err);
         };
@@ -239,12 +200,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(AUTH_MESSAGES.EMAIL_VERIFIED, { email: userEmail })
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.EMAIL_VERIFIED,
-            //     data: { email: userEmail }
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -274,14 +229,7 @@ export class AuthController implements IAuthController {
                     `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`, 
                     authResponseData
                 )
-            );
-
-            // res.status(HTTP_STATUS.CREATED).json({
-            //     success: true,
-            //     message: `${AUTH_MESSAGES.OTP_VERIFICATION_SUCCESS} ${USER_MESSAGES.USER_CREATION_SUCCESS}`,
-            //     data: authResponseData    
-            // });
-        
+            );        
 
         } catch (err: unknown) {
             next(err);
@@ -296,12 +244,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(AUTH_MESSAGES.OTP_RESENT, { email: userEmail })
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.OTP_RESENT,
-            //     data: { email: userEmail }
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -329,12 +271,6 @@ export class AuthController implements IAuthController {
                 ApiResponse.success(AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED, { newAccessToken: newAccessToken })
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: AUTH_MESSAGES.ACCESS_TOKEN_REFRESHED,
-            //     data: { newAccessToken: newAccessToken }
-            // });
-
         } catch (err: unknown) {
             next(err);
         };
@@ -355,11 +291,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(AUTH_MESSAGES.LOGOUT_SUCCESS)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true, 
-            //     message: AUTH_MESSAGES.LOGOUT_SUCCESS
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -382,13 +313,6 @@ export class AuthController implements IAuthController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success("User fetched successfully", { authUser: userData })
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "User fetched successfully",
-            //     data: { authUser: userData }
-            // });
-            
 
         } catch (err: unknown) {
             next(err);

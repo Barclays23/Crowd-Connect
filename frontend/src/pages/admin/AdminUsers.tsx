@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/AdminUsers.tsx
 import { AdminLayout } from "@/components/layout/AdminLayout"
-import AdminBanner from "@/components/admin/admin-banner"
-import { AdminUsersList } from "@/components/admin/admin-users-list";
+import AdminBanner from "@/components/layout/admin-banner"
+import { AdminUsersList } from "@/components/admin/user/admin-users-list";
 
 
 

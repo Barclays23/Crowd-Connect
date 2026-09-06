@@ -29,7 +29,7 @@ import { getApiErrorMessage }  from "@/utils/errorMessages.utils";
 import { formatDate2 }         from "@/utils/dateAndTime.utils";
 import { capitalize }          from "@/utils/namingConventions";
 import { toast }               from "react-toastify";
-import { ConfirmationModal }   from "@/components/admin/confirmation-modal";
+import { ConfirmationModal }   from "@/components/shared/confirmation-modal";
 
 import {
   type IBookingState,

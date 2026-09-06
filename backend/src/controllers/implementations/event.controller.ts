@@ -58,8 +58,6 @@ export class EventController implements IEventController {
             const currentUserId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
 
-            console.log('createEvent body :', body)
-
             const createDto: CreateEventRequestDTO = mapCreateEventRequestToDto(req, currentUserId);
 
             const createdEvent: EventResponseDTO = await this._eventServices.createEvent({
@@ -73,16 +71,8 @@ export class EventController implements IEventController {
                     createdEvent
                 )
             );
-
-            // res.status(HTTP_STATUS.CREATED).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_CREATE_EVENT,
-            //     data: createdEvent,
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.createEvent:', msg);
             next(error);
         };
     }
@@ -103,15 +93,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT)
             );
-    
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_PUBLISH_EVENT,
-            // });
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.publishEvent:', msg);
             next(error);
         };
     }
@@ -144,16 +127,8 @@ export class EventController implements IEventController {
                     updatedEvent
                 )
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-            //     data: updatedEvent,
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.updateEventByHost:', msg);
             next(error);
         };
     }
@@ -186,16 +161,8 @@ export class EventController implements IEventController {
                     updatedEvent
                 )
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_UPDATE_EVENT,
-            //     data: updatedEvent,
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.updateEventByAdmin:', msg);
             next(error);
         };
     }
@@ -222,15 +189,7 @@ export class EventController implements IEventController {
                 ApiResponse.success(EVENT_MESSAGES.SUCCESS_CANCEL_EVENT, { status: updatedStatus })
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Event cancelled successfully.",
-            //     data: { status: updatedStatus }
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.cancelEvent:', msg);
             next(error);
         };
     };
@@ -250,16 +209,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT, { eventStatus: updatedStatus })
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_SUSPEND_EVENT,
-            //     data: { eventStatus: updatedStatus }
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.suspendEvent:', msg);
             next(error);
         };
     }
@@ -275,15 +226,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.deleteEventByHost:', msg);
             next(error);
         };
     }
@@ -298,15 +242,8 @@ export class EventController implements IEventController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success(EVENT_MESSAGES.SUCCESS_DELETE_EVENT)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: EVENT_MESSAGES.SUCCESS_DELETE_EVENT,
-            // });
             
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.deleteEventByAdmin:', msg);
             next(error);
         };
     }
@@ -380,15 +317,7 @@ export class EventController implements IEventController {
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: result.events,
-            //     pagination: result.pagination
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getAllEvents:', msg);
             next(error);
         };
     }
@@ -439,15 +368,7 @@ export class EventController implements IEventController {
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: result.events,
-            //     pagination: result.pagination
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getUserEvents:', msg);
             next(error);
         };
     }
@@ -469,15 +390,7 @@ export class EventController implements IEventController {
                 )
             );
             
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: eventsData,
-            //     pagination: pagination
-            // });
-            
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getDiscoveryEvents:', msg);
             next(error);
         };
     };
@@ -493,14 +406,7 @@ export class EventController implements IEventController {
                 ApiResponse.success<EventResponseDTO[]>("Trending events retrieved.", trendingEvents)
             );
 
-            // res.status(HTTP_STATUS.OK).json({ 
-            //     success: true, 
-            //     data: trendingEvents 
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getTrendingEvents:', msg);
             next(error);
         };
     }
@@ -523,13 +429,7 @@ export class EventController implements IEventController {
 
             res.status(HTTP_STATUS.OK).json(apiResponse);
 
-            // res.status(200).json({
-            //     success: true,
-            //     message: "Organiser events fetched successfully",
-            //     data: result
-            // });
-
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -549,15 +449,7 @@ export class EventController implements IEventController {
 
             res.status(HTTP_STATUS.OK).json(apiResponse);
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: eventDetails
-            // });
-
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown Error';
-            console.error('Error in eventController.getEventDetails:', msg);
             next(error);
         };
     }
@@ -604,15 +496,7 @@ export class EventController implements IEventController {
 
             res.status(HTTP_STATUS.OK).json(apiResponse);
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     data: result.bookings,
-            //     pagination: result.pagination,
-            // });
-
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : "Unknown error";
-            console.error("Error in EventController.getAllBookingsOfEvent:", msg);
             next(error);
         }
     }

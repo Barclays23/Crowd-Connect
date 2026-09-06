@@ -1,4 +1,4 @@
-// frontend/src/components/admin/view-event-modal.tsx
+// frontend/src/components/admin/event/view-event-modal.tsx
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

@@ -10,7 +10,7 @@ import {
     UpdateOperationalSettingsDTO, 
     UpdateTermsDTO 
 } from '@/dtos/settings.dto';
-import { FaqIngestionService } from '@/services/chat-services/implementations/faqIngestion.service';
+import { FaqIngestionService } from '@/services/ai-chat-services/implementations/faqIngestion.service';
 import { 
     extractOperationalSettings, 
     extractTermsSettings, 
@@ -52,17 +52,18 @@ export class PlatformSettingsService implements IPlatformSettingsService {
     }
 
 
-    async updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<PlatformSettingsEntity> {
+    async updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<OperationalSettingsResponseDTO> {
         this._validateOperationalSettings(updateData);
 
-        const updatedSettings: Promise<PlatformSettingsEntity> = this._settingsRepo.updateSettings(updateData, adminId);
+        const updatedSettings: PlatformSettingsEntity = await this._settingsRepo.updateSettings(updateData, adminId);
 
-        return updatedSettings;
+        return mapEntityToOperationalDTO(updatedSettings);
+
     }
 
 
 
-    async updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PlatformSettingsEntity> {
+    async updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PublicTermsResponseDTO> {
         // Save standard settings to database
         const updatedSettings: PlatformSettingsEntity = await this._settingsRepo.updateSettings(
             termsData,
@@ -80,7 +81,7 @@ export class PlatformSettingsService implements IPlatformSettingsService {
                 console.error("[PlatformSettingsService] Vector re-indexing ingestion failed in background:", error);
             });
 
-        return updatedSettings;
+        return mapEntityToPublicTermsDTO(updatedSettings);
     }
 
 

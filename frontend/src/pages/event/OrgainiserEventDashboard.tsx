@@ -13,7 +13,7 @@ import { getEventStatusBadgeVariant, getEventCategoryBadgeVariant } from "@/util
 import { capitalize } from "@/utils/namingConventions";
 
 import EventOverview from "@/components/event/EventOverview";
-import { EventBookingsList } from "@/components/admin/event-bookings-list";
+import { EventBookingsList } from "@/components/admin/event/event-bookings-list";
 import { EventCheckIn } from "@/components/checkin/EventCheckIn";
 import ReviewsSection from "@/components/review/ReviewsSection";
 import type { ApiResponse } from "@/types/common.types";

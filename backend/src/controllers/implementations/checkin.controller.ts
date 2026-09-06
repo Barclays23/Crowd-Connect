@@ -49,13 +49,7 @@ export class CheckinController implements ICheckinController {
                 ApiResponse.success<CheckInResultDTO>(errorMessage, checkinResult)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: errorMessage,
-            //     data: checkinResult,
-            // });
-
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -74,13 +68,7 @@ export class CheckinController implements ICheckinController {
                 ApiResponse.success<GetAttendanceResult>("Attendance retrieved successfully", attendanceResult)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success : true,
-            //     message : "Attendance retrieved successfully",
-            //     data    : attendanceResult,
-            // });
-
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }

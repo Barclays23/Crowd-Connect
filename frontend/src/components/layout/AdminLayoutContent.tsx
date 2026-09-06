@@ -1,7 +1,7 @@
 // frontend/src/components/layout/AdminLayout.tsx
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminNavbar } from "@/components/layout/admin-navbar";
-import { BreadcrumbNav } from "@/components/admin/breadcrumb-nav";
+import { BreadcrumbNav } from "@/components/layout/breadcrumb-nav";
 import { useSidebar } from "@/components/ui/sidebar";
 
 interface AdminLayoutProps {

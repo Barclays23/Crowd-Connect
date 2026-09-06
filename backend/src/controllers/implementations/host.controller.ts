@@ -1,5 +1,4 @@
 // src/controllers/implementations/host.controller.ts
-
 import { NextFunction, Request, Response } from "express";
 import { IHostController } from "../interfaces/IHostController";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
@@ -18,8 +17,6 @@ import {
 } from "@/dtos/user.dto";
 import { IHostManagementServices } from "@/services/host-services/interfaces/IHostManagementServices";
 import { HOST_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
-import { mapUserEntityToProfileDto } from "@/mappers/user.mapper";
-import { HostEntity, UserProfileEntity } from "@/entities/user.entity";
 import { createHttpError } from "@/utils/httpError.utils";
 import { ApiResponse } from "@/utils/apiResponse.utils";
 
@@ -46,25 +43,15 @@ export class HostController implements IHostController {
             const documentFile: Express.Multer.File | undefined = files?.hostDocument?.[0];
             const logoFile: Express.Multer.File | undefined = files?.organizationLogo?.[0];
 
-            const hostEntity: HostEntity = await this._hostService.applyHostRoleUpgrade({userId, upgradeDto, documentFile, logoFile});
-
-            const upgradedProfile: UserProfileResponseDto = mapUserEntityToProfileDto(hostEntity);
+            const upgradedProfile: UserProfileResponseDto = await this._hostService.applyHostRoleUpgrade({userId, upgradeDto, documentFile, logoFile});
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>(HOST_MESSAGES.HOST_APPLY_SUCCESS, upgradedProfile)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.HOST_APPLY_SUCCESS,
-            //     data: upgradedProfile,
-            // });
-
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in hostController.applyHostUpgrade:', msg);
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -85,27 +72,15 @@ export class HostController implements IHostController {
                 hostStatus: hostStatus ? hostStatus as HostStatus : undefined,
             };
 
-            console.log('✅ Parsed filters for getAllHosts:', filters);
-
             const result: GetHostsResult = await this._hostService.getAllHosts(filters);
-            // console.log('✅ Result in hostController.getAllHosts:', result);
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto[]|null>(HOST_MESSAGES.SUCCESS_GET_HOSTS, result.hosts, result.pagination)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.SUCCESS_GET_HOSTS,
-            //     data: result.hosts,
-            //     pagination: result.pagination,
-            // });
-
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in userController.getAllUsers:', msg);
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     
     }
 
@@ -119,24 +94,14 @@ export class HostController implements IHostController {
             const documentFile: Express.Multer.File | undefined = files?.hostDocument?.[0];
             const logoFile: Express.Multer.File | undefined = files?.organizationLogo?.[0];
 
-            const upgradedProfile: UserProfileEntity = await this._hostService.convertToHost({userId, upgradeDto, documentFile, logoFile});
-
-            const profileResponse: UserProfileResponseDto = mapUserEntityToProfileDto(upgradedProfile);
+            const profileResponse: UserProfileResponseDto = await this._hostService.convertToHost({userId, upgradeDto, documentFile, logoFile});
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>("User successfully converted to host.", profileResponse)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "User successfully converted to host.",
-            //     data: profileResponse,
-            // });
-
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in hostController.convertToHost:', msg);
-            next(err);
+        } catch (error: unknown) {
+            next(error);
         }
     }
 
@@ -151,13 +116,7 @@ export class HostController implements IHostController {
                 ApiResponse.success<OrganiserProfileResponseDTO>("Organiser profile fetched successfully", organizerProfile)
             );
 
-            // res.status(200).json({
-            //     success: true,
-            //     message: "Organiser profile fetched successfully",
-            //     data: organizerProfile
-            // });
-
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -180,18 +139,9 @@ export class HostController implements IHostController {
                 ApiResponse.success<HostStatusUpdateResponseDto>(responseMessage, updatedHost)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: responseMessage,
-            //     data: updatedHost,
-            // });
-
-
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in hostController.manageHostApplication:', msg);
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -212,17 +162,9 @@ export class HostController implements IHostController {
                 ApiResponse.success<HostStatusUpdateResponseDto>(responseMessage, updatedHost)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: responseMessage,
-            //     data: updatedHost,
-            // });
-
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown Error';
-            console.error('Error in hostController.manageHostPermission:', msg);
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -232,26 +174,18 @@ export class HostController implements IHostController {
             const updateDto: HostUpdateRequestDto = req.body;
             const documentFile: Express.Multer.File | undefined = req.file;
 
-            const updatedHost: HostEntity = await this._hostService.updateHostDetailsByHost({hostId, updateDto, documentFile});
-
-            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(updatedHost);
+            const hostProfile: UserProfileResponseDto = await this._hostService.updateHostDetailsByHost({hostId, updateDto, documentFile});
 
             res.status(HTTP_STATUS.OK).json(
-                ApiResponse.success(
+                ApiResponse.success<UserProfileResponseDto>(
                     HOST_MESSAGES.HOST_UPDATE_DETAILS_SUCCESS + ' Your details need to be verified for your hosting permissions.', 
                     hostProfile
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.HOST_UPDATE_DETAILS_SUCCESS + ' Your details need to be verified for your hosting permissions.',
-            //     data: hostProfile,
-            // });
-
-        } catch (err: unknown) {
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -264,23 +198,15 @@ export class HostController implements IHostController {
                 throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Logo file is required.");
             }
 
-            const updatedHost: UserProfileEntity = await this._hostService.updateHostLogoByHost({hostId, logoFile});
-
-            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(updatedHost);
+            const hostProfile: UserProfileResponseDto = await this._hostService.updateHostLogoByHost({hostId, logoFile});
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>(HOST_MESSAGES.HOST_UPDATE_LOGO_SUCCESS, hostProfile)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.HOST_UPDATE_LOGO_SUCCESS,
-            //     data: hostProfile,
-            // });
-
-        } catch (err: unknown) {
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -293,24 +219,15 @@ export class HostController implements IHostController {
 
             console.log("fileName:", documentFile?.originalname);
 
-            const updatedHost: HostEntity = await this._hostService.updateHostDetailsByAdmin({hostId, updateDto, documentFile});
-
-            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(updatedHost)
+            const hostProfile: UserProfileResponseDto = await this._hostService.updateHostDetailsByAdmin({hostId, updateDto, documentFile});
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>(HOST_MESSAGES.HOST_UPDATE_DETAILS_SUCCESS, hostProfile)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.HOST_UPDATE_DETAILS_SUCCESS,
-            //     data: hostProfile,
-            // });
-
-
-        } catch (err: unknown) {
-            next(err);
-        };
+        } catch (error: unknown) {
+            next(error);
+        }
     }
 
 
@@ -323,21 +240,14 @@ export class HostController implements IHostController {
                 throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Logo file is required.");
             }
 
-            const updatedHost: UserProfileEntity = await this._hostService.updateHostLogoByAdmin({ hostId, logoFile });
-            const hostProfile: UserProfileResponseDto = mapUserEntityToProfileDto(updatedHost);
+            const hostProfile: UserProfileResponseDto = await this._hostService.updateHostLogoByAdmin({ hostId, logoFile });
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<UserProfileResponseDto>(HOST_MESSAGES.HOST_UPDATE_LOGO_SUCCESS, hostProfile)
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: HOST_MESSAGES.HOST_UPDATE_LOGO_SUCCESS,
-            //     data: hostProfile,
-            // });
-
-        } catch (err: unknown) {
-            next(err);
+        } catch (error: unknown) {
+            next(error);
         }
     }
 

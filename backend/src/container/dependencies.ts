@@ -219,7 +219,7 @@ const recoveryService       = new AuthRecoveryService(userRepo, cacheService, ma
 const passwordService       = new PasswordService(userRepo, cacheService)
 
 const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, bookingService, userProfileService, cacheService, settingsService, eventQueueService, streamingService);
+const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, userRepo, bookingService, cacheService, settingsService, eventQueueService, streamingService);
 const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
 const reviewService         = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
 

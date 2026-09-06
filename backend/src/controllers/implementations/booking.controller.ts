@@ -39,8 +39,6 @@ export class BookingController implements IBookingController{
             return;
          }
 
-         console.log('req.body: ', req.body);
-
          const bookingReqDto: BookingOrderRequestDTO = {
             ...req.body,
             eventId: req.params.eventId,
@@ -55,12 +53,6 @@ export class BookingController implements IBookingController{
          )
 
          res.status(HTTP_STATUS.CREATED).json(apiResponse);
-
-         // res.status(HTTP_STATUS.CREATED).json({
-         //    success: true,
-         //    message: BOOKING_MESSAGES.BOOKING_INITIATED,
-         //    data: result,  // (isFree + populatedBooking) OR (isFree + order)
-         // });
 
       } catch (error: unknown) {
          next(error);
@@ -83,12 +75,6 @@ export class BookingController implements IBookingController{
          res.status(HTTP_STATUS.OK).json(
             ApiResponse.success<BookingResponseDTO>("Payment verified. Booking confirmed!", populatedBooking)
          );
-
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: "Payment verified. Booking confirmed!",
-         //    data: populatedBooking,
-         // });
 
       } catch (error: unknown) {
          next(error);
@@ -125,13 +111,7 @@ export class BookingController implements IBookingController{
             ApiResponse.success<InitiateBookingResponseDTO>(PAYMENT_MESSAGES.RETRY_PAYMENT_PROCESSED, result)
          );
 
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: PAYMENT_MESSAGES.RETRY_PAYMENT_PROCESSED,
-         //    data: result
-         // });
-
-      } catch (error) {
+      } catch (error: unknown) {
          next(error);
       }
    };
@@ -184,13 +164,6 @@ export class BookingController implements IBookingController{
             )
          );
 
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: "Bookings retrieved successfully.",
-         //    data: result.bookings,
-         //    pagination: result.pagination,
-         // });
-
       } catch (error: unknown) {
          next(error);
       }
@@ -236,13 +209,6 @@ export class BookingController implements IBookingController{
 
          res.status(HTTP_STATUS.OK).json(apiResponse);
 
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: "Admin bookings retrieved successfully.",
-         //    data: result.bookings,
-         //    pagination: result.pagination,
-         // });
-
       } catch (error: unknown) {
          next(error);
       }
@@ -264,12 +230,6 @@ export class BookingController implements IBookingController{
          res.status(HTTP_STATUS.OK).json(
             ApiResponse.success<BookingResponseDTO>("Booking retrieved successfully.", booking)
          );
-
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: "Booking retrieved successfully.",
-         //    data: booking,
-         // });
 
       } catch (error: unknown) {
          next(error);
@@ -294,11 +254,6 @@ export class BookingController implements IBookingController{
             ApiResponse.success(BOOKING_MESSAGES.BOOKING_CANCELLED)
          );
 
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: BOOKING_MESSAGES.BOOKING_CANCELLED,
-         // });
-
       } catch (error: unknown) {
          next(error);
       }
@@ -315,11 +270,6 @@ export class BookingController implements IBookingController{
          res.status(HTTP_STATUS.OK).json(
             ApiResponse.success(BOOKING_MESSAGES.BOOKING_CANCELLED)
          );
-
-         // res.status(HTTP_STATUS.OK).json({
-         //    success: true,
-         //    message: BOOKING_MESSAGES.BOOKING_CANCELLED,
-         // });
 
       } catch (error: unknown) {
          next(error);

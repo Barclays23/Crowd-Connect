@@ -13,7 +13,7 @@ import { platformSettingsService } from "@/services/platformSettingsService";
 import { Pencil, X, Check } from "lucide-react";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import type { ApiResponse } from "@/types/common.types";
-import AdminBanner from "@/components/admin/admin-banner";
+import AdminBanner from "@/components/layout/admin-banner";
 
 // ── Setting Row ──────────────────────────────────────────────────────────────
 function SettingRow({

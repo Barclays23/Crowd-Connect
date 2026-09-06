@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-users-list.tsx
+// frontend/src/components/admin/user/admin-users-list.tsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Filter, Download, UserPlus, Eye, Edit, Ban, CheckCircle, XCircle, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { userServices } from "@/services/userServices";
 import { toast } from "react-toastify";
-import { AdminPagination } from "./admin-pagination";
+import { AdminPagination } from "../../layout/admin-pagination";
 import { capitalize, getInitials } from "@/utils/namingConventions";
-import { Modal } from "../ui/modal";
+import { Modal } from "../../ui/modal";
 import { ViewUserModal } from "./view-user-modal";
 import { UserManageForm } from "./user-manage-form";
 import { formatDate2 } from "@/utils/dateAndTime.utils";
@@ -30,12 +30,12 @@ import type {
   UserStatusUpdateData, 
   UserUpsertResult 
 } from "@/types/user.types";
-import { HostManageForm } from "./host-manage-form";
+import { HostManageForm } from "../host/host-manage-form";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
-import { ConfirmationModal } from "./confirmation-modal";
+import { ConfirmationModal } from "../../shared/confirmation-modal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
+import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import type { ApiResponse } from "@/types/common.types";
 import type { UserRole, UserStatus } from "@/constants/user-system.constants";
 

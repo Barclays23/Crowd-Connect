@@ -19,8 +19,8 @@ import type {
     IReviewState 
 } from "@/types/review.types";
 import type { ApiResponse } from "@/types/common.types";
-import { AdminPagination } from "@/components/admin/admin-pagination";
-import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { AdminPagination } from "@/components/layout/admin-pagination";
+import { ConfirmationModal } from "@/components/shared/confirmation-modal";
 import { Tooltip } from "@/components/shared/Tooltip";
 
 

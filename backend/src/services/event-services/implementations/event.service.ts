@@ -61,9 +61,8 @@ import { IEventQueueService } from "@/services/queue-services/interfaces/IEventQ
 import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EVENT_FORMATS, EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { convertBase64ToBuffer } from "@/utils/file.utils";
-import { IUserProfileService } from "@/services/user-services/interfaces/IUserProfileService";
 import { validateAdminActiveStatus, validateHostActiveStatus } from "@/utils/validations/userValidations";
-import { UserProfileEntity } from "@/entities/user.entity";
+import { HostEntity, UserProfileEntity } from "@/entities/user.entity";
 import { IStreamingService } from "@/services/streaming-services/interfaces/IStreamingService";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { BookingCheckinUpdate } from "@/types/booking.types";
@@ -74,6 +73,7 @@ import { JoinOnlineEventResult } from "@/types/streaming.types";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { validateOnlineBookingForJoin, validateOnlineEventForJoin } from "@/utils/validations/streamingValidations";
 import { BookingEntity } from "@/entities/booking.entity";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 
 
 
@@ -84,9 +84,10 @@ export class EventManagementService implements IEventServices {
         private readonly _eventRepository       : IEventRepository,
         private readonly _bookingRepository     : IBookingRepository,
         private readonly _checkinRepository     : ICheckinRepository,
+        private readonly _userRepository        : IUserRepository,
 
         private readonly _bookingService        : IBookingService,
-        private readonly _userProfileServices   : IUserProfileService,
+        // private readonly _userProfileServices   : IUserProfileService,
         private readonly _cacheService          : ICacheService,
         private readonly _settingsService       : IPlatformSettingsService,
         private readonly _eventQueueService     : IEventQueueService,
@@ -98,7 +99,7 @@ export class EventManagementService implements IEventServices {
     
     async createEvent({ createDto, imageFile }: { createDto: CreateEventRequestDTO; imageFile?: Express.Multer.File;}): Promise<EventResponseDTO> {
         try {
-            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(createDto.hostRef);
+            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(createDto.hostRef);
             validateHostActiveStatus(hostProfile);
 
             validateEventCreate(createDto, imageFile);
@@ -162,7 +163,7 @@ export class EventManagementService implements IEventServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
-            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(currentUserId);
+            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(currentUserId);
             validateHostActiveStatus(hostProfile);
 
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -184,7 +185,7 @@ export class EventManagementService implements IEventServices {
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
         try {
-            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            const adminProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(adminId);
             validateAdminActiveStatus(adminProfile);
 
             const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -204,7 +205,7 @@ export class EventManagementService implements IEventServices {
     // cancel /suspend by admin
     async suspendEvent({ eventId, adminId, suspendReason }: { eventId: string; adminId: string; suspendReason: string; }): Promise<EventStatus | null> {
         try {
-            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            const adminProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(adminId);
             validateAdminActiveStatus(adminProfile);
 
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -258,7 +259,7 @@ export class EventManagementService implements IEventServices {
     // cancel by host
     async cancelEvent({ eventId, userId, cancelReason }: { eventId: string; userId: string; cancelReason: string; }): Promise<EventStatus | null> {
         try {
-            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(userId);
+            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
             validateHostActiveStatus(hostProfile);
 
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -311,7 +312,7 @@ export class EventManagementService implements IEventServices {
 
     async publishEvent(eventId: string, userId: string): Promise<void> {
         try {
-            const hostProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(userId);
+            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
             validateHostActiveStatus(hostProfile);
 
             const eventEntity: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -342,7 +343,7 @@ export class EventManagementService implements IEventServices {
 
     async deleteEventByHost(eventId: string, hostId: string): Promise<void> {
         try {
-            const hostProfile = await this._userProfileServices.getUserProfile(hostId);
+            const hostProfile: HostEntity | null = await this._userRepository.getUserProfile(hostId);
             validateHostActiveStatus(hostProfile);
 
             const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
@@ -363,7 +364,7 @@ export class EventManagementService implements IEventServices {
 
     async deleteEventByAdmin(eventId: string, adminId: string): Promise<void> {
         try {
-            const adminProfile: UserProfileEntity = await this._userProfileServices.getUserProfile(adminId);
+            const adminProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(adminId);
             validateAdminActiveStatus(adminProfile);
 
             const event: EventEntity | null = await this._eventRepository.getEventById(eventId);
