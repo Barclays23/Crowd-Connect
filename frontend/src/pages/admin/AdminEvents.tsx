@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/AdminEvents.tsx
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import AdminBanner from "@/components/admin/admin-banner";
-import { AdminEventsTable } from "@/components/admin/admin-events-table";
+import AdminBanner from "@/components/layout/admin-banner";
+import { AdminEventsTable } from "@/components/admin/event/admin-events-table";
 
 
 

@@ -17,6 +17,6 @@ export interface IPlatformSettingsService {
     getOperationalSettings(): Promise<OperationalSettingsResponseDTO>;
     getTermsAndConditions(): Promise<PublicTermsResponseDTO>;
 
-    updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<PlatformSettingsEntity>
-    updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PlatformSettingsEntity>;
+    updateOperationalSettings(updateData: UpdateOperationalSettingsDTO, adminId: string): Promise<OperationalSettingsResponseDTO>
+    updateTermsAndConditions(termsData: UpdateTermsDTO, adminId: string): Promise<PublicTermsResponseDTO>;
 }

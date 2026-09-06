@@ -5,7 +5,11 @@ import { IWalletService } from "@/services/wallet-services/interfaces/IWalletSer
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { TransactionsFilterQuery } from "@/types/wallet.types";
 import { IWalletController } from "@/controllers/interfaces/IWalletController";
-import { GetTransactionsResponse, TransactionResponseDTO, WalletOverviewResponse } from "@/dtos/wallet.dto";
+import { 
+   GetTransactionsResponse, 
+   TransactionResponseDTO, 
+   WalletOverviewResponse 
+} from "@/dtos/wallet.dto";
 import { mapTransactionQueryToFilter } from "@/mappers/wallet.mapper";
 import { ApiResponse } from "@/utils/apiResponse.utils";
 
@@ -14,7 +18,9 @@ import { ApiResponse } from "@/utils/apiResponse.utils";
 
 export class WalletController implements IWalletController {
 
-   constructor(private _walletService: IWalletService) {}
+   constructor(
+      private readonly _walletService: IWalletService
+   ) {}
 
 
    getWalletOverview = async (req: Request, res: Response, next: NextFunction) => {
@@ -26,13 +32,7 @@ export class WalletController implements IWalletController {
              ApiResponse.success<WalletOverviewResponse>("Wallet overview retrieved successfully", transactionData)
          );
 
-         // res.status(HTTP_STATUS.OK).json({ 
-         //    success: true, 
-         //    message: "Wallet overview retrieved successfully",
-         //    data: transactionData 
-         // });
-
-      } catch (error) {
+      } catch (error: unknown) {
          next(error);
       }
    };
@@ -52,13 +52,6 @@ export class WalletController implements IWalletController {
                transactionData.pagination
             )
          );
-
-         // res.status(HTTP_STATUS.OK).json({ 
-         //    success: true, 
-         //    message: "Transactions retrieved successfully",
-         //    data: transactionData.transactions,
-         //    pagination: transactionData.pagination
-         // });
 
       } catch (error: unknown) {
          next(error);

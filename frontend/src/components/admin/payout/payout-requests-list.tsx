@@ -1,4 +1,4 @@
-// frontend/src/components/admin/payout-requests-list.tsx
+// frontend/src/components/admin/payout/payout-requests-list.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
    Search,
@@ -28,7 +28,7 @@ import {
    TableRow,
 } from "@/components/ui/table";
 import { Modal } from "@/components/ui/modal";
-import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { ConfirmationModal } from "@/components/shared/confirmation-modal";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { toast } from "react-toastify";
 import { formatDate2 } from "@/utils/dateAndTime.utils";
@@ -40,12 +40,12 @@ import type {
    PayoutSortDirection,
    GetPayoutsQueryParams,
 } from "@/types/payout.types";
-import { AdminPagination } from "@/components/admin/admin-pagination";
+import { AdminPagination } from "@/components/layout/admin-pagination";
 import { formatNumberToINR, formatNumberToINRWithDecimal } from "@/utils/UI.utils";
 
-import { PayoutStatCard } from "./payout/payout-stat-card";
-import { PayoutDetailModal } from "./payout/payout-detail-modal";
-import { PayoutRejectModal } from "./payout/payout-reject-modal";
+import { PayoutStatCard } from "./payout-stat-card";
+import { PayoutDetailModal } from "./payout-detail-modal";
+import { PayoutRejectModal } from "./payout-reject-modal";
 import { PAYOUT_STATUS_BADGE, PAYOUT_STATUS_ICON } from "@/components/payout/payout-constants";
 import type { ApiResponse } from "@/types/common.types";
 import { Tooltip } from "@/components/shared/Tooltip";

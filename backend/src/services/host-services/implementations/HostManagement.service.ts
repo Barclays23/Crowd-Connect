@@ -50,13 +50,8 @@ export class HostManagementService implements IHostManagementServices {
         upgradeDto: HostUpgradeRequestDto;
         documentFile: Express.Multer.File;
         logoFile: Express.Multer.File;
-    }): Promise<HostEntity> {
+    }): Promise<UserProfileResponseDto> {
         try {
-            console.log("✅✅✅✅✅ received data in HostManagementServices.applyHostRoleUpgrade ----");
-            console.log("userId:", userId);
-            console.log("upgradeDto:", upgradeDto);
-            console.log("fileName:", documentFile?.originalname);
-
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
             validateAllowedToApplyRoleUpgrade(existingUser);
@@ -103,13 +98,9 @@ export class HostManagementService implements IHostManagementServices {
                 throw new Error("Failed to update host details. User not found."); 
             }
 
-            console.log('hostEntity after applyHostUpgrade:', hostEntity);
-
-            return hostEntity;
+            return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in HostManagementServices.applyHostRoleUpgrade:', msg);
             throw error;
         }
     }
@@ -208,7 +199,7 @@ export class HostManagementService implements IHostManagementServices {
         upgradeDto: HostUpgradeRequestDto;
         documentFile?: Express.Multer.File;
         logoFile?: Express.Multer.File;
-    }): Promise<UserProfileEntity> {
+    }): Promise<UserProfileResponseDto> {
         try {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
             if (!existingUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
@@ -230,7 +221,7 @@ export class HostManagementService implements IHostManagementServices {
             const hostEntity: UserProfileEntity | null = await this._userRepository.updateHostDetails(userId, upgradeInput);
             if (!hostEntity) throw new Error("Failed to convert user to host."); 
 
-            return hostEntity;
+            return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
             throw error;
@@ -238,7 +229,7 @@ export class HostManagementService implements IHostManagementServices {
     }
 
 
-    async updateHostDetailsByHost({hostId, updateDto, documentFile}: {hostId: string; updateDto: HostUpdateRequestDto; documentFile?: Express.Multer.File}): Promise<HostEntity> {
+    async updateHostDetailsByHost({hostId, updateDto, documentFile}: {hostId: string; updateDto: HostUpdateRequestDto; documentFile?: Express.Multer.File}): Promise<UserProfileResponseDto> {
         try {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
@@ -272,7 +263,7 @@ export class HostManagementService implements IHostManagementServices {
                 throw new Error("Failed to update host details. User not found."); 
             }
 
-            return hostEntity;
+            return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
             throw error;
@@ -280,7 +271,7 @@ export class HostManagementService implements IHostManagementServices {
     }
 
 
-    async updateHostLogoByHost({ hostId, logoFile }: { hostId: string; logoFile?: Express.Multer.File }): Promise<UserProfileEntity> {
+    async updateHostLogoByHost({ hostId, logoFile }: { hostId: string; logoFile?: Express.Multer.File }): Promise<UserProfileResponseDto> {
         let newOrganizationLogoUrl: string | undefined;
 
         try {
@@ -315,7 +306,7 @@ export class HostManagementService implements IHostManagementServices {
                 });
             }
 
-            return updatedEntity;
+            return mapUserEntityToProfileDto(updatedEntity);
 
         } catch (error: unknown) {
             // ROLLBACK: If the DB update failed, delete the newly uploaded file to prevent storage leaks
@@ -329,7 +320,7 @@ export class HostManagementService implements IHostManagementServices {
     }
 
 
-    async updateHostLogoByAdmin({ hostId, logoFile }: { hostId: string; logoFile?: Express.Multer.File }): Promise<UserProfileEntity> {
+    async updateHostLogoByAdmin({ hostId, logoFile }: { hostId: string; logoFile?: Express.Multer.File }): Promise<UserProfileResponseDto> {
         let newOrganizationLogoUrl: string | undefined;
 
         try {
@@ -368,7 +359,7 @@ export class HostManagementService implements IHostManagementServices {
                 });
             }
 
-            return updatedEntity;
+            return mapUserEntityToProfileDto(updatedEntity);
 
         } catch (error: unknown) {
             // ROLLBACK: Delete newly uploaded image if database transaction fails
@@ -386,7 +377,7 @@ export class HostManagementService implements IHostManagementServices {
         hostId: string;
         updateDto: HostUpdateRequestDto;
         documentFile?: Express.Multer.File;
-    }): Promise<HostEntity> {
+    }): Promise<UserProfileResponseDto> {
         try {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
@@ -435,7 +426,7 @@ export class HostManagementService implements IHostManagementServices {
                 throw new Error("Failed to update host details. User not found."); 
             }
 
-            return hostEntity;
+            return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
             throw error;
@@ -486,8 +477,6 @@ export class HostManagementService implements IHostManagementServices {
             };
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in HostManagementServices.getAllHosts:', msg);
             throw error;
         }
     }

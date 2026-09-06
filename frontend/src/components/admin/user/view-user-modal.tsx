@@ -1,3 +1,4 @@
+// frontend/src/components/admin/user/view-user-modal.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { UserState } from "@/types/user.types";

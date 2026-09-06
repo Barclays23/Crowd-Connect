@@ -1,4 +1,4 @@
-// frontend/src/components/admin/reject-host-modal.tsx
+// frontend/src/components/admin/host/reject-host-modal.tsx
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Modal } from "@/components/ui/modal";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/text-area";
 import { HostRejectSchema } from "@/schemas/host.schema";
 import type { HostRejectFormData } from "@/schemas/host.schema";
-import { FieldError } from "../shared/FieldError";
+import { FieldError } from "../../shared/FieldError";
 
 
 interface RejectHostModalProps {

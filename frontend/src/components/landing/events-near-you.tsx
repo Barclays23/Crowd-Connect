@@ -10,6 +10,8 @@ import { EVENT_FORMATS } from "@/constants/event.constants"
 import type { ApiResponse } from "@/types/common.types"
 
 
+
+
 export function EventsNearYou() {
   const [nearbyEvents, setNearbyEvents] = useState<IEventState[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,8 +54,14 @@ export function EventsNearYou() {
       return
     }
 
+    const positionOptions: PositionOptions = {
+      enableHighAccuracy: true, // Forces precise GPS/Wi-Fi triangulation over basic IP mapping
+      timeout: 20000,           // Increased to 20 seconds to prevent premature timeouts
+      maximumAge: 5 * 60 * 1000 // Caches location for 5 minutes
+    };
+
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      async (position: GeolocationPosition) => {
         const { latitude, longitude } = position.coords
         const name = await reverseGeocode(latitude, longitude)
         setLocationName(name)
@@ -75,7 +83,7 @@ export function EventsNearYou() {
         }
         setLoading(false)
       },
-      { timeout: 10000, maximumAge: 5 * 60 * 1000 } // cache location for 5 mins
+      positionOptions
     )
   }, [reverseGeocode])
 

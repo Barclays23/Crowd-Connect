@@ -1,7 +1,7 @@
 // backend/src/controllers/implementations/chat.controller.ts
 import { Request, Response, NextFunction } from "express";
 import { IChatController } from "@/controllers/interfaces/IChatController";
-import { IAiChatService } from "@/services/chat-services/interfaces/IAiChatService";
+import { IAiChatService } from "@/services/ai-chat-services/interfaces/IAiChatService";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { createHttpError } from "@/utils/httpError.utils";
 import { ChatResponseDTO } from "@/dtos/chat.dto";
@@ -28,12 +28,6 @@ export class ChatController implements IChatController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<ChatResponseDTO>("Answer generated successfully.", answer)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Answer generated successfully.",
-            //     data: answer,
-            // });
 
         } catch (error: unknown) {
             next(error);

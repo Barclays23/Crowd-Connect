@@ -1,3 +1,5 @@
+// frontend/src/components/layout/admin-banner.tsx
+
 import React from 'react';
 
 

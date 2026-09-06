@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-hosts-list.tsx
+// frontend/src/components/admin/host/admin-hosts-list.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
@@ -29,9 +29,9 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "react-toastify";
-import { AdminPagination } from "./admin-pagination";
+import { AdminPagination } from "../../layout/admin-pagination";
 import { capitalize, getInitials } from "@/utils/namingConventions";
-import { Modal } from "../ui/modal";
+import { Modal } from "../../ui/modal";
 import { formatDate2 } from "@/utils/dateAndTime.utils";
 import { hostServices } from "@/services/hostServices";
 import { HostManageForm } from "./host-manage-form";
@@ -39,7 +39,7 @@ import { ViewHostModal } from "./view-host-modal";
 import type { GetHostsQueryParams, HostStatusUpdateData, UserState } from "@/types/user.types";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { RejectHostModal } from "./reject-host-modal";
-import { ConfirmationModal } from "./confirmation-modal";
+import { ConfirmationModal } from "../../shared/confirmation-modal";
 import { USER_ROLES, type HostStatus } from "@/constants/user-system.constants";
 import type { ApiResponse } from "@/types/common.types";
 import { Tooltip } from "@/components/shared/Tooltip";

@@ -33,13 +33,8 @@ export class ReviewController implements IReviewController {
             res.status(HTTP_STATUS.CREATED).json(
                 ApiResponse.success("Review submitted successfully! Thank you for your feedback.")
             );
-            
-            // res.status(HTTP_STATUS.CREATED).json({
-            //     success: true,
-            //     message: "Review submitted successfully! Thank you for your feedback.",
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -60,13 +55,8 @@ export class ReviewController implements IReviewController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success("Review updated successfully!")
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Review updated successfully!",
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -89,12 +79,7 @@ export class ReviewController implements IReviewController {
                 ApiResponse.success("Review deleted successfully!")
             );
             
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Review deleted successfully!",
-            // });
-            
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -118,15 +103,8 @@ export class ReviewController implements IReviewController {
                     result.pagination
                 )
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "User reviews fetched successfully",
-            //     data: result.reviews,
-            //     pagination: result.pagination
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -148,15 +126,8 @@ export class ReviewController implements IReviewController {
                     result.pagination
                 )
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Reviews fetched successfully",
-            //     data: result.reviews,
-            //     pagination: result.pagination
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -177,15 +148,8 @@ export class ReviewController implements IReviewController {
                     result.pagination
                 )
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Event reviews fetched successfully",
-            //     data: result.reviews,
-            //     pagination: result.pagination
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -209,15 +173,8 @@ export class ReviewController implements IReviewController {
                     result.pagination
                 )
             );
-            
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "All reviews fetched successfully",
-            //     data: result.reviews,
-            //     pagination: result.pagination
-            // });
 
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }

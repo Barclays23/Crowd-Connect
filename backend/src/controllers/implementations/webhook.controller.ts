@@ -3,9 +3,9 @@
 import { Request, Response } from 'express';
 import { IWebhookController } from '@/controllers/interfaces/IWebhookController';
 import { IWebhookService } from '@/services/webhook-services/interfaces/IWebhookService';
-import { IPaymentService } from '@/services/payment-services/interfaces/IPaymentService';
 import { StandardWebhookEvent } from '@/types/webhook.types';
 import { IPaymentProvider } from '@/providers/payment-providers/IPaymentProvider';
+
 
 
 

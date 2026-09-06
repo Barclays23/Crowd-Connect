@@ -1,10 +1,12 @@
 // src/services/user/implementations/UserProfile.service.ts
 import { 
-    UserBasicInfoUpdateDTO, 
+    UserBasicInfoUpdateDTO,
+    UserProfileResponseDto, 
 } from "@/dtos/user.dto";
 import { createHttpError } from "@/utils/httpError.utils";
 import { 
-    mapUpdateUserRequestDtoToInput, 
+    mapUpdateUserRequestDtoToInput,
+    mapUserEntityToProfileDto, 
 } from "@/mappers/user.mapper";
 import { 
     UpdateUserInput, 
@@ -24,11 +26,11 @@ import { USER_STATUS } from "@/constants/user-system.constants";
 
 export class UserProfileService implements IUserProfileService {
     constructor(
-        private _userRepository: IUserRepository
+        private readonly _userRepository: IUserRepository
     ) {}
 
 
-    async getUserProfile(userId: string): Promise<UserProfileEntity> {
+    async getUserProfile(userId: string): Promise<UserProfileResponseDto> {
         try {
             const userData: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
@@ -39,11 +41,9 @@ export class UserProfileService implements IUserProfileService {
             //     userProfileDto.profilePic = await getS3PresignedUrl(userProfileDto.profilePic);
             // }
 
-            return userData;
+            return mapUserEntityToProfileDto(userData);;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in UserProfileService.getUserProfile:', msg);
             throw error;
         }
     }
@@ -81,8 +81,6 @@ export class UserProfileService implements IUserProfileService {
             return updatedUser;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in UserProfileService.editUserBasicInfo:", msg);
             throw error;
         }
     }
@@ -135,8 +133,6 @@ export class UserProfileService implements IUserProfileService {
             return updatedUser;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in UserProfileService.updateProfilePicture:', msg);
             throw error;
         }
     }

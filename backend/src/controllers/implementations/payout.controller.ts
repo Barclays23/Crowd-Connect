@@ -24,17 +24,10 @@ export class PayoutController implements IPayoutController {
             const hostId: string = req.user!.userId;
 
             const result: GetEligibleEventsResponse = await this._payoutServices.getEligibleEvents(hostId);
-            // console.log('getEligibleEvents result :', result);
 
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<GetEligibleEventsResponse>("Eligible events retrieved successfully", result)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Eligible events retrieved successfully",
-            //     data: result,
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -53,12 +46,6 @@ export class PayoutController implements IPayoutController {
             res.status(HTTP_STATUS.CREATED).json(
                 ApiResponse.success<PayoutResponseDTO>(PAYOUT_MESSAGES.PAYOUT_REQUEST_SUBMITTED, payoutData)
             );
-
-            // res.status(HTTP_STATUS.CREATED).json({
-            //     success: true,
-            //     message: PAYOUT_MESSAGES.PAYOUT_REQUEST_SUBMITTED,
-            //     data: payoutData,
-            // });
 
         } catch (err: unknown) {
             next(err);
@@ -89,13 +76,6 @@ export class PayoutController implements IPayoutController {
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "Host payouts retrieved successfully",
-            //     data: payoutResult.payouts,
-            //     pagination: payoutResult.pagination,
-            // });
-
         } catch (err: unknown) {
             next(err);
         }
@@ -123,13 +103,6 @@ export class PayoutController implements IPayoutController {
                 )
             );
 
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: "All payouts retrieved successfully",
-            //     data: payoutResult.payouts,
-            //     pagination: payoutResult.pagination,
-            // });
-
         } catch (err: unknown) {
             next(err);
         }
@@ -152,14 +125,6 @@ export class PayoutController implements IPayoutController {
             res.status(HTTP_STATUS.OK).json(
                 ApiResponse.success<PayoutResponseDTO>(message, payoutData)
             );
-
-            // res.status(HTTP_STATUS.OK).json({
-            //     success: true,
-            //     message: action === "approve"
-            //         ? PAYOUT_MESSAGES.PAYOUT_APPROVED
-            //         : PAYOUT_MESSAGES.PAYOUT_REJECTED,
-            //     data: payoutData,
-            // });
 
         } catch (err: unknown) {
             next(err);

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPagination } from "@/components/shared/UserPagination";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
-import { ConfirmationModal } from "@/components/admin/confirmation-modal";
+import { ConfirmationModal } from "@/components/shared/confirmation-modal";
 import { EditReviewModal } from "@/components/review/EditReviewModal";
 import { reviewServices } from "@/services/reviewServices";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";

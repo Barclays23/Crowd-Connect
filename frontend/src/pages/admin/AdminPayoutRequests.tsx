@@ -1,8 +1,8 @@
 // frontend/src/pages/admin/AdminPayoutRequests.tsx
 
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import AdminBanner from "@/components/admin/admin-banner";
-import { PayoutRequestsList } from "@/components/admin/payout-requests-list";
+import AdminBanner from "@/components/layout/admin-banner";
+import { PayoutRequestsList } from "@/components/admin/payout/payout-requests-list";
 
 const AdminPayoutRequests = () => {
    return (

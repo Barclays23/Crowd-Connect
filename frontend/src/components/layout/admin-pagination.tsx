@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-pagination.tsx
+// frontend/src/components/layout/admin-pagination.tsx
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";

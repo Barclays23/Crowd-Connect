@@ -46,7 +46,6 @@ export class UserManagementService implements IUserManagementService {
 
     async getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult> {
         try {
-            // console.log('Query received in UserManagementService.getAllUsers:', filters);
             const { page, limit, search, role, status } = filters;
 
             const query: UserFilterQuery = {};
@@ -62,8 +61,6 @@ export class UserManagementService implements IUserManagementService {
             if (status) query.status = status;
 
             const skip = (page - 1) * limit;
-
-            // console.log('Final query in UserManagementService.getAllUsers:', query);
 
             const [users, totalCount]: [UserEntity[] | null, number] = await Promise.all([
                 this._userRepository.findUsers(query, skip, limit),
@@ -83,8 +80,6 @@ export class UserManagementService implements IUserManagementService {
             };
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Error in UserManagementService.getAllUsers:', msg);
             throw err;
         }
     }
@@ -95,7 +90,7 @@ export class UserManagementService implements IUserManagementService {
         createDto: CreateUserRequestDto, 
         imageFile?: Express.Multer.File
         currentAdminId: string
-    }): Promise<UserEntity> {
+    }): Promise<UserProfileResponseDto> {
         try {
             const currentAdmin: UserEntity | null = await this._userRepository.getUserById(currentAdminId);
             if (!currentAdmin) throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
@@ -147,11 +142,9 @@ export class UserManagementService implements IUserManagementService {
             // send email to user with temp password and instructions to change it
             // (email sending logic not implemented here)
 
-            return createdUser;
+            return mapUserEntityToProfileDto(createdUser);
             
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Error in UserManagementService.createUserByAdmin:', msg);
             throw err;
         }
     }
@@ -163,12 +156,8 @@ export class UserManagementService implements IUserManagementService {
         currentAdminId: string;
         updateDto: UpdateUserRequestDto;
         imageFile?: Express.Multer.File
-    }): Promise<UserEntity> {
+    }): Promise<UserProfileResponseDto> {
         try {
-            // console.log('✅ userId received in UserManagementService.editUserByAdmin:', targetUserId);
-            // console.log('✅ updateDto received in UserManagementService.editUserByAdmin:', updateDto);
-            // console.log('✅ imageFile received in UserManagementService.editUserByAdmin:', imageFile);
-
             const [targetUser, currentAdmin] = await Promise.all([
                 this._userRepository.getUserById(targetUserId),
                 this._userRepository.getUserById(currentAdminId)
@@ -266,11 +255,9 @@ export class UserManagementService implements IUserManagementService {
                 throw new Error(USER_MESSAGES.USER_NOT_FOUND);
             }
 
-            return updatedUser;
+            return mapUserEntityToProfileDto(updatedUser);
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Error in UserManagementService.editUserByAdmin:', msg);
             throw err;
         }
     }
@@ -317,14 +304,12 @@ export class UserManagementService implements IUserManagementService {
             const updatedStatus: UserStatus|null = await this._userRepository.updateUserStatus(targetUserId, newStatus);
 
             if (!updatedStatus) {
-                throw new Error("Failed to update user status.");
+                throw new Error(USER_MESSAGES.FAILED_UPDATE_USER_STATUS);
             }
 
             return updatedStatus;
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error("Error in UserManagementService.toggleUserBlock:", msg);
             throw err;
         }
     }
@@ -385,8 +370,6 @@ export class UserManagementService implements IUserManagementService {
             return;
 
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Error in UserManagementService.deleteUser:', msg);
             throw err;
         }
     }

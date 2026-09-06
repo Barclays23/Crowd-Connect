@@ -1,4 +1,4 @@
-// frontend/src/components/admin/host-manage-form.tsx
+// frontend/src/components/admin/host/host-manage-form.tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,8 +17,8 @@ import { X, Upload, FileText, CheckCircle, AlertCircle, Phone,
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
 import { getInitials } from "@/utils/namingConventions";
-import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
-import { ButtonLoader } from "../shared/ButtonLoader";
+import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
+import { ButtonLoader } from "../../shared/ButtonLoader";
 import { 
    ALLOWED_DOCUMENT_TYPES, 
    HostApplySchema, 
@@ -27,7 +27,7 @@ import {
    type HostUpgradeFormData 
 } from "@/schemas/host.schema";
 import { hostServices } from "@/services/hostServices";
-import { Badge } from "../ui/badge";
+import { Badge } from "../../ui/badge";
 import type { UserState } from "@/types/user.types";
 import { isPDF, getFileNameFromFileOrUrl, getFileExtension } from "@/utils/fileUtils";
 import { Document, Page } from 'react-pdf';

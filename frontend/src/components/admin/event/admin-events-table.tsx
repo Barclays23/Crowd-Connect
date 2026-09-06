@@ -1,4 +1,4 @@
-// frontend/src/components/admin/admin-events-table.tsx
+// frontend/src/components/admin/event/admin-events-table.tsx
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
@@ -28,11 +28,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { eventServices } from "@/services/eventServices";
 import { toast } from "react-toastify";
-import { AdminPagination } from "./admin-pagination";
+import { AdminPagination } from "../../layout/admin-pagination";
 import { formatDate2 } from "@/utils/dateAndTime.utils";
-import { Modal } from "../ui/modal";
-import { ConfirmationModal } from "./confirmation-modal";
-import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
+import { Modal } from "../../ui/modal";
+import { ConfirmationModal } from "../../shared/confirmation-modal";
+import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { 
    type EventSortDirection, 

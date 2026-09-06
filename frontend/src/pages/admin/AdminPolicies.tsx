@@ -11,7 +11,7 @@ import { Save, Loader2 } from "lucide-react";
 import { type ITermsAndConditions } from "@/types/platformSettings.types";
 import { POLICY_SECTIONS } from "@/constants/platformSettings.constants";
 import type { ApiResponse } from "@/types/common.types";
-import AdminBanner from "@/components/admin/admin-banner";
+import AdminBanner from "@/components/layout/admin-banner";
 import { AdminPolicySection } from "@/components/admin/policy/AdminPolicySection";
 
 
