@@ -83,8 +83,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             return signUpDto.email;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRegistrationService.signUp:", msg);
             throw error;
         }
     }
@@ -141,8 +139,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
 
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRegistrationService.verifyAccount:", msg);
             throw error;
         }
     }
@@ -195,8 +191,6 @@ export class AuthRegistrationService implements IAuthRegistrationService {
             return email;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRegistrationService.resendOtp:", msg);
             throw error;
         }
     }

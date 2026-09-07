@@ -13,8 +13,6 @@ import {
 import { QRTokenPayload } from "@/types/ticket.types";
 import { ICheckinService } from "@/services/checkin-services/interfaces/ICheckinService";
 import { IEventRepository } from "@/repositories/interfaces/IEventRepository";
-import { createHttpError } from "@/utils/httpError.utils";
-import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     validateBookingForCheckIn, 
     validateEventForCheckIn, 
@@ -24,6 +22,8 @@ import {
 import { verifyQrToken } from "@/utils/jwt.utils";
 import { mapToCheckInResultDTO } from "@/mappers/checkin.mappers";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
+
+
 
 
 

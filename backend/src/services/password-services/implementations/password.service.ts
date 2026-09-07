@@ -44,8 +44,6 @@ export class PasswordService implements IPasswordService {
             return updatedUser.email;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in PasswordService.resetPassword:", msg);
             throw error;
         }
     }
@@ -88,8 +86,6 @@ export class PasswordService implements IPasswordService {
             return;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in PasswordService.changeUserPassword:', msg);
             throw error;
         }
     }

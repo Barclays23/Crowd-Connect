@@ -58,7 +58,7 @@ export class AuthRecoveryService implements IAuthRecoveryService {
                     mailSubject,
                     text,
                     htmlTemplate,
-                })
+                });
                 
                 const redisKey  = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
                 const redisData = {
@@ -72,8 +72,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             return email;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRecoveryService.requestPasswordReset:", msg);
             throw error;
         }
     }
@@ -170,8 +168,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             return normalizedRequestedEmail;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error("Error in AuthRecoveryService.requestAuthenticateEmail:", msg);
             throw error;
         }
     }
@@ -236,8 +232,6 @@ export class AuthRecoveryService implements IAuthRecoveryService {
             return updatedUser.email;
 
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error in AuthRecoveryService.updateVerifiedEmail:', msg);
             throw error;
         }
     }
