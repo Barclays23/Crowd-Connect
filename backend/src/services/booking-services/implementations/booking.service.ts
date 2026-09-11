@@ -46,7 +46,7 @@ import { UserEntity } from "@/entities/user.entity";
 import { EventEntity } from "@/entities/event.entity";
 import { DetectedChange } from "@/utils/event-change-detector";
 import { ClientSession, Types } from "mongoose";
-import { UserRole } from "@/constants/user-system.constants";
+import { USER_ROLES, UserRole } from "@/constants/user-system.constants";
 import { IWalletService } from "@/services/wallet-services/interfaces/IWalletService";
 import { BOOKING_MESSAGES, PAYMENT_MESSAGES, WALLET_MESSAGES } from "@/constants/messages.constants";
 import { ICacheService } from "@/services/cache-services/interfaces/ICacheService";
@@ -59,6 +59,8 @@ import { PAYMENT_GATEWAY_CONFIG, PAYMENT_METHODS, PAYMENT_STATUSES, PaymentMetho
 import { TICKET_TYPES } from "@/constants/event.constants";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_TYPES, NOTIFICATION_RECIPIENT_ROLES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
 
 
 
@@ -75,6 +77,7 @@ export class BookingService implements IBookingService {
       private readonly _walletService     : IWalletService,
       private readonly _cacheService      : ICacheService,
       private readonly _settingsService   : IPlatformSettingsService,
+      private readonly _notificationService: INotificationService,
    ) {}
 
 
@@ -108,7 +111,7 @@ export class BookingService implements IBookingService {
             return await this._processOnlineBooking(user!, event!, newBookingQty, totalAmount, ticketNo);
          }
 
-         throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Invalid payment method selected.");
+         throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.INVALID_PAYMENT_METHOD);
 
 
       } catch (error: unknown) {
@@ -188,8 +191,6 @@ export class BookingService implements IBookingService {
          return await this._processBookingConfirmation(booking!, userId, paymentId, signature);
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.verifyAndConfirmPayment:", msg);
          throw error;
       }
    }
@@ -212,8 +213,6 @@ export class BookingService implements IBookingService {
          };
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.getMyBookings:", msg);
          throw error;
       }
    }
@@ -236,8 +235,6 @@ export class BookingService implements IBookingService {
          };
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.getBookingsList:", msg);
          throw error;
       }
    }
@@ -253,15 +250,13 @@ export class BookingService implements IBookingService {
          if (!booking) {
             throw createHttpError(HTTP_STATUS.NOT_FOUND, "Booking not found");
          }
-         if (role !== "admin" && booking.user.userId !== requestingUserId) {
+         if (role !== USER_ROLES.ADMIN && booking.user.userId !== requestingUserId) {
             throw createHttpError(HTTP_STATUS.FORBIDDEN, "You are not authorised to view this booking");
          }
 
          return mapBookingEntityToResponseDTO(booking, settings);
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.getBookingById:", msg);
          throw error;
       }
    }
@@ -279,8 +274,6 @@ export class BookingService implements IBookingService {
          await this._processRefundAndCancelBooking(booking!, cancelReason, context);
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.cancelBookingByUser:", msg);
          throw error;
       }
    }
@@ -296,8 +289,6 @@ export class BookingService implements IBookingService {
          await this._processRefundAndCancelBooking(booking, `Admin Cancellation: ${cancelReason}`, context);
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.cancelBookingByAdmin:", msg);
          throw error;
       }
    }
@@ -314,6 +305,7 @@ export class BookingService implements IBookingService {
          for (const booking of confirmedBookings) {
             try {
                await this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled");
+               
             } catch (error) {
                // Log individual failures, but let the loop continue processing others
                console.error(`[CRITICAL] Failed to cancel and refund booking ${booking.bookingId}:`, error);
@@ -335,8 +327,6 @@ export class BookingService implements IBookingService {
          }
 
       } catch (error: unknown) {
-         const msg = error instanceof Error ? error.message : "Unknown error";
-         console.error("Error in BookingService.cancelAllBookingsForEvent:", msg);
          throw error;
       }
    }
@@ -391,6 +381,13 @@ export class BookingService implements IBookingService {
       
       await this._eventRepository.incrementEventTicketAndRevenueStats(event.eventId, quantity, 0);
       await this._cacheService.deleteKeyValue("trending_events");
+
+      await this._notificationService.notify({
+         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
+         recipient: { userId: user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
+         data: { eventTitle: event.title, ticketNo, quantity },
+         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: bookingEntity.bookingId },
+      });
 
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(bookingEntity.bookingId),
@@ -453,6 +450,13 @@ export class BookingService implements IBookingService {
 
       await this._cacheService.deleteKeyValue("trending_events");
 
+      await this._notificationService.notify({
+         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
+         recipient: { userId: user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
+         data: { eventTitle: event.title, ticketNo, quantity },
+         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: newBookingId },
+      });
+
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(newBookingId),
          this._settingsService.getOperationalSettingsDomain(),
@@ -485,6 +489,9 @@ export class BookingService implements IBookingService {
       });
 
       const pendingBooking: BookingEntity = await this._bookingRepository.createBooking(createBookingInput);
+
+      // No notification here on purpose - booking is only PENDING until payment is verified.
+      // The BOOKING_CONFIRMED notification fires from _processBookingConfirmation instead.
 
       return {
          isFree         : false,
@@ -553,6 +560,13 @@ export class BookingService implements IBookingService {
 
       await this._cacheService.deleteKeyValue("trending_events");
 
+      await this._notificationService.notify({
+         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
+         recipient: { userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
+         data: { eventTitle: booking.event.title, ticketNo: booking.ticketNo, quantity: booking.quantity },
+         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
+      });
+
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(booking.bookingId),
          this._settingsService.getOperationalSettingsDomain(),
@@ -598,7 +612,10 @@ export class BookingService implements IBookingService {
       session.startTransaction();
 
       try {
-         const event: EventEntity | null = await this._eventRepository.getEventById(booking.eventRef.toString());
+         const [event, user]: [EventEntity | null, UserEntity | null] = await Promise.all([
+            this._eventRepository.getEventById(booking.eventRef.toString()),
+            this._userRepository.getUserById(userId),
+         ]);
          const eventName:string = event ? event.title : "Event";
 
          // creating payload from here or inside _ticketService.generateQrToken ?? which is correct? solid principle
@@ -632,6 +649,13 @@ export class BookingService implements IBookingService {
          await session.commitTransaction();
 
          await this._cacheService.deleteKeyValue("trending_events");
+
+         await this._notificationService.notify({
+            type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
+            recipient: { userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user?.email },
+            data: { eventTitle: eventName, ticketNo: booking.ticketNo, quantity: booking.quantity },
+            relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
+         });
 
          const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(booking.bookingId),
@@ -717,6 +741,23 @@ export class BookingService implements IBookingService {
                { session }
             );
 
+         });
+
+         
+         // notification process
+         // 'user'            -> the booker cancelled it themselves      -> BOOKING_CANCELLED_BY_USER
+         // 'authority'       -> a single admin/host cancellation        -> BOOKING_CANCELLED_BY_AUTHORITY
+         // 'event_cancelled' -> cascading from event cancel/suspend     -> BOOKING_CANCELLED_BY_AUTHORITY
+         //                      (cancelReason already explains why, e.g. "Event suspended by admin: ...")
+         const notificationType = context === "user"
+            ? NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_USER
+            : NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_AUTHORITY;
+         
+         await this._notificationService.notify({
+            type: notificationType,
+            recipient: { userId: booking.user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: booking.user.email },
+            data: { eventTitle: booking.event.title, cancelReason, refundAmount },
+            relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
          });
          
       } catch (error) {

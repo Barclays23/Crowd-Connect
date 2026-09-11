@@ -247,7 +247,7 @@ export class RazorpayProvider implements IPaymentProvider {
         const paymentPurpose = purpose as PaymentPurpose;
         let type: StandardWebhookEventType;
         let amount          = 0;
-        let paymentId       = paymentEntity?.id || refundEntity?.payment_id;
+        const paymentId     = paymentEntity?.id || refundEntity?.payment_id;
         const orderId       = paymentEntity?.order_id || "";
         let refundId        = undefined;
         let timestamp       = Date.now();

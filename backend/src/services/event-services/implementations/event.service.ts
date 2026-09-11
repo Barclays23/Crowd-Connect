@@ -62,7 +62,7 @@ import { EVENT_MESSAGES } from "@/constants/messages.constants";
 import { EVENT_FORMATS, EVENT_STATUSES, EventStatus } from "@/constants/event.constants";
 import { convertBase64ToBuffer } from "@/utils/file.utils";
 import { validateAdminActiveStatus, validateHostActiveStatus } from "@/utils/validations/userValidations";
-import { HostEntity, UserProfileEntity } from "@/entities/user.entity";
+import { HostEntity, UserEntity, UserProfileEntity } from "@/entities/user.entity";
 import { IStreamingService } from "@/services/streaming-services/interfaces/IStreamingService";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { BookingCheckinUpdate } from "@/types/booking.types";
@@ -74,6 +74,8 @@ import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository
 import { validateOnlineBookingForJoin, validateOnlineEventForJoin } from "@/utils/validations/streamingValidations";
 import { BookingEntity } from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
 
 
 
@@ -87,11 +89,11 @@ export class EventManagementService implements IEventServices {
         private readonly _userRepository        : IUserRepository,
 
         private readonly _bookingService        : IBookingService,
-        // private readonly _userProfileServices   : IUserProfileService,
         private readonly _cacheService          : ICacheService,
         private readonly _settingsService       : IPlatformSettingsService,
         private readonly _eventQueueService     : IEventQueueService,
         private readonly _streamingService      : IStreamingService,
+        private readonly _notificationService   : INotificationService,
         // private _notificationServices: INotificationService,
         // private _storageService: IFileStorageService,
     ) {}
@@ -224,11 +226,24 @@ export class EventManagementService implements IEventServices {
             await this._eventQueueService.removeEventCompletionSchedule(eventId);
 
 
-            // Cancel + refund all confirmed bookings (batched process)
+            // Cancel + refund all confirmed bookings (batched process).
+            // Each cancelled booking already triggers its own BOOKING_CANCELLED_BY_AUTHORITY
+            // notification to that attendee (see BookingService._processRefundAndCancelBooking) -
+            // so attendees are covered here without a separate "event suspended" blast.
             await this._bookingService.cancelAllBookingsForEvent(
                 eventId,
                 `Event suspended by admin: ${suspendReason}`
             );
+
+            // separately notify the host - they're not part of the booking-cancellation loop above.
+            const hostUser: UserEntity | null = await this._userRepository.getUserById(eventEntity.organizer.hostId);
+ 
+            await this._notificationService.notify({
+                type: NOTIFICATION_TYPES.EVENT_SUSPENDED_HOST,
+                recipient: { userId: eventEntity.organizer.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: hostUser?.email },
+                data: { eventTitle: eventEntity.title, suspendReason },
+                relatedEntity: { entityType: RELATED_ENTITY_TYPE.EVENT, entityId: eventId },
+            });
 
             // Send notification to host and attendees (later)
             // if (updatedStatus === EVENT_STATUSES.SUSPENDED) {
@@ -277,7 +292,9 @@ export class EventManagementService implements IEventServices {
             // Remove the event queque schedule for marking the event status as 'COMPLETED' since the event is cancelled
             await this._eventQueueService.removeEventCompletionSchedule(eventId);
             
-            // Cancel + refund all confirmed bookings (batched process)
+            // Cancel + refund all confirmed bookings (batched process).
+            // Attendees are notified per-booking inside cancelAllBookingsForEvent (see BookingService).
+            // No host notification needed here - the host is the one who triggered this action.
             await this._bookingService.cancelAllBookingsForEvent(
                 eventId,
                 `Event cancelled by host: ${cancelReason}`
@@ -814,13 +831,30 @@ export class EventManagementService implements IEventServices {
                     )
                 );
 
+                const summary: string = buildChangeSummary(majorChanges);
+
                 await this._bookingService.setGracePeriodForEvent(existingEvent.eventId, {
                     gracePeriodEnd,
-                    summary: buildChangeSummary(majorChanges),
+                    summary: summary,
                     changes:  majorChanges,
                 });
 
-                // TODO: notify confirmed bookers via email/SMS/push with summary + gracePeriodEnd
+                // Notify every confirmed booker. Unlike cancelAllBookingsForEvent, there's no
+                // external payment-gateway call per booking here - just a notify() - so parallel
+                // dispatch is safe and won't hit any rate limits. Still worth moving to
+                // EventQueueService/BullMQ if this event has thousands of confirmed bookings.
+                const confirmedBookings = await this._bookingRepository.findConfirmedBookingsForEvent(existingEvent.eventId);
+
+                await Promise.allSettled(
+                    confirmedBookings.map((booking) =>
+                        this._notificationService.notify({
+                            type: NOTIFICATION_TYPES.EVENT_MAJOR_CHANGE,
+                            recipient: { userId: booking.user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, name: booking.user.name, email: booking.user.email },
+                            data: { eventTitle: existingEvent.title, summary, gracePeriodEnd },
+                            relatedEntity: { entityType: RELATED_ENTITY_TYPE.EVENT, entityId: existingEvent.eventId },
+                        })
+                    )
+                );
             }
         }
 

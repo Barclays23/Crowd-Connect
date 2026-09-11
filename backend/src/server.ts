@@ -1,9 +1,13 @@
 import dotenv from 'dotenv';
 dotenv.config();
+import http from 'http';
 import app from '@/app';
 import { connectDB } from '@/config/db.config';
 import { connectRedis } from '@/config/redis-cache.config';
 import { startEventWorker } from '@/workers/eventCompletion.worker';
+import { socketService } from '@/services/notification-services/implementations/NotificationServiceFactory';
+
+
 
 
 
@@ -15,7 +19,10 @@ const startServer = async () => {
     await connectRedis();
     startEventWorker();
 
-    app.listen(PORT, () => {
+    const server = http.createServer(app);
+    socketService.initialize(server);
+
+    server.listen(PORT, () => {
         console.log(`🖥️  Server running on http://localhost:${PORT}`);
     });
 };

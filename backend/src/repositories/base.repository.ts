@@ -14,7 +14,9 @@ import {
 
 export abstract class BaseRepository<T> {
 
-    constructor(protected readonly model: Model<T>) {}
+    constructor(
+        protected readonly model: Model<T>
+    ) {}
     
 
     async createOne(
@@ -27,6 +29,7 @@ export abstract class BaseRepository<T> {
         const savedDocument = await document.save({session});
         return savedDocument as unknown as T;
     }
+
 
 
     async findOne(query: QueryFilter<T>): Promise<T | null>{
@@ -116,6 +119,21 @@ export abstract class BaseRepository<T> {
     async findByIdAndDelete(id: string): Promise<T | null>{
         const deletedDocument = await this.model.findByIdAndDelete(id);
         return deletedDocument as unknown as T;
+    }
+
+
+    async updateOne(
+        query: QueryFilter<T>,
+        updateData: UpdateQuery<T>,
+        options: { session?: ClientSession } = {}
+    ): Promise<void> {
+        await this.model.updateOne(
+            query,
+            updateData,
+            {
+                session: options.session
+            }
+        );
     }
 
     

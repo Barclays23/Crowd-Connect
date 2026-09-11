@@ -37,6 +37,4 @@ export interface IUserManagementService {
       targetUserId: string; currentAdminId: string 
    }): Promise<void>;
 
-
-
 }

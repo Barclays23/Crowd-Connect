@@ -34,6 +34,7 @@ import { GeminiAiChatProvider } from "@/providers/ai-chat-providers/implementati
 import { RazorpayProvider } from "@/providers/payment-providers/razorpay.provider";
 import { IPaymentProvider } from "@/providers/payment-providers/IPaymentProvider";
 import { mailDispatcher } from "@/services/mail-services/implementations/MailServiceFactory";
+import { notificationDispatcher } from "@/services/notification-services/implementations/NotificationServiceFactory";
 
 
 
@@ -71,6 +72,10 @@ import { IRefundStrategy } from "@/services/webhook-strategy-services/interfaces
 import { BookingRefundStrategy } from "@/services/webhook-strategy-services/implementations/bookingRefund.strategy";
 import { BookingPaymentSuccessStrategy } from "@/services/webhook-strategy-services/implementations/bookingPaymentSuccess.strategy";
 import { BookingPaymentFailedStrategy } from "@/services/webhook-strategy-services/implementations/bookingPaymentFailed.strategy";
+import { NotificationController } from "@/controllers/implementations/notification.controller";
+import { NotificationQueryService } from "@/services/notification-services/implementations/notification-query.service";
+import { NotificationRepository } from "@/repositories/implementations/notification.repository";
+
 
 
 
@@ -152,6 +157,7 @@ const checkinRepo       = new CheckinRepository();
 const transactionRepo   = new TransactionRepository();
 const payoutRepo        = new PayoutRepository();
 const settingsRepo      = new PlatformSettingsRepository();
+const notificationRepo  = new NotificationRepository()
 
 
 const faqKnowledgeRepo  = new MongoFaqRepository();  //  which ever the FaqKnowledgeRepository used
@@ -196,9 +202,9 @@ const settingsService           = new PlatformSettingsService(settingsRepo, faqI
 const aiChatService             = new AiChatService(faqKnowledgeRepo, aiChatProvider);
 const checkinService            = new CheckinService(checkinRepo, eventRepo);
 const userProfileService        = new UserProfileService(userRepo);
-const userManagementServices    = new UserManagementService(userRepo);
-const hostManagementService     = new HostManagementService(userRepo);
-
+const userManagementServices    = new UserManagementService(userRepo, notificationDispatcher);
+const hostManagementService     = new HostManagementService(userRepo, notificationDispatcher);
+const notificationQueryService  = new NotificationQueryService(notificationRepo)
 
 
 
@@ -218,9 +224,9 @@ const sessionService        = new AuthSessionService(userRepo, cacheService);
 const recoveryService       = new AuthRecoveryService(userRepo, cacheService, mailDispatcher);
 const passwordService       = new PasswordService(userRepo, cacheService)
 
-const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService);
-const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, userRepo, bookingService, cacheService, settingsService, eventQueueService, streamingService);
-const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService);
+const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService, notificationDispatcher);
+const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, userRepo, bookingService, cacheService, settingsService, eventQueueService, streamingService, notificationDispatcher);
+const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService, notificationDispatcher);
 const reviewService         = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
 
 
@@ -271,16 +277,17 @@ const webhookService        = new WebhookService(successStrategies, failedStrate
 // ============================================================================
 // 8. CONTROLLERS (Exported for Route Files)
 // ============================================================================
-export const aiController       = new AiController(aiImageService);
-export const authController     = new AuthController(registrationService, sessionService, recoveryService, passwordService);
-export const bookingController  = new BookingController(bookingService);
-export const chatController     = new ChatController(aiChatService);
-export const checkinController  = new CheckinController(checkinService);
-export const eventController    = new EventController(eventService, bookingService);
-export const hostController     = new HostController(hostManagementService);
-export const payoutController   = new PayoutController(payoutService);
-export const reviewController   = new ReviewController(reviewService);
-export const settingsController = new PlatformSettingsController(settingsService);
-export const userController     = new UserController(userProfileService, userManagementServices, passwordService);
-export const walletController   = new WalletController(walletService);
-export const webhookController  = new WebhookController(webhookService, paymentProvidersMap);
+export const aiController               = new AiController(aiImageService);
+export const authController             = new AuthController(registrationService, sessionService, recoveryService, passwordService);
+export const bookingController          = new BookingController(bookingService);
+export const chatController             = new ChatController(aiChatService);
+export const checkinController          = new CheckinController(checkinService);
+export const eventController            = new EventController(eventService, bookingService);
+export const hostController             = new HostController(hostManagementService);
+export const payoutController           = new PayoutController(payoutService);
+export const reviewController           = new ReviewController(reviewService);
+export const settingsController         = new PlatformSettingsController(settingsService);
+export const userController             = new UserController(userProfileService, userManagementServices, passwordService);
+export const walletController           = new WalletController(walletService);
+export const webhookController          = new WebhookController(webhookService, paymentProvidersMap);
+export const notificationController     = new NotificationController(notificationQueryService);

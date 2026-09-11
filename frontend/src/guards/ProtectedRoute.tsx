@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, type FC } from 'react';
 import { toast } from 'react-toastify';
+import { USER_ROLES } from '@/constants/user-system.constants';
 
 
 interface ProtectedRouteProps {
@@ -18,7 +19,7 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
 
 
   useEffect(() => {
-    if (!isLoading && requireAdmin && user?.role !== 'admin') {
+    if (!isLoading && requireAdmin && user?.role !== USER_ROLES.ADMIN) {
       toast.error('Access denied. Admins only.');
     }
   }, [isLoading, requireAdmin, user?.role]);

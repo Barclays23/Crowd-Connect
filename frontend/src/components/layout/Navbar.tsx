@@ -10,6 +10,7 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import logo from "@/assets/crowdconnect-logo-1.png";
 import type { ApiResponse } from "@/types/common.types";
 import UserAvatar from "@/components/shared/UserAvatar";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 
 
@@ -132,6 +133,9 @@ export function Navbar() {
                   <div className="hidden md:flex items-center space-x-3">
                      {isAuthenticated ? (
                         <>
+
+                           <NotificationBell />
+
                            <UserAvatar name={user?.name} />
 
                            <Button 
@@ -145,14 +149,14 @@ export function Navbar() {
                         </>
                      ) : (
                      <>
-                           <Button asChild variant="ghost" size="sm">
-                              <Link to="/login">
-                                 Login
-                              </Link>
-                           </Button>
-                           <Button asChild size="sm">
-                              <Link to="/register">Register</Link>
-                           </Button>
+                        <Button asChild variant="ghost" size="sm">
+                           <Link to="/login">
+                              Login
+                           </Link>
+                        </Button>
+                        <Button asChild size="sm">
+                           <Link to="/register">Register</Link>
+                        </Button>
                      </>
                      )}
                   </div>
@@ -164,9 +168,9 @@ export function Navbar() {
                      aria-label="Toggle menu"
                   >
                      {mobileOpen ? (
-                     <X className="h-5 w-5" />
+                        <X className="h-5 w-5" />
                      ) : (
-                     <Menu className="h-5 w-5" />
+                        <Menu className="h-5 w-5" />
                      )}
                   </button>
                </div>

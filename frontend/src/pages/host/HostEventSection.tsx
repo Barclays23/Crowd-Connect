@@ -10,22 +10,23 @@ import AdminMessage from '@/components/host/AdminHostingMessage';
 import { LoadingSpinner1 } from '@/components/shared/LoadingSpinner1';
 import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
-import { GoogleMapsProvider2 } from '@/contexts/GoogleMapsProvider2';
 import HostYourEvent from '@/components/event/HostYourEvent';
 import { HOST_STATUS, USER_ROLES, USER_STATUS } from '@/constants/user-system.constants';
+import { useEffect, useRef, useState } from 'react';
 
 
 
 
 
 const HostEventSection = () => {
-   const { user, isAuthenticated, isLoading } = useAuth();
-   // const [showReapplyForm, setShowReapplyForm] = useState(false);
+   const { user, isAuthenticated } = useAuth();
+   
+
+   const hasFetched = useRef<boolean>(false);
+   
    const [searchParams] = useSearchParams();
    const isReapplyMode = searchParams.get('reapply') === 'true';
 
-
-   if (isLoading) return <LoadingSpinner1 />;
 
    if (!isAuthenticated || !user) return <AuthRequiredMessage />;
    
@@ -44,23 +45,13 @@ const HostEventSection = () => {
          case HOST_STATUS.PENDING:
             return <HostPendingState />;
          case HOST_STATUS.REJECTED:
-            return (
-               <HostRejectedState
-                  rejectionReason={user.hostRejectionReason}
-               />
-            );
+            return <HostRejectedState rejectionReason={user.hostRejectionReason}/>
          case HOST_STATUS.BLOCKED:
             return <HostBlockedState />;
          case HOST_STATUS.APPROVED:
-            return (
-               // <GoogleMapsProvider2>
-               <HostYourEvent />
-               // </GoogleMapsProvider2>
-            )
+            return <HostYourEvent />
          default:
-            return (
-               <LoadingSpinner1 />
-            );
+            return <LoadingSpinner1 />
       }
    }
 
