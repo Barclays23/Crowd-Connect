@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { HamburgerTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +19,7 @@ import { getInitials } from "@/utils/namingConventions";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/errorMessages.utils";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 
 
 
@@ -77,14 +77,8 @@ export function AdminNavbar() {
           <ThemeToggle/>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-(--bg-secondary)">
-            <Bell className="h-5 w-5 text-(--text-secondary)" />
-            <Badge
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs font-bold bg-(--brand-primary) text-white border-2 border-(--card-bg) p-0"
-            >
-              3
-            </Badge>
-          </Button>
+          {/* Notifications */}
+          <NotificationBell />
 
           {/* Profile Dropdown */}
           <DropdownMenu>

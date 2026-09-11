@@ -222,6 +222,7 @@ export const USER_MESSAGES = {
 // ─── HOST MANAGEMENT ────────────────────────────────────────────────────────
 export const HOST_MESSAGES = {
     HOST_NOT_FOUND : "Couldn't find this host user.",
+    ORGANIZER_NOT_FOUND : "Couldn't find this event organizer.",
     USER_NOT_A_HOST : "The user is not a host right now.",
     HOST_ALREADY_APPROVED : "Hosting application is already approved.",
     HOST_ALREADY_REJECTED : "Hosting application is already rejected.",

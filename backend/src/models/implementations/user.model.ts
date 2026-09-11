@@ -138,5 +138,4 @@ userSchema.index(
 
 
 const User = model<IUserModel>("User", userSchema);
-// const User = model<IUser>("User", userSchema);
 export default User;

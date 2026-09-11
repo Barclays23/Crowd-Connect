@@ -28,6 +28,8 @@ import { validatePayoutRequest, validatePayoutReview } from "@/utils/validations
 import { PAYOUT_REQUEST_STATUSES, PayoutRequestStatus } from "@/constants/payout.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 import { OperationalSettingsResponseDTO } from "@/dtos/settings.dto";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
 
 
 
@@ -35,10 +37,11 @@ import { OperationalSettingsResponseDTO } from "@/dtos/settings.dto";
 
 export class PayoutService implements IPayoutService {
     constructor(
-        private readonly _payoutRepository  : IPayoutRepository,
-        private readonly _eventRepository   : IEventRepository,
-        private readonly _settingsService   : IPlatformSettingsService,
-        private readonly _walletService     : IWalletService,
+        private readonly _payoutRepository      : IPayoutRepository,
+        private readonly _eventRepository       : IEventRepository,
+        private readonly _settingsService       : IPlatformSettingsService,
+        private readonly _walletService         : IWalletService,
+        private readonly _notificationDispatcher: INotificationService
     ) {}
 
 
@@ -96,6 +99,17 @@ export class PayoutService implements IPayoutService {
 
         const payout: PayoutEntity = await this._payoutRepository.createPayout(createPayoutInput);
 
+        // NOTIFICATION: Admin receives request
+        const systemAdminId = process.env.SUPER_ADMIN_ID;
+        if (systemAdminId) {
+            await this._notificationDispatcher.notify({
+                type: NOTIFICATION_TYPES.PAYOUT_REQUEST_RECEIVED,
+                recipient: { userId: systemAdminId, role: NOTIFICATION_RECIPIENT_ROLES.ADMIN },
+                data: { hostName: payout.hostName, eventTitle: event.title, amount: netAmount },
+                relatedEntity: { entityType: RELATED_ENTITY_TYPE.PAYOUT, entityId: payout.payoutId }
+            });
+        }
+
         return mapPayoutEntityToDTO(payout);
     }
 
@@ -126,7 +140,13 @@ export class PayoutService implements IPayoutService {
                 reviewedAt     : new Date(),
             });
 
-            // TODO: Trigger Email Notification to Host about Rejection here
+            // NOTIFICATION: Inform Host about Rejection
+            await this._notificationDispatcher.notify({
+                type: NOTIFICATION_TYPES.PAYOUT_REJECTED,
+                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST },
+                data: { eventTitle: payout!.eventTitle, reason: payoutInput.rejectionReason!.trim() },
+                relatedEntity: { entityType: RELATED_ENTITY_TYPE.PAYOUT, entityId: payoutId }
+            });
 
             return mapPayoutEntityToDTO(updatedPayout!);
         }
@@ -165,7 +185,13 @@ export class PayoutService implements IPayoutService {
                 );
             });
 
-            // TODO: Trigger Email Notification to Host about Approval/Payment here
+            // NOTIFICATION: Inform Host about Approval/Payment
+            await this._notificationDispatcher.notify({
+                type: NOTIFICATION_TYPES.PAYOUT_APPROVED,
+                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST },
+                data: { eventTitle: payout!.eventTitle, netAmount: payout!.netAmount },
+                relatedEntity: { entityType: RELATED_ENTITY_TYPE.PAYOUT, entityId: payoutId }
+            });
 
             return mapPayoutEntityToDTO(updatedPayout!);
         }

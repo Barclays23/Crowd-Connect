@@ -34,14 +34,20 @@ import { HOST_STATUS, HostStatus, USER_ROLES } from "@/constants/user-system.con
 import { GetHostsFilter, GetHostsResult, UserFilterQuery } from "@/types/user.types";
 import { IHostManagementServices } from "../interfaces/IHostManagementServices";
 import { HOST_MESSAGES, USER_MESSAGES } from "@/constants/messages.constants";
-import { validateAllowedToApplyRoleUpgrade, validateAllowedToUpdateHost } from "@/utils/validations/userValidations";
+import { 
+    validateAllowedToApplyRoleUpgrade, 
+    validateAllowedToUpdateHost 
+} from "@/utils/validations/userValidations";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES } from "@/types/notification.types";
 
 
 
 
 export class HostManagementService implements IHostManagementServices {
     constructor(
-        private _userRepository: IUserRepository,
+        private readonly _userRepository: IUserRepository,
+        private readonly _notificationDispatcher: INotificationService
     ) {}
 
 
@@ -98,6 +104,16 @@ export class HostManagementService implements IHostManagementServices {
                 throw new Error("Failed to update host details. User not found."); 
             }
 
+            // NOTIFICATION: Notify the Admin that a new request send by user.
+            const systemAdminId = process.env.SUPER_ADMIN_ID;
+            if (systemAdminId) {
+                await this._notificationDispatcher.notify({
+                    type: NOTIFICATION_TYPES.HOST_REQUEST_RECEIVED,
+                    recipient: { userId: systemAdminId, role: NOTIFICATION_RECIPIENT_ROLES.ADMIN },
+                    data: { organizationName: upgradeInput.organizationName, applicantEmail: hostEntity.email }
+                });
+            }
+
             return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
@@ -132,11 +148,22 @@ export class HostManagementService implements IHostManagementServices {
             const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
 
             // Send notification to host (later)
-            // await this._notificationService.sendHostStatusUpdate(
+            // await this._notificationDispatcher.sendHostStatusUpdate(
             //     hostEntity.userId,
             //     action,
             //     reason
             // );
+
+            // NOTIFICATION: Inform host of application result
+            const notificationType = action === "approve" 
+                ? NOTIFICATION_TYPES.HOST_REQUEST_APPROVED 
+                : NOTIFICATION_TYPES.HOST_REQUEST_REJECTED;
+
+            await this._notificationDispatcher.notify({
+                type: notificationType,
+                recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: hostEntity.email },
+                data: { reason: reason || "" }
+            });
 
             return updatedStatusResponse;
 
@@ -179,8 +206,19 @@ export class HostManagementService implements IHostManagementServices {
 
             const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
 
+            // NOTIFICATION: Host blocked/unblocked
+            const notificationType = action === "block" 
+                ? NOTIFICATION_TYPES.ACCOUNT_BLOCKED 
+                : NOTIFICATION_TYPES.ACCOUNT_UNBLOCKED;
+
+            await this._notificationDispatcher.notify({
+                type: notificationType,
+                recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: hostEntity.email },
+                data: { reason: reason || "" }
+            });
+
             // Send notification to host (later)
-            // await this._notificationService.sendHostStatusUpdate(
+            // await this._notificationDispatcher.sendHostStatusUpdate(
             //     hostEntity.userId,
             //     action,
             //     reason
@@ -438,7 +476,6 @@ export class HostManagementService implements IHostManagementServices {
     async getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult> {
         try {
             const { page, limit, search, role, status, hostStatus } = filters;
-            console.log('Filters received in HostManagementServices.getAllHosts:', filters);
 
             const query: UserFilterQuery = {};
 
@@ -456,8 +493,6 @@ export class HostManagementService implements IHostManagementServices {
             if (hostStatus) query.hostStatus = hostStatus;
 
             const skip = (page - 1) * limit;
-
-            console.log('Final query in HostManagementServices.getAllHosts:', query);
 
             const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
                 this._userRepository.findHosts(query, skip, limit),
@@ -485,7 +520,7 @@ export class HostManagementService implements IHostManagementServices {
     async getOrganiserProfile(hostId: string): Promise<OrganiserProfileResponseDTO> {
         const host = await this._userRepository.getHostById(hostId);
         if (!host || host.role !== USER_ROLES.HOST) {
-            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Organiser not found.");
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.ORGANIZER_NOT_FOUND);
         }
 
         return mapToOrganiserProfileDTO(host);

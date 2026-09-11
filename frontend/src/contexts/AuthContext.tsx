@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.tsx
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '@/services/authServices';
 import type { UserState } from '@/types/user.types';
@@ -14,6 +14,7 @@ import type {
 import { setAuthInterceptors } from '@/config/axios';
 import { API_ENDPOINTS } from '@/constants/apiEndpoints.constants';
 import type { ApiResponse } from '@/types/common.types';
+import { disconnectSocket, initializeSocket } from '@/services/socketService';
 // import { toast } from 'react-toastify';
 // import toast from 'react-hot-toast';
 // import { toast } from "sonner";
@@ -28,6 +29,7 @@ interface AuthContextType extends AuthState {
     logout: () => Promise<ApiResponse<void>>;
     setAccessToken: React.Dispatch <React.SetStateAction <string | null>>; 
     setUser: React.Dispatch <React.SetStateAction <UserState | null>>;
+    refreshAuthUser: () => Promise<void>;
 }
 
 
@@ -49,6 +51,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserState | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+
+    // Reusable function to fetch fresh user data
+    const refreshAuthUser = useCallback(async (): Promise<void> => {
+        try {
+            const response: ApiResponse<AuthUserData> = await authService.getAuthUser();
+            if (response.data?.authUser) {
+                setUser(response.data.authUser);
+            }
+        } catch (error) {
+            console.error("Failed to refresh user data", error);
+        }
+    }, []);
 
 
 
@@ -130,8 +145,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     }, [accessToken, user]);
 
-    // console.log('localStorage accessToken:', localStorage.getItem("accessToken"));
-    // console.log('localStorage user:', localStorage.getItem("user"));
+
+    useEffect(() => {
+        if (accessToken) {
+            // Connect to socket when user logs in / token exists
+            initializeSocket(accessToken);
+        } else {
+            // Disconnect when user logs out / token is removed
+            disconnectSocket();
+        }
+    }, [accessToken]);
 
 
     // Validate session on mount or when accessToken/user changes
@@ -261,7 +284,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 // refreshAccessToken,
 
                 setAccessToken,
-                setUser
+                setUser,
+                refreshAuthUser
             }}
         >
         {children}

@@ -8,6 +8,19 @@ import type { RefreshTokenData } from "@/types/auth.types";
 
 
 
+
+interface BackendErrorResponse {
+   message?: string;
+   code?: string;
+   errorCode?: string;
+   data?: {
+      code?: string;
+      [key: string]: unknown; // For any other nested error details
+   };
+}
+
+
+
 // AXIOS INSTANCE CREATION & CONFIGURATION
 const axiosInstance: AxiosInstance = axios.create({
    baseURL           : import.meta.env.VITE_BACKEND_BASE_URL,
@@ -97,13 +110,15 @@ axiosInstance.interceptors.response.use(
 
       const originalRequest = error.config;
       const status = error.response?.status;
-      const data =
-         typeof error.response?.data === "object" && error.response?.data !== null
-            ? (error.response?.data as { code?: string; message?: string })
-            : {};
+
+      const responseData = typeof error.response?.data === "object" && error.response?.data !== null
+         ? (error.response?.data as BackendErrorResponse)
+         : {};
+
+      const errorCode = responseData.code || responseData.data?.code || responseData.errorCode;
 
       // HANDLE BLOCKED USER
-      if (status === 403 && data.code === "USER_ACCOUNT_BLOCKED") {  // from auth middleware
+      if (status === 403 && errorCode === "USER_ACCOUNT_BLOCKED") {  // from auth middleware
 
          if (isLoggingOut) return Promise.reject(error);
          isLoggingOut = true;
@@ -112,8 +127,10 @@ axiosInstance.interceptors.response.use(
             const logoutFunction = onTokenRefreshFailure;
 
             if (logoutFunction) {
-               logoutFunction();
+               await logoutFunction();
             }
+         } catch (logoutError: unknown) {
+            console.error("Failed to execute logout for blocked user:", logoutError);
          } finally {
             isLoggingOut = false;
          }
@@ -139,7 +156,7 @@ axiosInstance.interceptors.response.use(
       // AND it's not a login/register request
       if (
          status === 401 && 
-         data.code !== "USER_ACCOUNT_BLOCKED" &&
+         errorCode !== "USER_ACCOUNT_BLOCKED" &&
          originalRequest && 
          !originalRequest.__isRetry &&
          // !isExcludedEndpoint

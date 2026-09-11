@@ -26,6 +26,7 @@ import { configurePassport } from '@/config/passport.config';
 import passport from 'passport';
 import aiRouter from '@/routes/ai.routes';
 import chatRouter from '@/routes/chat.routes';
+import notificationRouter from '@/routes/notification.routes';
 
 
 const app = express();
@@ -76,6 +77,7 @@ app.use("/api/reviews", reviewRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/wallet', walletRouter);
+app.use('/api/notifications', notificationRouter);
 
 
 

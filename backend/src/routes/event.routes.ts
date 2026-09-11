@@ -11,7 +11,6 @@ import { eventController } from "@/container/dependencies";
 
 
 
-
 export const eventRouter = Router();
 
 

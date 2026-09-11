@@ -1,4 +1,4 @@
-// src/types/email.types.ts
+// backend/src/types/email.types.ts
 
 export interface SendEmailOptions {
   toAddress     : string;
@@ -16,8 +16,11 @@ export enum EmailTemplate {
   VERIFY_EMAIL                  = 'verifyEmail.html',
   WELCOME_USER                  = "welcomeEmail.html",
   BOOKING_CONFIRMATION          = "bookingConfirmation.html",
-  PASSWORD_RESET                = "passwordReset.html"
+  PASSWORD_RESET                = "passwordReset.html",
+
+  NOTIFICATION_GENERIC           = "notificationGeneric.html",
 }
+
 
 
 // _____________________ EMAIL PAYLOAD VARIABLES ____________________________________________
@@ -60,11 +63,26 @@ export interface BookingConfirmationPayload {
 }
 
 
-// 3. Map the Enum to the exact payload interface
+
+// Generic notification shell payload - HEADING + BODY_HTML drive the actual message,
+// CTA_TEXT/CTA_LINK are optional (the template hides the button when CTA_LINK is absent).
+export type NotificationGenericPayload = {
+  USER_NAME     : string;
+  HEADING       : string;
+  BODY_HTML     : string;
+  CTA_TEXT?     : string;
+  CTA_LINK?     : string;
+  CURRENT_YEAR  : number;
+}
+
+
+
+// Map the Enum to the exact payload interface
 export type TemplatePayloadMap = {
   [EmailTemplate.OTP_VERIFICATION]              : OtpEmailPayload;
   [EmailTemplate.VERIFY_EMAIL]                  : VerifyEmailPayload;
   [EmailTemplate.WELCOME_USER]                  : WelcomeEmailPayload;
   [EmailTemplate.BOOKING_CONFIRMATION]          : BookingConfirmationPayload;
   [EmailTemplate.PASSWORD_RESET]                : PasswordResetPayload;
+  [EmailTemplate.NOTIFICATION_GENERIC]          : NotificationGenericPayload;
 };

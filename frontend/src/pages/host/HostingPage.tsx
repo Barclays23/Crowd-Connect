@@ -16,15 +16,20 @@ import { USER_ROLES } from '@/constants/user-system.constants';
 
 const HostingPage = () => {
    const hostEventRef = useRef<HTMLDivElement | null>(null);
-   // const [isLoading, setIsLoading] = useState(false);
    const { user, isAuthenticated, isLoading: isAuthLoading, setUser } = useAuth();
 
-   const hasFetchedRef = useRef(false);
+   const [isProfileFetching, setIsProfileFetching] = useState<boolean>(true);
+   const hasFetchedRef = useRef<boolean>(false);
 
    useEffect(() => {
-      if (isAuthLoading || !isAuthenticated) return;
+      if (isAuthLoading) return;
+      if (!isAuthenticated) {
+         setIsProfileFetching(false);
+         return;
+      }
+      // if (isAuthLoading || !isAuthenticated) return;
 
-      if (user?.role === USER_ROLES.HOST && user?.hostStatus) return;
+      // if (user?.role === USER_ROLES.HOST && user?.hostStatus) return;
 
       if (hasFetchedRef.current) return;
 
@@ -41,13 +46,14 @@ const HostingPage = () => {
             if (errorMessage) toast.error(errorMessage);
 
          } finally {
+            setIsProfileFetching(false);
          }
       };
 
       fetchUserProfile();
 
-   // }, [isAuthenticated, setUser]);
-   }, [isAuthLoading, isAuthenticated, user?.role, user?.hostStatus, setUser]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [isAuthLoading, isAuthenticated, setUser]);
 
 
 
@@ -60,7 +66,7 @@ const HostingPage = () => {
 
 
 
-   if (isAuthLoading) {
+   if (isAuthLoading || isProfileFetching) {
       return <LoadingSpinner1 
          className="min-h-screen"
          message="Loading your host profile"

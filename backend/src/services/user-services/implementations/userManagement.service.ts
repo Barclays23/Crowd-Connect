@@ -36,12 +36,17 @@ import {
     SYSTEM_MESSAGES, 
     USER_MESSAGES 
 } from "@/constants/messages.constants";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_CHANNEL_TYPES, NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES } from "@/types/notification.types";
 
 
 
 
 export class UserManagementService implements IUserManagementService {
-    constructor(private _userRepository: IUserRepository) {}
+    constructor(
+        private readonly _userRepository: IUserRepository,
+        private readonly _notificationDispatcher: INotificationService
+    ) {}
 
 
     async getAllUsers(filters: GetUsersFilter): Promise<GetUsersResult> {
@@ -138,9 +143,13 @@ export class UserManagementService implements IUserManagementService {
             if (!createdUser) {
                 throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, USER_MESSAGES.FAILED_CREATE_USER);
             }
-            
-            // send email to user with temp password and instructions to change it
-            // (email sending logic not implemented here)
+
+            // NOTIFICATION: Inform the user their account was created and provide the temp password and instructions to change it
+            await this._notificationDispatcher.notify({
+                type: NOTIFICATION_TYPES.ACCOUNT_CREATED_BY_ADMIN,
+                recipient: { userId: createdUser.userId, role: createdUser.role as NOTIFICATION_RECIPIENT_ROLES, email: createdUser.email, name: createdUser.name },
+                data: { tempPassword, email: createdUser.email }
+            });
 
             return mapUserEntityToProfileDto(createdUser);
             
@@ -307,6 +316,15 @@ export class UserManagementService implements IUserManagementService {
                 throw new Error(USER_MESSAGES.FAILED_UPDATE_USER_STATUS);
             }
 
+            // NOTIFICATION: Blocked / Unblocked status update
+            const notificationType = newStatus === USER_STATUS.BLOCKED ? NOTIFICATION_TYPES.ACCOUNT_BLOCKED : NOTIFICATION_TYPES.ACCOUNT_UNBLOCKED;
+            
+            await this._notificationDispatcher.notify({
+                type: notificationType,
+                recipient: { userId: targetUserId, role: targetUser.role as NOTIFICATION_RECIPIENT_ROLES, email: targetUser.email, name: targetUser.name },
+                data: {}
+            });
+
             return updatedStatus;
 
         } catch (err: unknown) {
@@ -364,6 +382,17 @@ export class UserManagementService implements IUserManagementService {
                 } catch (cleanupErr) {
                     console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
                 }
+            }
+
+
+            // NOTIFICATION: Warn user right before deletion
+            if (targetUser.email) {
+                await this._notificationDispatcher.notify({
+                    type: NOTIFICATION_TYPES.ACCOUNT_SUSPENDED,
+                    recipient: { userId: targetUser.userId, role: targetUser.role as NOTIFICATION_RECIPIENT_ROLES, email: targetUser.email, name: targetUser.name },
+                    data: { reason: "Account has been permanently deleted by administration." },
+                    channelsOverride: [NOTIFICATION_CHANNEL_TYPES.EMAIL] // <-- Bypasses the matrix and IN_APP db save
+                });
             }
 
             await this._userRepository.deleteUser(targetUserId);

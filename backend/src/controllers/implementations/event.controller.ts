@@ -54,7 +54,7 @@ export class EventController implements IEventController {
                 return;
             }
 
-            const body = req.body;
+            // const body = req.body;
             const currentUserId: string = req.user.userId;
             const imageFile: Express.Multer.File | undefined = req.file;
 
