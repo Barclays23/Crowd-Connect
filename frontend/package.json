@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "doppler run -- vite",
-    "build": "doppler run -- vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview"
