@@ -25,7 +25,6 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ requireAdmin = false }
   }, [isLoading, requireAdmin, user?.role]);
 
 
-
   // Loading Spinner or return null while checking auth status
   if (isLoading) {
     return (

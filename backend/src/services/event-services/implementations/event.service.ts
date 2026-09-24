@@ -1,9 +1,4 @@
 // backend/src/services/event-services/implementations/event.service.ts
-import { 
-    deleteFromCloudinary, 
-    uploadBase64ToCloudinary, 
-    uploadToCloudinary 
-} from "@/config/cloudinary";
 import { HTTP_STATUS } from "@/constants/http-status.constants";
 import { 
     CreateEventRequestDTO, 
@@ -72,10 +67,12 @@ import { mapToJoinOnlineEventResponseDTO } from "@/mappers/streaming.mapper";
 import { JoinOnlineEventResult } from "@/types/streaming.types";
 import { IBookingRepository } from "@/repositories/interfaces/IBookingRepository";
 import { validateOnlineBookingForJoin, validateOnlineEventForJoin } from "@/utils/validations/streamingValidations";
-import { BookingEntity } from "@/entities/booking.entity";
+import { BookingEntity, BookingEntityPopulated } from "@/entities/booking.entity";
 import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
 import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
+import { IFileStorageService } from "@/services/file-storage-services/interfaces/IFileStorageService";
+import { MS_PER_HOUR } from "@/constants/dateAndTime.constants";
 
 
 
@@ -94,67 +91,41 @@ export class EventManagementService implements IEventServices {
         private readonly _eventQueueService     : IEventQueueService,
         private readonly _streamingService      : IStreamingService,
         private readonly _notificationService   : INotificationService,
-        // private _notificationServices: INotificationService,
-        // private _storageService: IFileStorageService,
+        private readonly _storageService        : IFileStorageService
     ) {}
 
     
     async createEvent({ createDto, imageFile }: { createDto: CreateEventRequestDTO; imageFile?: Express.Multer.File;}): Promise<EventResponseDTO> {
-        try {
-            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(createDto.hostRef);
-            validateHostActiveStatus(hostProfile);
+        const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(createDto.hostRef);
+        validateHostActiveStatus(hostProfile);
 
-            validateEventCreate(createDto, imageFile);
+        validateEventCreate(createDto, imageFile);
 
-            let eventPosterUrl!: string;
+        let eventPosterUrl!: string;
 
-            // separate storage-service needed ??
-            // if (imageFile) {
-            //     eventPosterUrl = await this._storageService.uploadFile(imageFile.buffer, 'event-posters');
-            // }
-            // if (imageFile) {
-            //     // Route A: Handle standard file upload buffer stream to S3 / Cloudinary
-            //     finalPosterUrl = await this._storageService.uploadFile(imageFile);
-            // } else if (createDto.aiGeneratedImage) {
-            //     // Route B: Handle Base64 Data URL string from AI generation
-            //     finalPosterUrl = await this._storageService.uploadBase64(createDto.aiGeneratedImage);
-            // }
+        if (imageFile) {
+            eventPosterUrl = await this._storageService.uploadFile(imageFile.buffer, 'event-posters', 'image');
 
-            if (imageFile) {
-                eventPosterUrl = await uploadToCloudinary({
-                    fileBuffer  : imageFile.buffer,
-                    folderPath  : 'event-posters',
-                    fileType    : 'image',
-                });
-            } else if (createDto.aiGeneratedImage) {
-                const imageBuffer: Buffer = convertBase64ToBuffer(createDto.aiGeneratedImage);
+        } else if (createDto.aiGeneratedImage) {
+            const imageBuffer: Buffer = convertBase64ToBuffer(createDto.aiGeneratedImage);
 
-                // eventPosterUrl = createDto.aiGeneratedImage;
-                eventPosterUrl = await uploadToCloudinary({
-                    fileBuffer  : imageBuffer,
-                    folderPath  : 'event-posters',
-                    fileType    : 'image',
-                });
-            }
-                                                 
-            const eventInput: CreateEventInput = mapCreateEventRequestDtoToInput({
-                createDto,
-                eventPosterUrl,
-            });
-
-            const createdEvent: EventEntity = await this._eventRepository.createEvent(eventInput);
-
-            if (!createdEvent) {
-                throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, EVENT_MESSAGES.FAILED_CREATE_EVENT);
-            }
-
-            const newEvent: EventResponseDTO = mapEventEntityToEventResponseDto(createdEvent);
-            
-            return newEvent;
-
-        } catch (error: unknown) {
-            throw error;
+            eventPosterUrl = await this._storageService.uploadFile(imageBuffer, 'event-posters', 'image');
         }
+                                                
+        const eventInput: CreateEventInput = mapCreateEventRequestDtoToInput({
+            createDto,
+            eventPosterUrl,
+        });
+
+        const createdEvent: EventEntity = await this._eventRepository.createEvent(eventInput);
+
+        if (!createdEvent) {
+            throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, EVENT_MESSAGES.FAILED_CREATE_EVENT);
+        }
+
+        const newEvent: EventResponseDTO = mapEventEntityToEventResponseDto(createdEvent);
+        
+        return newEvent;
     }
 
 
@@ -164,19 +135,14 @@ export class EventManagementService implements IEventServices {
         updateEventDto: UpdateEventRequestDTO;
         imageFile?: Express.Multer.File;
     }): Promise<EventResponseDTO> {
-        try {
-            const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(currentUserId);
-            validateHostActiveStatus(hostProfile);
+        const hostProfile: UserProfileEntity | null = await this._userRepository.getUserProfile(currentUserId);
+        validateHostActiveStatus(hostProfile);
 
-            const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
+        const existingEvent: EventEntity | null = await this._eventRepository.getEventById(eventId);
 
-            validateEventUpdateByHost(existingEvent, updateEventDto, currentUserId, imageFile);
+        validateEventUpdateByHost(existingEvent, updateEventDto, currentUserId, imageFile);
 
-            return this._executeEventUpdate(existingEvent, updateEventDto, imageFile);
-
-        } catch (error: unknown) {
-            throw error;
-        }
+        return this._executeEventUpdate(existingEvent, updateEventDto, imageFile);
     }
 
 
@@ -748,17 +714,11 @@ export class EventManagementService implements IEventServices {
         let updatedPosterUrl: string | undefined = undefined;
 
         if (imageFile) {
-            updatedPosterUrl = await uploadToCloudinary({
-                fileBuffer: imageFile.buffer,
-                folderPath: "event-posters",
-                fileType:   "image",
-            });
+            updatedPosterUrl = await this._storageService.uploadFile(imageFile.buffer, 'event-posters', 'image');
+
         } else if (updateEventDto.aiGeneratedImage) {
-            // Upload the base64 AI image to Cloudinary — do NOT store raw base64 as URL.
-            updatedPosterUrl = await uploadBase64ToCloudinary({
-                base64Data: updateEventDto.aiGeneratedImage,
-                folderPath: "event-posters",
-            });
+            // Upload the base64 AI image — do NOT store raw base64 as URL.
+            updatedPosterUrl = await this._storageService.uploadBase64(updateEventDto.aiGeneratedImage, 'event-posters');
         }
 
         const updateEventInput: UpdateEventInput = mapUpdateEventRequestDtoToInput({
@@ -827,7 +787,7 @@ export class EventManagementService implements IEventServices {
                 const gracePeriodEnd = new Date(
                     Math.min(
                         existingEvent.startDateTime.getTime(),
-                        Date.now() + settings.gracePeriodHours * 60 * 60 * 1000
+                        Date.now() + settings.gracePeriodHours * MS_PER_HOUR
                     )
                 );
 
@@ -843,14 +803,14 @@ export class EventManagementService implements IEventServices {
                 // external payment-gateway call per booking here - just a notify() - so parallel
                 // dispatch is safe and won't hit any rate limits. Still worth moving to
                 // EventQueueService/BullMQ if this event has thousands of confirmed bookings.
-                const confirmedBookings = await this._bookingRepository.findConfirmedBookingsForEvent(existingEvent.eventId);
+                const confirmedBookings: BookingEntityPopulated[] = await this._bookingRepository.findConfirmedBookingsForEvent(existingEvent.eventId);
 
                 await Promise.allSettled(
                     confirmedBookings.map((booking) =>
                         this._notificationService.notify({
                             type: NOTIFICATION_TYPES.EVENT_MAJOR_CHANGE,
                             recipient: { userId: booking.user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, name: booking.user.name, email: booking.user.email },
-                            data: { eventTitle: existingEvent.title, summary, gracePeriodEnd },
+                            data: { eventTitle: existingEvent.title, summary, gracePeriodEnd, gracePeriodHours: settings.gracePeriodHours },
                             relatedEntity: { entityType: RELATED_ENTITY_TYPE.EVENT, entityId: existingEvent.eventId },
                         })
                     )
@@ -868,7 +828,8 @@ export class EventManagementService implements IEventServices {
     private async _executeEventDeletion(event: EventEntity): Promise<void> {
         if (event.posterUrl && event.posterUrl.trim() !== '') {
             try {
-                await deleteFromCloudinary({fileUrl: event.posterUrl, resourceType: 'image'});
+                await this._storageService.deleteFile(event.posterUrl, 'image');
+
             } catch (cleanupErr) {
                 console.warn("Failed to delete event poster from Cloudinary:", cleanupErr);
             }

@@ -1,4 +1,5 @@
 // src/services/notification-services/implementations/channels/InAppNotificationChannel.ts
+import { NotificationEntity } from "@/entities/notification.entity";
 import { INotificationRepository } from "@/repositories/interfaces/INotificationRepository";
 import { INotificationChannel } from "@/services/notification-services/interfaces/INotificationChannel";
 import { ISocketService } from "@/services/socket-services/interfaces/ISocketService";
@@ -22,8 +23,9 @@ export class InAppNotificationChannel implements INotificationChannel {
 
 
     async sendNotification(payload: ChannelDispatchPayload): Promise<void> {
+        console.log('payload for InAppNotificationChannel.sendNotification :', payload)
         
-        const savedNotification = await this._notificationRepository.createNotification({
+        const savedNotification: NotificationEntity = await this._notificationRepository.createNotification({
             userId:            payload.recipient.userId,
             role:              payload.recipient.role,
             type:              payload.type,
@@ -32,11 +34,14 @@ export class InAppNotificationChannel implements INotificationChannel {
             RELATED_ENTITY_TYPE: payload.relatedEntity?.entityType,
             relatedEntityId:   payload.relatedEntity?.entityId,
         });
+        console.log('savedNotification :', savedNotification)
 
         this._socketService.emitToUser(
             payload.recipient.userId, 
             "new_notification", // The event name the frontend will listen for
             savedNotification
         );
+
+        console.log('socket emited notification to the user');
     }
 }

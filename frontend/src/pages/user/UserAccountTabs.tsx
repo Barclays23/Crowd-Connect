@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import UserFavourites from '@/components/user/user-favourites/UserFavourites';
 import UserReviews from '@/components/user/user-reviews/UserReviews';
+import { USER_ROLES } from '@/constants/user-system.constants';
 
 
 
@@ -60,22 +61,26 @@ const UserAccountTabs = () => {
    const navigate = useNavigate();
    const { user } = useAuth();
 
-   const isHost = user?.role === 'host';
+   const isHost = user?.role === USER_ROLES.HOST;
+   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
    const currentTab = pathToTab[location.pathname] || 'profile';
 
    const visibleTabs = useMemo(() => {
       return ALL_TABS.filter(tab => {
-         if (!isHost && 
-         (
-            tab.id === 'events' || 
-            tab.id === 'payouts'
-         )) {
+         // Hide Dashboard for Admin (they have their own AdminDashboard)
+         if (tab.id === "dashboard" && isAdmin) {
          return false;
+         }
+
+         // Hide Host-only tabs for non-hosts
+         if (!isHost && (tab.id === "events" || tab.id === "payouts")) {
+            return false;
          }
          return true;
       });
-   }, [isHost]);
+      
+   }, [isHost, isAdmin]);
 
 
    // Prevent direct URL access to restricted tabs (redirect to Profile)

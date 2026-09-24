@@ -75,6 +75,12 @@ import { BookingPaymentFailedStrategy } from "@/services/webhook-strategy-servic
 import { NotificationController } from "@/controllers/implementations/notification.controller";
 import { NotificationQueryService } from "@/services/notification-services/implementations/notification-query.service";
 import { NotificationRepository } from "@/repositories/implementations/notification.repository";
+import { AdminDashboardController } from "@/controllers/implementations/adminDashboard.controller";
+import { UserDashboardController } from "@/controllers/implementations/userDashboard.controller";
+import { DashboardService } from "@/services/dashboard.services/implementations/dashboard.service";
+import { DashboardRepository } from "@/repositories/implementations/dashboard.repository";
+import { CloudinaryStorageService } from "@/services/file-storage-services/implementations/CloudinaryStorageService";
+// import { S3StorageService } from "@/services/file-storage-services/implementations/S3StorageService";
 
 
 
@@ -157,7 +163,8 @@ const checkinRepo       = new CheckinRepository();
 const transactionRepo   = new TransactionRepository();
 const payoutRepo        = new PayoutRepository();
 const settingsRepo      = new PlatformSettingsRepository();
-const notificationRepo  = new NotificationRepository()
+const notificationRepo  = new NotificationRepository();
+const dashboardRepo     = new DashboardRepository();
 
 
 const faqKnowledgeRepo  = new MongoFaqRepository();  //  which ever the FaqKnowledgeRepository used
@@ -185,6 +192,10 @@ const profanityFilter   = new GeminiProfanityFilterService(genAI);
 // const profanityFilter   = new OpenAIProfanityFilterService(openAI);
 // const profanityFilter   = new BadWordsFilterService();
 
+// _________ FILE UPLOAD SERVICES ___________________
+const storageService        = new CloudinaryStorageService();
+// const storageService        = new S3StorageService();
+
 
 
 
@@ -201,11 +212,11 @@ const walletService             = new WalletService(userRepo, transactionRepo);
 const settingsService           = new PlatformSettingsService(settingsRepo, faqIngestionService);
 const aiChatService             = new AiChatService(faqKnowledgeRepo, aiChatProvider);
 const checkinService            = new CheckinService(checkinRepo, eventRepo);
-const userProfileService        = new UserProfileService(userRepo);
-const userManagementServices    = new UserManagementService(userRepo, notificationDispatcher);
-const hostManagementService     = new HostManagementService(userRepo, notificationDispatcher);
+const userProfileService        = new UserProfileService(userRepo, storageService);
+const userManagementServices    = new UserManagementService(userRepo, notificationDispatcher, storageService);
+const hostManagementService     = new HostManagementService(userRepo, notificationDispatcher, storageService);
 const notificationQueryService  = new NotificationQueryService(notificationRepo)
-
+const dashboardServices         = new DashboardService(dashboardRepo, settingsService)
 
 
 
@@ -225,8 +236,8 @@ const recoveryService       = new AuthRecoveryService(userRepo, cacheService, ma
 const passwordService       = new PasswordService(userRepo, cacheService)
 
 const bookingService        = new BookingService(bookingRepo, eventRepo, userRepo, paymentService, ticketService, walletService, cacheService, settingsService, notificationDispatcher);
-const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, userRepo, bookingService, cacheService, settingsService, eventQueueService, streamingService, notificationDispatcher);
-const payoutService         = new PayoutService(payoutRepo, eventRepo, settingsService, walletService, notificationDispatcher);
+const eventService          = new EventManagementService(eventRepo, bookingRepo, checkinRepo, userRepo, bookingService, cacheService, settingsService, eventQueueService, streamingService, notificationDispatcher, storageService);
+const payoutService         = new PayoutService(payoutRepo, eventRepo, userRepo, settingsService, walletService, notificationDispatcher, storageService);
 const reviewService         = new ReviewService(reviewRepo, bookingRepo, eventRepo, userRepo, profanityFilter);
 
 
@@ -291,3 +302,5 @@ export const userController             = new UserController(userProfileService,
 export const walletController           = new WalletController(walletService);
 export const webhookController          = new WebhookController(webhookService, paymentProvidersMap);
 export const notificationController     = new NotificationController(notificationQueryService);
+export const adminDashboardController   = new AdminDashboardController(dashboardServices)
+export const userDashboardController    = new UserDashboardController(dashboardServices)

@@ -107,6 +107,28 @@ export interface GetPublicEventsParams {
 
 
 
+export interface CreateEventPayload {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+}
+
+export interface UpdateEventPayload {
+  eventId: string;
+  formData: FormData;
+}
+
+export interface CancelEventPayload {
+  cancelReason: string;
+}
+
+export interface SuspendEventPayload {
+  reason: string;
+}
+
+
+
 
 // RESPONSE PAYLOAD TYPES ------------------------------------------------------------
 
@@ -127,4 +149,12 @@ export interface OrganiserEventsData {
 export interface GetOrganiserEventsResult {
   eventsData: OrganiserEventsData[];
   pagination: IPagination;
+}
+
+
+
+export interface TrendingEventResponse {
+  id: string;
+  title: string;
+  views: number;
 }

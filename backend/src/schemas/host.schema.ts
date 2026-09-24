@@ -2,18 +2,6 @@
 import { z } from "zod";
 
 
-// move to constants
-export const MAX_FILE_SIZE       = 5 * 1024 * 1024; // 5MB
-export const MAX_DOCUMENT_SIZE   = 5 * 1024 * 1024; // 5MB
-export const MAX_LOGO_SIZE       = 2 * 1024 * 1024; // 2MB
-
-const ALLOWED_FILE_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-];
-
 
 /* ---------- Base Fields ---------- */
 export const organizationNameBase = z
@@ -83,22 +71,6 @@ export const organizationDescriptionBase = z
    .min(50, "Description must be at least 50 characters to give attendees a good idea of who you are")
    .max(500, "Description cannot exceed 500 characters");
 
-
-
-
-// export const hostDocumentBase = z
-//    .instanceof(File, {
-//       message: "Business document/certificate is required",
-//    })
-//    // .optional()
-//    .refine(
-//       (file) => !file || file.size <= MAX_FILE_SIZE,
-//       `Certificate must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
-//    )
-//    .refine(
-//       (file) => !file || ALLOWED_FILE_TYPES.includes(file.type),
-//       "Certificate must be a PDF, JPG, or PNG file"
-//    );
 
 
 

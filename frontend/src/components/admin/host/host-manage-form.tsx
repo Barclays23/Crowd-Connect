@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { X, Upload, FileText, CheckCircle, AlertCircle, Phone, 
+import { X, Upload, FileText, CheckCircle, Phone, 
    Mail, Camera, Loader2, Building2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
@@ -20,16 +20,14 @@ import { getInitials } from "@/utils/namingConventions";
 import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import { ButtonLoader } from "../../shared/ButtonLoader";
 import { 
-   ALLOWED_DOCUMENT_TYPES, 
    HostApplySchema, 
    HostReapplySchema, 
-   MAX_FILE_SIZE, 
    type HostUpgradeFormData 
 } from "@/schemas/host.schema";
 import { hostServices } from "@/services/hostServices";
 import { Badge } from "../../ui/badge";
 import type { UserState } from "@/types/user.types";
-import { isPDF, getFileNameFromFileOrUrl, getFileExtension } from "@/utils/fileUtils";
+import { isPDF, getFileNameFromFileOrUrl } from "@/utils/fileUtils";
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -61,7 +59,6 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
    // Document states
    const [hostDocument, setHostDocument] = useState<File | null>(null);
    const [documentPreview, setDocumentPreview] = useState<string>("");
-   const [documentError, setDocumentError] = useState<string>("");
    
    // Convert Mode Logo states
    const [hostLogo, setHostLogo] = useState<File | null>(null);
@@ -70,7 +67,6 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
    const [imageLoadError, setImageLoadError] = useState(false);
    const [loading, setLoading] = useState(false);
    const [isUpdatingLogo, setIsUpdatingLogo] = useState(false);
-   const [numPages, setNumPages] = useState<number | null>(null);
    const [pdfError, setPdfError] = useState<string>('');
 
 
@@ -164,10 +160,10 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
       }
    };
 
-   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-      setNumPages(numPages);
+   const onDocumentLoadSuccess = () => {
       setPdfError('');
    };
+
    const onDocumentLoadError = (error: Error) => {
       console.error('PDF load error:', error);
       setPdfError('Failed to load PDF preview');
@@ -179,8 +175,7 @@ export function HostManageForm({ host, mode, onSuccess, onCancel }: HostManageFo
          setHostDocument(null);
          setDocumentPreview(isEditMode && host?.certificateUrl ? "" : "");
          if (fileInputRef.current) fileInputRef.current.value = "";
-
-         form.setValue("hostDocument", undefined as any, { shouldValidate: true });
+         form.setValue("hostDocument", undefined as unknown as File, { shouldValidate: true });
       }
    };
 

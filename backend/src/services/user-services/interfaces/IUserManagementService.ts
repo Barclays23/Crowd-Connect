@@ -7,7 +7,6 @@ import {
     UserProfileResponseDto,
 } from "@/dtos/user.dto";
 import { UserStatus } from "@/constants/user-system.constants";
-import { UserEntity } from "@/entities/user.entity";
 
 
 

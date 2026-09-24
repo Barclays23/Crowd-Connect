@@ -1,55 +1,16 @@
 import axiosInstance from "@/config/axios";
 import { API_ENDPOINTS } from "@/constants/apiEndpoints.constants";
 import type { ApiResponse } from "@/types/common.types";
-import type { GetOrganiserEventsResult, GetPublicEventsParams, IEventState, OrganiserEventsData, UpdateEventStatusPayload } from "@/types/event.types";
+import type { 
+   CancelEventPayload,
+   GetPublicEventsParams, 
+   IEventState, 
+   OrganiserEventsData, 
+   SuspendEventPayload, 
+   UpdateEventPayload, 
+   UpdateEventStatusPayload 
+} from "@/types/event.types";
 import type { JoinOnlineEventResponse } from "@/types/streaming.types";
-
-
-
-// REQUEST/PAYLOADS
-
-export interface CreateEventPayload {
-   title: string;
-   description: string;
-   date: string;
-   location: string;
-}
-
-export interface UpdateEventPayload {
-   eventId: string;
-   formData: FormData;
-}
-
-export interface CancelEventPayload {
-   cancelReason: string;
-}
-
-export interface SuspendEventPayload {
-   reason: string;
-}
-
-
-
-// RESPONSES
-
-export interface EventResponse {
-   id: string;
-   title: string;
-   description: string;
-   date: string;
-   location: string;
-   hostId: string;
-   createdAt: string;
-}
-
-
-export interface TrendingEventResponse {
-   id: string;
-   title: string;
-   views: number;
-}
-
-
 
 
 

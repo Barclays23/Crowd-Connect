@@ -13,7 +13,7 @@ interface EventMapPickerProps {
    setSelectedPosition: (pos: { lat: number; lng: number }) => void;
    setSelectedPlaceId: (id: string | null) => void;
    confirmMapSelection: () => void;
-   mapOptions: any;
+   mapOptions: google.maps.MapOptions;
 }
 
 export const EventMapPicker = ({

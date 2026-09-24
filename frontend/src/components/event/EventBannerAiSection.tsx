@@ -10,6 +10,7 @@ import { FieldError } from "@/components/shared/FieldError";
 import { generatePosterSchema } from "@/schemas/ai.schema";
 import { aiServices } from "@/services/aiServices";
 import type { EventFormValues } from "@/schemas/event.schema";
+import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 
 interface Props {
   existingImageUrl?: string;
@@ -66,8 +67,9 @@ export const EventBannerAiSection = ({ existingImageUrl, isGeneratingAI, setIsGe
         setValue("uploadedImage", null);
         toast.success(response.message);
       }
-    } catch (error: any) {
-      toast.error("Failed to generate AI poster.");
+    } catch (error: unknown) {
+      const errorMessage = getApiErrorMessage(error);
+      toast.error(errorMessage || "Failed to generate AI poster.");
     } finally {
       setIsGeneratingAI(false);
     }

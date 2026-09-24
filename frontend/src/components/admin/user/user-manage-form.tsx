@@ -181,8 +181,7 @@ export function UserManageForm({ user, onSuccess, onCancel, onSubmitting }: User
             <LoadingSpinner1 
               size="lg"
               message={loadingMessage} 
-              // subMessage={loadingSubMessage}
-              subMessage=''
+              subMessage={loadingSubMessage}
             />
           </div>
         )}

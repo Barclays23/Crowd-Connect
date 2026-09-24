@@ -10,6 +10,12 @@ export interface IPagination {
 }
 
 
+export interface IPaginationQueryParams {
+  page?: number;
+  limit?: number;
+}
+
+
 
 // Standardized Generic Wrapper for all API interactions
 export interface ApiResponse<T = unknown> {

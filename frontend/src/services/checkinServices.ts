@@ -18,7 +18,6 @@ export const checkinServices = {
         const { eventId, qrToken, entryCount } = payload;
 
         const res = await axiosInstance.post<ApiResponse<CheckInResult>>(
-            // `/api/event/${eventId}/checkin`,
             API_ENDPOINTS.CHECKIN.QR_SCAN(eventId),
             { qrToken, entryCount },
             { withCredentials: true }

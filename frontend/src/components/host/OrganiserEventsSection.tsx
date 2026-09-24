@@ -1,7 +1,7 @@
 // src/components/host/OrganiserEventsSection.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { eventServices } from "@/services/eventServices";
 import OrganiserEventCard from "@/components/event/OrganiserEventCard";

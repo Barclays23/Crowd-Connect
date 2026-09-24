@@ -27,7 +27,6 @@ import { hostServices } from "@/services/hostServices";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../shared/LoadingSpinner1";
 import { ButtonLoader } from "../shared/ButtonLoader";
-import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { UserState } from "@/types/user.types";
 import { TermsModal } from "@/components/shared/TermsModal";
@@ -49,7 +48,6 @@ const HostUpgradeForm = ({ isReapply = false }: HostUpgradeFormProps) => {
    const [logoPreview, setLogoPreview] = useState<string>("");
 
    const { setUser, user } = useAuth();
-   const navigate = useNavigate();
 
 
    const {

@@ -24,7 +24,7 @@ export class NotificationRepository extends BaseRepository<INotificationDocument
 
 
     async createNotification(input: CreateNotificationInput): Promise<NotificationEntity> {
-        console.log('NotificationRepository.createNotification : creating the notification')
+        console.log('creating the notification in database.')
         const doc: INotificationDocument = await this.createOne({
             userRef             : new Types.ObjectId(input.userId),
             role                : input.role,
@@ -47,9 +47,6 @@ export class NotificationRepository extends BaseRepository<INotificationDocument
             this.countDocuments({ userRef: userId }),
             this.countDocuments({ userRef: userId, isRead: false }),
         ]);
-
-        console.log('totalCount :', totalCount, 'unreadCount :', unreadCount)
-        console.log('user notifications :', docs.entries.toString());
 
         return {
             notifications: docs.map((doc) => mapNotificationDocToEntity(doc)),

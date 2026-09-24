@@ -1,6 +1,7 @@
 // src/services/notification-services/implementations/NotificationContentProvider.ts
 import { INotificationContentProvider } from "@/services/notification-services/interfaces/INotificationContentProvider";
 import { 
+    BookingConfirmedNotificationData,
     NOTIFICATION_TYPES, 
     NotificationContent, 
     NotificationRecipient 
@@ -9,6 +10,7 @@ import {
     EmailTemplate, 
     NotificationGenericPayload 
 } from "@/types/email.types";
+import { generateBookingTicketHtml } from "@/templates/bookingTicketEmail.template";
 
 
 
@@ -16,7 +18,7 @@ import {
 
 // Every builder receives the recipient (for USER_NAME) and the call-site's data bag,
 // and must return a fully-typed NotificationContent - no inferred/implicit shape.
-type ContentBuilder = (recipient: NotificationRecipient, data: Record<string, unknown>) => NotificationContent;
+type ContentBuilder = (recipient: NotificationRecipient, data: unknown) => NotificationContent;
 
 
 // Wires the generic template + payload so individual builders don't repeat this boilerplate.
@@ -174,7 +176,12 @@ const CONTENT_BUILDERS: Partial<Record<NOTIFICATION_TYPES, ContentBuilder>> = {
 
     // ── Booking ───────────────────────────────────────────────────
     [NOTIFICATION_TYPES.BOOKING_CONFIRMED]: (recipient, data): NotificationContent => {
-        const { eventTitle, ticketNo, quantity } = data as { eventTitle: string; ticketNo: string; quantity: number };
+        const typedData = data as BookingConfirmedNotificationData;
+        
+        const bookingTicketHtml = generateBookingTicketHtml(recipient, typedData);
+
+        const { eventTitle, ticketNo, quantity } = typedData;
+        
         return {
             title:        "Booking confirmed",
             inAppMessage: `Your booking for "${eventTitle}" is confirmed. Ticket No: ${ticketNo} (${quantity} ticket(s)).`,
@@ -183,7 +190,9 @@ const CONTENT_BUILDERS: Partial<Record<NOTIFICATION_TYPES, ContentBuilder>> = {
             smsText:      `CrowdConnect: Booking confirmed for ${eventTitle}. Ticket No: ${ticketNo}.`,
             whatsappText: `Your booking for *${eventTitle}* is confirmed. Ticket No: ${ticketNo} (${quantity} ticket(s)).`,
             ...genericEmail(recipient, "Your booking is confirmed",
-                `<p>Your booking for <strong>${eventTitle}</strong> is confirmed.</p><p>Ticket No: ${ticketNo} (${quantity} ticket(s))</p>`),
+                `<p style="color: #4b5563; font-size: 16px;">You're all set! Present the QR code below when requested.</p>
+                 ${bookingTicketHtml}`
+            ),
         };
     },
 
@@ -276,8 +285,9 @@ const CONTENT_BUILDERS: Partial<Record<NOTIFICATION_TYPES, ContentBuilder>> = {
     },
 
     [NOTIFICATION_TYPES.EVENT_MAJOR_CHANGE]: (recipient, data): NotificationContent => {
-        const { eventTitle, summary, gracePeriodEnd } = data as { eventTitle: string; summary: string; gracePeriodEnd: Date };
+        const { eventTitle, summary, gracePeriodEnd, gracePeriodHours } = data as { eventTitle: string; summary: string; gracePeriodEnd: Date, gracePeriodHours: number };
         const deadline = new Date(gracePeriodEnd).toLocaleString();
+
         return {
             title:        "Event details changed",
             inAppMessage: `"${eventTitle}" has changed: ${summary}. You can cancel for a full refund until ${deadline}.`,
@@ -287,7 +297,7 @@ const CONTENT_BUILDERS: Partial<Record<NOTIFICATION_TYPES, ContentBuilder>> = {
             whatsappText: `*${eventTitle}* has changed:\n${summary}\n\nYou can cancel for a full refund until ${deadline}.`,
             ...genericEmail(recipient, "Something changed about this event",
                 `<p><strong>${eventTitle}</strong> has changed: ${summary}</p>` +
-                `<p>You can cancel for a full refund until <strong>${deadline}</strong>.</p>`),
+                `<p>You can cancel you booking for a full refund within <strong>${gracePeriodHours} hours</strong> (until <strong>${deadline}</strong>).</p>`),
         };
     },
 
@@ -330,7 +340,8 @@ const CONTENT_BUILDERS: Partial<Record<NOTIFICATION_TYPES, ContentBuilder>> = {
     },
 
     [NOTIFICATION_TYPES.PAYOUT_REJECTED]: (recipient, data): NotificationContent => {
-        const { eventTitle, rejectionReason } = data as { eventTitle: string; rejectionReason: string };
+        const { eventTitle, reason: rejectionReason } = data as { eventTitle: string; reason: string };
+
         return {
             title:        "Payout request rejected",
             inAppMessage: `Your payout request for "${eventTitle}" was rejected. Reason: ${rejectionReason}`,
@@ -419,7 +430,7 @@ export class NotificationContentProvider implements INotificationContentProvider
     buildNotificationContent(
         type: NOTIFICATION_TYPES,
         recipient: NotificationRecipient,
-        data: Record<string, unknown>
+        data: unknown
     ): NotificationContent {
         const builder: ContentBuilder | undefined = CONTENT_BUILDERS[type];
         console.log('notification content builder :', builder);

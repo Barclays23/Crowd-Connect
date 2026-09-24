@@ -101,7 +101,7 @@ function Login() {
     },
 
     
-    [login, navigate, fromPath, openBookingAfterLogin]
+    [login, navigate, fromPath, openBookingAfterLogin, location.pathname]
   );
 
 

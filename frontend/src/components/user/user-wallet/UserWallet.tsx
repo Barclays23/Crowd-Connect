@@ -1,10 +1,8 @@
 // frontend/src/components/user/user-wallet/UserWallet.tsx
-
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Wallet, TrendingUp, TrendingDown, ArrowDownToLine } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge }   from "@/components/ui/badge";
-import { Button }  from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserPagination }  from "@/components/shared/UserPagination";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
@@ -25,7 +23,6 @@ import {
   getTransactionStatusVariant, 
   TRANSACTION_TYPE_LABELS 
 } from "@/utils/UI.utils";
-import { useAuth } from "@/contexts/AuthContext";
 import { toTitleCase } from "@/utils/namingConventions";
 import { 
   TRANSACTION_DIRECTION, 
@@ -59,7 +56,6 @@ function UserWallet() {
 
   const itemsPerPage = 10;
   const hasFetched   = useRef(false);
-  const {user} = useAuth()
 
 
   // ── Initial overview fetch (balance + last 10) ──────────────────────────
@@ -179,10 +175,6 @@ function UserWallet() {
           <Wallet className="h-6 w-6" />
           My Wallet
         </h2>
-        {/* <Button variant="primaryOutline" size="sm" className="flex items-center gap-2">
-          <ArrowDownToLine className="h-4 w-4" />
-          Withdraw
-        </Button> */}
       </div>
 
       {/* Summary cards */}

@@ -62,23 +62,9 @@ export const bookingServices = {
 
       const queryString: string  = searchParams.toString();
       const endPoint: string     = `${API_ENDPOINTS.BOOKING.MY_BOOKINGS}?${queryString}`;
-      // const endPoint = queryString 
-      //    ? `${API_ENDPOINTS.BOOKING.MY_BOOKINGS}?${queryString}` 
-      //    : API_ENDPOINTS.BOOKING.MY_BOOKINGS;
 
       const response = await axiosInstance.get<ApiResponse<IBookingState[]>>(
          endPoint,
-         { withCredentials: true }
-      );
-      return response.data;
-   },
-
-
-
-   // used anywhere?
-   getBookingDetails: async (bookingId: string): Promise<ApiResponse<IBookingState>> => {
-      const response = await axiosInstance.get<ApiResponse<IBookingState>>(
-         API_ENDPOINTS.BOOKING.DETAILS(bookingId),
          { withCredentials: true }
       );
       return response.data;
@@ -99,9 +85,6 @@ export const bookingServices = {
 
       const queryString: string  = searchParams.toString();
       const endPoint: string     = `${API_ENDPOINTS.ADMIN.BOOKINGS}?${queryString}`;
-      // const endPoint = queryString 
-      //    ? `${API_ENDPOINTS.ADMIN.BOOKINGS}?${queryString}` 
-      //    : API_ENDPOINTS.ADMIN.BOOKINGS;
 
       const response = await axiosInstance.get<ApiResponse<IBookingState[]>>(
          endPoint,

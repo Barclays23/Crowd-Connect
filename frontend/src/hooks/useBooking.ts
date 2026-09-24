@@ -79,7 +79,11 @@ export function useBooking({ onSuccess, onError }: UseBookingOptions = {}) {
                 paymentMethod: paymentMethod
             });
 
-            const response: ApiResponse<InitiateBookingResponse> = await bookingServices.initiateBooking(eventId, selectedQuantity, paymentMethod);
+            const response: ApiResponse<InitiateBookingResponse> = await bookingServices.initiateBooking(
+                eventId, 
+                validatedData.quantity, 
+                validatedData.paymentMethod
+            );
             // console.log('response from initiateBooking :', response);
             logger.info("response from initiateBooking :", response);
 

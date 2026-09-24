@@ -60,7 +60,7 @@ import { TICKET_TYPES } from "@/constants/event.constants";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
-import { NOTIFICATION_TYPES, NOTIFICATION_RECIPIENT_ROLES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
+import { NOTIFICATION_TYPES, NOTIFICATION_RECIPIENT_ROLES, RELATED_ENTITY_TYPE, NotifyRequest } from "@/types/notification.types";
 
 
 
@@ -82,41 +82,35 @@ export class BookingService implements IBookingService {
 
 
    async initiateBooking(bookingReqDto: BookingOrderRequestDTO): Promise<InitiateBookingResponseDTO> {
-      try {
-         const { eventId, userId, quantity: newBookingQty, paymentMethod } = bookingReqDto;
+      const { eventId, userId, quantity: newBookingQty, paymentMethod } = bookingReqDto;
 
-         console.log('paymentMethod :', paymentMethod)
+      console.log('paymentMethod :', paymentMethod)
 
-         const user: UserEntity | null     = await this._userRepository.getUserById(userId);
-         const event: EventEntity | null   = await this._eventRepository.getEventById(eventId);
-         const existingTicketCount: number = await this._bookingRepository.sumConfirmedTicketsForUser(userId, eventId);
+      const user: UserEntity | null     = await this._userRepository.getUserById(userId);
+      const event: EventEntity | null   = await this._eventRepository.getEventById(eventId);
+      const existingTicketCount: number = await this._bookingRepository.sumConfirmedTicketsForUser(userId, eventId);
 
-         const ticketsLeft: number         = event ? (event.capacity - event.soldTickets) : 0;
+      const ticketsLeft: number         = event ? (event.capacity - event.soldTickets) : 0;
 
-         validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
+      validateInitiateBooking(user, event, bookingReqDto, existingTicketCount, ticketsLeft);
 
-         const totalAmount: number  = event.ticketPrice * newBookingQty; // ₹0 for free events
-         const ticketNo: string     =  this._ticketService.generateTicketNo();
+      const totalAmount: number  = event.ticketPrice * newBookingQty; // ₹0 for free events
+      const ticketNo: string     =  this._ticketService.generateTicketNo();
 
-         if (paymentMethod === PAYMENT_METHODS.NONE || event!.ticketType === TICKET_TYPES.FREE) {
-            // from userEntity, only userId is used inside this function. I think no need to send full userEntity
-            return await this._processFreeBooking(user!, event!, newBookingQty, ticketNo);
-         }
-         if (paymentMethod === PAYMENT_METHODS.WALLET) {
-            // from userEntity, only userId and walletBalance is used inside this function. I think no need to send full userEntity
-            return await this._processWalletBooking(user!, event!, newBookingQty, totalAmount, ticketNo);
-         }
-         if (paymentMethod === PAYMENT_METHODS.ONLINE) {
-            // from userEntity, only userId is used inside this function. I think no need to send full userEntity
-            return await this._processOnlineBooking(user!, event!, newBookingQty, totalAmount, ticketNo);
-         }
-
-         throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.INVALID_PAYMENT_METHOD);
-
-
-      } catch (error: unknown) {
-         throw error;
+      if (paymentMethod === PAYMENT_METHODS.NONE || event!.ticketType === TICKET_TYPES.FREE) {
+         // from userEntity, only userId is used inside this function. I think no need to send full userEntity
+         return await this._processFreeBooking(user!, event!, newBookingQty, ticketNo);
       }
+      if (paymentMethod === PAYMENT_METHODS.WALLET) {
+         // from userEntity, only userId and walletBalance is used inside this function. I think no need to send full userEntity
+         return await this._processWalletBooking(user!, event!, newBookingQty, totalAmount, ticketNo);
+      }
+      if (paymentMethod === PAYMENT_METHODS.ONLINE) {
+         // from userEntity, only userId is used inside this function. I think no need to send full userEntity
+         return await this._processOnlineBooking(user!, event!, newBookingQty, totalAmount, ticketNo);
+      }
+
+      throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.INVALID_PAYMENT_METHOD);
    }
 
 
@@ -149,185 +143,146 @@ export class BookingService implements IBookingService {
 
    // called by both webhook strategy and booking controller (for online payment & booking confirmation)
    async verifyPaymentAndConfirmBooking(userId: string, dto: VerifyPaymentRequestDTO, skipSignatureCheck?: boolean): Promise<BookingResponseDTO>{
-      try {
-         const { paymentOrderId, paymentId, signature } = dto;
+      const { paymentOrderId, paymentId, signature } = dto;
 
-         const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(paymentOrderId);
+      const booking: BookingEntity | null = await this._bookingRepository.getBookingByOrderId(paymentOrderId);
 
-         if (!booking) {
-            throw createHttpError(HTTP_STATUS.NOT_FOUND, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
-         }
-
-         // Skip signature check if called from Webhook (already verified securely)
-         // ────────────────────────────────────────────────────────────────────────
-         // THE IDEMPOTENCY CHECK FIRST (that makes Frontend and Webhooks work together)
-         // If the webhook arrives 5 seconds later, but the frontend already confirmed this
-         // we just fetch and return the settings and the already-confirmed booking.
-         // ────────────────────────────────────────────────────────────────────────
-         if (booking.bookingStatus === BOOKING_STATUSES.CONFIRMED) {
-            console.log(`Booking ${booking.bookingId} is already confirmed by frontend api. Returning existing data.`);
-
-            const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
-               this._bookingRepository.getBookingById(booking.bookingId),
-               this._settingsService.getOperationalSettingsDomain(),
-            ]);
-
-            return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
-         }
-
-         // VALIDATION ONLY AFTER IDEMPOTENCY
-         validateVerifyAndConfirmPayment(booking, userId);
-
-         // Verify the signature if it came from the frontend api. 
-         // Skip it if it came from the Webhook (because the webhook router already checked the hash).
-         if (!skipSignatureCheck) {
-            const isValidSignature: boolean = this._paymentService.verifyPaymentSignature(paymentOrderId, paymentId, signature);
-            if (!isValidSignature) {
-               throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.PAYMENT_VERIFICATION_FAILED);
-            }
-         }
-
-         // Process the ACID transaction, generate the QR code, update event stats, and credit admin wallet.
-         return await this._processBookingConfirmation(booking!, userId, paymentId, signature);
-
-      } catch (error: unknown) {
-         throw error;
+      if (!booking) {
+         throw createHttpError(HTTP_STATUS.NOT_FOUND, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
       }
+
+      // Skip signature check if called from Webhook (already verified securely)
+      // ────────────────────────────────────────────────────────────────────────
+      // THE IDEMPOTENCY CHECK FIRST (that makes Frontend and Webhooks work together)
+      // If the webhook arrives 5 seconds later, but the frontend already confirmed this
+      // we just fetch and return the settings and the already-confirmed booking.
+      // ────────────────────────────────────────────────────────────────────────
+      if (booking.bookingStatus === BOOKING_STATUSES.CONFIRMED) {
+         console.log(`Booking ${booking.bookingId} is already confirmed by frontend api. Returning existing data.`);
+
+         const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
+            this._bookingRepository.getBookingById(booking.bookingId),
+            this._settingsService.getOperationalSettingsDomain(),
+         ]);
+
+         return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
+      }
+
+      // VALIDATION ONLY AFTER IDEMPOTENCY
+      validateVerifyAndConfirmPayment(booking, userId);
+
+      // Verify the signature if it came from the frontend api. 
+      // Skip it if it came from the Webhook (because the webhook router already checked the hash).
+      if (!skipSignatureCheck) {
+         const isValidSignature: boolean = this._paymentService.verifyPaymentSignature(paymentOrderId, paymentId, signature);
+         if (!isValidSignature) {
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, PAYMENT_MESSAGES.PAYMENT_VERIFICATION_FAILED);
+         }
+      }
+
+      // Process the ACID transaction, generate the QR code, update event stats, and credit admin wallet.
+      return await this._processBookingConfirmation(booking!, userId, paymentId, signature);
    }
    
 
 
    // for user side bookings list
    async getMyBookings(userId: string, filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
-      try {
-         console.log("filters in BookingService.getMyBookings:", filters);
+      const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
+         this._bookingRepository.findBookings({ ...filters, userId }),
+         this._settingsService.getOperationalSettingsDomain(),
+      ]);
 
-         const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
-            this._bookingRepository.findBookings({ ...filters, userId }),
-            this._settingsService.getOperationalSettingsDomain(),
-         ]);
-
-         return {
-            bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
-            pagination: result.pagination,
-         };
-
-      } catch (error: unknown) {
-         throw error;
-      }
+      return {
+         bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
+         pagination: result.pagination,
+      };
    }
 
 
 
    // for both admin side bookings & event-bookings/attendees list
    async getBookingsList(filters: GetBookingsFilter): Promise<GetBookingsResponseDTO> {
-      try {
-         console.log("filters in BookingService.getBookingsList:", filters);
+      const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
+         this._bookingRepository.findBookings(filters),
+         this._settingsService.getOperationalSettingsDomain(),
+      ]);
 
-         const [result, settings]: [GetBookingsResult, OperationalSettingsEntity] = await Promise.all([
-            this._bookingRepository.findBookings(filters),
-            this._settingsService.getOperationalSettingsDomain(),
-         ]);
-
-         return {
-            bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
-            pagination: result.pagination,
-         };
-
-      } catch (error: unknown) {
-         throw error;
-      }
+      return {
+         bookings:   result.bookings.map(bkg => mapBookingEntityToResponseDTO(bkg, settings)),
+         pagination: result.pagination,
+      };
    }
 
 
    async getBookingDetails(bookingId: string, requestingUserId: string, role: UserRole): Promise<BookingResponseDTO> {
-      try {
-         const [booking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
-            this._bookingRepository.getBookingById(bookingId),
-            this._settingsService.getOperationalSettingsDomain(),
-         ]);
+      const [booking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
+         this._bookingRepository.getBookingById(bookingId),
+         this._settingsService.getOperationalSettingsDomain(),
+      ]);
 
-         if (!booking) {
-            throw createHttpError(HTTP_STATUS.NOT_FOUND, "Booking not found");
-         }
-         if (role !== USER_ROLES.ADMIN && booking.user.userId !== requestingUserId) {
-            throw createHttpError(HTTP_STATUS.FORBIDDEN, "You are not authorised to view this booking");
-         }
-
-         return mapBookingEntityToResponseDTO(booking, settings);
-
-      } catch (error: unknown) {
-         throw error;
+      if (!booking) {
+         throw createHttpError(HTTP_STATUS.NOT_FOUND, BOOKING_MESSAGES.BOOKING_NOT_FOUND);
       }
+      if (role !== USER_ROLES.ADMIN && booking.user.userId !== requestingUserId) {
+         throw createHttpError(HTTP_STATUS.FORBIDDEN, "You are not authorised to view this booking");
+      }
+
+      return mapBookingEntityToResponseDTO(booking, settings);
    }
 
 
    async cancelBookingByUser(bookingId: string, userId: string, cancelReason: string): Promise<void> {
-      try {
-         const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);
-         const context: RefundContext = 'user';
-
-         validateBookingCancelByUser(booking, userId);
-
-         console.log('cancelReason :', cancelReason);
-
-         await this._processRefundAndCancelBooking(booking!, cancelReason, context);
-
-      } catch (error: unknown) {
-         throw error;
-      }
+      const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);
+      const context: RefundContext = 'user';
+      
+      validateBookingCancelByUser(booking, userId);
+      
+      console.log('cancelReason :', cancelReason);
+      
+      await this._processRefundAndCancelBooking(booking!, cancelReason, context);
    }
 
    // cancel booking by the authority (admin/ host)
    async cancelBookingByAuthority(bookingId: string, cancelReason: string): Promise<void> {
-      try {
-         const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);
-         const context: RefundContext = 'authority';
+      const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);
+      const context: RefundContext = 'authority';
 
-         validateBookingCancelByAuthority(booking);
+      validateBookingCancelByAuthority(booking);
 
-         await this._processRefundAndCancelBooking(booking, `Admin Cancellation: ${cancelReason}`, context);
-
-      } catch (error: unknown) {
-         throw error;
-      }
+      await this._processRefundAndCancelBooking(booking, `Admin Cancellation: ${cancelReason}`, context);
    }
 
 
    async cancelAllBookingsForEvent(eventId: string, cancelReason: string): Promise<void> {
-      try {
-         const [confirmedBookings, pendingBookings] = await Promise.all([
-            this._bookingRepository.findConfirmedBookingsForEvent(eventId), // confirmed + attended ?? (not cancelled, failed)
-            this._bookingRepository.findPendingBookingsForEvent(eventId),
-         ]);
+      const [confirmedBookings, pendingBookings] = await Promise.all([
+         this._bookingRepository.findConfirmedBookingsForEvent(eventId), // confirmed + attended ?? (not cancelled, failed)
+         this._bookingRepository.findPendingBookingsForEvent(eventId),
+      ]);
 
-         // Process Confirmed Bookings SEQUENTIALLY (refund + cancel)
-         for (const booking of confirmedBookings) {
-            try {
-               await this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled");
-               
-            } catch (error) {
-               // Log individual failures, but let the loop continue processing others
-               console.error(`[CRITICAL] Failed to cancel and refund booking ${booking.bookingId}:`, error);
+      // Process Confirmed Bookings SEQUENTIALLY (refund + cancel)
+      for (const booking of confirmedBookings) {
+         try {
+            await this._processRefundAndCancelBooking(booking, cancelReason, "event_cancelled");
+            
+         } catch (error) {
+            // Log individual failures, but let the loop continue processing others
+            console.error(`[CRITICAL] Failed to cancel and refund booking ${booking.bookingId}:`, error);
+         }
+      }
+
+      // Pending Bookings — no payment yet, just mark cancelled
+      if (pendingBookings.length > 0) {
+         await this._bookingRepository.bulkCancelBookings(
+            pendingBookings.map(booking => booking.bookingId),
+            { 
+               bookingStatus: BOOKING_STATUSES.CANCELLED, 
+               cancellation: { 
+                  cancelledAt: new Date(), 
+                  reason: cancelReason 
+               } 
             }
-         }
-
-         // Pending Bookings — no payment yet, just mark cancelled
-         if (pendingBookings.length > 0) {
-            await this._bookingRepository.bulkCancelBookings(
-               pendingBookings.map(booking => booking.bookingId),
-               { 
-                  bookingStatus: BOOKING_STATUSES.CANCELLED, 
-                  cancellation: { 
-                     cancelledAt: new Date(), 
-                     reason: cancelReason 
-                  } 
-               }
-            );
-         }
-
-      } catch (error: unknown) {
-         throw error;
+         );
       }
    }
 
@@ -356,10 +311,10 @@ export class BookingService implements IBookingService {
    // ─── HANDLER METHODS ───────────────────────────────────────────────────
 
 
-   private async _processFreeBooking(user: UserEntity, event: EventEntity, quantity: number, ticketNo: string): Promise<InitiateBookingResponseDTO> {
+   private async _processFreeBooking(user: UserEntity, eventEntity: EventEntity, quantity: number, ticketNo: string): Promise<InitiateBookingResponseDTO> {
       const newBookingId: string = new Types.ObjectId().toHexString();
 
-      const qRTokenPayload: QRTokenPayload = { userId: user.userId, eventId: event.eventId, bookingId: newBookingId }
+      const qRTokenPayload: QRTokenPayload = { userId: user.userId, eventId: eventEntity.eventId, bookingId: newBookingId }
 
       const qrToken: string = this._ticketService.generateQrToken(qRTokenPayload);
 
@@ -367,7 +322,7 @@ export class BookingService implements IBookingService {
 
       const createBookingInput: CreateBookingInput = mapBookingOrderDtoToInput({
          userId         : user.userId,
-         event,
+         event          : eventEntity,
          newBookingQty  : quantity,
          ticketNo, 
          qrToken,
@@ -377,17 +332,14 @@ export class BookingService implements IBookingService {
          paymentStatus  : PAYMENT_STATUSES.COMPLETED
       });
 
-      const bookingEntity = await this._bookingRepository.createBooking({ _id: newBookingId, ...createBookingInput });
+      const bookingEntity: BookingEntity = await this._bookingRepository.createBooking({ _id: newBookingId, ...createBookingInput });
       
-      await this._eventRepository.incrementEventTicketAndRevenueStats(event.eventId, quantity, 0);
+      await this._eventRepository.incrementEventTicketAndRevenueStats(eventEntity.eventId, quantity, 0);
       await this._cacheService.deleteKeyValue("trending_events");
 
-      await this._notificationService.notify({
-         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
-         recipient: { userId: user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
-         data: { eventTitle: event.title, ticketNo, quantity },
-         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: bookingEntity.bookingId },
-      });
+      await this._notificationService.notify(
+         this._buildBookingConfirmedNotificationPayload(user, eventEntity, bookingEntity)
+      );
 
       const [populated, settings] = await Promise.all([
          this._bookingRepository.getBookingById(bookingEntity.bookingId),
@@ -450,24 +402,21 @@ export class BookingService implements IBookingService {
 
       await this._cacheService.deleteKeyValue("trending_events");
 
-      await this._notificationService.notify({
-         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
-         recipient: { userId: user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
-         data: { eventTitle: event.title, ticketNo, quantity },
-         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: newBookingId },
-      });
-
-      const [populated, settings] = await Promise.all([
+      const [populatedBooking, settings] = await Promise.all([
          this._bookingRepository.getBookingById(newBookingId),
          this._settingsService.getOperationalSettingsDomain(),
       ]);
 
-      const populatedBooking: BookingResponseDTO = mapBookingEntityToResponseDTO(populated!, settings);
+      await this._notificationService.notify(
+         this._buildBookingConfirmedNotificationPayload(user, event, populatedBooking!)
+      );
+
+      const bookingResponse: BookingResponseDTO = mapBookingEntityToResponseDTO(populatedBooking!, settings);
 
       return {
          isFree            : false,
          paymentMethod     : PAYMENT_METHODS.WALLET,
-         populatedBooking  : populatedBooking
+         populatedBooking  : bookingResponse
       };
    }
 
@@ -560,22 +509,19 @@ export class BookingService implements IBookingService {
 
       await this._cacheService.deleteKeyValue("trending_events");
 
-      await this._notificationService.notify({
-         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
-         recipient: { userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user.email },
-         data: { eventTitle: booking.event.title, ticketNo: booking.ticketNo, quantity: booking.quantity },
-         relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
-      });
-
-      const [populated, settings] = await Promise.all([
+      const [populatedBooking, settings] = await Promise.all([
          this._bookingRepository.getBookingById(booking.bookingId),
          this._settingsService.getOperationalSettingsDomain(),
       ]);
 
+      await this._notificationService.notify(
+         this._buildBookingConfirmedNotificationPayload(user, populatedBooking!.event as unknown as EventEntity, populatedBooking!)
+      );
+
       return {
          isFree            : false,
          paymentMethod     : PAYMENT_METHODS.WALLET,
-         populatedBooking  : mapBookingEntityToResponseDTO(populated!, settings)
+         populatedBooking  : mapBookingEntityToResponseDTO(populatedBooking!, settings)
       };
    }
 
@@ -650,17 +596,14 @@ export class BookingService implements IBookingService {
 
          await this._cacheService.deleteKeyValue("trending_events");
 
-         await this._notificationService.notify({
-            type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
-            recipient: { userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: user?.email },
-            data: { eventTitle: eventName, ticketNo: booking.ticketNo, quantity: booking.quantity },
-            relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
-         });
-
          const [confirmedBooking, settings]:[BookingEntityPopulated | null, OperationalSettingsEntity] = await Promise.all([
             this._bookingRepository.getBookingById(booking.bookingId),
             this._settingsService.getOperationalSettingsDomain(),
          ]);
+
+         await this._notificationService.notify(
+            this._buildBookingConfirmedNotificationPayload(user!, event!, confirmedBooking!)
+         );
          
          return mapBookingEntityToResponseDTO(confirmedBooking!, settings);
 
@@ -765,6 +708,42 @@ export class BookingService implements IBookingService {
          throw error;
       }
 
+   }
+
+
+
+
+
+
+   private _buildBookingConfirmedNotificationPayload(
+      user: UserEntity, 
+      event: EventEntity, 
+      booking: BookingEntity | BookingEntityPopulated,
+   ): NotifyRequest {
+      return {
+         type: NOTIFICATION_TYPES.BOOKING_CONFIRMED,
+         recipient: { 
+            userId: user.userId, 
+            role: NOTIFICATION_RECIPIENT_ROLES.USER, 
+            email: user.email,
+            name: user.name 
+         },
+         data: { 
+            eventTitle: event.title, 
+            ticketNo: booking.ticketNo,
+            quantity: booking.quantity,
+            qrToken: booking.qrToken, 
+            format: event.format,
+            totalAmount: booking.totalAmount,
+            posterUrl: event.posterUrl,
+            startDateTime: event.startDateTime,
+            endDateTime: event.endDateTime
+         },
+         relatedEntity: { 
+            entityType: RELATED_ENTITY_TYPE.BOOKING, 
+            entityId: booking.bookingId 
+         },
+      };
    }
 
 

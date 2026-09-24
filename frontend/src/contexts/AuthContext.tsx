@@ -38,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) throw new Error('useAuth must be used within AuthProvider');
@@ -127,7 +128,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Pass false so the interceptor PRESERVES the last_active_user_email on session expiry
         // The interceptor will use this when the refresh token fails.
         setAuthInterceptors(() => fullLogout(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -137,12 +137,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Save tokens & user to localStorage whenever they change.
     useEffect(() => {
-        accessToken ? localStorage.setItem("accessToken", accessToken)
-            : localStorage.removeItem("accessToken");
+        if (accessToken) {
+            localStorage.setItem("accessToken", accessToken);
+        } else {
+            localStorage.removeItem("accessToken");
+        }
 
-        user ? localStorage.setItem("user", JSON.stringify(user))
-            : localStorage.removeItem("user");
-
+        if (user) {
+            localStorage.setItem("user", JSON.stringify(user));
+        } else {
+            localStorage.removeItem("user");
+        }
     }, [accessToken, user]);
 
 
@@ -209,33 +214,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     const login = async (credentials: LoginPayload): Promise<ApiResponse<AuthTokensData>> => {
-        try {
-            const response: ApiResponse<AuthTokensData> = await authService.loginService(credentials);
-            // console.log('response from authContext login:', response);
+        const response: ApiResponse<AuthTokensData> = await authService.loginService(credentials);
+        // console.log('response from authContext login:', response);
 
-            setAccessToken(response.data.accessToken);
-            setUser(response.data.authUser);
-            return response;
-
-        } catch (err: unknown) {
-            throw err;
-        }
+        setAccessToken(response.data.accessToken);
+        setUser(response.data.authUser);
+        return response;
     };
 
 
 
 
     const register = async (data: RegisterPayload): Promise<ApiResponse<EmailResponseData>> => {
-        try {
-            // Backend must set HTTP-Only refresh cookie here
-            const response: ApiResponse<EmailResponseData> = await authService.registerService(data);
-            console.log('response in authContext register:', response);
-            
-            return response;
-
-        } catch (err: unknown) {
-            throw err;
-        }
+        // Backend must set HTTP-Only refresh cookie here
+        const response: ApiResponse<EmailResponseData> = await authService.registerService(data);
+        console.log('response in authContext register:', response);
+        
+        return response;
     };
 
 

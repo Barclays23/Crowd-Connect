@@ -52,14 +52,14 @@ export enum NOTIFICATION_TYPES {
 
 
     // ── Payout → Host ─────────────────────────────────────────────
-    PAYOUT_REQUESTED               = "PAYOUT_REQUESTED", // to admin and host
+    PAYOUT_REQUESTED               = "PAYOUT_REQUESTED", // to host
     PAYOUT_REJECTED                = "PAYOUT_REJECTED",
     PAYOUT_APPROVED                = "PAYOUT_APPROVED",
     PAYOUT_PAID                    = "PAYOUT_PAID",
 
 
     // ── Payout → Admin ────────────────────────────────────────────
-    PAYOUT_REQUEST_RECEIVED  = "PAYOUT_REQUEST_RECEIVED",
+    PAYOUT_REQUEST_RECEIVED  = "PAYOUT_REQUEST_RECEIVED",  // to admin
 
 
     // ── Referral & Cashback → User ────────────────────────────────────────────
@@ -110,10 +110,10 @@ export interface NotificationRecipient {
 
 
 
-export interface NotifyRequest {
+export interface NotifyRequest<T = Record<string, unknown>> {
     type: NOTIFICATION_TYPES;
     recipient: NotificationRecipient;
-    data: Record<string, unknown>;   // template variables, e.g. { eventTitle, ticketNo }
+    data: T;   // template variables, e.g. { eventTitle, ticketNo, qrCode }
     relatedEntity?: {
         entityType: RELATED_ENTITY_TYPE;
         entityId: string;
@@ -155,4 +155,31 @@ export interface GetNotificationsResult {
     notifications: NotificationEntity[];
     totalCount: number;
     unreadCount: number;
+}
+
+
+
+
+
+
+
+
+
+// NOTIFICATION CONTENT TYPES (for notification content data) ------------------------------
+export interface BookingConfirmedNotificationData {
+    eventTitle: string; 
+    ticketNo: string; 
+    quantity: number;
+    qrToken: string;
+    format?: string;
+    totalAmount?: number;
+    posterUrl?: string;
+    startDateTime: string;
+    endDateTime: string;
+}
+
+export interface BookingCancelledNotificationData {
+    eventTitle: string;
+    cancelReason?: string;
+    refundAmount: number;
 }

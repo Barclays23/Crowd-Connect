@@ -12,6 +12,7 @@ export interface IPaymentProvider {
 
   verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean;
   
+  // Verifies webhook signature for incoming webhooks events.
   verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean;
 
   normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null

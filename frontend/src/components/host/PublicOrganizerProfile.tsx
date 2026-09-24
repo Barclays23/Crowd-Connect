@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Star, MapPin, Mail, Building, Phone, CheckCircle2 } from "lucide-react";
+import { MapPin, Mail, Building, Phone, CheckCircle2 } from "lucide-react";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import { hostServices } from "@/services/hostServices"; 
 import { toast } from "react-toastify";

@@ -29,51 +29,47 @@ export class AuthRecoveryService implements IAuthRecoveryService {
 
     
     async requestPasswordReset(email: string): Promise<string>{
-        try {
-            const existingUser: UserEntity | null = await this._userRepository.getUserByEmail(email);
+        const existingUser: UserEntity | null = await this._userRepository.getUserByEmail(email);
+        
+        if (!existingUser){
+            console.log('no user found in this email for password reset request.');
+            // For security reasons, don't reveal whether the email exists
+            // throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+        } else {
+            const { cryptoToken, expiryMinutes } = generateCryptoToken();
             
-            if (!existingUser){
-                console.log('no user found in this email for password reset request.');
-                // For security reasons, don't reveal whether the email exists
-                // throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
-            } else {
-                const { cryptoToken, expiryMinutes } = generateCryptoToken();
-                
-                const baseUrl   = process.env.FRONTEND_URL;
-                const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
-                
-                const templatePayload: PasswordResetPayload = {
-                    USER_NAME       : existingUser?.name || 'User',
-                    RESET_LINK      : resetLink,
-                    EXPIRY_MINUTES  : expiryMinutes
-                };
-                
-                // const htmlTemplate = await renderTemplate('passwordReset.html', templatePayload);
-                const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.PASSWORD_RESET, templatePayload);
-                const mailSubject = 'Reset Your Crowd Connect Password';
-                const text = `Reset your password here: ${resetLink}\nThis link expires in ${expiryMinutes} minutes.`;
-
-                await this._mailService.sendEmailToUser({
-                    toAddress: email,
-                    mailSubject,
-                    text,
-                    htmlTemplate,
-                });
-                
-                const redisKey  = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
-                const redisData = {
-                    email,
-                    createdAt: Date.now(),
-                };
-                
-                await this._cacheService.setKeyValue(redisKey, JSON.stringify(redisData), expiryMinutes * 60);
-            }
+            const baseUrl   = process.env.FRONTEND_URL;
+            const resetLink = `${baseUrl}/reset-password?token=${cryptoToken}&email=${encodeURIComponent(email)}`;
             
-            return email;
+            const templatePayload: PasswordResetPayload = {
+                USER_NAME       : existingUser?.name || 'User',
+                RESET_LINK      : resetLink,
+                EXPIRY_MINUTES  : expiryMinutes
+            };
+            
+            // const htmlTemplate = await renderTemplate('passwordReset.html', templatePayload);
+            const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.PASSWORD_RESET, templatePayload);
+            const mailSubject = 'Reset Your Crowd Connect Password';
+            const text = `Reset your password here: ${resetLink}\nThis link expires in ${expiryMinutes} minutes.`;
 
-        } catch (error: unknown) {
-            throw error;
+            await this._mailService.sendEmailToUser({
+                toAddress: email,
+                mailSubject,
+                text,
+                htmlTemplate,
+            });
+            
+            const redisKey  = `${REDIS_TOKEN_PREFIX}${cryptoToken}`;
+            const redisData = {
+                email,
+                createdAt: Date.now(),
+            };
+            
+            await this._cacheService.setKeyValue(redisKey, JSON.stringify(redisData), expiryMinutes * 60);
         }
+        
+        return email;
+
     }
 
 
@@ -94,82 +90,78 @@ export class AuthRecoveryService implements IAuthRecoveryService {
         currentUserEmail: string,
         requestedEmail: string
     }): Promise<string> {
-        try {
-            const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
-            const normalizedRequestedEmail = normalizeEmail(requestedEmail);
+        const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
+        const normalizedRequestedEmail = normalizeEmail(requestedEmail);
 
-            const currentUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
+        const currentUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
 
-            if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+        if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
-            if (currentUser.isEmailVerified) {
-                throw createHttpError(HTTP_STATUS.BAD_REQUEST,
-                    `${AUTH_MESSAGES.EMAIL_ALREADY_VERIFIED} ${USER_MESSAGES.CANNOT_CHANGE_VERIFIED_EMAIL}
-                    `);
-            }
-                
-            const isChangingEmail: boolean = normalizedCurrentEmail !== normalizedRequestedEmail;
-
-            if (isChangingEmail) {
-                const existingEmailUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedRequestedEmail);
-
-                if (existingEmailUser && existingEmailUser.userId !== currentUser.userId) {
-                    throw createHttpError(HTTP_STATUS.CONFLICT, AUTH_MESSAGES.EMAIL_EXIST);
-                }
-            }
-
-
-            const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
-            console.log('Generated OTP (for Verify Email Request):', otpNumber);
-
-            const redisKey = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
-
-            const redisData = {
-                userId          : currentUser.userId,
-                currentEmail    : normalizedCurrentEmail,
-                requestedEmail  : normalizedRequestedEmail,
-                isChangingEmail : isChangingEmail,
-                otp             : otpNumber,
-                otpExpiry       : expiryDate.getTime(),
-                createdAt       : Date.now(),
-            };
-
-            await this._cacheService.setKeyValue(
-                redisKey, 
-                JSON.stringify(redisData), 
-                expiryMinutes * 60
-            );
-
-            // --- Dynamic HTML Template Loading ---
-            const templatePayload: VerifyEmailPayload = {
-                USER_NAME       : currentUser?.name || 'User',
-                OTP_NUMBER      : otpNumber,
-                EXPIRY_MINUTES  : expiryMinutes,
-                CURRENT_YEAR    : new Date().getFullYear(),
-                GREETING_SUFFIX : currentUser?.name ? ` ${currentUser.name}` : '',
-                EMAIL_HEADING   : isChangingEmail ? 'Verify Your New Email' : 'Verify Your Email Address',
-                EMAIL_MESSAGE   : isChangingEmail
-                    ? "You’re updating your email address. Please use the code below to confirm your new email."
-                    : "You’re almost there! Use this code to verify your email and start connecting with amazing events and people."
-            };
-
-            // const htmlTemplate = await renderTemplate('verifyEmail.html', templatePayload);
-            const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.VERIFY_EMAIL, templatePayload);
-            const mailSubject = isChangingEmail ? 'Verify Your New Email Address' : 'Verify Your Email Address';
-            const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
-
-            await this._mailService.sendEmailToUser({
-                toAddress: normalizedRequestedEmail,
-                mailSubject,
-                text,
-                htmlTemplate,
-            })
-
-            return normalizedRequestedEmail;
-
-        } catch (error: unknown) {
-            throw error;
+        if (currentUser.isEmailVerified) {
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST,
+                `${AUTH_MESSAGES.EMAIL_ALREADY_VERIFIED} ${USER_MESSAGES.CANNOT_CHANGE_VERIFIED_EMAIL}
+                `);
         }
+            
+        const isChangingEmail: boolean = normalizedCurrentEmail !== normalizedRequestedEmail;
+
+        if (isChangingEmail) {
+            const existingEmailUser: UserEntity|null = await this._userRepository.getUserByEmail(normalizedRequestedEmail);
+
+            if (existingEmailUser && existingEmailUser.userId !== currentUser.userId) {
+                throw createHttpError(HTTP_STATUS.CONFLICT, AUTH_MESSAGES.EMAIL_EXIST);
+            }
+        }
+
+
+        const { otpNumber, expiryDate, expiryMinutes } = generateOTP();
+        console.log('Generated OTP (for Verify Email Request):', otpNumber);
+
+        const redisKey = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
+
+        const redisData = {
+            userId          : currentUser.userId,
+            currentEmail    : normalizedCurrentEmail,
+            requestedEmail  : normalizedRequestedEmail,
+            isChangingEmail : isChangingEmail,
+            otp             : otpNumber,
+            otpExpiry       : expiryDate.getTime(),
+            createdAt       : Date.now(),
+        };
+
+        await this._cacheService.setKeyValue(
+            redisKey, 
+            JSON.stringify(redisData), 
+            expiryMinutes * 60
+        );
+
+        // --- Dynamic HTML Template Loading ---
+        const templatePayload: VerifyEmailPayload = {
+            USER_NAME       : currentUser?.name || 'User',
+            OTP_NUMBER      : otpNumber,
+            EXPIRY_MINUTES  : expiryMinutes,
+            CURRENT_YEAR    : new Date().getFullYear(),
+            GREETING_SUFFIX : currentUser?.name ? ` ${currentUser.name}` : '',
+            EMAIL_HEADING   : isChangingEmail ? 'Verify Your New Email' : 'Verify Your Email Address',
+            EMAIL_MESSAGE   : isChangingEmail
+                ? "You’re updating your email address. Please use the code below to confirm your new email."
+                : "You’re almost there! Use this code to verify your email and start connecting with amazing events and people."
+        };
+
+        // const htmlTemplate = await renderTemplate('verifyEmail.html', templatePayload);
+        const htmlTemplate = await renderTemplateWithHandleBars(EmailTemplate.VERIFY_EMAIL, templatePayload);
+        const mailSubject = isChangingEmail ? 'Verify Your New Email Address' : 'Verify Your Email Address';
+        const text = `Your verification code is: ${otpNumber}\nThis code expires in ${expiryMinutes} minutes.`;
+
+        await this._mailService.sendEmailToUser({
+            toAddress: normalizedRequestedEmail,
+            mailSubject,
+            text,
+            htmlTemplate,
+        })
+
+        return normalizedRequestedEmail;
+
     }
 
 
@@ -178,62 +170,58 @@ export class AuthRecoveryService implements IAuthRecoveryService {
         requestedEmail: string;
         otpCode: string;
     }): Promise<string> {
-        try {
-            const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
-            const normalizedRequestedEmail = normalizeEmail(requestedEmail);
+        const normalizedCurrentEmail = normalizeEmail(currentUserEmail);
+        const normalizedRequestedEmail = normalizeEmail(requestedEmail);
 
-            const currentUser: UserEntity | null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
+        const currentUser: UserEntity | null = await this._userRepository.getUserByEmail(normalizedCurrentEmail);
 
-            if (!currentUser) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
-            }
-
-            const redisKey      = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
-            const redisRawValue = await this._cacheService.getKeyValue(redisKey);
-
-            if (!redisRawValue) {
-                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
-            }
-
-            const redisData = JSON.parse(redisRawValue);
-
-            if (redisData.userId !== currentUser.userId) {
-                throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
-            }
-
-            if (Date.now() > redisData.otpExpiry) {
-                await this._cacheService.deleteKeyValue(redisKey);
-                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
-            }
-
-            if (redisData.otp !== otpCode) {
-                throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_INCORRECT);
-            }
-
-
-            const updateInput: UpdateEmailDto = {
-                isEmailVerified: true,
-            }
-
-            const isChangingEmail = redisData.isChangingEmail === true;
-
-            if (isChangingEmail) {
-                updateInput.email = normalizedRequestedEmail
-            }
-
-            const updatedUser: UserEntity | null = await this._userRepository.updateUserEmail(currentUser.userId, updateInput);
-
-            if (!updatedUser) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
-            }
-
-            await this._cacheService.deleteKeyValue(redisKey);
-
-            return updatedUser.email;
-
-        } catch (error: unknown) {
-            throw error;
+        if (!currentUser) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
         }
+
+        const redisKey      = `verify-email:${currentUser.userId}:${normalizedRequestedEmail}`;
+        const redisRawValue = await this._cacheService.getKeyValue(redisKey);
+
+        if (!redisRawValue) {
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
+        }
+
+        const redisData = JSON.parse(redisRawValue);
+
+        if (redisData.userId !== currentUser.userId) {
+            throw createHttpError(HTTP_STATUS.UNAUTHORIZED, AUTH_MESSAGES.UNAUTHORIZED_ACCESS);
+        }
+
+        if (Date.now() > redisData.otpExpiry) {
+            await this._cacheService.deleteKeyValue(redisKey);
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_EXPIRED);
+        }
+
+        if (redisData.otp !== otpCode) {
+            throw createHttpError(HTTP_STATUS.BAD_REQUEST, AUTH_MESSAGES.OTP_INCORRECT);
+        }
+
+
+        const updateInput: UpdateEmailDto = {
+            isEmailVerified: true,
+        }
+
+        const isChangingEmail = redisData.isChangingEmail === true;
+
+        if (isChangingEmail) {
+            updateInput.email = normalizedRequestedEmail
+        }
+
+        const updatedUser: UserEntity | null = await this._userRepository.updateUserEmail(currentUser.userId, updateInput);
+
+        if (!updatedUser) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
+        }
+
+        await this._cacheService.deleteKeyValue(redisKey);
+
+        return updatedUser.email;
+
     }
 
 

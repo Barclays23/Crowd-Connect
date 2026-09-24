@@ -1,6 +1,6 @@
 // frontend/src/components/user/user-reviews/UserReviews.tsx
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Star, Edit, Trash2, MessageSquareText } from "lucide-react";
+import { Star, Edit, Trash2, MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPagination } from "@/components/shared/UserPagination";

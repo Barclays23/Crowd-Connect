@@ -45,6 +45,16 @@ export const ADMIN_ROUTES = {
 } as const;
 
 
+export const ADMIN_DASHBOARD_ROUTES = {
+    OVERVIEW            : '/overview',
+    REVENUE_CHART       : '/revenue-chart',
+    USER_GROWTH_CHART   : '/user-growth-chart',
+    EVENTS_BY_CATEGORY  : '/events-by-category',
+    EVENTS_BY_STATUS    : '/events-by-status',
+    TOP_HOSTS           : '/top-hosts',
+} as const;
+
+
 
 export const AI_ROUTES = {
     GENERATE_EVENT_POSTER   : "/generate-event-poster",
@@ -176,6 +186,21 @@ export const USER_ROUTES = {
     BASIC_INFO          : '/basic-info',
     UPDATE_PROFILE_PIC  : '/profile-pic',
     CHANGE_PASSWORD     : '/change-password',
+} as const;
+
+
+export const USER_DASHBOARD_ROUTES = {
+    OVERVIEW          : '/overview',
+    BOOKINGS_CHART    : '/bookings-chart',
+    SPENDING_CHART    : '/spending-chart',
+    CATEGORY_CHART    : '/category-chart',
+    STATUS_CHART      : '/status-chart',
+
+    // Host specific
+    HOST_EVENTS_BY_STATUS   : '/host-events-by-status',
+    HOST_EVENTS_BY_CATEGORY : '/host-events-by-category',
+    HOST_TICKETS_SOLD_CHART : '/host-tickets-sold-chart',
+    HOST_RATING_DISTRIBUTION: '/host-rating-distribution',
 } as const;
 
 

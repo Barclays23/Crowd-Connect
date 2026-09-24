@@ -46,6 +46,7 @@ export class LiveKitStreamingService implements IStreamingService {
             };
 
         } catch (error: unknown) {
+            console.error("LiveKit token generation error:", error);
             throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to generate video room token");
         }
     }

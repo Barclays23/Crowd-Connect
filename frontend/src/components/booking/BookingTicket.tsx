@@ -24,7 +24,7 @@ export default function BookingTicket({ booking }: BookingTicketProps) {
   const isOnline = booking.event.format === EVENT_FORMATS.ONLINE;
   const isFree = booking.totalAmount === 0;
   const isConfirmed = booking.bookingStatus === BOOKING_STATUS.CONFIRMED;
-  const isAttended = booking.bookingStatus === BOOKING_STATUS.ATTENDED;
+  // const isAttended = booking.bookingStatus === BOOKING_STATUS.ATTENDED;
   const isCancelled = booking.bookingStatus === BOOKING_STATUS.CANCELLED;
 
   const ticketNumber = booking.ticketNo;

@@ -9,6 +9,7 @@ import { HTTP_STATUS } from "@/constants/http-status.constants";
 
 
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
         interface Request {
             ownedEvent?: EventEntity;

@@ -1,28 +1,34 @@
-// src/config/aws-s3.config.ts
-
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+// backend/src/config/aws-s3.config.ts
+import { 
+    S3Client, 
+    PutObjectCommand, 
+    DeleteObjectCommand, 
+    GetObjectCommand 
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import dotenv from "dotenv";
-
 
 
 dotenv.config();
 
 
+export const AWS_REGION = process.env.AWS_REGION as string;
+export const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME as string;
+const ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID as string;
+const SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY as string;
 
-const s3Client = new S3Client({
-    region: process.env.AWS_REGION,
+
+export const s3Client = new S3Client({
+    region: AWS_REGION,
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        accessKeyId: ACCESS_KEY_ID,
+        secretAccessKey: SECRET_ACCESS_KEY
     },
 });
 
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME!;
 
-
-// 1. UPLOAD: Returns the Key (File Path) to store in DB
+// UPLOAD: Returns the Key (File Path) to store in DB
 export const uploadToS3 = async (file: Express.Multer.File, folderPath: string): Promise<string> => {
     const fileName = `${folderPath}/${Date.now()}-${file.originalname}`;
     
@@ -39,7 +45,7 @@ export const uploadToS3 = async (file: Express.Multer.File, folderPath: string):
 
 
 
-// 2. GET URL: Generates a temporary secure link (valid for 1 hour)
+// GET URL: Generates a temporary secure link (valid for 1 hour)
 export const getS3PresignedUrl = async (fileKey: string): Promise<string> => {
     try {
         if (!fileKey) return "";
@@ -63,7 +69,7 @@ export const getS3PresignedUrl = async (fileKey: string): Promise<string> => {
 
 
 
-// 3. DELETE: Removes file from bucket
+// DELETE: Removes file from bucket
 export const deleteFromS3 = async (fileKey: string): Promise<void> => {
     try {
         if (!fileKey || fileKey.startsWith("http")) return;
@@ -79,62 +85,3 @@ export const deleteFromS3 = async (fileKey: string): Promise<void> => {
         console.warn(`Failed to delete S3 object: ${fileKey}`, error);
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-// replace currentupdateProfilePicture after AWS s3 configuration setup completed
-
-    // async updateProfilePicture(currentUserId: string, imageFile?: Express.Multer.File): Promise<UserProfileResponseDto> {
-    //     try {
-    //         // console.log('✅ currentUserId received in UserProfileService.updateProfilePicture:', currentUserId);
-    //         // console.log('✅ imageFile received in UserProfileService.updateProfilePicture:', imageFile);
-
-    //         const currentUser: UserEntity | null = await this._userRepository.getUserById(currentUserId);
-
-    //         if (!currentUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, HttpResponse.USER_NOT_FOUND);
-
-    //         if (currentUser.status === UserStatus.BLOCKED) {
-    //             throw createHttpError(HTTP_STATUS.FORBIDDEN, HttpResponse.USER_ACCOUNT_BLOCKED);
-    //         }
-
-    //         let newProfilePicKey: string | undefined;
-    //         const oldProfilePicKey = currentUser.profilePic;
-
-    //         if (imageFile) {
-    //             newProfilePicKey = await uploadToS3(imageFile, 'user-profile-pics');
-    //             console.log('✅ New S3 Key generated:', newProfilePicKey);
-    //         }
-
-    //         // Update Database only with the new KEY
-    //         const profilPicInput = { profilePic: newProfilePicKey };
-            
-    //         const updatedUserResult: UserEntity = await this._userRepository.updateProfilePicture(currentUserId, profilPicInput);
-
-    //         if (imageFile && oldProfilePicKey) {
-    //             deleteFromS3(oldProfilePicKey).catch(err => 
-    //                 console.error("Background profile pic delete failed:", err)
-    //             );
-    //         }
-
-    //         const updatedProfileDto: UserProfileResponseDto = mapUserEntityToProfileDto(updatedUserResult);
-            
-    //         // The frontend needs a secured viewable link, not a database key.
-    //         if (updatedProfileDto.profilePic) {
-    //             updatedProfileDto.profilePic = await getS3PresignedUrl(updatedProfileDto.profilePic);
-    //         }
-
-    //         return updatedProfileDto;
-
-    //     } catch (err: any) {
-    //         console.error('Error in UserProfileService.updateProfilePicture:', err);
-    //         throw err;
-    //     }
-    // }

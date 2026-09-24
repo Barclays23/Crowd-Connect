@@ -17,7 +17,6 @@ import { Modal } from "../ui/modal";
 import { ForgotPasswordModal } from "./ForgotPasswordModal";
 import type { LoginPayload, RegisterPayload, RouterLocationState } from "@/types/auth.types";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "react-toastify";
 import { TermsModal } from "@/components/shared/TermsModal";
 import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 

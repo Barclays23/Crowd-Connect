@@ -37,7 +37,7 @@ import {
   type GetBookingsQueryParams,
 } from "@/types/booking.types";
 import BookingDetails              from "@/components/booking/BookingDetails";
-import { getBookingStatusVariant, getPaymentStatusVariant } from "@/utils/UI.utils";
+import { getBookingStatusVariant } from "@/utils/UI.utils";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/shared/FieldError";
 import { cancelReasonBase } from "@/schemas/booking.schema";

@@ -61,47 +61,54 @@ export function setupGooglePlaceAutocompleteWidget(
             container.appendChild(autocompleteElement);
 
             autocompleteElement.addEventListener("gmp-select", async (e) => {
-                const prediction = (e as any).placePrediction;
+                const customEvent = e as Event & {
+                    placePrediction?: {
+                        toPlace: () => google.maps.places.Place;
+                    };
+                };
+                const prediction = customEvent.placePrediction;
 
                 if (!prediction) {
-                console.warn("No placePrediction in gmp-select event", e);
-                return;
+                    console.warn("No placePrediction in gmp-select event", e);
+                    return;
                 }
 
                 const place = prediction.toPlace();
 
                 try {
-                await place.fetchFields({
-                    fields: ["formattedAddress", "displayName", "location"],
-                });
-
-                // Prefer displayName.text → fallback to formattedAddress parts
-                let name =
-                    place.displayName ||
-                    place.formattedAddress?.split(',')[0].trim() ||
-                    // place.formattedAddress?.split(",").slice(0, 2).map(s => s.trim()).join(", ") ||
-                    place.formattedAddress ||
-                    "Selected location";
-
-                const lat = place.location?.lat() ?? 0;
-                const lng = place.location?.lng() ?? 0;
-
-                console.log("Selected place:", { name, lat, lng });
-
-                if (lat !== 0 && lng !== 0) {
-                    onPlaceSelected({
-                    name,
-                    lat,
-                    lng,
-                    formattedAddress: place.formattedAddress,
-                    placeId: place.id || place.placeId,
+                    await place.fetchFields({
+                        fields: ["formattedAddress", "displayName", "location"],
                     });
-                }
-                } catch (fetchErr) {
+
+                    // Prefer displayName.text → fallback to formattedAddress parts
+                    const name =
+                        place.displayName ||
+                        place.formattedAddress?.split(',')[0].trim() ||
+                        // place.formattedAddress?.split(",").slice(0, 2).map(s => s.trim()).join(", ") ||
+                        place.formattedAddress ||
+                        "Selected location";
+
+                    const lat = place.location?.lat() ?? 0;
+                    const lng = place.location?.lng() ?? 0;
+
+                    console.log("Selected place:", { name, lat, lng });
+
+                    if (lat !== 0 && lng !== 0) {
+                        onPlaceSelected({
+                            name,
+                            lat,
+                            lng,
+                            formattedAddress: place.formattedAddress ?? undefined,
+                            placeId: place.id || (place as unknown as { placeId?: string }).placeId,
+                        });
+                    }
+
+                } catch (fetchErr: unknown) {
                     console.error("fetchFields failed:", fetchErr);
                     toast.error("Failed to load place details");
                 }
             });
+
         } catch (error) {
             console.error("Failed to initialize PlaceAutocompleteElement:", error);
             toast.error("Location search failed to load. Try again later.");

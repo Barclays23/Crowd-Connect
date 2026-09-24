@@ -16,6 +16,7 @@ interface Props {
 const GoogleMapsContext = createContext<{ isLoaded: boolean } | null>(null);
 
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useGoogleMaps2 = () => {
   const ctx = useContext(GoogleMapsContext);
   if (!ctx) throw new Error("useGoogleMaps must be used within GoogleMapsProvider");
