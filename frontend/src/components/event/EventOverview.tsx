@@ -1,27 +1,27 @@
 // frontend/src/components/event/EventOverview.tsx
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-import { formatDate3, formatDate1 } from "@/utils/dateAndTime.utils";
+import { Button } from "@/components/ui/button";
+import { formatDate3, formatDate1, formatCountdownTimer } from "@/utils/dateAndTime.utils";
 import {
    Calendar, MapPin, Video, IndianRupee,
-   Ticket, AlertTriangle, Clock, TrendingUp,
-   ImageOff, UserCircle,
-   Globe,
+   Ticket, AlertTriangle, Clock, TrendingUp, Globe,
 } from "lucide-react";
 import type { IEventState } from "@/types/event.types";
-import { getEventCategoryBadgeVariant, getEventStatusBadgeVariant } from "@/utils/UI.utils";
 import { capitalize } from "@/utils/namingConventions";
 import { EventMap } from "@/components/event/EventMap";
 import { EVENT_FORMATS, EVENT_STATUSES, TICKET_TYPES } from "@/constants/event.constants";
-import { useNavigate } from "react-router-dom";
+import { ONLINE_EARLY_JOIN_BUFFER_MS } from "@/constants/checkin.constants";
 import { isLiveStreamingRoomOpen } from "@/utils/event.utils";
-import { Button } from "@/components/ui/button";
 
 
 
 interface EventOverviewProps {
    event: IEventState;
 }
+
+
 
 
 export default function EventOverview({ event }: EventOverviewProps) {
@@ -35,7 +35,38 @@ export default function EventOverview({ event }: EventOverviewProps) {
 
    const navigate = useNavigate();
 
-   const isLiveWindowOpen = isLiveStreamingRoomOpen(event.startDateTime, event.endDateTime);
+   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+   const [isLiveWindowOpen, setIsLiveWindowOpen] = useState<boolean>(false);
+
+   useEffect(() => {
+      if (!isOnline || !event.startDateTime || !event.endDateTime) return;
+
+      const updateTimer = () => {
+         const isOpen = isLiveStreamingRoomOpen(event.startDateTime, event.endDateTime);
+         setIsLiveWindowOpen(isOpen);
+
+         if (!isOpen) {
+            const startMs = new Date(event.startDateTime).getTime();
+            const joinOpenTimeMs = startMs - ONLINE_EARLY_JOIN_BUFFER_MS;
+            const nowMs = Date.now();
+            
+            if (nowMs < joinOpenTimeMs) {
+               setTimeRemaining(joinOpenTimeMs - nowMs);
+            } else {
+               setTimeRemaining(0);
+            }
+         } else {
+            setTimeRemaining(0);
+         }
+      };
+
+      updateTimer(); 
+      const intervalId = setInterval(updateTimer, 1000);
+
+      return () => clearInterval(intervalId);
+   }, [event.startDateTime, event.endDateTime, isOnline]);
+
+
 
    const fillBarColor =
       fillPct >= 100 ? "bg-(--status-error)" :
@@ -47,6 +78,8 @@ export default function EventOverview({ event }: EventOverviewProps) {
       remaining <= 10 ? "text-(--status-warning)" :
       "text-(--status-success)";
 
+
+      
    return (
       <div className="space-y-6 pb-6 text-(--text-primary)">
          {/* QUICK STATS */}
@@ -88,7 +121,6 @@ export default function EventOverview({ event }: EventOverviewProps) {
                   </div>
                )}
 
-               {/* <Section title={isOnline ? "Meeting Link" : "Venue & Location"}> */}
                <Section title={isOnline ? "Virtual Stage" : "Venue & Location"}>
                   {isOnline ? (
                      <div className="flex flex-col items-center justify-center py-10 bg-(--bg-primary) border border-(--card-border) rounded-xl">
@@ -96,17 +128,21 @@ export default function EventOverview({ event }: EventOverviewProps) {
                              <Globe className="w-12 h-12 mb-4 text-(--brand-primary) opacity-80" />
                              <h4 className="text-lg font-bold text-(--heading-primary) mb-2">Host Virtual Stage</h4>
                              <p className="text-sm text-(--text-secondary) max-w-sm mb-6">
-                                 The live streaming room opens 15 minutes before the event begins. As the host, you have full broadcasting controls.
+                                 The live streaming room opens {ONLINE_EARLY_JOIN_BUFFER_MS / (60 * 1000)} minutes before the event begins. As the host, you have full broadcasting controls.
                              </p>
                              
                              <Button 
                                  onClick={() => navigate(`/events/${event.eventId}/live`)}
                                  disabled={!isLiveWindowOpen}
                                  size="lg"
-                                 className="w-full sm:w-auto gap-2"
+                                 className="w-full sm:w-auto gap-2 min-w-[220px]"
                              >
                                  <Video size={18} />
-                                 {isLiveWindowOpen ? "Enter Live Stage" : "Room Not Open Yet"}
+                                 {isLiveWindowOpen 
+                                    ? "Enter Live Stage" 
+                                    : timeRemaining > 0 
+                                       ? `Opens in ${formatCountdownTimer(timeRemaining)}`
+                                       : "Room Closed"}
                              </Button>
                          </div>
                      </div>

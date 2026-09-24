@@ -35,13 +35,14 @@ export const GooglePlacesWidgetAutoComplete: React.FC<GooglePlacesWidgetAutoComp
   onPlaceSelected,
   placeholder = "Search for a city or venue...",
   className = "",
-  defaultValue = "",
+  // defaultValue = "",
 }) => {
   const { isLoaded } = useGoogleMaps2(); // or useGoogleMaps1 — whichever loads the script
   const autocompleteWidgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isLoaded || !autocompleteWidgetRef.current) return;
+    const currentWidgetNode = autocompleteWidgetRef.current;
+    if (!isLoaded || !currentWidgetNode) return;
 
     setupGooglePlaceAutocompleteWidget(
       autocompleteWidgetRef as React.RefObject<HTMLDivElement>,
@@ -62,9 +63,9 @@ export const GooglePlacesWidgetAutoComplete: React.FC<GooglePlacesWidgetAutoComp
     );
 
     return () => {
-      if (autocompleteWidgetRef.current) {
-        autocompleteWidgetRef.current.innerHTML = '';
-      }
+      if (currentWidgetNode) {
+      currentWidgetNode.innerHTML = '';
+    }
     };
   }, [isLoaded, onPlaceSelected, placeholder]);
 

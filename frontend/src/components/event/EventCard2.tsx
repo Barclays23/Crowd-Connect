@@ -1,6 +1,6 @@
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 import { type IEventState } from "@/types/event.types";
-import { MapPin, Tag, Users, Wifi, ArrowUpRight, Zap, CalendarDays } from "lucide-react";
+import { MapPin, Tag, Users, Wifi, ArrowUpRight, CalendarDays } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function getStatusBadge(event: IEventState) {
@@ -24,9 +24,10 @@ function getSeatsInfo(event: IEventState) {
 }
 
 export default function EventCard2({ event }: { event: IEventState }) {
+    const navigate  = useNavigate();
+    
     if (!event) return null;
 
-    const navigate  = useNavigate();
     const isFree    = event.ticketType === TICKET_TYPES.FREE;
     const isOnline  = event.format    === EVENT_FORMATS.ONLINE;
     const status    = getStatusBadge(event);

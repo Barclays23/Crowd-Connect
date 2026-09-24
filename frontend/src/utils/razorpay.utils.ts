@@ -8,8 +8,9 @@ import type {
    RazorpayPaymentSuccessResponse 
 } from "@/types/razorpay.types";
 
-// need to move this to .env file??
-export const RAZORPAY_SCRIPT_ID = "razorpay-checkout-sdk-script";
+
+const RAZORPAY_SCRIPT_ID = "razorpay-checkout-sdk-script";
+
 
 declare global {
    interface Window {

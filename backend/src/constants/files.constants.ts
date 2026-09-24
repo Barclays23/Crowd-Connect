@@ -2,15 +2,27 @@
 
 
 
+// ─── file sizes ───────────────────────────────────
+export const MAX_IMAGE_SIZE          = 2 * 1024 * 1024; // 2MB (for profile pic)
+export const MAX_DOCUMENT_SIZE       = 5 * 1024 * 1024; // 5MB (for host organization document)
+export const MAX_POSTER_SIZE         = 5 * 1024 * 1024; // 5MB (for event poster)
+export const MAX_PAYOUT_PROOF_SIZE   = 5 * 1024 * 1024; // 5MB (for payouts proofs)
+export const MAX_FILE_SIZE           = 5 * 1024 * 1024; // 5MB
+export const MAX_LOGO_SIZE           = 2 * 1024 * 1024; // 2MB
+
+
+
 // ─── file types ───────────────────────────────────
 export const IMAGE_MIME_TYPES = [
     'image/jpg',
     'image/jpeg',
     'image/png',
-    'image/gif',
+    // 'image/gif',
     'image/webp',
 ];
 
+
+// ALLOWED_DOCUMENT_TYPES
 export const DOCUMENT_MIME_TYPES = [
   ...IMAGE_MIME_TYPES,
   'application/pdf',
@@ -24,12 +36,3 @@ export const ACCEPTED_PAYOUT_PROOF_TYPES = [
     "image/png", 
     "image/webp"
 ];
-
-
-
-
-// ─── file sizes ───────────────────────────────────
-export const MAX_IMAGE_SIZE          = 2 * 1024 * 1024; // 2MB (for profile pic)
-export const MAX_DOCUMENT_SIZE       = 5 * 1024 * 1024; // 5MB (for host organization document)
-export const MAX_POSTER_SIZE         = 5 * 1024 * 1024; // 5MB (for event poster)
-export const MAX_PAYOUT_PROOF_SIZE   = 5 * 1024 * 1024; // 5MB (for payouts proofs)

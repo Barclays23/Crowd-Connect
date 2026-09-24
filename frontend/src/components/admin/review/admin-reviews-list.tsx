@@ -1,13 +1,12 @@
 // frontend/src/components/admin/review/admin-reviews-list.tsx
 import { useState, useEffect, useCallback } from "react";
-import { Search, Trash2, Loader2, ShieldAlert } from "lucide-react";
+import { Search, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { reviewServices } from "@/services/reviewServices";
 import { toast } from "react-toastify";
 import { formatDate2 } from "@/utils/dateAndTime.utils";

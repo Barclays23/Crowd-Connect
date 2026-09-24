@@ -15,7 +15,6 @@ import type {
 export const reviewServices = {
     submitReview: async (payload: SubmitReviewPayload): Promise<ApiResponse<void>> => {
         const response = await axiosInstance.post<ApiResponse<void>>(
-            // API_ENDPOINTS.REVIEW.SUBMIT_REVIEW(payload.bookingId),
             API_ENDPOINTS.REVIEW.SUBMIT_REVIEW,
             payload,
             { withCredentials: true }

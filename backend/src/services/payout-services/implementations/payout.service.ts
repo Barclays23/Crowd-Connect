@@ -23,13 +23,19 @@ import {
     GetPayoutsResponse, 
     PayoutResponseDTO 
 } from "@/dtos/payout.dto";
-import { uploadToCloudinary } from "@/config/cloudinary";
 import { validatePayoutRequest, validatePayoutReview } from "@/utils/validations/payoutValidations";
 import { PAYOUT_REQUEST_STATUSES, PayoutRequestStatus } from "@/constants/payout.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 import { OperationalSettingsResponseDTO } from "@/dtos/settings.dto";
 import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
-import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, RELATED_ENTITY_TYPE } from "@/types/notification.types";
+import { 
+    NOTIFICATION_RECIPIENT_ROLES, 
+    NOTIFICATION_TYPES, 
+    RELATED_ENTITY_TYPE 
+} from "@/types/notification.types";
+import { IFileStorageService } from "@/services/file-storage-services/interfaces/IFileStorageService";
+import { UserEntity } from "@/entities/user.entity";
+import { IUserRepository } from "@/repositories/interfaces/IUserRepository";
 
 
 
@@ -39,9 +45,11 @@ export class PayoutService implements IPayoutService {
     constructor(
         private readonly _payoutRepository      : IPayoutRepository,
         private readonly _eventRepository       : IEventRepository,
+        private readonly _userRepository        : IUserRepository,
         private readonly _settingsService       : IPlatformSettingsService,
         private readonly _walletService         : IWalletService,
-        private readonly _notificationDispatcher: INotificationService
+        private readonly _notificationDispatcher: INotificationService,
+        private readonly _storageService        : IFileStorageService
     ) {}
 
 
@@ -64,17 +72,12 @@ export class PayoutService implements IPayoutService {
         const commissionAmount: number  = Math.round(grossAmount * commissionRate);
         const netAmount: number         = grossAmount - commissionAmount;
 
-
         // --- Handle File Uploads ---
         let payoutProofUrls: string[] = [];
         
         if (proofFiles && proofFiles.length > 0) {
             const uploadPromises = proofFiles.map((file) => 
-                uploadToCloudinary({
-                    fileBuffer  : file.buffer,
-                    folderPath  : "payout-proofs",
-                    fileType    : "image",
-                })
+                this._storageService.uploadFile(file.buffer, "payout-proofs", "image")
             );
             
             payoutProofUrls = await Promise.all(uploadPromises);
@@ -121,7 +124,6 @@ export class PayoutService implements IPayoutService {
         payoutId : string,
         payoutInput : ReviewPayoutInput,
     ): Promise<PayoutResponseDTO> {
-
         const payout: PayoutEntity | null = await this._payoutRepository.findPayoutById(payoutId);
 
         validatePayoutReview(payout, payoutInput);
@@ -130,6 +132,8 @@ export class PayoutService implements IPayoutService {
         if (!systemWalletId) {
             throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "System wallet ID is not configured.");
         }
+
+        const payoutUser: UserEntity | null = await this._userRepository.getUserById(payout.hostId);
 
         // ── REJECT ──────
         if (payoutInput.action === "reject") {
@@ -143,7 +147,7 @@ export class PayoutService implements IPayoutService {
             // NOTIFICATION: Inform Host about Rejection
             await this._notificationDispatcher.notify({
                 type: NOTIFICATION_TYPES.PAYOUT_REJECTED,
-                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST },
+                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: payoutUser?.email },
                 data: { eventTitle: payout!.eventTitle, reason: payoutInput.rejectionReason!.trim() },
                 relatedEntity: { entityType: RELATED_ENTITY_TYPE.PAYOUT, entityId: payoutId }
             });
@@ -188,7 +192,7 @@ export class PayoutService implements IPayoutService {
             // NOTIFICATION: Inform Host about Approval/Payment
             await this._notificationDispatcher.notify({
                 type: NOTIFICATION_TYPES.PAYOUT_APPROVED,
-                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST },
+                recipient: { userId: payout!.hostId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: payoutUser?.email },
                 data: { eventTitle: payout!.eventTitle, netAmount: payout!.netAmount },
                 relatedEntity: { entityType: RELATED_ENTITY_TYPE.PAYOUT, entityId: payoutId }
             });

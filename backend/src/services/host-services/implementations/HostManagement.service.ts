@@ -19,7 +19,6 @@ import {
     UserEntity, 
     UserProfileEntity 
 } from "@/entities/user.entity";
-import { deleteFromCloudinary, uploadToCloudinary } from "@/config/cloudinary";
 import { 
     mapToHostManageInput,
     mapHostUpgradeRequestDtoToInput, 
@@ -40,6 +39,7 @@ import {
 } from "@/utils/validations/userValidations";
 import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
 import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES } from "@/types/notification.types";
+import { IFileStorageService } from "@/services/file-storage-services/interfaces/IFileStorageService";
 
 
 
@@ -47,7 +47,8 @@ import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES } from "@/types/notifi
 export class HostManagementService implements IHostManagementServices {
     constructor(
         private readonly _userRepository: IUserRepository,
-        private readonly _notificationDispatcher: INotificationService
+        private readonly _notificationDispatcher: INotificationService,
+        private readonly _storageService: IFileStorageService
     ) {}
 
 
@@ -57,178 +58,142 @@ export class HostManagementService implements IHostManagementServices {
         documentFile: Express.Multer.File;
         logoFile: Express.Multer.File;
     }): Promise<UserProfileResponseDto> {
-        try {
-            const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
+        const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
 
-            validateAllowedToApplyRoleUpgrade(existingUser);
+        validateAllowedToApplyRoleUpgrade(existingUser);
 
-            let hostDocumentUrl: string | undefined;
-            let organizationLogoUrl: string | undefined;
+        let hostDocumentUrl: string | undefined;
+        let organizationLogoUrl: string | undefined;
 
-            // Handle Document Upload
-            if (documentFile){
-                hostDocumentUrl = await uploadToCloudinary({
-                    fileBuffer: documentFile.buffer,
-                    folderPath: 'host-documents',
-                    fileType: 'image',
-                });
+        // Handle Document Upload
+        if (documentFile){
+            hostDocumentUrl = await this._storageService.uploadFile(documentFile.buffer, 'host-documents', 'image');
 
-                console.log('new hostDocumentUrl:', hostDocumentUrl);
+            if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
+                try {
+                    await this._storageService.deleteFile(existingUser.certificateUrl, 'image');
 
-                if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
-                    try {
-                        await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});
-                    } catch (cleanupErr) {
-                        console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
-                    }
+                } catch (cleanupErr) {
+                    console.warn("Failed to delete old host document from storage:", cleanupErr);
                 }
             }
-
-            // Handle Logo Upload
-            if (logoFile) {
-                organizationLogoUrl = await uploadToCloudinary({
-                    fileBuffer: logoFile.buffer,
-                    folderPath: 'host-logos',
-                    fileType: 'image',
-                });
-                if (existingUser.organizationLogo) {
-                    await deleteFromCloudinary({ fileUrl: existingUser.organizationLogo, resourceType: 'image' }).catch(() => {});
-                }
-            }
-
-            const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl, organizationLogoUrl});
-
-            const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(userId, upgradeInput);
-
-            if (!hostEntity) {
-                throw new Error("Failed to update host details. User not found."); 
-            }
-
-            // NOTIFICATION: Notify the Admin that a new request send by user.
-            const systemAdminId = process.env.SUPER_ADMIN_ID;
-            if (systemAdminId) {
-                await this._notificationDispatcher.notify({
-                    type: NOTIFICATION_TYPES.HOST_REQUEST_RECEIVED,
-                    recipient: { userId: systemAdminId, role: NOTIFICATION_RECIPIENT_ROLES.ADMIN },
-                    data: { organizationName: upgradeInput.organizationName, applicantEmail: hostEntity.email }
-                });
-            }
-
-            return mapUserEntityToProfileDto(hostEntity);
-
-        } catch (error: unknown) {
-            throw error;
         }
+
+        // Handle Logo Upload
+        if (logoFile) {
+            organizationLogoUrl = await this._storageService.uploadFile(logoFile.buffer, 'host-logos', 'image');
+
+            if (existingUser.organizationLogo) {
+                await this._storageService.deleteFile(existingUser.organizationLogo, 'image').catch(() => {});
+            }
+        }
+
+        const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl, organizationLogoUrl});
+
+        const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(userId, upgradeInput);
+
+        if (!hostEntity) {
+            throw new Error("Failed to update host details. User not found."); 
+        }
+
+        // NOTIFICATION: Notify the Admin that a new request send by user.
+        const systemAdminId = process.env.SUPER_ADMIN_ID;
+        if (systemAdminId) {
+            await this._notificationDispatcher.notify({
+                type: NOTIFICATION_TYPES.HOST_REQUEST_RECEIVED,
+                recipient: { userId: systemAdminId, role: NOTIFICATION_RECIPIENT_ROLES.ADMIN },
+                data: { organizationName: upgradeInput.organizationName, applicantEmail: hostEntity.email }
+            });
+        }
+
+        return mapUserEntityToProfileDto(hostEntity);
+
     }
 
 
     async manageHostApplication({ hostId, action, reason }: HostManageApplicationDto): Promise<HostStatusUpdateResponseDto> {
-        try {
-            const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
-            if (!hostEntity) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
-            }
-
-            // Only PENDING hosts can be approved or rejected
-            if (hostEntity.hostStatus !== HOST_STATUS.PENDING) {
-                throw createHttpError(
-                    HTTP_STATUS.BAD_REQUEST,
-                    `Cannot ${action} a host application that is currently ${hostEntity.hostStatus}.`
-                );
-            }
-
-            const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
-            
-            const updatedHostEntity: HostEntity | null = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
-
-            if (!updatedHostEntity) {
-                throw new Error("Failed to update host details. User not found."); 
-            }
-
-            const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
-
-            // Send notification to host (later)
-            // await this._notificationDispatcher.sendHostStatusUpdate(
-            //     hostEntity.userId,
-            //     action,
-            //     reason
-            // );
-
-            // NOTIFICATION: Inform host of application result
-            const notificationType = action === "approve" 
-                ? NOTIFICATION_TYPES.HOST_REQUEST_APPROVED 
-                : NOTIFICATION_TYPES.HOST_REQUEST_REJECTED;
-
-            await this._notificationDispatcher.notify({
-                type: notificationType,
-                recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: hostEntity.email },
-                data: { reason: reason || "" }
-            });
-
-            return updatedStatusResponse;
-
-        } catch (error: unknown) {
-            throw error;
+        const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
+        if (!hostEntity) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
         }
+
+        // Only PENDING hosts can be approved or rejected
+        if (hostEntity.hostStatus !== HOST_STATUS.PENDING) {
+            throw createHttpError(
+                HTTP_STATUS.BAD_REQUEST,
+                `Cannot ${action} a host application that is currently ${hostEntity.hostStatus}.`
+            );
+        }
+
+        const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
+        
+        const updatedHostEntity: HostEntity | null = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
+
+        if (!updatedHostEntity) {
+            throw new Error("Failed to update host details. User not found."); 
+        }
+
+        const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
+
+        // NOTIFICATION: Inform host of application result
+        const notificationType = action === "approve" 
+            ? NOTIFICATION_TYPES.HOST_REQUEST_APPROVED 
+            : NOTIFICATION_TYPES.HOST_REQUEST_REJECTED;
+
+        await this._notificationDispatcher.notify({
+            type: notificationType,
+            recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: hostEntity.email },
+            data: { reason: reason || "" }
+        });
+
+        return updatedStatusResponse;
     }
 
 
     async manageHostPermission({ hostId, action, reason }: HostManagePermissionDto): Promise<HostStatusUpdateResponseDto> {
-        try {
-            const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
-            if (!hostEntity) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
-            }
-
-            const allowedTransitions: Record<HostStatus, Array<HostManagePermissionDto["action"]>> = {
-                [HOST_STATUS.PENDING]: ['block'],
-                [HOST_STATUS.APPROVED]: ['block'],
-                [HOST_STATUS.REJECTED]: ['block'],
-                [HOST_STATUS.BLOCKED]: ['unblock'],  // Can only unblock if already blocked
-            } as const;
-
-            const allowedActions = allowedTransitions[hostEntity.hostStatus as HostStatus];
-
-            if (!allowedActions || !allowedActions.includes(action)) {
-                throw createHttpError(
-                    HTTP_STATUS.BAD_REQUEST,
-                    `Cannot ${action} a host that is currently in ${hostEntity.hostStatus} state.`
-                );
-            }
-
-            const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
-            
-            const updatedHostEntity: HostEntity | null = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
-
-            if (!updatedHostEntity) {
-                throw new Error("Failed to update host details. User not found."); 
-            }
-
-            const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
-
-            // NOTIFICATION: Host blocked/unblocked
-            const notificationType = action === "block" 
-                ? NOTIFICATION_TYPES.ACCOUNT_BLOCKED 
-                : NOTIFICATION_TYPES.ACCOUNT_UNBLOCKED;
-
-            await this._notificationDispatcher.notify({
-                type: notificationType,
-                recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: hostEntity.email },
-                data: { reason: reason || "" }
-            });
-
-            // Send notification to host (later)
-            // await this._notificationDispatcher.sendHostStatusUpdate(
-            //     hostEntity.userId,
-            //     action,
-            //     reason
-            // );
-
-            return updatedStatusResponse;
-
-        } catch (error: unknown) {
-            throw error;
+        const hostEntity: HostEntity | null = await this._userRepository.getHostById(hostId);
+        if (!hostEntity) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
         }
+
+        const allowedTransitions: Record<HostStatus, Array<HostManagePermissionDto["action"]>> = {
+            [HOST_STATUS.PENDING]: ['block'],
+            [HOST_STATUS.APPROVED]: ['block'],
+            [HOST_STATUS.REJECTED]: ['block'],
+            [HOST_STATUS.BLOCKED]: ['unblock'],  // Can only unblock if already blocked
+        } as const;
+
+        const allowedActions = allowedTransitions[hostEntity.hostStatus as HostStatus];
+
+        if (!allowedActions || !allowedActions.includes(action)) {
+            throw createHttpError(
+                HTTP_STATUS.BAD_REQUEST,
+                `Cannot ${action} a host that is currently in ${hostEntity.hostStatus} state.`
+            );
+        }
+
+        const hostStatusInput: HostManageInput = mapToHostManageInput({hostId, action, reason});
+        
+        const updatedHostEntity: HostEntity | null = await this._userRepository.updateHostStatus(hostId, hostStatusInput);
+
+        if (!updatedHostEntity) {
+            throw new Error("Failed to update host details. User not found."); 
+        }
+
+        const updatedStatusResponse: HostStatusUpdateResponseDto = mapToHostStatusUpdateResponseDto(updatedHostEntity)
+
+        // NOTIFICATION: Host blocked/unblocked
+        const notificationType = action === "block" 
+            ? NOTIFICATION_TYPES.ACCOUNT_BLOCKED 
+            : NOTIFICATION_TYPES.ACCOUNT_UNBLOCKED;
+
+        await this._notificationDispatcher.notify({
+            type: notificationType,
+            recipient: { userId: hostEntity.userId, role: NOTIFICATION_RECIPIENT_ROLES.HOST, email: hostEntity.email },
+            data: { reason: reason || "" }
+        });
+
+        return updatedStatusResponse;
     }
 
 
@@ -238,18 +203,18 @@ export class HostManagementService implements IHostManagementServices {
         documentFile?: Express.Multer.File;
         logoFile?: Express.Multer.File;
     }): Promise<UserProfileResponseDto> {
+        let hostDocumentUrl: string | undefined;
+        let organizationLogoUrl: string | undefined;
+
         try {
             const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(userId);
             if (!existingUser) throw createHttpError(HTTP_STATUS.NOT_FOUND, USER_MESSAGES.USER_NOT_FOUND);
 
-            let hostDocumentUrl: string | undefined;
-            let organizationLogoUrl: string | undefined;
-
             if (documentFile) {
-                hostDocumentUrl = await uploadToCloudinary({ fileBuffer: documentFile.buffer, folderPath: 'host-documents', fileType: 'image' });
+                hostDocumentUrl = await this._storageService.uploadFile(documentFile.buffer, 'host-documents', 'image');
             }
             if (logoFile) {
-                organizationLogoUrl = await uploadToCloudinary({ fileBuffer: logoFile.buffer, folderPath: 'host-logos', fileType: 'image' });
+                organizationLogoUrl = await this._storageService.uploadFile(logoFile.buffer, 'host-logos', 'image');
             }
 
             const upgradeInput: UpgradeHostInput = mapHostUpgradeRequestDtoToInput({upgradeDto, hostDocumentUrl, organizationLogoUrl});
@@ -262,50 +227,50 @@ export class HostManagementService implements IHostManagementServices {
             return mapUserEntityToProfileDto(hostEntity);
 
         } catch (error: unknown) {
+            if (hostDocumentUrl) {
+                await this._storageService.deleteFile(hostDocumentUrl, 'image').catch((err) => {
+                    console.error("Rollback failed: Could not delete orphaned document from storage:", err);
+                });
+            }
+            if (organizationLogoUrl) {
+                await this._storageService.deleteFile(organizationLogoUrl, 'image').catch((err) => {
+                    console.error("Rollback failed: Could not delete orphaned logo from storage:", err);
+                });
+            }
             throw error;
         }
     }
 
 
     async updateHostDetailsByHost({hostId, updateDto, documentFile}: {hostId: string; updateDto: HostUpdateRequestDto; documentFile?: Express.Multer.File}): Promise<UserProfileResponseDto> {
-        try {
-            const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
+        const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
-            validateAllowedToUpdateHost(existingUser);
+        validateAllowedToUpdateHost(existingUser);
 
-            let hostDocumentUrl: string | undefined;
+        let hostDocumentUrl: string | undefined;
 
-            if (documentFile){
-                hostDocumentUrl = await uploadToCloudinary({
-                    fileBuffer: documentFile.buffer,
-                    folderPath: 'host-documents',
-                    fileType: 'image',
-                });
+        if (documentFile){
+            hostDocumentUrl = await this._storageService.uploadFile(documentFile.buffer, 'host-documents', 'image');
 
-                console.log('new hostDocumentUrl:', hostDocumentUrl);
+            if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
+                try {
+                    await this._storageService.deleteFile(existingUser.certificateUrl, 'image');
 
-                if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
-                    try {
-                        await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});
-                    } catch (cleanupErr) {
-                        console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
-                    }
+                } catch (cleanupErr) {
+                    console.warn("Failed to delete host document from storage:", cleanupErr);
                 }
             }
-
-            const hostUpdateInput: HostUpdateInput = mapHostDetailsUpdateToInput(updateDto, hostDocumentUrl);
-
-            const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
-
-            if (!hostEntity) {
-                throw new Error("Failed to update host details. User not found."); 
-            }
-
-            return mapUserEntityToProfileDto(hostEntity);
-
-        } catch (error: unknown) {
-            throw error;
         }
+
+        const hostUpdateInput: HostUpdateInput = mapHostDetailsUpdateToInput(updateDto, hostDocumentUrl);
+
+        const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
+
+        if (!hostEntity) {
+            throw new Error("Failed to update host details. User not found."); 
+        }
+
+        return mapUserEntityToProfileDto(hostEntity);
     }
 
 
@@ -321,14 +286,10 @@ export class HostManagementService implements IHostManagementServices {
                 throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Organization logo is required.");
             }
 
-            newOrganizationLogoUrl = await uploadToCloudinary({
-                fileBuffer: logoFile.buffer,
-                folderPath: 'host-logos',
-                fileType: 'image',
-            });
+            newOrganizationLogoUrl = await this._storageService.uploadFile(logoFile.buffer, 'host-logos', 'image');
 
             // Note: If changing the logo requires the host to be re-verified by an admin, 
-            // you must also pass `hostStatus: HOST_STATUS.PENDING` in this update payload.
+            // must also pass `hostStatus: HOST_STATUS.PENDING` in this update payload.
             const updatedEntity: UserProfileEntity | null = await this._userRepository.updateHostDetails(hostId, { 
                 organizationLogo: newOrganizationLogoUrl 
             });
@@ -337,10 +298,9 @@ export class HostManagementService implements IHostManagementServices {
                 throw new Error("Failed to update organization logo in the database."); 
             }
 
-            // DB update successful: Safely delete the old logo
             if (existingUser.organizationLogo) {
-                await deleteFromCloudinary({ fileUrl: existingUser.organizationLogo, resourceType: 'image' }).catch((err) => {
-                    console.warn("Failed to delete old organization logo from Cloudinary:", err);
+                await this._storageService.deleteFile(existingUser.organizationLogo, 'image').catch((err) => {
+                    console.warn("Failed to delete old organization logo from storage:", err);
                 });
             }
 
@@ -349,8 +309,8 @@ export class HostManagementService implements IHostManagementServices {
         } catch (error: unknown) {
             // ROLLBACK: If the DB update failed, delete the newly uploaded file to prevent storage leaks
             if (newOrganizationLogoUrl) {
-                await deleteFromCloudinary({ fileUrl: newOrganizationLogoUrl, resourceType: 'image' }).catch((err) => {
-                    console.error("Rollback failed: Could not delete orphaned logo from Cloudinary:", err);
+                await this._storageService.deleteFile(newOrganizationLogoUrl, 'image').catch((err) => {
+                    console.error("Rollback failed: Could not delete orphaned logo from storage:", err);
                 });
             }
             throw error;
@@ -376,12 +336,7 @@ export class HostManagementService implements IHostManagementServices {
                 throw createHttpError(HTTP_STATUS.BAD_REQUEST, "Organization logo is required.");
             }
 
-            newOrganizationLogoUrl = await uploadToCloudinary({
-                fileBuffer: logoFile.buffer,
-                folderPath: 'host-logos',
-                fileType: 'image',
-            });
-
+            newOrganizationLogoUrl = await this._storageService.uploadFile(logoFile.buffer, 'host-logos', 'image');
 
             const updatePayload: HostUpdateInput = mapAdminHostLogoUpdateToInput(newOrganizationLogoUrl);
 
@@ -392,8 +347,8 @@ export class HostManagementService implements IHostManagementServices {
             }
 
             if (existingUser.organizationLogo) {
-                await deleteFromCloudinary({ fileUrl: existingUser.organizationLogo, resourceType: 'image' }).catch((err) => {
-                    console.warn(`Failed to delete old organization logo [${existingUser.organizationLogo}] from Cloudinary:`, err);
+                await this._storageService.deleteFile(existingUser.organizationLogo, 'image').catch((err) => {
+                    console.warn(`Failed to delete old organization logo from storage:`, err);
                 });
             }
 
@@ -402,8 +357,8 @@ export class HostManagementService implements IHostManagementServices {
         } catch (error: unknown) {
             // ROLLBACK: Delete newly uploaded image if database transaction fails
             if (newOrganizationLogoUrl) {
-                await deleteFromCloudinary({ fileUrl: newOrganizationLogoUrl, resourceType: 'image' }).catch((err) => {
-                    console.error("Rollback failed: Could not delete orphaned logo from Cloudinary:", err);
+                await this._storageService.deleteFile(newOrganizationLogoUrl, 'image').catch((err) => {
+                    console.error("Rollback failed: Could not delete orphaned logo from storage:", err);
                 });
             }
             throw error;
@@ -416,104 +371,81 @@ export class HostManagementService implements IHostManagementServices {
         updateDto: HostUpdateRequestDto;
         documentFile?: Express.Multer.File;
     }): Promise<UserProfileResponseDto> {
-        try {
-            const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
+        const existingUser: UserProfileEntity | null = await this._userRepository.getUserProfile(hostId);
 
-            if (!existingUser) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
-            }
+        if (!existingUser) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.HOST_NOT_FOUND);
+        }
 
-            const isHost = existingUser.role === USER_ROLES.HOST;
+        const isHost = existingUser.role === USER_ROLES.HOST;
 
-            if (!isHost) {
-                throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.USER_NOT_A_HOST);
-            }
+        if (!isHost) {
+            throw createHttpError(HTTP_STATUS.NOT_FOUND, HOST_MESSAGES.USER_NOT_A_HOST);
+        }
 
-            // may check the validations
-            // const allowedToEdit = isHost || (
-            //     existingUser.hostStatus === HostStatus.REJECTED || 
-            //     existingUser.hostStatus === HostStatus.BLOCKED ||
-            //     existingUser.hostStatus === HostStatus.APPROVED
-            // );
+        let hostDocumentUrl: string | undefined;
 
-            let hostDocumentUrl: string | undefined;
+        if (documentFile){
+            hostDocumentUrl = await this._storageService.uploadFile(documentFile.buffer, 'host-documents', 'image');
 
-            if (documentFile){
-                hostDocumentUrl = await uploadToCloudinary({
-                    fileBuffer: documentFile.buffer,
-                    folderPath: 'host-documents',
-                    fileType: 'image',
-                });
-
-                console.log('new hostDocumentUrl:', hostDocumentUrl);
-
-                if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
-                    try {
-                        await deleteFromCloudinary({fileUrl: existingUser.certificateUrl, resourceType: 'image'});
-                    } catch (cleanupErr) {
-                        console.warn("Failed to delete host document from Cloudinary:", cleanupErr);
-                    }
+            if (existingUser.certificateUrl && existingUser.certificateUrl.trim() !== '') {
+                try {
+                    await this._storageService.deleteFile(existingUser.certificateUrl, 'image');
+                } catch (cleanupErr) {
+                    console.warn("Failed to delete host document from storage:", cleanupErr);
                 }
             }
-
-            const hostUpdateInput: HostUpdateInput = mapAdminHostDetailsUpdateToInput(updateDto, hostDocumentUrl);
-
-            const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
-
-            if (!hostEntity) {
-                throw new Error("Failed to update host details. User not found."); 
-            }
-
-            return mapUserEntityToProfileDto(hostEntity);
-
-        } catch (error: unknown) {
-            throw error;
         }
+
+        const hostUpdateInput: HostUpdateInput = mapAdminHostDetailsUpdateToInput(updateDto, hostDocumentUrl);
+
+        const hostEntity: HostEntity | null = await this._userRepository.updateHostDetails(hostId, hostUpdateInput);
+
+        if (!hostEntity) {
+            throw new Error("Failed to update host details. User not found."); 
+        }
+
+        return mapUserEntityToProfileDto(hostEntity);
     }
 
 
     
     async getAllHosts(filters: GetHostsFilter): Promise<GetHostsResult> {
-        try {
-            const { page, limit, search, role, status, hostStatus } = filters;
+        const { page, limit, search, role, status, hostStatus } = filters;
 
-            const query: UserFilterQuery = {};
+        const query: UserFilterQuery = {};
 
-            query.role = role ?? USER_ROLES.HOST;
+        query.role = role ?? USER_ROLES.HOST;
 
-            if (search) {
-                query.$or = [
-                    { organizationName: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                    { mobile: { $regex: search, $options: 'i' } },
-                ];
-            }
-
-            if (status) query.status = status;
-            if (hostStatus) query.hostStatus = hostStatus;
-
-            const skip = (page - 1) * limit;
-
-            const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
-                this._userRepository.findHosts(query, skip, limit),
-                this._userRepository.countUsers(query)
-            ]);
-
-            const mappedHosts: UserProfileResponseDto[] = hosts ? hosts.map(mapUserEntityToProfileDto) : [];
-
-            return {
-                hosts: mappedHosts,
-                pagination: {
-                    totalCount: totalCount,
-                    limit: limit,
-                    currentPage: page,
-                    totalPages: Math.ceil(totalCount / limit)
-                },
-            };
-
-        } catch (error: unknown) {
-            throw error;
+        if (search) {
+            query.$or = [
+                { organizationName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { mobile: { $regex: search, $options: 'i' } },
+            ];
         }
+
+        if (status) query.status = status;
+        if (hostStatus) query.hostStatus = hostStatus;
+
+        const skip = (page - 1) * limit;
+
+        const [hosts, totalCount]: [UserEntity[] | null, number] = await Promise.all([
+            this._userRepository.findHosts(query, skip, limit),
+            this._userRepository.countUsers(query)
+        ]);
+
+        const mappedHosts: UserProfileResponseDto[] = hosts ? hosts.map(mapUserEntityToProfileDto) : [];
+
+        return {
+            hosts: mappedHosts,
+            pagination: {
+                totalCount: totalCount,
+                limit: limit,
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit)
+            },
+        };
     }
 
 

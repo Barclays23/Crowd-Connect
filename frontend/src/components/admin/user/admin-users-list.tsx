@@ -1,5 +1,5 @@
 // frontend/src/components/admin/user/admin-users-list.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Download, UserPlus, Eye, Edit, Ban, CheckCircle, XCircle, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingSpinner1 } from "../../shared/LoadingSpinner1";
 import type { ApiResponse } from "@/types/common.types";
-import type { UserRole, UserStatus } from "@/constants/user-system.constants";
+import { USER_STATUS, type UserRole, type UserStatus } from "@/constants/user-system.constants";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 
 
@@ -189,18 +190,18 @@ export function AdminUsersList() {
 
   const getStatusBadgeVariant = (status: string): "default" | "success" | "destructive" | "secondary" | "outline" => {
     switch (status) {
-      case "active": return "success";
-      case "blocked": return "destructive";
-      case "pending": return "outline";
+      case USER_STATUS.ACTIVE: return "success";
+      case USER_STATUS.BLOCKED: return "destructive";
+      case USER_STATUS.PENDING: return "outline";
       default: return "secondary";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "active": return <CheckCircle className="h-3.5 w-3.5" />;
-      case "blocked": return <XCircle className="h-3.5 w-3.5" />;
-      case "pending": return <Filter className="h-3.5 w-3.5" />;
+      case USER_STATUS.ACTIVE: return <CheckCircle className="h-3.5 w-3.5" />;
+      case USER_STATUS.BLOCKED: return <XCircle className="h-3.5 w-3.5" />;
+      case USER_STATUS.PENDING: return <Filter className="h-3.5 w-3.5" />;
       default: return null;
     }
   };
@@ -413,65 +414,74 @@ export function AdminUsersList() {
                           {/* Row 1: Icon actions */}
                           <div className="flex items-center gap-1">
                             {/* View */}
-                            <Button
-                              onClick={() => setViewUser(user)}
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
-                            >
-                              <Eye className="h-4 w-4 text-(--text-secondary)" />
-                            </Button>
+                            <Tooltip content="View User" side="top">
+                              <Button
+                                onClick={() => setViewUser(user)}
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
+                              >
+                                <Eye className="h-4 w-4 text-(--text-secondary)" />
+                              </Button>
+                            </Tooltip>
 
                             {(currentAdmin?.isSuperAdmin || user.role !== "admin") && (
                               <>
                                 {/* Edit */}
-                                <Button
-                                  onClick={() => setEditUser(user)}
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
-                                >
-                                  <Edit className="h-4 w-4 text-(--text-secondary)" />
-                                </Button>
+                                <Tooltip content="Edit User" side="top">
+                                  <Button
+                                    onClick={() => setEditUser(user)}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral)"
+                                  >
+                                    <Edit className="h-4 w-4 text-(--text-secondary)" />
+                                  </Button>
+                                </Tooltip>
 
                                 {/* Block / Unblock */}
                                 { !user.isSuperAdmin && (
                                   <>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className={cn(
-                                        "h-9 w-9 rounded-lg hover:bg-(--btn-neutral)",
-                                        user.status === "blocked"
-                                          ? "text-(--status-success)"
-                                          : "text-(--status-error)"
-                                      )}
-                                      onClick={() => setBlockUser(user)}
-                                      disabled={blockingUserId === user.userId}
-                                    >
-                                      {blockingUserId === user.userId ? (
-                                          <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : user.status === "blocked" ? (
-                                          <CheckCircle className="h-4 w-4" />
-                                        ) : (
-                                          <Ban className="h-4 w-4" />
+                                  <Tooltip content={
+                                      user.status === USER_STATUS.BLOCKED ? "Unblock User" : "Block User"} side="top">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className={cn(
+                                          "h-9 w-9 rounded-lg hover:bg-(--btn-neutral)",
+                                          user.status === USER_STATUS.BLOCKED
+                                            ? "text-(--status-success)"
+                                            : "text-(--status-error)"
                                         )}
-                                    </Button>
+                                        onClick={() => setBlockUser(user)}
+                                        disabled={blockingUserId === user.userId}
+                                      >
+                                        {blockingUserId === user.userId ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : user.status === USER_STATUS.BLOCKED ? (
+                                            <CheckCircle className="h-4 w-4" />
+                                          ) : (
+                                            <Ban className="h-4 w-4" />
+                                          )}
+                                      </Button>
+                                    </Tooltip>
 
                                     {/* Delete */}
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral) text-(--status-error)"
-                                      onClick={() => setDeleteUser(user)}
-                                      disabled={deletingUserId === user.userId}
-                                    >
-                                      {deletingUserId === user.userId ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <Trash2 className="h-4 w-4" />
-                                      )}
-                                    </Button>
+                                    <Tooltip content="Delete User" side="top">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-9 w-9 rounded-lg hover:bg-(--btn-neutral) text-(--status-error)"
+                                        onClick={() => setDeleteUser(user)}
+                                        disabled={deletingUserId === user.userId}
+                                      >
+                                        {deletingUserId === user.userId ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                    </Tooltip>
                                   </>
                                 )}
                               </>
@@ -479,8 +489,8 @@ export function AdminUsersList() {
                           </div>
 
                           {/* Row 2: Convert to Host */}
-                          {/* {(currentAdmin?.isSuperAdmin || user.role !== "admin") && !user.isSuperAdmin && 
-                            user.role !== "host" && (
+                          {/* {(currentAdmin?.isSuperAdmin || user.role !== USER_ROLES.ADMIN) && !user.isSuperAdmin && 
+                            user.role !== USER_ROLES.HOST && (
                               <Button
                                 variant="primaryOutline"
                                 size="sm"
@@ -555,12 +565,12 @@ export function AdminUsersList() {
           isOpen={!!blockUser}
           onClose={() => setBlockUser(null)}
           onConfirm={() => handleToggleBlockUser(blockUser!)}
-          title={blockUser?.status === "blocked" ? "Unblock User" : "Block User"}
-          description={blockUser?.status === "blocked" ? "Are you sure you want to unblock this user?" : "Are you sure you want to block this user?"}
+          title={blockUser?.status === USER_STATUS.BLOCKED ? "Unblock User" : "Block User"}
+          description={blockUser?.status === USER_STATUS.BLOCKED ? "Are you sure you want to unblock this user?" : "Are you sure you want to block this user?"}
           confirmText={
             blockingUserId === blockUser?.userId
               ? "Processing..."
-              : blockUser?.status === "blocked" ? "Unblock" : "Block"
+              : blockUser?.status === USER_STATUS.BLOCKED ? "Unblock" : "Block"
           }
           variant="danger"
           loading={blockingUserId === blockUser?.userId}
@@ -590,8 +600,7 @@ export function AdminUsersList() {
             <HostManageForm
               host={convertToHostUser}
               mode="convertMode"
-              onSuccess={(updatedUser) => {
-                // Refresh both lists if needed
+              onSuccess={() => {
                 fetchUsers();
                 // Optional: if you have hosts list open in another tab → it will need refresh too
                 toast.success("User successfully converted to Host-------!");

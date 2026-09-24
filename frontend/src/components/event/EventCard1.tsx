@@ -2,7 +2,7 @@
 import { StarRating } from "@/components/shared/StarRating";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
 import { type IEventState } from "@/types/event.types";
-import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp, Star } from "lucide-react";
+import { Calendar, MapPin, Tag, Users, Wifi, Clock, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
@@ -36,9 +36,10 @@ function formatDate(dateStr: string) {
 }
 
 function EventCard1({ event }: { event: IEventState }) {
+    const navigate = useNavigate();
+    
     if (!event) return null;
 
-    const navigate = useNavigate();
     const isFree = event.ticketType === TICKET_TYPES.FREE;
     const isOnline = event.format === EVENT_FORMATS.ONLINE;
     const status = getStatusBadge(event);

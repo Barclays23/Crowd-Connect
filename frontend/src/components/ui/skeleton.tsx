@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import * as React from "react";
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
+type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
 
 function Skeleton({ className, ...props }: SkeletonProps) {
   return (
@@ -11,8 +11,8 @@ function Skeleton({ className, ...props }: SkeletonProps) {
       className={cn(
         // Custom skeleton using your theme variables
         "animate-pulse rounded-md",
-        "bg-[var(--bg-secondary)]",           // base color (light: #eeeeee, dark: #1f2937)
-        "dark:bg-[var(--bg-tertiary)]",       // slightly darker in dark mode for depth
+        "bg-(--bg-secondary)",           // base color (light: #eeeeee, dark: #1f2937)
+        "dark:bg-(--bg-tertiary)",       // slightly darker in dark mode for depth
         // Optional subtle overlay for better "loading" feel (uncomment if you like it)
         // "relative overflow-hidden",
         // "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite]",

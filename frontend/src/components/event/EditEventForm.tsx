@@ -1,5 +1,6 @@
 // src/components/event/EditEventForm.tsx
 import { HostEventForm } from "@/components/event/HostEventForm";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 import type { EventStatus } from "@/constants/event.constants";
 import { eventFormSchemaFactory, type EventFormValues } from "@/schemas/event.schema";
 import { platformSettingsService } from "@/services/platformSettingsService";
@@ -33,7 +34,7 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
         setLoading(true);
         const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
 
-        setCommissionPercent(response?.data?.commissionPercent ?? commissionPercent);
+        setCommissionPercent(prev => response?.data?.commissionPercent ?? prev);
 
       } catch (error: unknown) {
         const errorMessage = getApiErrorMessage(error);
@@ -83,6 +84,10 @@ const EditEventForm = ({ editEvent, onSubmit, onCancel }: EditEventFormProps) =>
       agreeTerms: false,
     },
   });
+
+  if (loading) {
+    return <LoadingSpinner1 message="Loading form settings..." />;
+  }
 
   return (
     <FormProvider {...methods}>

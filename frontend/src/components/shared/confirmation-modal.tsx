@@ -1,7 +1,7 @@
 // src/components/shared/confirmation-modal.tsx
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 import { ButtonLoader } from "@/components/shared/ButtonLoader";
 
 interface ConfirmationModalProps {

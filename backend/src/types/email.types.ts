@@ -18,7 +18,7 @@ export enum EmailTemplate {
   BOOKING_CONFIRMATION          = "bookingConfirmation.html",
   PASSWORD_RESET                = "passwordReset.html",
 
-  NOTIFICATION_GENERIC           = "notificationGeneric.html",
+  NOTIFICATION_GENERIC          = "notificationGeneric.html",
 }
 
 

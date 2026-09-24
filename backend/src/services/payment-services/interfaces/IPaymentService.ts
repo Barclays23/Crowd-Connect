@@ -1,7 +1,7 @@
 // src/services/payment-services/interfaces/IPaymentService.ts
 
 import { CreateOrderResult, RefundResult } from "@/types/payment.types";
-import { StandardWebhookEvent } from "@/types/webhook.types";
+
 
 export interface InitiateRefundInput {
    paymentId: string;   // razorpayPaymentId from booking.payment
@@ -21,10 +21,5 @@ export interface IPaymentService {
 
     // Initiates a refund via Razorpay or Stripe.
     initiateBookingRefund(input: InitiateRefundInput): Promise<RefundResult>;
-
-    // Verifies webhook signature for incoming webhooks events.
-    // verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean;
-
-    // normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null;
 
 }

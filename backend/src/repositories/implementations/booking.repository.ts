@@ -52,6 +52,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
     };
 
     const bookingData: IBookingModel = await this.createOne(dbInput as Partial<IBookingModel>, options);
+    
     return mapBookingModelToEntity(bookingData);
   }
 
@@ -386,6 +387,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
       bookingStatus: { $in: [BOOKING_STATUSES.CONFIRMED, BOOKING_STATUSES.ATTENDED] }
     })
     .populate("eventRef", EVENT_POPULATE_SELECT)
+    .populate("userRef", "name email mobile")
     .lean<IBookingPopulatedUserAndEvent[]>();
 
     return bookings.map(mapPopulatedBookingModelToEntity);

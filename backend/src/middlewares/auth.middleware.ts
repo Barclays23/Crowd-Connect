@@ -12,6 +12,7 @@ import { AUTH_MESSAGES, USER_MESSAGES } from '@/constants/messages.constants';
 
 // Extend Express Request interface to include userId
 declare global {
+   // eslint-disable-next-line @typescript-eslint/no-namespace
    namespace Express {
       interface Request {
          user?: {
@@ -25,27 +26,12 @@ declare global {
    }
 }
 
-interface AuthenticatedRequest extends Request {}
-
-
-// export interface AuthUserPayload {
-//    userId : string;
-//    name   : string;
-//    email  : string;
-//    role   : UserRole;
-//    status : UserStatus;
-// }
-
-
-
-// export interface AuthenticatedRequest extends Request {
-//    user?: AuthUserPayload;
-// }
 
 
 
 
-export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
    const authHeader = req.headers.authorization;
 
    if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -97,7 +83,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
 
 
 export const authorize = (...allowedRoles: Array<UserRole>) => {
-   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+   return (req: Request, res: Response, next: NextFunction) => {
       const user = req.user;
 
       if (!user?.role) {

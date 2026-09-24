@@ -1,5 +1,5 @@
 import { type IEventState } from "@/types/event.types";
-import { CalendarDays, MapPin, Users, Wifi, Clock, ArrowRight } from "lucide-react";
+import { CalendarDays, MapPin, Users, Wifi, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
@@ -33,9 +33,10 @@ function formatEventDate(start: string) {
 }
 
 function EventCard3({ event }: { event: IEventState }) {
+  const navigate = useNavigate();
+  
   if (!event) return null;
 
-  const navigate = useNavigate();
   const isFree = event.ticketType === TICKET_TYPES.FREE;
   const isOnline = event.format === EVENT_FORMATS.ONLINE;
   const isEnded = new Date() > new Date(event.endDateTime) || event.eventStatus === "completed" || ["cancelled", "suspended"].includes(event.eventStatus || "");

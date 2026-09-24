@@ -64,6 +64,8 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
          const timer = setTimeout(() => setJustSelected(false), 800);
          return () => clearTimeout(timer);
       }
+
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [defaultValue]);
 
 
@@ -86,12 +88,12 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
       setLoading(true);
 
       try {
-         const keralaBiasBounds: google.maps.LatLngBoundsLiteral = {
-            south: 8.0,   // approx southern tip
-            west: 74.0,   // approx western coast
-            north: 12.8,  // approx northern border
-            east: 77.5    // approx eastern side
-         };
+         // const keralaBiasBounds: google.maps.LatLngBoundsLiteral = {
+         //    south: 8.0,   // approx southern tip
+         //    west: 74.0,   // approx western coast
+         //    north: 12.8,  // approx northern border
+         //    east: 77.5    // approx eastern side
+         // };
 
          const request: google.maps.places.AutocompleteRequest = {
             input,
@@ -147,6 +149,7 @@ export const GooglePlacesAutoComplete: React.FC<PlacesAutocompleteProps> = ({
 
       return () => clearTimeout(timer);
 
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [inputValue, placesLibrary]);
 
 

@@ -1,94 +1,78 @@
 // frontend/src/utils/google-map-utils/google-place-new-autocomplete.ts
 // new method for google places New API for autocomplete
 // GooglePlacesAutoComplete component already does internally
-
 import { toast } from "react-toastify";
 
-
-
+// Maintain a singleton session token to group autocomplete billing requests
 let sessionToken: google.maps.places.AutocompleteSessionToken | null = null;
 
-
-
-// pair one
-export async function getPlacePredictions(input: string) {
-   const placesLib = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
-   const { AutocompleteSuggestion } = placesLib as typeof placesLib & {
-      AutocompleteSuggestion: typeof google.maps.places.AutocompleteSuggestion;
-   };
-
-   const request = {
-      input,
-      includedPrimaryTypes: ["geocode", "(cities)"],
-      includedRegionCodes: ["in"],
-   };
-   const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-   return suggestions || [];
+export interface PlaceDetails {
+   name: string;
+   lat: number;
+   lng: number;
 }
 
-
-// pair one
-export async function getPlaceDetailsFromPrediction(prediction: any) {
-   const place = prediction.toPlace();
-   await place.fetchFields({ fields: ["formattedAddress", "location"] });
-   return {
-      name: place.formattedAddress || "",
-      lat: place.location?.lat() || 0,
-      lng: place.location?.lng() || 0,
-   };
-}
-
-
-// pair two
 export async function fetchPlaceSuggestions(
    inputValue: string,
-   onSelect: (place: { name: string; lat: number; lng: number }) => void
-   ) {
-   if (!inputValue || inputValue.length < 3) return;
+) {
+   const trimmedInput = inputValue?.trim();
+   if (!trimmedInput || trimmedInput.length < 3) return [];
 
    try {
-      const placesLib = await google.maps.importLibrary("places") as google.maps.PlacesLibrary;
+      const placesLib = (await google.maps.importLibrary(
+         "places"
+      )) as typeof google.maps.places;
 
-      // Session token (optional but recommended for billing grouping)
+      // Initialize session token if it doesn't exist to optimize API billing
       if (!sessionToken) {
-         sessionToken = new (placesLib.AutocompleteSessionToken || (placesLib as any).AutocompleteSessionToken)();
-         // sessionToken = new google.maps.places.AutocompleteSessionToken();
+         sessionToken = new placesLib.AutocompleteSessionToken();
       }
 
-
-      const { AutocompleteSuggestion } = placesLib as typeof placesLib & {
-         AutocompleteSuggestion: typeof google.maps.places.AutocompleteSuggestion;
-      };
-
-      const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-         input: inputValue,
+      const request = {
+         input: trimmedInput,
          includedRegionCodes: ["in"],
          includedPrimaryTypes: ["geocode", "(cities)"],
          sessionToken,
-      });
+      };
 
+      const { suggestions } = await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+      
       // Return suggestions for your dropdown
       return suggestions || [];
 
-   } catch (err) {
-      console.error(err);
+   } catch (err: unknown) {
+      console.error("Places API Suggestion Error:", err);
       toast.warn("Failed to fetch location suggestions");
       return [];
    }
 }
 
+export async function getPlaceDetailsFromSuggestion(
+   suggestion: google.maps.places.AutocompleteSuggestion
+): Promise<PlaceDetails> {
+   try {
+      if (!suggestion.placePrediction) {
+         throw new Error("No place prediction available for this suggestion.");
+      }
 
-// pair two
-export async function getPlaceDetailsFromSuggestion(suggestion: any) {
-   const place = suggestion.placePrediction.toPlace();
+      const place = suggestion.placePrediction.toPlace();
 
-   await place.fetchFields({
-      fields: ["formattedAddress", "location"],
-   });
+      await place.fetchFields({
+         fields: ["formattedAddress", "location"],
+      });
 
-   return {
-      name: place.formattedAddress || "",
-      lat: place.location?.lat() ?? 0,
-      lng: place.location?.lng() ?? 0,
-   };
+      // Clear the session token after a terminal selection is made
+      sessionToken = null;
+
+      return {
+         name: place.formattedAddress || "",
+         lat: place.location?.lat() ?? 0,
+         lng: place.location?.lng() ?? 0,
+      };
+      
+   } catch (err: unknown) {
+      console.error("Error fetching place details:", err);
+      toast.warn("Failed to retrieve place details");
+      return { name: "", lat: 0, lng: 0 };
+   }
 }

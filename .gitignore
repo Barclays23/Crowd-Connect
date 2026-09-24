@@ -57,3 +57,9 @@ backend/logs/
 # 4. LOCAL TOOLS & EXECUTABLES
 # -------------------------------------------------------------------
 backend/ngrok.exe
+
+
+
+
+# Add to .gitignore if you want to keep it locally without Git tracking it
+echo "folder-structure.txt" >> .gitignore

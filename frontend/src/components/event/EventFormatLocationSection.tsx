@@ -15,7 +15,7 @@ import { EVENT_FORMATS } from "@/constants/event.constants";
 
 interface EventFormatLocationProps {
    isLoaded: boolean;
-   handlePlaceSelected: (data: any) => void;
+   handlePlaceSelected: (data: { name: string; lat: number; lng: number; formattedAddress?: string }) => void;
    handleOpenMapModal: () => void;
    selectedPlace?: string | null;
    selectedCords?: { lat: number; lng: number } | null;

@@ -17,8 +17,11 @@ export interface NotificationEntity {
 }
 
 
-export interface NotificationsResponseData {
+
+
+
+export interface NotificationsResponse {
     notifications: NotificationEntity[];
-    unreadCount: number;
     pagination: IPagination;
+    unreadCount: number;
 }

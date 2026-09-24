@@ -27,6 +27,8 @@ import passport from 'passport';
 import aiRouter from '@/routes/ai.routes';
 import chatRouter from '@/routes/chat.routes';
 import notificationRouter from '@/routes/notification.routes';
+import userDashboardRouter from '@/routes/userDashboard.routes';
+import adminDashboardRouter from '@/routes/adminDashboard.routes';
 
 
 const app = express();
@@ -78,6 +80,9 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/wallet', walletRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/user/dashboard', userDashboardRouter);
+app.use('/api/admin/dashboard', adminDashboardRouter);
+
 
 
 

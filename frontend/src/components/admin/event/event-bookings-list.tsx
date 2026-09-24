@@ -35,7 +35,6 @@ import { cancelReasonBase } from "@/schemas/booking.schema";
 import { TextArea } from "@/components/ui/text-area";
 import { FieldError } from "@/components/shared/FieldError";
 import { canCancelBooking } from "@/utils/booking.utils";
-import { useAuth } from "@/contexts/AuthContext";
 import { BOOKING_STATUS, type BookingStatus } from "@/constants/booking.constants";
 import type { ApiResponse } from "@/types/common.types";
 
@@ -64,7 +63,6 @@ export function EventBookingsList({ eventId }: EventBookingsListProps) {
 
     const itemsPerPage = 10;
 
-    const {user} = useAuth();
 
     useEffect(() => {
         const t = setTimeout(() => { setDebouncedSearch(searchTerm); setCurrentPage(1); }, 500);

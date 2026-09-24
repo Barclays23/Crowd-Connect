@@ -102,9 +102,9 @@ export function BookingModal({ event, user, isOpen, onClose, onBooked, retryBook
 
 
    useEffect(() => {
-      if (selectedQuantity > maxBookingQty) {
-         setSelectedQuantity(maxBookingQty > 0 ? 1 : 0);
-      }
+      setSelectedQuantity(prevQty => 
+         prevQty > maxBookingQty ? (maxBookingQty > 0 ? 1 : 0) : prevQty
+      );
    }, [maxBookingQty]);
 
 

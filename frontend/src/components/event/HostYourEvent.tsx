@@ -14,11 +14,12 @@ import { getApiErrorMessage } from "@/utils/errorMessages.utils";
 import { eventServices } from "@/services/eventServices";
 import { useEffect, useState } from "react";
 import { platformSettingsService } from "@/services/platformSettingsService";
-import type { IOperationalSettings, IPlatformSettings } from "@/types/platformSettings.types";
+import type { IOperationalSettings } from "@/types/platformSettings.types";
 import { useNavigate } from "react-router-dom";
 import type { ApiResponse } from "@/types/common.types";
 import type { IEventState } from "@/types/event.types";
 import { EVENT_FORMATS, TICKET_TYPES } from "@/constants/event.constants";
+import { LoadingSpinner1 } from "@/components/shared/LoadingSpinner1";
 
 
 
@@ -31,17 +32,17 @@ const HostYourEvent = () => {
 
   useEffect(() => {
     const fetchCommissionPercent = async () => {
-        try {
-          setLoading(true);
-          const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
-          setCommissionPercent(response.data.commissionPercent ?? commissionPercent);
+      try {
+        setLoading(true);
+        const response: ApiResponse<IOperationalSettings> = await platformSettingsService.getOperationalSettings();
+        setCommissionPercent(prev => response.data.commissionPercent ?? prev);
 
-        } catch (error: unknown) {
-          console.warn("Could not load platform settings, using default commission :", error);
+      } catch (error: unknown) {
+        console.warn("Could not load platform settings, using default commission :", error);
 
-        } finally {
-          setLoading(false);
-        }
+      } finally {
+        setLoading(false);
+      }
     };
     
     fetchCommissionPercent();
@@ -116,6 +117,10 @@ const HostYourEvent = () => {
     }
   };
 
+
+  if (loading) {
+    return <LoadingSpinner1 className="min-h-screen" message="Loading platform settings..." />;
+  }
 
   return (
     <div className="min-h-screen bg-(--bg-primary) px-4 py-12 transition-colors duration-300">

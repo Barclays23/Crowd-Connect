@@ -1,6 +1,5 @@
 // frontend/src/components/layout/Footer.tsx
 import {
-  Calendar,
   Facebook,
   Twitter,
   Instagram,

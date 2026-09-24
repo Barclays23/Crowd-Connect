@@ -13,6 +13,7 @@ import { PAYMENT_STATUSES } from "@/constants/payment.constants";
 import { useNavigate } from "react-router-dom";
 import { isLiveStreamingRoomOpen } from "@/utils/event.utils";
 import { Button } from "@/components/ui/button";
+import { ONLINE_EARLY_JOIN_BUFFER_MS } from "@/constants/checkin.constants";
 
 
 // Horizontal layout for lists in the lower cards
@@ -255,7 +256,7 @@ function BookingDetails({ booking }: BookingDetailsProps) {
                            <Globe className="w-12 h-12 mb-4 text-(--brand-primary) opacity-80" />
                            <h4 className="text-lg font-bold text-(--heading-primary) mb-2">Live Virtual Stage</h4>
                            <p className="text-sm text-(--text-secondary) max-w-sm mb-6">
-                              The live streaming room opens 15 minutes before the event begins.
+                              The live streaming room opens {ONLINE_EARLY_JOIN_BUFFER_MS / (60 * 1000)} minutes before the event begins.
                            </p>
                            
                            <Button 

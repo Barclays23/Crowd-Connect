@@ -4,7 +4,7 @@ import {
     UserBasicInfoUpdateDTO,
     UserProfileResponseDto,
 } from "@/dtos/user.dto";
-import { UserEntity, UserProfileEntity } from "@/entities/user.entity";
+import { UserEntity } from "@/entities/user.entity";
 
 
 

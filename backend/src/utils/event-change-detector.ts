@@ -125,13 +125,13 @@ export const detectMajorEventChanges = (
 export const buildChangeSummary = (changes: DetectedChange[]): string => {
     const parts = changes.map((c) => {
         switch (c.field) {
-            case EVENT_CHANGE_TYPES.START_DATE_TIME: return `start time changed to ${c.newValue}`;
-            case EVENT_CHANGE_TYPES.END_DATE_TIME:   return `end time changed to ${c.newValue}`;
-            case EVENT_CHANGE_TYPES.VENUE:           return `venue changed to "${c.newValue}"`;
-            case EVENT_CHANGE_TYPES.LOCATION:        return `event location moved significantly`;
-            case EVENT_CHANGE_TYPES.TICKET_PRICE:    return `ticket price reduced from ${c.oldValue} to ${c.newValue}`;
-            case EVENT_CHANGE_TYPES.CAPACITY:        return `event capacity reduced to ${c.newValue}`;
-            default:                                 return "other details updated";
+            case EVENT_CHANGE_TYPES.START_DATE_TIME: return `Event start time is changed to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.END_DATE_TIME:   return `Event end time is changed to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.VENUE:           return `Event venue is changed to "${c.newValue}"`;
+            case EVENT_CHANGE_TYPES.LOCATION:        return `Event location is moved significantly`;
+            case EVENT_CHANGE_TYPES.TICKET_PRICE:    return `The ticket price reduced from ${c.oldValue} to ${c.newValue}`;
+            case EVENT_CHANGE_TYPES.CAPACITY:        return `Event capacity is reduced to ${c.newValue}`;
+            default:                                 return "Other details updated";
         }
     });
     return `Event updated: ${parts.join(", ")}.`;

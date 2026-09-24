@@ -1,6 +1,12 @@
 // backend/src/types/wallet.types.ts
 
-import { TransactionDirection, TransactionReferenceType, TransactionStatus, TransactionType, WithdrawalStatus } from "@/constants/transaction.constants";
+import { 
+  TransactionDirection, 
+  TransactionReferenceType, 
+  TransactionStatus, 
+  TransactionType, 
+  WithdrawalStatus 
+} from "@/constants/transaction.constants";
 import { Types } from "mongoose";
 
 

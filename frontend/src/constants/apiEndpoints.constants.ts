@@ -6,19 +6,22 @@ const BACKEND_BASE_URL: string = import.meta.env.VITE_BACKEND_BASE_URL || "";
 
 // base prefixes
 const API_PREFIX = {
-    ADMIN    : "/api/admin",
-    AI       : "/api/ai",
-    AUTH     : "/api/auth",
-    BOOKING  : "/api/booking",
-    CHAT     : "/api/chat",
-    CHECKIN  : "/api/checkin",
-    EVENT    : "/api/event",
-    HOST     : "/api/host",
-    PAYOUT   : "/api/payout",
-    REVIEW   : "/api/reviews",
-    SETTINGS : "/api/settings",
-    USER     : "/api/user",
-    WALLET   : "/api/wallet",
+    ADMIN               : "/api/admin",
+    AI                  : "/api/ai",
+    AUTH                : "/api/auth",
+    BOOKING             : "/api/booking",
+    CHAT                : "/api/chat",
+    CHECKIN             : "/api/checkin",
+    EVENT               : "/api/event",
+    HOST                : "/api/host",
+    NOTIFICATION        : "/api/notifications",
+    PAYOUT              : "/api/payout",
+    REVIEW              : "/api/reviews",
+    SETTINGS            : "/api/settings",
+    USER                : "/api/user",
+    WALLET              : "/api/wallet",
+    USER_DASHBOARD      : "/api/user/dashboard",
+    ADMIN_DASHBOARD     : "/api/admin/dashboard",
 } as const;
 
 
@@ -117,13 +120,17 @@ export const API_ENDPOINTS = {
     },
 
     HOST: {
-        // DASHBOARD           : `${API_PREFIX.HOST}/dashboard`,  // using anywhere ??
-        // MY_LISTINGS         : `${API_PREFIX.HOST}/listings`,  // using anywhere ??
-        // ONBOARDING          : `${API_PREFIX.HOST}/onboarding`,  // using anywhere ??
         APPLY_UPGRADE          : `${API_PREFIX.HOST}/apply-upgrade`,
         ORGANIZER_DETAILS      : `${API_PREFIX.HOST}/organiser-details`,
         ORGANIZER_LOGO         : `${API_PREFIX.HOST}/organiser-logo`,
         ORGANISER_PROFILE      : (hostId: string) => `${API_PREFIX.HOST}/organiser/${hostId}`,
+    },
+
+    NOTIFICATION: {
+        BASE                : API_PREFIX.NOTIFICATION,
+        UNREAD_COUNT        : `${API_PREFIX.NOTIFICATION}/unread-count`,
+        MARK_READ           : (notificationId: string) => `${API_PREFIX.NOTIFICATION}/${notificationId}/read`,
+        MARK_ALL_READ       : `${API_PREFIX.NOTIFICATION}/read-all`,
     },
 
     PAYOUT: {
@@ -152,6 +159,29 @@ export const API_ENDPOINTS = {
         BASIC_INFO      : `${API_PREFIX.USER}/basic-info`,
         PROFILE_PIC     : `${API_PREFIX.USER}/profile-pic`,
         CHANGE_PASSWORD : `${API_PREFIX.USER}/change-password`,
+    },
+
+    USER_DASHBOARD: {
+        OVERVIEW          : `${API_PREFIX.USER_DASHBOARD}/overview`,
+        BOOKINGS_CHART    : `${API_PREFIX.USER_DASHBOARD}/bookings-chart`,
+        SPENDING_CHART    : `${API_PREFIX.USER_DASHBOARD}/spending-chart`,
+        CATEGORY_CHART    : `${API_PREFIX.USER_DASHBOARD}/category-chart`,
+        STATUS_CHART      : `${API_PREFIX.USER_DASHBOARD}/status-chart`,
+
+        // host specific
+        HOST_EVENTS_BY_STATUS    : `${API_PREFIX.USER_DASHBOARD}/host-events-by-status`,
+        HOST_EVENTS_BY_CATEGORY  : `${API_PREFIX.USER_DASHBOARD}/host-events-by-category`,
+        HOST_TICKETS_SOLD_CHART  : `${API_PREFIX.USER_DASHBOARD}/host-tickets-sold-chart`,
+        HOST_RATING_DISTRIBUTION : `${API_PREFIX.USER_DASHBOARD}/host-rating-distribution`,
+    },
+
+    ADMIN_DASHBOARD: {
+        OVERVIEW              : `${API_PREFIX.ADMIN_DASHBOARD}/overview`,
+        REVENUE_CHART         : `${API_PREFIX.ADMIN_DASHBOARD}/revenue-chart`,
+        USER_GROWTH_CHART     : `${API_PREFIX.ADMIN_DASHBOARD}/user-growth-chart`,
+        EVENTS_BY_CATEGORY    : `${API_PREFIX.ADMIN_DASHBOARD}/events-by-category`,
+        EVENTS_BY_STATUS      : `${API_PREFIX.ADMIN_DASHBOARD}/events-by-status`,
+        TOP_HOSTS             : `${API_PREFIX.ADMIN_DASHBOARD}/top-hosts`,
     },
 
     WALLET: {

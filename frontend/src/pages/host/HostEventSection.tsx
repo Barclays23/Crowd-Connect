@@ -12,17 +12,12 @@ import EmailVerification from '@/components/host/EmailVerification';
 import { useSearchParams } from 'react-router-dom';
 import HostYourEvent from '@/components/event/HostYourEvent';
 import { HOST_STATUS, USER_ROLES, USER_STATUS } from '@/constants/user-system.constants';
-import { useEffect, useRef, useState } from 'react';
-
 
 
 
 
 const HostEventSection = () => {
    const { user, isAuthenticated } = useAuth();
-   
-
-   const hasFetched = useRef<boolean>(false);
    
    const [searchParams] = useSearchParams();
    const isReapplyMode = searchParams.get('reapply') === 'true';

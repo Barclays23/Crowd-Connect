@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useNavigate } from "react-router-dom";
-import { notificationService, type GetNotificationsResponse, type NotificationEntity } from "@/services/notificationServices";
-import type { ApiResponse } from "@/types/common.types";
+import { notificationService } from "@/services/notificationServices";
+import type { ApiResponse, IPaginationQueryParams } from "@/types/common.types";
 import { getNotificationDisplay, formatRelativeTime } from "@/lib/notification-display-utils";
 import { toast } from "react-toastify";
-import { getSocket, initializeSocket } from "@/services/socketService";
+import { initializeSocket } from "@/services/socketService";
 import { useAuth } from "@/contexts/AuthContext";
+import type { NotificationEntity, NotificationsResponse } from "@/types/notification.types";
+import { playNotificationSound } from "@/lib/audio-utils";
 
 
 
@@ -33,8 +35,13 @@ export function NotificationBell() {
 
 
    const fetchNotifications = async () => {
+      const queryParams: IPaginationQueryParams = {
+         page: 1,
+         limit: 10,
+      };
+
       try {
-         const response: ApiResponse<GetNotificationsResponse> = await notificationService.getNotifications(1, 10);
+         const response: ApiResponse<NotificationsResponse> = await notificationService.getNotifications(queryParams);
 
          setNotifications(response.data.notifications);
          setUnreadCount(response.data.unreadCount);
@@ -55,7 +62,10 @@ export function NotificationBell() {
       const handleNewNotification = (newNotification: NotificationEntity) => {
          setNotifications((prev) => [newNotification, ...prev]);
          setUnreadCount((prev) => prev + 1);
-         toast.info(`New Notification: ${newNotification.title}`);
+         // toast.info(`New Notification: ${newNotification.title}`);
+         toast.info(`New Notification: ${newNotification.title}`, {
+            onOpen: () => playNotificationSound(),
+         });
       };
 
       socket.on("new_notification", handleNewNotification);

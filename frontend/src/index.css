@@ -34,6 +34,7 @@ body {
 
 
 
+
 /* ===== LIGHT MODE THEME ===== */
 :root {
   /* Brand Colors */
@@ -233,6 +234,23 @@ body {
   --form-focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.2);
   --form-invalid: #ef4444;
   --form-valid: #10b981;
+
+
+  /* Dashboard Accents */
+  --accent-violet: #7c6cf6;
+  --accent-violet-bg: rgba(124, 108, 246, 0.1);
+  --accent-purple: #a855f7;
+  --accent-purple-bg: rgba(168, 85, 247, 0.1);
+  --accent-blue: #3b82f6;
+  --accent-blue-bg: rgba(59, 130, 246, 0.1);
+  --accent-amber: #f59e0b;
+  --accent-amber-bg: rgba(245, 158, 11, 0.1);
+  --accent-emerald: #10b981;
+  --accent-emerald-bg: rgba(16, 185, 129, 0.1);
+  --accent-teal: #14b8a6;
+  --accent-teal-bg: rgba(20, 184, 166, 0.1);
+
+  --dashboard-hero-bg: linear-gradient(135deg, rgba(255, 107, 107, 0.12) 0%, rgba(124, 108, 246, 0.08) 100%);
 
 
   /* Modal */
@@ -456,6 +474,24 @@ body {
   --form-focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.3);
   --form-invalid: #f87171;
   --form-valid: #10b981;
+
+
+  /* Dashboard Accents (brightened for dark bg) */
+  --accent-violet: #a78bfa;
+  --accent-violet-bg: rgba(167, 139, 250, 0.15);
+  --accent-purple: #c084fc;
+  --accent-purple-bg: rgba(192, 132, 252, 0.15);
+  --accent-blue: #60a5fa;
+  --accent-blue-bg: rgba(96, 165, 250, 0.15);
+  --accent-amber: #fbbf24;
+  --accent-amber-bg: rgba(251, 191, 36, 0.15);
+  --accent-emerald: #34d399;
+  --accent-emerald-bg: rgba(52, 211, 153, 0.15);
+  --accent-teal: #2dd4bf;
+  --accent-teal-bg: rgba(45, 212, 191, 0.15);
+
+  --dashboard-hero-bg: linear-gradient(135deg, rgba(255, 107, 107, 0.18) 0%, rgba(124, 108, 246, 0.12) 100%);
+
 
   /* Modal */
   --modal-bg: #1b222d;

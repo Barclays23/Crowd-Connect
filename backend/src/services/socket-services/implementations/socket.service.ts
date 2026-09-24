@@ -37,6 +37,7 @@ export class SocketService implements ISocketService {
                 next();
 
             } catch (error) {
+                console.error("Socket authentication failed:", error);
                 next(new Error("Authentication error: Invalid token"));
             }
         });

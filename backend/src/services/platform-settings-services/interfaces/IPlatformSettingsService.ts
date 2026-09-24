@@ -6,7 +6,7 @@ import {
     UpdateOperationalSettingsDTO, 
     UpdateTermsDTO 
 } from "@/dtos/settings.dto";
-import { OperationalSettingsEntity, PlatformSettingsEntity } from "@/entities/platformSettings.entity";
+import { OperationalSettingsEntity } from "@/entities/platformSettings.entity";
 
 
 

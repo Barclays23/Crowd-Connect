@@ -6,7 +6,7 @@ import { formatDate1, formatDate2 } from "@/utils/dateAndTime.utils";
 import { getInitials } from "@/utils/namingConventions";
 import type { VariantProps } from "class-variance-authority";
 import { Button } from "../../ui/button";
-import { AlertCircle, CheckCircle, Star, Mail, Phone, Building2, FileText } from "lucide-react";
+import { AlertCircle, CheckCircle, Mail, Phone, Building2, FileText } from "lucide-react";
 import type { HostStatus, UserStatus } from "@/constants/user-system.constants";
 import { StarRating } from "@/components/shared/StarRating";
 

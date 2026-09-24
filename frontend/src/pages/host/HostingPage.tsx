@@ -9,14 +9,13 @@ import { getApiErrorMessage } from '@/utils/errorMessages.utils';
 import { toast } from 'react-toastify';
 import type { ApiResponse } from '@/types/common.types';
 import type { UserState } from '@/types/user.types';
-import { USER_ROLES } from '@/constants/user-system.constants';
 
 
 
 
 const HostingPage = () => {
    const hostEventRef = useRef<HTMLDivElement | null>(null);
-   const { user, isAuthenticated, isLoading: isAuthLoading, setUser } = useAuth();
+   const { isAuthenticated, isLoading: isAuthLoading, setUser } = useAuth();
 
    const [isProfileFetching, setIsProfileFetching] = useState<boolean>(true);
    const hasFetchedRef = useRef<boolean>(false);
@@ -27,9 +26,6 @@ const HostingPage = () => {
          setIsProfileFetching(false);
          return;
       }
-      // if (isAuthLoading || !isAuthenticated) return;
-
-      // if (user?.role === USER_ROLES.HOST && user?.hostStatus) return;
 
       if (hasFetchedRef.current) return;
 
@@ -52,7 +48,6 @@ const HostingPage = () => {
 
       fetchUserProfile();
 
-   // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [isAuthLoading, isAuthenticated, setUser]);
 
 

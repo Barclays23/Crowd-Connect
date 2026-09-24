@@ -227,3 +227,24 @@ export const calculateEventDuration = (start: Date | string, end: Date | string)
       minutes,
    };
 };
+
+
+
+
+
+export const formatCountdownTimer = (ms: number): string => {
+   if (ms <= 0) return "";
+   const totalSeconds = Math.floor(ms / 1000);
+   const days = Math.floor(totalSeconds / (3600 * 24));
+   const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+   const minutes = Math.floor((totalSeconds % 3600) / 60);
+   const seconds = totalSeconds % 60;
+
+   const parts: string[] = [];
+   if (days > 0) parts.push(`${days}d`);
+   parts.push(`${hours.toString().padStart(2, "0")}h`);
+   parts.push(`${minutes.toString().padStart(2, "0")}m`);
+   parts.push(`${seconds.toString().padStart(2, "0")}s`);
+
+   return parts.join(" : ");
+};

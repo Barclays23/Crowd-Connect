@@ -37,7 +37,7 @@ export function validateOnlineEventForJoin(event: EventEntity | null): asserts e
         const minutesLeft = Math.ceil(timeDiffMs / (60 * 1000));
         throw createHttpError(
             HTTP_STATUS.BAD_REQUEST, 
-            `The live room opens 15 minutes before the event starts. Please wait ${minutesLeft} more minutes.`
+            `The live room opens ${ONLINE_EARLY_JOIN_BUFFER_MS / (60 * 1000)} minutes before the event starts. Please wait ${minutesLeft} more minutes.`
         );
     }
 

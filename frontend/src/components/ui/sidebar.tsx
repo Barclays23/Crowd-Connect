@@ -1,4 +1,5 @@
 // frontend/src/components/ui/sidebar.tsx
+/* eslint-disable react-refresh/only-export-components */
 // Updated to use your custom CSS variables (no shadcn defaults)
 
 import * as React from "react";
@@ -67,8 +68,13 @@ const SidebarProvider = React.forwardRef<
     [open, setOpenProp]
   );
 
+
   const toggleSidebar = React.useCallback(() => {
-    isMobile ? setOpenMobile(o => !o) : setOpen(o => !o);
+    if (isMobile) {
+      setOpenMobile(o => !o);
+    } else {
+      setOpen(o => !o);
+    }
   }, [isMobile, setOpen, setOpenMobile]);
 
   React.useEffect(() => {
@@ -431,6 +437,7 @@ const SidebarRail = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">
   <div ref={ref} className={cn("flex flex-col", className)} {...props} />
 ));
 SidebarRail.displayName = "SidebarRail";
+
 
 export {
   Sidebar,
