@@ -1,22 +1,28 @@
 # root/docker-compose.yml
 
 
-version: '3.8'
+# version: '3.8'
 
 services:
   backend:
     build: 
       context: ./backend
     ports:
-      - "3000:3000"
+      - "5000:5000"    # <-- Change this based on backend server PORT number
     environment:
-      - NODE_ENV=development
-    env_file:
-      - ./backend/.env
+      # - NODE_ENV=development
+      # - DOPPLER_TOKEN=${DOPPLER_TOKEN}
+      - NODE_ENV=production
+      - DOPPLER_TOKEN=${DOPPLER_BACKEND_TOKEN} # Mapped to backend token
+    # env_file:
+    #   - ./backend/.env
 
   frontend:
     build:
       context: ./frontend
+      args:
+        # - DOPPLER_TOKEN=${DOPPLER_TOKEN}
+        - DOPPLER_TOKEN=${DOPPLER_FRONTEND_TOKEN} # Mapped to frontend token
     ports:
       - "80:80"
     depends_on:

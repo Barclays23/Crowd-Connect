@@ -35,16 +35,17 @@ export function TrendingEvents() {
 
       const fetchTrendingEvents = async () => {
          try {
-         const response: ApiResponse<IEventState[]> = await eventServices.getTrendingEvents();
-         setTrendingEvents(response.data)
+            const response: ApiResponse<IEventState[]> = await eventServices.getTrendingEvents();
+            setTrendingEvents(response.data ?? []);
+
          } catch (error: unknown) {
-         const errorMessage = getApiErrorMessage(error)
+            const errorMessage = getApiErrorMessage(error)
          if (errorMessage) {
             setError(errorMessage)
             toast.error(errorMessage)
          }
          } finally {
-         setLoading(false)
+            setLoading(false)
          }
       }
 

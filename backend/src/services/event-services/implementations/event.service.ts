@@ -694,6 +694,7 @@ export class EventManagementService implements IEventServices {
         }
 
         const events: EventEntity[] = await this._eventRepository.getTrendingEvents(limit);
+
         const trendingEvents: EventResponseDTO[] = events.map(mapEventEntityToEventResponseDto);
 
         await this._cacheService.setKeyValue(CACHE_KEY, JSON.stringify(trendingEvents), TTL);

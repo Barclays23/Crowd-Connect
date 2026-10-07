@@ -280,9 +280,7 @@ export class EventRepository extends BaseRepository<IEventModel> implements IEve
       await this.findByIdAndUpdate(eventId, { 
          $set: { ratingAverage, totalReviews } 
       });
-   }
+   }  
 
    
-
-    
 }

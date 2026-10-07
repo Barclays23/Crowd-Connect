@@ -5,10 +5,22 @@
     # Stage 1: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Install Doppler CLI in the builder stage
+RUN apk add --no-cache curl gnupg && \
+    (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh || wget -t 3 -qO- https://cli.doppler.com/install.sh) | sh
+
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+
+# Accept the token as a build argument and use it during the Vite build
+ARG DOPPLER_TOKEN
+RUN doppler run -- npm run build
+
+
+
+
 
 
     # Stage 2: Nginx Web Server
