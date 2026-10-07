@@ -1,0 +1,175 @@
+﻿├── backend
+│   ├── logs
+│   └── src
+│       ├── config
+│       ├── constants
+│       ├── container
+│       ├── controllers
+│       │   ├── implementations
+│       │   └── interfaces
+│       ├── dtos
+│       ├── entities
+│       ├── mappers
+│       ├── middlewares
+│       ├── models
+│       │   └── implementations
+│       ├── providers
+│       │   ├── ai-chat-providers
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── ai-image-providers
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── email-providers
+│       │   └── payment-providers
+│       ├── repositories
+│       │   ├── implementations
+│       │   └── interfaces
+│       ├── routes
+│       ├── schemas
+│       ├── services
+│       │   ├── ai-chat-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── ai-image-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── auth-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── booking-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── cache-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── checkin-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── dashboard.services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── event-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── file-storage-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── host-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── mail-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── notification-services
+│       │   │   ├── implementations
+│       │   │   │   └── channels
+│       │   │   └── interfaces
+│       │   ├── password-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── payment-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── payout-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── platform-settings-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── profanity-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── queue-services
+│       │   │   ├── implementaions
+│       │   │   └── interfaces
+│       │   ├── review-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── socket-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── streaming-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── ticket-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── user-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── wallet-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── webhook-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   ├── webhook-strategy-services
+│       │   │   ├── implementations
+│       │   │   └── interfaces
+│       │   └── withdrawal-services
+│       │       ├── implementations
+│       │       └── interfaces
+│       ├── templates
+│       ├── types
+│       ├── utils
+│       │   └── validations
+│       └── workers
+└── frontend
+    ├── public
+    │   ├── icons
+    │   ├── logos
+    │   └── sounds
+    └── src
+        ├── assets
+        │   └── images
+        │       └── hero-images
+        ├── components
+        │   ├── admin
+        │   │   ├── booking
+        │   │   ├── event
+        │   │   ├── host
+        │   │   ├── payout
+        │   │   ├── policy
+        │   │   ├── review
+        │   │   └── user
+        │   ├── auth
+        │   ├── booking
+        │   ├── chat
+        │   ├── checkin
+        │   ├── dashboard
+        │   ├── event
+        │   ├── host
+        │   ├── landing
+        │   ├── layout
+        │   ├── payout
+        │   ├── review
+        │   ├── shared
+        │   ├── ui
+        │   └── user
+        │       ├── user-bookings
+        │       ├── user-dashboard
+        │       ├── user-events
+        │       ├── user-favourites
+        │       ├── user-payouts
+        │       ├── user-profile
+        │       ├── user-reviews
+        │       └── user-wallet
+        ├── config
+        ├── constants
+        ├── contexts
+        ├── guards
+        ├── hooks
+        ├── lib
+        ├── pages
+        │   ├── admin
+        │   ├── auth
+        │   ├── event
+        │   ├── host
+        │   └── user
+        ├── schemas
+        ├── services
+        ├── types
+        └── utils
+            ├── google-map-utils
+            └── payload-utils

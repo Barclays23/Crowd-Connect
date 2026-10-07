@@ -237,12 +237,13 @@ export class BookingService implements IBookingService {
       const context: RefundContext = 'user';
       
       validateBookingCancelByUser(booking, userId);
-      
+
       console.log('cancelReason :', cancelReason);
       
       await this._processRefundAndCancelBooking(booking!, cancelReason, context);
    }
 
+   
    // cancel booking by the authority (admin/ host)
    async cancelBookingByAuthority(bookingId: string, cancelReason: string): Promise<void> {
       const booking: BookingEntityPopulated | null = await this._bookingRepository.getBookingById(bookingId);

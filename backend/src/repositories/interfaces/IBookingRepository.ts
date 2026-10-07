@@ -76,4 +76,5 @@ export interface IBookingRepository {
   hasUserCheckedInEvent(userId: string, eventId: string): Promise<boolean>;
   
   startSession(): Promise<ClientSession>;
+    
 }
