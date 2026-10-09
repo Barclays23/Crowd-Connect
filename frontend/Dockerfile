@@ -16,6 +16,7 @@ COPY . .
 
 # Accept the token as a build argument and use it during the Vite build
 ARG DOPPLER_TOKEN
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN doppler run -- npm run build
 
 
