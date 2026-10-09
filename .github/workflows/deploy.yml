@@ -16,4 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Build and Test Docker Compose
+        env:
+          DOPPLER_FRONTEND_TOKEN: ${{ secrets.DOPPLER_FRONTEND_TOKEN }}
+          DOPPLER_BACKEND_TOKEN: ${{ secrets.DOPPLER_BACKEND_TOKEN }}
         run: docker compose -f docker-compose.yml build
