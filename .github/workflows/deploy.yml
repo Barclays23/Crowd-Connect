@@ -23,6 +23,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: DOPPLER_FRONTEND_TOKEN,DOPPLER_BACKEND_TOKEN
+          command_timeout: 30m
           script: |
             cd ~/Crowd-Connect
             git pull origin main
