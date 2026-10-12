@@ -43,7 +43,8 @@ const allowedOrigins = rawFrontendUrls
 
 allowedOrigins.push("http://localhost:5173");
 
-app.use(cors({
+// Apply CORS ONLY to /api routes so it doesn't duplicate Socket.IO headers
+app.use('/api', cors({
   origin: allowedOrigins,
   credentials: true
 }));

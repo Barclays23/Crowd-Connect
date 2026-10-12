@@ -12,9 +12,20 @@ export class SocketService implements ISocketService {
     private _io: SocketIOServer | null = null;
 
     initialize(server: HttpServer): void {
+        // 1. Sync the exact same origins logic used in app.ts
+        const rawFrontendUrls = process.env.FRONTEND_URL || "";
+        const allowedOrigins = rawFrontendUrls
+          .split(',')
+          .map(url => url.trim())
+          .filter(url => url.length > 0);
+        
+        allowedOrigins.push("http://localhost:5173");
+
+        // 2. Pass the array to Socket.IO
         this._io = new SocketIOServer(server, {
             cors: {
-                origin: process.env.FRONTEND_URL,
+                // origin: process.env.FRONTEND_URL,
+                origin: allowedOrigins,
                 methods: ["GET", "POST"],
                 credentials: true,
             },

@@ -43,18 +43,33 @@ export class GeminiAiChatProvider implements IAiChatProvider {
    async generateAnswer(prompt: string): Promise<string> {
       // Define a fallback chain from the primary model down to highly available backups
       // With the actively supported 3.x Flash tier models:
+      // const modelsToTry: string[] = [
+      //    'gemini-3.8-flash', // The latest and most capable Flash model
+      //    'gemini-3.7-flash', 
+      //    'gemini-3.6-flash', 
+      //    'gemini-3.5-flash', 
+      //    'gemini-3.5-flash-lite', 
+      // ];
+
+      // const modelsToTry: string[] = [
+      //    'gemini-3.8-flash',      // Flagship Flash: Best for synthesizing RAG chunks
+      //    'gemini-3.6-flash',      // Previous Gen Flash: Reliable secondary fallback
+      //    'gemini-3.5-flash-lite', // Flash-Lite: Ultra-fast, cost-effective safety net
+      // ];
+
+      // const maxRetries: number = 1;
+
+
       const modelsToTry: string[] = [
-         'gemini-3.8-flash', // The latest and most capable Flash model
-         'gemini-3.7-flash', 
-         'gemini-3.6-flash', 
-         'gemini-3.5-flash', 
-         'gemini-3.5-flash-lite', 
+         'gemini-3.8-flash',
       ];
 
-      const maxRetries: number = 1;
+      const maxRetries: number = 3;
       
       for (const model of modelsToTry) {
          let attempt = 1;
+
+         console.log('trying with gemini model :', model);
          
          while (attempt <= maxRetries) {
             try {

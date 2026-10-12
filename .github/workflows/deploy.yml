@@ -1,22 +1,42 @@
 # .github/workflows/deploy.yml
 
-
-name: CI/CD Pipeline
+name: Production Deployment
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
+    name: Deploy to AWS EC2
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Build and Test Docker Compose
+      - name: Execute SSH Commands
+        uses: appleboy/ssh-action@master
         env:
           DOPPLER_FRONTEND_TOKEN: ${{ secrets.DOPPLER_FRONTEND_TOKEN }}
           DOPPLER_BACKEND_TOKEN: ${{ secrets.DOPPLER_BACKEND_TOKEN }}
-        run: docker compose -f docker-compose.yml build
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DOPPLER_FRONTEND_TOKEN,DOPPLER_BACKEND_TOKEN
+          script: |
+            cd ~/Crowd-Connect
+            git pull origin main
+            
+            # Rebuild Backend
+            docker rm -f backend || true
+            docker build -t crowdconnect-backend ./backend
+            docker run -d --name backend --restart unless-stopped -p 5000:5000 -e DOPPLER_TOKEN=$DOPPLER_BACKEND_TOKEN crowdconnect-backend
+            
+            # Rebuild Frontend (with SSL Mounts)
+            docker rm -f frontend || true
+            docker build -t crowdconnect-frontend --build-arg DOPPLER_TOKEN=$DOPPLER_FRONTEND_TOKEN ./frontend
+            docker run -d --name frontend --restart unless-stopped -p 80:80 -p 443:443 -v /etc/letsencrypt:/etc/letsencrypt:ro --link backend:backend crowdconnect-frontend
+            
+            # Clean up old unused images to save disk space
+            docker system prune -f
+
