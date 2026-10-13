@@ -249,7 +249,7 @@ const reviewService         = new ReviewService(reviewRepo, bookingRepo, eventRe
 // 7. WEBHOOK STRATEGIES & ORCHESTRATION
 // ============================================================================
 
-const bookingRefundStgy         = new BookingRefundStrategy(bookingRepo, walletService);
+const bookingRefundStgy         = new BookingRefundStrategy(bookingRepo, walletService, notificationDispatcher);
 const bookingPaymentSuccessStgy = new BookingPaymentSuccessStrategy(bookingRepo, bookingService);
 const bookingPaymentFailedStgy  = new BookingPaymentFailedStrategy(bookingRepo);
 

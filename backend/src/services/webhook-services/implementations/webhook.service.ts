@@ -30,7 +30,6 @@ export class WebhookService implements IWebhookService {
 
         switch (eventType) {
             case STANDARD_WEBHOOK_EVENT_TYPES.PAYMENT_SUCCESS:
-                // await this._handlePaymentCaptured(webhookEvent);
                 await this._handlePaymentSuccess(webhookEvent);
                 break;
                 

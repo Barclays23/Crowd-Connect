@@ -152,8 +152,6 @@ export class BookingController implements IBookingController{
             sortOrder,
          };
 
-         console.log("✅ Parsed filters for getMyBookings:", filters);
-
          const result: GetBookingsResponseDTO = await this._bookingService.getMyBookings(userId, filters);
 
          res.status(HTTP_STATUS.OK).json(

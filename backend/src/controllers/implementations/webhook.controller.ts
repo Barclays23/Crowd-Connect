@@ -25,7 +25,7 @@ export class WebhookController implements IWebhookController {
 
 
             console.log('handleWebhookEvent providerName :', providerName)
-            console.log('handleWebhookEvent paymentProvider :', paymentProvider)
+            // console.log('handleWebhookEvent paymentProvider :', paymentProvider)
 
 
             if (!paymentProvider) {

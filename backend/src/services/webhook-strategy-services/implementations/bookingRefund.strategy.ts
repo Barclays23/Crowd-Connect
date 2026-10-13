@@ -15,6 +15,8 @@ import { StandardWebhookEvent } from "@/types/webhook.types";
 import { PAYMENT_STATUSES } from "@/constants/payment.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
+import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
+import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, NotifyRequest, RELATED_ENTITY_TYPE } from "@/types/notification.types";
 
 
 
@@ -23,7 +25,8 @@ import { BOOKING_STATUSES } from "@/constants/booking.constants";
 export class BookingRefundStrategy implements IRefundStrategy {
     constructor(
         private readonly _bookingRepository : IBookingRepository,
-        private readonly _walletService     : IWalletService
+        private readonly _walletService     : IWalletService,
+        private readonly _notificationDispatcher: INotificationService
     ) {}
 
 
@@ -40,12 +43,6 @@ export class BookingRefundStrategy implements IRefundStrategy {
             // ✅ Throw to force a retry
             throw new Error(`[Webhook Error] No booking found for paymentId: ${paymentId}. Forcing retry.`);
         }
-
-        // if (!booking) {
-        //     console.error(`[Webhook Error] No booking found for paymentId: ${paymentId}`);
-        //     return;
-        // }
-
         
         if (booking.payment?.status === PAYMENT_STATUSES.REFUNDED) {
             console.log(`[Webhook] Booking ${booking.bookingId} is already refunded. Ignoring.`);
@@ -95,5 +92,38 @@ export class BookingRefundStrategy implements IRefundStrategy {
         });
 
         console.log(`✅ [Strategy] Booking Refund ${refundId} successfully applied to wallet.`);
+
+        // Dispatch the Refund Success Notification
+        await this._notificationDispatcher.notify(
+            this._buildBookingRefundProcessedNotificationPayload(booking, refundAmount)
+        );
+
+    }
+
+
+
+
+    private _buildBookingRefundProcessedNotificationPayload(
+        booking: BookingEntityPopulated,
+        refundAmount: number
+    ): NotifyRequest {
+        return {
+            type: NOTIFICATION_TYPES.BOOKING_REFUND_PROCESSED,
+            recipient: { 
+                userId: booking.user.userId, 
+                role: NOTIFICATION_RECIPIENT_ROLES.USER, 
+                email: booking.user.email,
+                name: booking.user.name 
+            },
+            data: { 
+                eventTitle: booking.event?.title || 'Event', 
+                refundAmount: refundAmount,
+                ticketNo: booking.ticketNo
+            },
+            relatedEntity: { 
+                entityType: RELATED_ENTITY_TYPE.BOOKING, 
+                entityId: booking.bookingId 
+            }
+        };
     }
 }

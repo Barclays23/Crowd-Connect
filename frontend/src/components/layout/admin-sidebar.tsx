@@ -34,7 +34,7 @@ const menuItems = [
   { title: "Events", url: "/admin/events", icon: Calendar },
   { title: "Bookings", url: "/admin/bookings", icon: CreditCard },
   // { title: "Categories", url: "/admin/categories", icon: FolderOpen },
-  { title: "Payments", url: "/admin/payments", icon: IndianRupee },
+  // { title: "Payments", url: "/admin/payments", icon: IndianRupee },
   { title: "Payout Requests", url: "/admin/payout-requests", icon: FileText },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
   // { title: "Settings", url: "/admin/settings", icon: Settings },

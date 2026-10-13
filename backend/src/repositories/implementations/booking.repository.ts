@@ -27,8 +27,6 @@ import {
 } from "@/types/booking.types";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/constants/payment.constants";
-import { EVENT_STATUSES } from "@/constants/event.constants";
-import { lte } from "zod";
 
 
 
@@ -62,6 +60,7 @@ export class BookingRepository extends BaseRepository<IBookingModel> implements 
   async getBookingById(bookingId: string): Promise<BookingEntityPopulated | null> {
     const booking = await this.findByIdQuery(bookingId)
       .populate("eventRef", EVENT_POPULATE_SELECT)
+      .populate("userRef", "name email mobile")
       .lean<IBookingPopulatedUserAndEvent>();
 
     return booking ? mapPopulatedBookingModelToEntity(booking) : null;

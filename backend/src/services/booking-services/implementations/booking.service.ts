@@ -688,21 +688,22 @@ export class BookingService implements IBookingService {
          });
 
          
-         // notification process
+         
+         // notification process for cancelled booking
+         const user: UserEntity | null = await this._userRepository.getUserById(booking.user.userId);
+         
+         const notificationType = context === "user"
+         ? NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_USER
+         : NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_AUTHORITY;
          // 'user'            -> the booker cancelled it themselves      -> BOOKING_CANCELLED_BY_USER
          // 'authority'       -> a single admin/host cancellation        -> BOOKING_CANCELLED_BY_AUTHORITY
          // 'event_cancelled' -> cascading from event cancel/suspend     -> BOOKING_CANCELLED_BY_AUTHORITY
          //                      (cancelReason already explains why, e.g. "Event suspended by admin: ...")
-         const notificationType = context === "user"
-            ? NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_USER
-            : NOTIFICATION_TYPES.BOOKING_CANCELLED_BY_AUTHORITY;
+
+         await this._notificationService.notify(
+            this._buildBookingCancelledNotificationPayload(booking, notificationType, cancelReason, refundAmount)
+         );
          
-         await this._notificationService.notify({
-            type: notificationType,
-            recipient: { userId: booking.user.userId, role: NOTIFICATION_RECIPIENT_ROLES.USER, email: booking.user.email },
-            data: { eventTitle: booking.event.title, cancelReason, refundAmount },
-            relatedEntity: { entityType: RELATED_ENTITY_TYPE.BOOKING, entityId: booking.bookingId },
-         });
          
       } catch (error) {
          console.error("Error in _processRefundAndCancelBooking:", error);
@@ -739,6 +740,35 @@ export class BookingService implements IBookingService {
             posterUrl: event.posterUrl,
             startDateTime: event.startDateTime,
             endDateTime: event.endDateTime
+         },
+         relatedEntity: { 
+            entityType: RELATED_ENTITY_TYPE.BOOKING, 
+            entityId: booking.bookingId 
+         },
+      };
+   }
+
+
+
+
+   private _buildBookingCancelledNotificationPayload(
+      booking: BookingEntityPopulated,
+      notificationType: NOTIFICATION_TYPES,
+      cancelReason: string,
+      refundAmount: number
+   ): NotifyRequest {
+      return {
+         type: notificationType,
+         recipient: { 
+            userId: booking.user.userId, 
+            role: NOTIFICATION_RECIPIENT_ROLES.USER, 
+            email: booking.user.email,
+            name: booking.user.name 
+         },
+         data: { 
+            eventTitle: booking.event.title, 
+            cancelReason, 
+            refundAmount 
          },
          relatedEntity: { 
             entityType: RELATED_ENTITY_TYPE.BOOKING, 
