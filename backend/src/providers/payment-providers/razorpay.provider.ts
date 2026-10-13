@@ -85,7 +85,6 @@ export class RazorpayProvider implements IPaymentProvider {
 
 
     
-    // not async function ??
     verifyPaymentSignature(orderId: string, paymentId: string, signature: string): boolean {
         const body    = `${orderId}|${paymentId}`;
 
@@ -100,7 +99,6 @@ export class RazorpayProvider implements IPaymentProvider {
 
 
 
-    // not async function ??
     verifyWebhookSignature(rawBody: string | Buffer, headers: Record<string, string | string[] | undefined>): boolean {
         const sigHeader = headers['x-razorpay-signature'];
 
@@ -122,104 +120,6 @@ export class RazorpayProvider implements IPaymentProvider {
 
         return expectedSignature === signature;
     }
-
-
-
-    // normalizeWebhookPayload(rawPayload: unknown): StandardWebhookEvent | null {
-    //     const razorpayData = rawPayload as RazorpayWebhookPayload;
-    //     console.log('razorpay webhook rawPayload :', razorpayData)
-        
-    //     const eventName: string                             = razorpayData.event;
-    //     const paymentEntity: RazorpayBaseEntity | undefined = razorpayData.payload?.payment?.entity;
-    //     const refundEntity: RazorpayBaseEntity | undefined  = razorpayData.payload?.refund?.entity;
-    //     console.log('paymentEntity :', paymentEntity)
-    //     console.log('refundEntity :', refundEntity)
-
-    //     if (!paymentEntity && !refundEntity) return null;
-
-    //     const getPaymentPurpose = (entity: RazorpayBaseEntity | undefined): PaymentPurpose | null => {
-    //         const purpose = entity?.notes?.payment_purpose;
-    //         if (!purpose || !Object.values(PAYMENT_PURPOSES).includes(purpose as PaymentPurpose)) {
-    //             console.error(`[WEBHOOK_ERROR] Webhook entity missing or invalid mandatory 'payment_purpose'`);
-    //             return null;
-    //         }
-    //         return purpose as PaymentPurpose;
-    //     };
-
-    //     const purposePayment: PaymentPurpose | null = getPaymentPurpose(paymentEntity);
-    //     const purposeRefund: PaymentPurpose | null = getPaymentPurpose(refundEntity);
-
-    //     let type: StandardWebhookEventType;
-    //     let paymentPurpose: PaymentPurpose;
-    //     let amount          = 0;
-    //     let paymentId       = paymentEntity?.id; // payment ID is usually always available
-    //     const orderId       = paymentEntity?.order_id || "";
-    //     let refundId        = undefined;
-    //     let timestamp       = Date.now();
-
-
-    //     // Translate Razorpay language to Internal Language
-    //     switch (eventName) {
-    //         case 'payment.captured':
-    //             // Money successfully deducted from user -> Handle successful payment
-    //             type            = STANDARD_WEBHOOK_EVENT_TYPES.PAYMENT_SUCCESS;
-    //             amount          = (paymentEntity?.amount || 0) / 100;
-    //             timestamp       = paymentEntity?.created_at ? paymentEntity.created_at * 1000 : Date.now();
-    //             if (!purposePayment) return null;
-    //             paymentPurpose = purposePayment;
-    //             break;
-
-    //         case 'payment.failed':
-    //             // Card declined, wrong OTP -> Handle failed payment
-    //             type            = STANDARD_WEBHOOK_EVENT_TYPES.PAYMENT_FAILED;
-    //             amount          = (paymentEntity?.amount || 0) / 100;
-    //             timestamp       = paymentEntity?.created_at ? paymentEntity.created_at * 1000 : Date.now();
-    //             if (!purposePayment) return null;
-    //             paymentPurpose = purposePayment;
-    //             break;
-
-    //         case 'refund.processed': 
-    //             // (Bank successfully refunded)
-    //             type            = STANDARD_WEBHOOK_EVENT_TYPES.REFUND_SUCCESS;
-    //             amount          = (refundEntity?.amount || 0) / 100;
-    //             refundId        = refundEntity?.id;
-    //             timestamp       = refundEntity?.created_at ? refundEntity.created_at * 1000 : Date.now();
-    //             if (!purposeRefund) return null;
-    //             paymentPurpose = purposeRefund;
-    //             if (refundEntity?.payment_id) paymentId = refundEntity.payment_id;
-    //             break;
-
-    //         case 'refund.failed': 
-    //             // Bank rejected the refund -> Handle a failed refund (e.g., notify admin/user)
-    //             // Optionally: Notify admin or user here
-    //             type            = STANDARD_WEBHOOK_EVENT_TYPES.REFUND_FAILED;
-    //             amount          = (refundEntity?.amount || 0) / 100;
-    //             refundId        = refundEntity?.id;
-    //             timestamp       = refundEntity?.created_at ? refundEntity.created_at * 1000 : Date.now();
-    //             if (!purposeRefund) return null;
-    //             paymentPurpose = purposeRefund;
-    //             if (refundEntity?.payment_id) paymentId = refundEntity.payment_id;
-    //             break;
-
-    //         default: 
-    //             console.log(`ℹ️ Unhandled webhook event received: ${eventName}`);
-    //             return null;
-    //     }
-
-
-    //     if (!paymentId) return null;
-
-    //     return {
-    //         eventType       : type,
-    //         paymentId       : paymentId,
-    //         orderId         : orderId,
-    //         refundId        : refundId,
-    //         amount          : amount, 
-    //         paymentPurpose  : paymentPurpose, 
-    //         timestamp       : timestamp,
-    //         rawPayload      : rawPayload
-    //     };
-    // }
 
 
 
@@ -338,45 +238,6 @@ export class RazorpayProvider implements IPaymentProvider {
         }
     }
 
-
-
-
-    // private extractRazorpayErrorDescription(error: unknown): string {
-    //     if (typeof error === "string") {
-    //         return error;
-    //     }
-
-    //     if (!error || typeof error !== "object") {
-    //         return "Failed to initiate refund";
-    //     }
-
-    //     // Safe type narrowing
-    //     const errObj = error as {
-    //         error?: unknown;
-    //         description?: unknown;
-    //         message?: unknown;
-    //     };
-
-    //     // Razorpay most common structure: { error: { description: "..." } }
-    //     if (errObj.error && typeof errObj.error === "object") {
-    //         const innerError = errObj.error as { description?: unknown };
-    //         if (typeof innerError.description === "string") {
-    //         return innerError.description;
-    //         }
-    //     }
-
-    //     // Direct description
-    //     if (typeof errObj.description === "string") {
-    //         return errObj.description;
-    //     }
-
-    //     // Direct message
-    //     if (typeof errObj.message === "string") {
-    //         return errObj.message;
-    //     }
-
-    //     return "Failed to initiate refund";
-    // }
 
 
 

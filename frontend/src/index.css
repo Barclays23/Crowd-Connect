@@ -38,8 +38,7 @@ body {
 /* ===== LIGHT MODE THEME ===== */
 :root {
   /* Brand Colors */
-  /* --brand-primary: #ff6b6b;           Coral Red */
-  --brand-primary: #2bff00;           /* Coral Red */
+  --brand-primary: #ff6b6b;           /* Coral Red */
   --brand-primary-hover: #e63946;     /* Darker Coral */
   --brand-primary-light: #fca5a5;     /* Light Coral */
 
@@ -276,8 +275,7 @@ body {
 /* [data-theme="dark"] { */
 .dark {
   /* Brand Colors */
-  /* --brand-primary: #ff6b6b;           Coral Red */
-  --brand-primary: #2bff00;           /* Coral Red */
+  --brand-primary: #ff6b6b;           /* Coral Red */
   --brand-primary-hover: #e63946;     /* Darker Coral */
   --brand-primary-light: #fca5a5;     /* Light Coral */
 

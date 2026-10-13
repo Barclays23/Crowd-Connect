@@ -127,8 +127,6 @@ export function mapPopulatedBookingModelToEntity(
   model: IBookingPopulatedUserAndEvent
 ): BookingEntityPopulated {
 
-  console.log('IBookingPopulatedUserAndEvent :', model);
-
   const base = mapBookingBase({
     ...model,
     userRef : model.userRef._id,
