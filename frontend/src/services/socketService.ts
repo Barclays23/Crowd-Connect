@@ -14,10 +14,15 @@ export const initializeSocket = (token: string) => {
     socket = io(backendUrl, {
         auth: { token },
         withCredentials: true,
+        transports: ["websocket"],
     });
 
     socket.on("connect", () => {
         console.log("Connected to WebSocket");
+    });
+
+    socket.on("connect_error", (err) => {
+        console.error("Socket Connection Error:", err.message);
     });
 
     socket.on("disconnect", () => {

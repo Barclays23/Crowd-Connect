@@ -16,7 +16,12 @@ import { PAYMENT_STATUSES } from "@/constants/payment.constants";
 import { TRANSACTION_REFERENCE_TYPES, TRANSACTION_TYPES } from "@/constants/transaction.constants";
 import { BOOKING_STATUSES } from "@/constants/booking.constants";
 import { INotificationService } from "@/services/notification-services/interfaces/INotificationService";
-import { NOTIFICATION_RECIPIENT_ROLES, NOTIFICATION_TYPES, NotifyRequest, RELATED_ENTITY_TYPE } from "@/types/notification.types";
+import { 
+    NOTIFICATION_RECIPIENT_ROLES, 
+    NOTIFICATION_TYPES, 
+    NotifyRequest, 
+    RELATED_ENTITY_TYPE 
+} from "@/types/notification.types";
 
 
 
