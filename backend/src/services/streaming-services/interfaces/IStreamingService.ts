@@ -7,4 +7,6 @@ import { GenerateStreamingTokenParams, JoinOnlineEventResult } from "@/types/str
 export interface IStreamingService {
     generateJoinToken(params: GenerateStreamingTokenParams): Promise<JoinOnlineEventResult>;
     closeRoom(roomName: string): Promise<void>;
+    muteParticipantTrack(roomName: string, identity: string, trackSid: string): Promise<void>
+    removeParticipant(roomName: string, identity: string): Promise<void>
 }

@@ -48,6 +48,8 @@ export interface IEventServices {
     deleteEventByAdmin(eventId: string, adminId: string): Promise<void>
 
     processOnlineEventJoin(input: JoinOnlineEventInputDTO): Promise<JoinOnlineEventResponseDTO>
+    muteParticipantTrack(eventId: string, hostId: string, identity: string, trackSid: string): Promise<void>
+    removeParticipant(eventId: string, hostId: string, identity: string): Promise<void>
 
     getUserEvents({userId, filters}: {userId: string, filters: GetEventsFilter}): Promise<GetAllEventsResult>;
     

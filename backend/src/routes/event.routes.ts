@@ -34,7 +34,8 @@ eventRouter.delete(EVENT_ROUTES.DELETE_EVENT, authenticate, authorize(USER_ROLES
 
 // Attendee Joining Online Event
 eventRouter.post('/:eventId/join-online', authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.joinOnlineEvent.bind(eventController));
-
+eventRouter.post('/:eventId/live/mute', authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.muteParticipant.bind(eventController));
+eventRouter.post('/:eventId/live/kick', authenticate, authorize(USER_ROLES.HOST), validateParams(EventIdParamSchema), eventController.kickParticipant.bind(eventController));
 
 
 eventRouter.get(EVENT_ROUTES.MY_EVENTS, authenticate, authorize(USER_ROLES.USER, USER_ROLES.HOST, USER_ROLES.ADMIN), eventController.getUserEvents.bind(eventController));

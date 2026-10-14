@@ -17,6 +17,8 @@ export interface IEventController {
     deleteEventByAdmin(req: Request, res: Response, next: NextFunction): Promise<void>
 
     joinOnlineEvent(req: Request, res: Response, next: NextFunction): Promise<void>
+    muteParticipant(req: Request, res: Response, next: NextFunction): Promise<void>
+    kickParticipant(req: Request, res: Response, next: NextFunction): Promise<void>
 
     getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void>
     getUserEvents(req: Request, res: Response, next: NextFunction): Promise<void>

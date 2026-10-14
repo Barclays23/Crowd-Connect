@@ -33,8 +33,9 @@ export class LiveKitStreamingService implements IStreamingService {
                 roomJoin        : true,
                 canSubscribe    : true,
                 canPublishData  : true,
-                canPublish      : params.isEventHost,
-                roomAdmin       : params.isEventHost,
+                // canPublish      : params.isEventHost,
+                canPublish      : true, // for everyone so users can turn on their own mic/cam
+                roomAdmin       : params.isEventHost, // Host gets moderation controls (kick, mute audio, mute video)
             });
 
             const streamingToken: string = await liveKitAccessToken.toJwt();
@@ -59,6 +60,28 @@ export class LiveKitStreamingService implements IStreamingService {
 
         } catch (error:unknown) {
             console.error(`Failed to close room ${roomName}:`, error);
+        }
+    }
+
+
+
+    async muteParticipantTrack(roomName: string, identity: string, trackSid: string): Promise<void> {
+        try {
+            // Forces the specific track (mic or camera) to turn off
+            await this._roomService.mutePublishedTrack(roomName, identity, trackSid, true);
+        } catch (error: unknown) {
+            console.error("Failed to mute track:", error);
+            throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to mute participant");
+        }
+    }
+
+    async removeParticipant(roomName: string, identity: string): Promise<void> {
+        try {
+            // Disconnects the user and instantly revokes their token
+            await this._roomService.removeParticipant(roomName, identity);
+        } catch (error: unknown) {
+            console.error("Failed to remove participant:", error);
+            throw createHttpError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to remove participant");
         }
     }
 }

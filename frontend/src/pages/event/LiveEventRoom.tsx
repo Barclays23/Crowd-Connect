@@ -21,6 +21,8 @@ import { formatCountdownTimer } from '@/utils/dateAndTime.utils';
 import { ONLINE_EARLY_JOIN_BUFFER_MS } from '@/constants/checkin.constants';
 import { toast } from 'react-toastify';
 import { playNotificationSound } from '@/lib/audio-utils';
+import { LiveRoomHeader } from '@/pages/event/LiveRoomHeader';
+
 
 
 
@@ -177,9 +179,10 @@ export default function LiveEventRoom() {
                 serverUrl={connectionData.serverUrl}
                 // When the user clicks the "Leave" button in the LiveKit UI, redirect them
                 onDisconnected={() => navigate(`/events/${eventId}`)} 
-                className="flex-1"
+                className="flex-1 relative"
                 data-lk-theme="default"
             >
+                <LiveRoomHeader eventId={eventId!} eventTitle={event?.title} hostId={event?.organizer.hostId.toString()!} />
                 {/* VideoConference automatically renders the video grid, chat, and control bars */}
                 <VideoConference />
                 {/* RoomAudioRenderer ensures you can hear other participants */}

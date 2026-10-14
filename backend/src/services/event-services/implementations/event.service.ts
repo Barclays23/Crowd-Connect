@@ -412,6 +412,23 @@ export class EventManagementService implements IEventServices {
             streamingData.serverUrl
         );
     }
+
+
+    async muteParticipantTrack(eventId: string, hostId: string, identity: string, trackSid: string): Promise<void> {
+        const event = await this._eventRepository.getEventById(eventId);
+        if (!event || event.organizer.hostId.toString() !== hostId.toString()) {
+            throw createHttpError(HTTP_STATUS.FORBIDDEN, "Only the event host can moderate the room.");
+        }
+        await this._streamingService.muteParticipantTrack(`room_event_${eventId}`, identity, trackSid);
+    }
+
+    async removeParticipant(eventId: string, hostId: string, identity: string): Promise<void> {
+        const event = await this._eventRepository.getEventById(eventId);
+        if (!event || event.organizer.hostId.toString() !== hostId.toString()) {
+            throw createHttpError(HTTP_STATUS.FORBIDDEN, "Only the event host can moderate the room.");
+        }
+        await this._streamingService.removeParticipant(`room_event_${eventId}`, identity);
+    }
     
 
     async getAllEvents(filters: GetEventsFilter): Promise<GetAllEventsResult> {

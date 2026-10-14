@@ -108,6 +108,22 @@ export const eventServices = {
    },
 
 
+   muteParticipant: async (eventId: string, payload: { identity: string, trackSid: string }): Promise<ApiResponse<void>> => {
+      const url = API_ENDPOINTS.EVENT.MUTE_USER(eventId);
+      const res = await axiosInstance.post<ApiResponse<void>>(
+         url, 
+         payload, 
+         { withCredentials: true }
+      );
+      return res.data;
+   },
+
+   kickParticipant: async (eventId: string, payload: { identity: string }): Promise<ApiResponse<void>> => {
+      const url = API_ENDPOINTS.EVENT.KICK_USER(eventId);
+      const res = await axiosInstance.post<ApiResponse<void>>(url, payload, { withCredentials: true });
+      return res.data;
+   },
+
    
    // for events listing in admin dashboard
    getAllEvents: async (queryString: string = ""): Promise<ApiResponse<IEventState[]>> => {

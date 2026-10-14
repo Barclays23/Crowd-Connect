@@ -278,6 +278,27 @@ export class EventController implements IEventController {
     };
 
 
+    async muteParticipant(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const hostId = req.user!.userId;
+            const { identity, trackSid } = req.body;
+            await this._eventServices.muteParticipantTrack(eventId, hostId, identity, trackSid);
+            res.status(HTTP_STATUS.OK).json(ApiResponse.success("Participant muted successfully"));
+        } catch (error) { next(error); }
+    }
+
+    async kickParticipant(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const eventId = req.params.eventId as string;
+            const hostId = req.user!.userId;
+            const { identity } = req.body;
+            await this._eventServices.removeParticipant(eventId, hostId, identity);
+            res.status(HTTP_STATUS.OK).json(ApiResponse.success("Participant removed successfully"));
+        } catch (error) { next(error); }
+    }
+
+
     async getAllEvents(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const page = parseInt(req.query.page as string) || 1;

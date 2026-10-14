@@ -117,6 +117,8 @@ export const API_ENDPOINTS = {
         ORGANISER_EVENTS    : (hostId: string) => `${API_PREFIX.EVENT}/organiser/${hostId}/events`,
 
         JOIN_ONLINE         : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/join-online`,
+        MUTE_USER           : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/live/mute`,
+        KICK_USER           : (eventId: string) => `${API_PREFIX.EVENT}/${eventId}/live/kick`,
     },
 
     HOST: {
