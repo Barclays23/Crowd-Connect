@@ -167,7 +167,7 @@ export const REVIEW_ROUTES = {
     SUBMIT_REVIEW       : '/',          // bookingId is passed in body
     MANAGE_REVIEW       : '/:reviewId', // for edit/delete (put/delete),
     HOST_REVIEWS        : '/host/:hostId',
-    EVENT_REVIEWS       : '/host/:hostId',
+    EVENT_REVIEWS       : '/events/:eventId',
     MY_REVIEWS          : '/my-reviews',
 } as const;
 
