@@ -6,7 +6,7 @@ Utilizes a secure QR code system with signed JWT tokens validated live against e
 > # Native Online Video Streaming: 
 Integrates in-app WebRTC video conferencing for online events, powered by LiveKit's SFU architecture with role-based token gating.   
 > # AI Integrations: 
-Features "Generate First, Submit Later" AI poster generation for event hosts and an FAQ chatbot.   
+Features "Generate First, Submit Later" AI poster generation for event hosts and an FAQ chatbot using Retrieval Augment Generation (RAG).   
 > # Robust Financial System: 
 End-to-end Razorpay integration supporting split payments, automated tiered refunds, major-change grace periods, and internal user/host wallets.   
 > # Real-Time Capabilities: 
