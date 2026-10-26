@@ -11,5 +11,5 @@ Features "Generate First, Submit Later" AI poster generation for event hosts and
 End-to-end Razorpay integration supporting split payments, automated tiered refunds, major-change grace periods, and internal user/host wallets.   
 > # Real-Time Capabilities: 
 Implements multi-channel notifications (Twilio SMS/WhatsApp, Firebase Push, Email) and live socket connections for real-time attendance tracking.   
-> # Architecture & Engineering Standards:
+# Architecture & Engineering Standards:
 The backend is strictly built upon a four-layer Clean Architecture (Routes → Controller → Service → Repository) to ensure high maintainability. It heavily utilizes TypeScript for data flow contracts (DTOs) and strictly adheres to SOLID design principles, including the Repository Pattern for decoupled database operations
